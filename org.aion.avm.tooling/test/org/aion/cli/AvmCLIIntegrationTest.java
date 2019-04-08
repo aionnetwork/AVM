@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 
 import avm.Address;
-import org.aion.avm.tooling.ShadowCoverageTarget;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.TestingKernel;
@@ -44,33 +43,6 @@ public class AvmCLIIntegrationTest {
         ArgumentParser.Invocation invocation = ArgumentParser.parseArgs(args);
         // Verify that the argument is an Address.
         Assert.assertTrue(invocation.commands.get(0).args.get(0) instanceof Address);
-    }
-
-    @Test
-    public void exploreShadowCoverageTarget() throws Exception {
-        // Create the JAR and write it to a location we can parse from the command-line.
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(ShadowCoverageTarget.class);
-        File temp = this.folder.newFile();
-        Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
-
-        // Create the testing environment to look for the successful deployment.
-        TestEnvironment deployEnv = new TestEnvironment("Result status: SUCCESS");
-        AvmCLI.testingMain(deployEnv, new String[] {"deploy", temp.getAbsolutePath()});
-        Assert.assertTrue(deployEnv.didScrapeString);
-        String dappAddress = deployEnv.capturedAddress;
-        Assert.assertNotNull(dappAddress);
-
-        // Now, issue a call.
-        TestEnvironment callEnv = new TestEnvironment("Result status: SUCCESS");
-        AvmCLI.testingMain(callEnv, new String[] {"call", dappAddress, "--method", "populate_JavaLang"});
-        Assert.assertTrue(callEnv.didScrapeString);
-
-        // Now, check the storage.
-        // (note that this NPE is just something in an instance field, as an example of deep data).
-
-        TestEnvironment exploreEnv = new TestEnvironment("NullPointerException(85):");
-        AvmCLI.testingMain(exploreEnv, new String[] {"explore", dappAddress});
-        Assert.assertTrue(exploreEnv.didScrapeString);
     }
 
     @Test
@@ -171,23 +143,11 @@ public class AvmCLIIntegrationTest {
     @Test
     public void parseFailOnInvalidBatch() {
         String[] args = new String[] {
-                "call", "0xFFFF", "--method", "addNewTuple", "--args", "-T", "test1_1",
-                "explore", "0xFFFF",
-        };
-        // Make sure that we see the complaint about the use of batching on explore.
-        String message = null;
-        try {
-            ArgumentParser.parseArgs(args);
-        } catch (IllegalArgumentException e) {
-            message = e.getMessage();
-        }
-        Assert.assertEquals("EXPLORE cannot be in a batch of commands", message);
-        args = new String[] {
                 "open", "--address", "0xFFFF",
                 "call", "0xFFFF", "--method", "addNewTuple", "--args", "-T", "test1_1",
         };
         // Make sure that we see the complaint about the use of batching on open.
-        message = null;
+        String message = null;
         try {
             ArgumentParser.parseArgs(args);
         } catch (IllegalArgumentException e) {

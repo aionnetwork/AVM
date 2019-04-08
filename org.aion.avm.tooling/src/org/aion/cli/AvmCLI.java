@@ -9,16 +9,13 @@ import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.IExternalCapabilities;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.core.util.StorageWalker;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.tooling.StandardCapabilities;
 import org.aion.cli.ArgumentParser.Action;
 import org.aion.kernel.*;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -179,29 +176,6 @@ public class AvmCLI {
         env.logLine("Account Balance : " + kernel.getBalance(toOpen));
     }
 
-    public static void exploreStorage(IEnvironment env, String storagePath, org.aion.types.Address dappAddress) {
-        // Create the PrintStream abstraction that walkAllStaticsForDapp expects.
-        // (ideally, we would incrementally filter this but that could be a later improvement - current Dapps are very small).
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        PrintStream printer = new PrintStream(stream);
-        
-        // Create the directory-backed kernel.
-        TestingKernel kernel = new TestingKernel(new File(storagePath));
-        
-        // Walk everything, treating unexpected exceptions as fatal.
-        try {
-            StorageWalker.walkAllStaticsForDapp(printer, kernel, dappAddress);
-        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | IOException e) {
-            // This tool can fail out if something goes wrong.
-            throw env.fail(e.getMessage());
-        }
-        
-        // Flush all the captured data and feed it to the env.
-        printer.flush();
-        String raw = new String(stream.toByteArray());
-        env.logLine(raw);
-    }
-
     public static void testingMain(IEnvironment env, String[] args) {
         internalMain(env, args);
     }
@@ -261,9 +235,6 @@ public class AvmCLI {
                 case TRANSFER:
                     // This should be in the batching path.
                     RuntimeAssertionError.unreachable("This should be in the batching path");
-                    break;
-                case EXPLORE:
-                    exploreStorage(env, invocation.storagePath, org.aion.types.Address.wrap(Helpers.hexStringToBytes(command.contractAddress)));
                     break;
                 case OPEN:
                     openAccount(env, invocation.storagePath, org.aion.types.Address.wrap(Helpers.hexStringToBytes(command.contractAddress)));
@@ -327,7 +298,6 @@ public class AvmCLI {
                                 i,
                                 command.balance);
                         break;
-                    case EXPLORE:
                     case OPEN:
                         // This should be in the non-batching path.
                         RuntimeAssertionError.unreachable("This should be in the batching path");
@@ -361,7 +331,6 @@ public class AvmCLI {
                     case TRANSFER:
                         reportTransferResult(env, results[i]);
                         break;
-                    case EXPLORE:
                     case OPEN:
                         // This should be in the non-batching path.
                         RuntimeAssertionError.unreachable("This should be in the batching path");
