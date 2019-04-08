@@ -389,14 +389,14 @@ public class NodeEnvironment {
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.RoundingMode.avm_UNNECESSARY, 17);
 
         // Note that (as explained in issue-146), we need to treat our primitive "TYPE" pseudo-classes as constants, not like normal Class references.
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Boolean.avm_TYPE, 18);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Byte.avm_TYPE, 19);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Character.avm_TYPE, 20);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Double.avm_TYPE, 21);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Float.avm_TYPE, 22);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Integer.avm_TYPE, 23);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Long.avm_TYPE, 24);
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Short.avm_TYPE, 25);
+        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Boolean.avm_TYPE, 18);
+        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Byte.avm_TYPE, 19);
+        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Character.avm_TYPE, 20);
+        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Double.avm_TYPE, 21);
+        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Float.avm_TYPE, 22);
+        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Integer.avm_TYPE, 23);
+        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Long.avm_TYPE, 24);
+        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Short.avm_TYPE, 25);
 
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigInteger.avm_ZERO, 26);
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.math.BigInteger.avm_ONE, 27);
@@ -411,7 +411,7 @@ public class NodeEnvironment {
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_MICROSECONDS, 35);
         setConstantInstanceId(constantMap, org.aion.avm.shadow.java.util.concurrent.TimeUnit.avm_NANOSECONDS, 36);
 
-        setConstantInstanceId(constantMap, org.aion.avm.shadow.java.lang.Void.avm_TYPE, 37);
+        installConstantClass(constantMap, org.aion.avm.shadow.java.lang.Void.avm_TYPE, 37);
 
         return constantMap;
     }
@@ -420,6 +420,11 @@ public class NodeEnvironment {
         object.persistenceToken = new ConstantPersistenceToken(identityHashCode);
         object.updateHashCodeForConstant(identityHashCode);
         constantMap.put(identityHashCode, object);
+    }
+
+    private void installConstantClass(Map<Integer, org.aion.avm.shadow.java.lang.Object> constantMap, org.aion.avm.shadow.java.lang.Class instance, int constantId) {
+        instance.persistenceToken = new ConstantPersistenceToken(constantId);
+        constantMap.put(constantId, instance);
     }
 
     /**

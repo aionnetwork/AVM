@@ -37,6 +37,11 @@ public class Object extends java.lang.Object implements IObject {
         this.deserializer = deserializer;
     }
 
+    // We created this special allocator for cases where we don't want to change the hashcode (Classes, for example).
+    protected Object(java.lang.Void ignore, java.lang.Void ignore2, int hashCode) {
+        this.hashCode = hashCode;
+    }
+ 
     public void updateHashCodeForConstant(int hashCode) {
         // Note that this can only be called for constants and their hash codes are initialized by a special IInstrumentation, under NodeEnvironment, which gives them
         // this MIN_VALUE hash code so we can detect this case.

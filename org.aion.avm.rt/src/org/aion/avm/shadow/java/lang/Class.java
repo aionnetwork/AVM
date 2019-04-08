@@ -2,7 +2,6 @@ package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.ClassNameExtractor;
 import org.aion.avm.arraywrapper.ObjectArray;
-import org.aion.avm.internal.AvmException;
 import org.aion.avm.internal.AvmThrowable;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
@@ -117,7 +116,8 @@ public class Class<T> extends Object {
     //========================================================
 
     public Class(java.lang.Class<T> v) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Class_avm_constructor);
+        // We will base our hashcode on the original class name.
+        super(null, null, ClassNameExtractor.getOriginalClassName(v.getName()).hashCode());
         this.v = v;
     }
 
