@@ -54,7 +54,7 @@ public class BlockchainTest {
         buffer.put(block.getDifficulty().toByteArray());
         buffer.put("value".getBytes());
         buffer.putLong(avmRule.kernel.getBalance(org.aion.types.Address.wrap(new byte[32])).longValue());
-        buffer.putLong(avmRule.kernel.getCode(dappAddressApi).length);
+        buffer.putLong(avmRule.kernel.getTransformedCode(dappAddressApi).length);
         buffer.put(HashUtils.blake2b("blake2b-message".getBytes()));
         buffer.put(HashUtils.sha256("sha256-message".getBytes()));
         buffer.put(HashUtils.keccak256("keccak256-message".getBytes()));

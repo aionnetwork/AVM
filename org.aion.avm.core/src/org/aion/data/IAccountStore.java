@@ -11,15 +11,19 @@ import org.aion.avm.core.util.ByteArrayWrapper;
  */
 public interface IAccountStore {
     /**
-     * @return The code stored for this account.
-     */
-    public byte[] getCode();
-
-    /**
      * @param code The code to store for this account.
      */
     public void setCode(byte[] code);
 
+    /**
+     * @return The transformed code stored for this account.
+     */
+    public byte[] getTransformedCode();
+
+    /**
+     * @param code The transformed code to store for this account.
+     */
+    public void setTransformedCode(byte[] code);
     /**
      * @return The account balance.
      */

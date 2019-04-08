@@ -13,9 +13,10 @@ import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.RuntimeAssertionError;
 
-
 public class DirectoryBackedAccountStore implements IAccountStore {
     private static final String FILE_NAME_CODE = "code";
+    private static final String FILE_NAME_TRANSFORMED_CODE = "transformed_code";
+
     private static final String FILE_NAME_BALANCE = "balance";
     private static final String FILE_NAME_NONCE = "nonce";
     private static final String FILE_PREFIX_KEY = "key_";
@@ -27,13 +28,18 @@ public class DirectoryBackedAccountStore implements IAccountStore {
     }
 
     @Override
-    public byte[] getCode() {
-        return readFile(FILE_NAME_CODE);
+    public void setCode(byte[] code) {
+        writeFile(FILE_NAME_CODE, code);
     }
 
     @Override
-    public void setCode(byte[] code) {
-        writeFile(FILE_NAME_CODE, code);
+    public byte[] getTransformedCode() {
+        return readFile(FILE_NAME_TRANSFORMED_CODE);
+    }
+
+    @Override
+    public void setTransformedCode(byte[] code) {
+        writeFile(FILE_NAME_TRANSFORMED_CODE, code);
     }
 
     @Override

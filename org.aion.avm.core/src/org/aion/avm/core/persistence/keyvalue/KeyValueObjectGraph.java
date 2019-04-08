@@ -59,7 +59,7 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
 
     @Override
     public byte[] getCode() {
-        return this.store.getCode(this.address);
+        return this.store.getTransformedCode(this.address);
     }
 
     public void setLateComponents(ClassLoader classLoader, IDeserializer logicalDeserializer, Function<IRegularNode, IPersistenceToken> tokenBuilder) {

@@ -245,9 +245,11 @@ public class DAppCreator {
             }
             ImmortalDappModule immortalDapp = ImmortalDappModule.fromImmortalClasses(immortalClasses, transformedDapp.mainClass);
 
+            // store deployed code
+            kernel.putCode(dappAddress, codeAndArguments.code);
             // store transformed dapp
             byte[] immortalDappJar = immortalDapp.createJar(dappAddress, ctx);
-            kernel.putCode(dappAddress, immortalDappJar);
+            kernel.setTransformedCode(dappAddress, immortalDappJar);
 
             // Force the classes in the dapp to initialize so that the <clinit> is run (since we already saved the version without).
             dapp.forceInitializeAllClasses();

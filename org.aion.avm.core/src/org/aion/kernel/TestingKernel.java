@@ -91,13 +91,24 @@ public class TestingKernel implements KernelInterface {
     }
 
     @Override
+    public byte[] getCode(Address address) {
+        // getCode is an interface for fvm, the avm should not call this method.
+        throw new AssertionError("This class does not implement this method.");
+    }
+
+    @Override
     public void putCode(Address address, byte[] code) {
         lazyCreateAccount(address.toBytes()).setCode(code);
     }
 
     @Override
-    public byte[] getCode(Address address) {
+    public byte[] getTransformedCode(Address address) {
         return internalGetCode(address);
+    }
+
+    @Override
+    public void setTransformedCode(Address address, byte[] bytes) {
+        lazyCreateAccount(address.toBytes()).setTransformedCode(bytes);
     }
 
     @Override
@@ -220,7 +231,7 @@ public class TestingKernel implements KernelInterface {
     private byte[] internalGetCode(Address address) {
         IAccountStore account = this.dataStore.openAccount(address.toBytes());
         return (null != account)
-                ? account.getCode()
+                ? account.getTransformedCode()
                 : null;
     }
 }

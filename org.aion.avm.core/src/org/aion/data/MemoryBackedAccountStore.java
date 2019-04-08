@@ -11,17 +11,23 @@ public class MemoryBackedAccountStore implements IAccountStore {
     private BigInteger balance = BigInteger.ZERO;
     private long nonce = 0;
     private byte[] code = null;
+    private byte[] transformedCode = null;
     private final Map<ByteArrayWrapper, byte[]> storage = new HashMap<>();
     private byte[] graph = null;
 
     @Override
-    public byte[] getCode() {
-        return this.code;
+    public void setCode(byte[] code) {
+        this.code = code;
     }
 
     @Override
-    public void setCode(byte[] code) {
-        this.code = code;
+    public byte[] getTransformedCode() {
+        return this.transformedCode;
+    }
+
+    @Override
+    public void setTransformedCode(byte[] code) {
+        this.transformedCode = code;
     }
 
     @Override

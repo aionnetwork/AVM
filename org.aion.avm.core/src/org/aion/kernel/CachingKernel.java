@@ -60,6 +60,12 @@ public class CachingKernel implements KernelInterface {
     }
 
     @Override
+    public byte[] getCode(Address address) {
+        // getCode is an interface for fvm, the avm should not call this method.
+        throw RuntimeAssertionError.unreachable("This class does not implement this method.");
+    }
+
+    @Override
     public void putCode(Address address, byte[] code) {
         // Note that saving empty code is invalid since a valid JAR is not empty.
         RuntimeAssertionError.assertTrue((null != code) && (code.length > 0));
@@ -67,11 +73,17 @@ public class CachingKernel implements KernelInterface {
     }
 
     @Override
-    public byte[] getCode(Address address) {
+    public byte[] getTransformedCode(Address address) {
         IAccountStore account = this.dataStore.openAccount(address.toBytes());
         return (null != account)
-                ? account.getCode()
-                : null;
+            ? account.getTransformedCode()
+            : null;
+    }
+
+    @Override
+    public void setTransformedCode(Address address, byte[] code) {
+        RuntimeAssertionError.assertTrue((null != code) && (code.length > 0));
+        lazyCreateAccount(address.toBytes()).setTransformedCode(code);
     }
 
     @Override

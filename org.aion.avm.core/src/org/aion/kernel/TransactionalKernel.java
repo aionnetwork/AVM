@@ -86,6 +86,12 @@ public class TransactionalKernel implements KernelInterface {
     }
 
     @Override
+    public byte[] getCode(Address address) {
+        // getCode is an interface for fvm, the avm should not call this method.
+        throw new AssertionError("This class does not implement this method.");
+    }
+
+    @Override
     public void putCode(Address address, byte[] code) {
         Consumer<KernelInterface> write = (kernel) -> {
             kernel.putCode(address, code);
@@ -95,15 +101,24 @@ public class TransactionalKernel implements KernelInterface {
     }
 
     @Override
-    public byte[] getCode(Address address) {
+    public byte[] getTransformedCode(Address address) {
         byte[] result = null;
         if (!this.deletedAccountProjection.contains(new ByteArrayWrapper(address.toBytes()))) {
-            result = this.writeCache.getCode(address);
+            result = this.writeCache.getTransformedCode(address);
             if (null == result) {
-                result = this.parent.getCode(address);
+                result = this.parent.getTransformedCode(address);
             }
         }
         return result;
+    }
+
+    @Override
+    public void setTransformedCode(Address address, byte[] bytes) {
+        Consumer<KernelInterface> write = (kernel) -> {
+            kernel.setTransformedCode(address, bytes);
+        };
+        write.accept(writeCache);
+        writeLog.add(write);
     }
 
     @Override
@@ -272,6 +287,6 @@ public class TransactionalKernel implements KernelInterface {
     public boolean destinationAddressIsSafeForThisVM(Address address) {
         // We need to delegate to our parent kernel to apply whatever logic is defined there.
         // The only exception to this is cases where we already stored code in our cache so see if that is there.
-        return (null != this.writeCache.getCode(address)) || this.parent.destinationAddressIsSafeForThisVM(address);
+        return (null != this.writeCache.getTransformedCode(address)) || this.parent.destinationAddressIsSafeForThisVM(address);
     }
 }

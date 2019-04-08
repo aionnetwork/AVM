@@ -30,13 +30,13 @@ public class DirectoryBackedDataStoreTest {
         byte[] key1 = Helpers.randomBytes(32);
         byte[] value1 = Helpers.randomBytes(100);
         IAccountStore account1 = store.createAccount(address1);
-        account1.setCode(code1);
+        account1.setTransformedCode(code1);
         account1.setBalance(BigInteger.ONE);
         account1.setNonce(2L);
         account1.setData(key1, value1);
         
         account1 = store.openAccount(address1);
-        Assert.assertTrue(Arrays.equals(code1, account1.getCode()));
+        Assert.assertTrue(Arrays.equals(code1, account1.getTransformedCode()));
         Assert.assertEquals(balance1, account1.getBalance());
         Assert.assertEquals(nonce1, account1.getNonce());
         Assert.assertTrue(Arrays.equals(value1, account1.getData(key1)));

@@ -19,8 +19,8 @@ public class TransactionalKernelTest {
         TransactionalKernel transaction = new TransactionalKernel(base);
         Address address = Helpers.randomAddress();
         // Code cannot be empty.
-        transaction.putCode(address, new byte[1]);
-        Assert.assertEquals(1, transaction.getCode(address).length);
+        transaction.setTransformedCode(address, new byte[1]);
+        Assert.assertEquals(1, transaction.getTransformedCode(address).length);
         byte[] key = Helpers.randomBytes(32);
         byte[] value = Helpers.randomBytes(32);
         transaction.putStorage(address, key, value);
@@ -32,13 +32,13 @@ public class TransactionalKernelTest {
         Assert.assertEquals(BigInteger.valueOf(50L), transaction.getBalance(account1));
         
         // Prove nothing is committed.
-        Assert.assertNull(base.getCode(address));
+        Assert.assertNull(base.getTransformedCode(address));
         Assert.assertNull(base.getStorage(address, key));
         Assert.assertEquals(BigInteger.ZERO, base.getBalance(account1));
         
         // Now, commit and prove it is all written back.
         transaction.commit();
-        Assert.assertEquals(1, base.getCode(address).length);
+        Assert.assertEquals(1, base.getTransformedCode(address).length);
         Assert.assertTrue(Arrays.equals(value, base.getStorage(address, key)));
         Assert.assertEquals(BigInteger.valueOf(50L), base.getBalance(account1));
     }

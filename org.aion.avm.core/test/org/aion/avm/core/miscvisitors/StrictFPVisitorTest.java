@@ -62,7 +62,7 @@ public class StrictFPVisitorTest {
 
     @Test
     public void testAccessFlag() {
-        LoadedJar jar = LoadedJar.fromBytes(kernel.getCode(dappAddress));
+        LoadedJar jar = LoadedJar.fromBytes(kernel.getTransformedCode(dappAddress));
         for (byte[] klass : jar.classBytesByQualifiedNames.values()) {
             ClassReader reader = new ClassReader(klass);
             ClassNode node = new ClassNode();

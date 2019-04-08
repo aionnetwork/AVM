@@ -349,7 +349,7 @@ public class AvmImpl implements AvmInternal {
             LoadedDApp dapp = null;
             // The reentrant cache is obviously the first priority.
             // (note that we also want to check the kernel we were given to make sure that this DApp hasn't been deleted since we put it in the cache.
-            if ((null != stateToResume) && (null != thisTransactionKernel.getCode(recipient))) {
+            if ((null != stateToResume) && (null != thisTransactionKernel.getTransformedCode(recipient))) {
                 dapp = stateToResume.dApp;
                 // Call directly and don't interact with DApp cache (we are reentering the state, not the origin of it).
                 DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, ctx, result, this.enableVerboseContractErrors);
@@ -358,7 +358,7 @@ public class AvmImpl implements AvmInternal {
                 ByteArrayWrapper addressWrapper = new ByteArrayWrapper(recipient.toBytes());
                 LoadedDApp dappInHotCache = this.hotCache.checkout(addressWrapper);
                 //'parentKernel.getCode(recipient) != null' means this recipient's DApp is not self-destructed.
-                if (thisTransactionKernel.getCode(recipient) != null) {
+                if (thisTransactionKernel.getTransformedCode(recipient) != null) {
                     dapp = dappInHotCache;
                 }
                 if (null == dapp) {

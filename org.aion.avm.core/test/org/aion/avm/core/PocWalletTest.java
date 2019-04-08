@@ -88,7 +88,7 @@ public class PocWalletTest {
         TransactionResult createResult = avm.run(this.kernel, new TransactionContext[] {createContext})[0].get();
 
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
-        Assert.assertNotNull(kernel.getCode(org.aion.types.Address.wrap(createResult.getReturnData())));
+        Assert.assertNotNull(kernel.getTransformedCode(org.aion.types.Address.wrap(createResult.getReturnData())));
     }
 
     /**
