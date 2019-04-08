@@ -102,16 +102,6 @@ public class BasicPerfTest {
                 Transaction tx1 = Transaction.call(deployer, this.contractAddress, kernel.getNonce(deployer), BigInteger.ZERO, new byte[0], transaction1EnergyLimit, 1L);
                 TransactionResult result1 = this.avm.run(this.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(tx1, block)})[0].get();
                 Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
-                
-                // Every 100 iterations, we also want to run a GC, to verify that this doesn't break anything in a long-running test.
-                if (0 == (i % 100)) {
-                    Transaction gcCall = Transaction.garbageCollect(this.contractAddress, kernel.getNonce(this.contractAddress), transaction1EnergyLimit, 1L);
-                    AvmTransactionResult gcResult = (AvmTransactionResult) this.avm.run(this.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(gcCall, block)})[0].get();
-                    Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, gcResult.getResultCode());
-                    // Note that this GC never actually frees anything, since our workload never orphans objects.
-                    Assert.assertEquals(0, gcResult.getEnergyUsed());
-                    Assert.assertEquals(0, gcResult.getEnergyRemaining());
-                }
             }
         }
     }

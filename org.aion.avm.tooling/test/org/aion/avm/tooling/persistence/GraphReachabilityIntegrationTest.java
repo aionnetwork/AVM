@@ -11,8 +11,6 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.abi.ABICompiler;
 import org.aion.avm.tooling.deploy.JarOptimizer;
 import org.aion.kernel.*;
-import org.aion.vm.api.interfaces.TransactionContext;
-import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -316,41 +314,6 @@ public class GraphReachabilityIntegrationTest {
         Assert.assertEquals(5, value);
     }
 
-    /**
-     * Runs the setup routine, a few times, and verifies the expected GC behaviour after each.
-     */
-    @Test
-    public void testVerifyGcCost() throws Exception {
-        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        Address contractAddr = doInitialDeploymentAndSetup(block);
-        
-        // GC now should reclaim nothing.
-        AvmTransactionResult gcResult = (AvmTransactionResult) runGc(block, contractAddr);
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, gcResult.getResultCode());
-        Assert.assertEquals(0L, gcResult.getEnergyUsed());
-        Assert.assertEquals(0L, gcResult.getEnergyRemaining());
-        
-        // Run the setup again and GC (should reclaim 5).
-        callStatic(block, contractAddr, getCost_setup249(), "setup249");
-        gcResult = (AvmTransactionResult) runGc(block, contractAddr);
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, gcResult.getResultCode());
-        Assert.assertEquals(-5 * InstrumentationBasedStorageFees.DEPOSIT_WRITE_COST, gcResult.getEnergyUsed());
-        Assert.assertEquals(-(-5 * InstrumentationBasedStorageFees.DEPOSIT_WRITE_COST), gcResult.getEnergyRemaining());
-        
-        // GC now should reclaim nothing.
-        gcResult = (AvmTransactionResult) runGc(block, contractAddr);
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, gcResult.getResultCode());
-        Assert.assertEquals(0L, gcResult.getEnergyUsed());
-        Assert.assertEquals(0L, gcResult.getEnergyRemaining());
-        
-        // Run the setup again and GC (should reclaim 5).
-        callStatic(block, contractAddr, getCost_setup249(), "setup249");
-        gcResult = (AvmTransactionResult) runGc(block, contractAddr);
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, gcResult.getResultCode());
-        Assert.assertEquals(-5 * InstrumentationBasedStorageFees.DEPOSIT_WRITE_COST, gcResult.getEnergyUsed());
-        Assert.assertEquals(-(-5 * InstrumentationBasedStorageFees.DEPOSIT_WRITE_COST), gcResult.getEnergyRemaining());
-    }
-
 
     private Address doInitialDeploymentAndSetup(Block block) {
         // The assertions in this method depends on the gas charged, which in turn depends on the exact size of the jar file.
@@ -462,14 +425,6 @@ public class GraphReachabilityIntegrationTest {
         long userlibCost = -29868;
 
         return basicCost + miscCharges + storageCharges + userlibCost + byteArrayReturnCost;
-    }
-
-    private TransactionResult runGc(Block block, Address contractAddr) {
-        long energyLimit = 1_000_000l;
-        long energyPrice = 1l;
-        Transaction gc = Transaction.garbageCollect(org.aion.types.Address.wrap(contractAddr.unwrap()), avmRule.kernel.getNonce(org.aion.types.Address.wrap(contractAddr.unwrap())), energyLimit, energyPrice);
-        TransactionResult gcResult = avmRule.avm.run(avmRule.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(gc, block)})[0].get();
-        return gcResult;
     }
 
     private static long adjustBasicCost(long cost) {

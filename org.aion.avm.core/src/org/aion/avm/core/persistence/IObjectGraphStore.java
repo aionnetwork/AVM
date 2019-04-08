@@ -93,24 +93,4 @@ public interface IObjectGraphStore {
      * @return The hash representing the state of the storage graph.
      */
     public byte[] simpleHashCode();
-
-    /**
-     * Requests that the data store perform a deterministic garbage collection of reachable storage.
-     * This involves walking all reachable object, from the class statics root, renumbering (compacting) the objects as it progresses.
-     * A simplified description of the required GC algorithm:
-     * 1)  Set next available slot to 1, set next scan slot to 1, load root SerializedRepresentation
-     * 2)  Walk extent references, in-order
-     * 3)  If reference has not been copied?
-     *    T)  Copy object to next available slot, increment pointer, add mapping to old->new slot map, update reference
-     *    F)  Read old->new slot mapping, update reference
-     * 4)  When done loop (2), save back updated extent
-     * 5)  If next scan slot less than next available slot?
-     *    T)  Read extent at next scan slot, increment pointer, GOTO (2)
-     *    F)  DONE - GC has completed
-     * 
-     * TODO:  In order to support multi-version data stores, this will actually have to be called on something lower-level.
-     * 
-     * @return The number of instances freed by the GC.
-     */
-    public long gc();
 }

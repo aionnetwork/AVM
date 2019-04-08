@@ -216,15 +216,8 @@ public class AvmImpl implements AvmInternal {
 
         AvmTransactionResult result = null;
         if (null == error) {
-            // If this is a GC, we need to handle it specially.  Otherwise, use the common invoke path (handles both CREATE and CALL).
-            if (ctx.getTransactionKind() == Type.GARBAGE_COLLECT.toInt()) {
-                // The GC case operates directly on the top-level KernelInterface.
-                // (remember that the "sender" is who we are updating).
-                result = runGc(task.getThisTransactionalKernel(), sender, ctx);
-            } else {
-                // The CREATE/CALL case is handled via the common external invoke path.
-                result = runExternalInvoke(task.getThisTransactionalKernel(), task, ctx);
-            }
+            // The CREATE/CALL case is handled via the common external invoke path.
+            result = runExternalInvoke(task.getThisTransactionalKernel(), task, ctx);
         } else {
             result = new AvmTransactionResult(ctx.getTransaction().getEnergyLimit(), ctx.getTransaction().getEnergyLimit());
             result.setResultCode(error);
@@ -330,9 +323,6 @@ public class AvmImpl implements AvmInternal {
                     Helpers.bytesToHexString(ctx.getTransactionData()),
                     ctx.getTransaction().getEnergyLimit());
         }
-        // We expect that the GC transactions are handled specially, within the caller.
-        RuntimeAssertionError.assertTrue(ctx.getTransactionKind() != Type.GARBAGE_COLLECT.toInt());
-
         // Invoke calls must build their transaction on top of an existing "parent" kernel.
         TransactionalKernel thisTransactionKernel = new TransactionalKernel(parentKernel);
 
@@ -405,50 +395,6 @@ public class AvmImpl implements AvmInternal {
         }
 
         logger.debug("Result: {}", result);
-        return result;
-    }
-
-    private AvmTransactionResult runGc(KernelInterface parentKernel, Address dappAddress, TransactionContext ctx) {
-        RuntimeAssertionError.assertTrue(ctx.getTransactionKind() == Type.GARBAGE_COLLECT.toInt());
-
-        ByteArrayWrapper addressWrapper = new ByteArrayWrapper(dappAddress.toBytes());
-        IObjectGraphStore graphStore = new KeyValueObjectGraph(capabilities, parentKernel, dappAddress);
-        
-        LoadedDApp dapp = this.hotCache.checkout(addressWrapper);
-        if (null == dapp) {
-            // If we didn't find it there, just load it.
-            try {
-                dapp = DAppLoader.loadFromGraph(graphStore.getCode(), this.preserveDebuggability);
-
-                // If the dapp is freshly loaded, we set the block num
-                if (null != dapp){
-                    dapp.setLoadedBlockNum(ctx.getBlockNumber());
-                }
-
-            } catch (IOException e) {
-                unexpected(e); // the jar was created by AVM; IOException is unexpected
-            }
-        }
-
-        // There is no concept of an energy limit for a GC transaction, we treat it as zero. This
-        // also keeps the energy used / remaining distinction meaningful in this case.
-        AvmTransactionResult result = new AvmTransactionResult(0, 0);
-
-        if (null != dapp) {
-            // Run the GC and check this into the hot DApp cache.
-            long instancesFreed = graphStore.gc();
-            this.hotCache.checkin(addressWrapper, dapp);
-            // We want to set this to success and report the energy used as the refund found by the GC.
-            // NOTE:  This is the total value of the refund as splitting that between the DApp and node is a higher-level decision.
-            long storageEnergyRefund = instancesFreed * InstrumentationBasedStorageFees.DEPOSIT_WRITE_COST;
-            result.setResultCode(AvmTransactionResult.Code.SUCCESS);
-            result.setEnergyUsed(-storageEnergyRefund);
-        } else {
-            // If we failed to find the application, we will currently return this as a generic FAILED_INVALID but we may want a more
-            // specific code in the future.
-            result.setResultCode(AvmTransactionResult.Code.FAILED_INVALID);
-            result.setEnergyUsed(0);
-        }
         return result;
     }
 
