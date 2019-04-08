@@ -307,7 +307,7 @@ public class StringBuilder extends Object implements CharSequence, Appendable{
     }
 
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
-        super.deserializeSelf(String.class, deserializer);
+        super.deserializeSelf(StringBuilder.class, deserializer);
         
         // We serialize this as a string.
         java.lang.String simpler = CodecIdioms.deserializeString(deserializer);
@@ -315,7 +315,7 @@ public class StringBuilder extends Object implements CharSequence, Appendable{
     }
 
     public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
-        super.serializeSelf(String.class, serializer);
+        super.serializeSelf(StringBuilder.class, serializer);
         
         // We serialize this as a string.
         CodecIdioms.serializeString(serializer, this.v.toString());

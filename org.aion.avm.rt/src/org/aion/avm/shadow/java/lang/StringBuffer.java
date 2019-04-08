@@ -308,7 +308,7 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     }
 
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
-        super.deserializeSelf(String.class, deserializer);
+        super.deserializeSelf(StringBuffer.class, deserializer);
         
         // We serialize this as a string.
         java.lang.String simpler = CodecIdioms.deserializeString(deserializer);
@@ -316,7 +316,7 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     }
 
     public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
-        super.serializeSelf(String.class, serializer);
+        super.serializeSelf(StringBuffer.class, serializer);
         
         // We serialize this as a string.
         CodecIdioms.serializeString(serializer, this.v.toString());

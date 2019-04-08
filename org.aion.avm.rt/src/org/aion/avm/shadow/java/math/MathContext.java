@@ -107,7 +107,7 @@ public final class MathContext extends Object {
     }
 
     public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
-        super.serializeSelf(String.class, serializer);
+        super.serializeSelf(MathContext.class, serializer);
         
         // We store this as the precision (int) and the RoundingMode (stub).
         serializer.writeInt(this.v.getPrecision());
