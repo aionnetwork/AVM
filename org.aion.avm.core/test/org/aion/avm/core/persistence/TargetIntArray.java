@@ -1,9 +1,7 @@
 package org.aion.avm.core.persistence;
 
-import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.IPersistenceToken;
 
 
 public final class TargetIntArray extends TargetRoot {
@@ -11,8 +9,7 @@ public final class TargetIntArray extends TargetRoot {
     public TargetIntArray(int size) {
         this.array = new int[size];
     }
-    // Temporarily use IDeserializer and IPersistenceToken to reduce the scope of this commit.
-    public TargetIntArray(IDeserializer ignore, IPersistenceToken readIndex) {
+    public TargetIntArray(Void ignore, int readIndex) {
         super(ignore, readIndex);
     }
     

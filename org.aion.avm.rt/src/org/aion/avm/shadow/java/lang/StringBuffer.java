@@ -303,8 +303,8 @@ public class StringBuffer extends Object implements CharSequence, Appendable{
     }
 
     // Deserializer support.
-    public StringBuffer(IDeserializer deserializer, IPersistenceToken persistenceToken) {
-        super(deserializer, persistenceToken);
+    public StringBuffer(java.lang.Void ignore, int readIndex) {
+        super(ignore, readIndex);
     }
 
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {

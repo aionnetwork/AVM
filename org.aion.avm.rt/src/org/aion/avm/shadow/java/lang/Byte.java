@@ -1,9 +1,7 @@
 package org.aion.avm.shadow.java.lang;
 
-import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
-import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
@@ -185,8 +183,8 @@ public final class Byte extends Object implements Comparable<Byte> {
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    public Byte(IDeserializer deserializer, IPersistenceToken persistenceToken) {
-        super(deserializer, persistenceToken);
+    public Byte(java.lang.Void ignore, int readIndex) {
+        super(ignore, readIndex);
     }
 
     private byte v;

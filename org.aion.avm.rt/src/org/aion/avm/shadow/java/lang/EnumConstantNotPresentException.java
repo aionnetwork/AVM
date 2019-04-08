@@ -1,9 +1,7 @@
 package org.aion.avm.shadow.java.lang;
 
-import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IInstrumentation;
 
-import org.aion.avm.internal.IPersistenceToken;
 
 /**
  * Our shadow implementation of java.lang.EnumConstantNotPresentException.
@@ -24,8 +22,8 @@ public class EnumConstantNotPresentException extends RuntimeException {
         this.constantName  = constantName;
     }
 
-    public EnumConstantNotPresentException(IDeserializer deserializer, IPersistenceToken persistenceToken) {
-        super(deserializer, persistenceToken);
+    public EnumConstantNotPresentException(java.lang.Void ignore, int readIndex) {
+        super(ignore, readIndex);
     }
 
     public String avm_constantName() {

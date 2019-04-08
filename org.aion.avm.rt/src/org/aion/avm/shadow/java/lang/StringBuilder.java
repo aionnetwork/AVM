@@ -2,12 +2,10 @@ package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.arraywrapper.CharArray;
 import org.aion.avm.internal.CodecIdioms;
-import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 /**
@@ -302,8 +300,8 @@ public class StringBuilder extends Object implements CharSequence, Appendable{
     }
 
     // Deserializer support.
-    public StringBuilder(IDeserializer deserializer, IPersistenceToken persistenceToken) {
-        super(deserializer, persistenceToken);
+    public StringBuilder(java.lang.Void ignore, int readIndex) {
+        super(ignore, readIndex);
     }
 
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {

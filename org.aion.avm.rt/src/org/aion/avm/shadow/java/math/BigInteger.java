@@ -2,12 +2,10 @@ package org.aion.avm.shadow.java.math;
 
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.internal.CodecIdioms;
-import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.shadow.java.lang.Comparable;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.lang.Number;
@@ -360,8 +358,8 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
     }
 
     // Deserializer support.
-    public BigInteger(IDeserializer deserializer, IPersistenceToken persistenceToken) {
-        super(deserializer, persistenceToken);
+    public BigInteger(Void ignore, int readIndex) {
+        super(ignore, readIndex);
     }
 
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {

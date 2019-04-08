@@ -2,9 +2,7 @@ package org.aion.avm.shadowapi.avm;
 
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.arraywrapper.CharArray;
-import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IObject;
-import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.shadow.java.lang.Object;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.internal.IInstrumentation;
@@ -154,7 +152,7 @@ public class Address extends Object {
     }
 
     // Support for deserialization
-    public Address(IDeserializer deserializer, IPersistenceToken persistenceToken) {
-        super(deserializer, persistenceToken);
+    public Address(Void ignore, int readIndex) {
+        super(ignore, readIndex);
     }
 }

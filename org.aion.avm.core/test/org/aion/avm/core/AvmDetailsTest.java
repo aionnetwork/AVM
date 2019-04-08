@@ -1,8 +1,6 @@
 package org.aion.avm.core;
 
 import org.aion.avm.core.util.AvmDetails;
-import org.aion.avm.internal.IDeserializer;
-import org.aion.avm.internal.IPersistenceToken;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -40,7 +38,7 @@ public class AvmDetailsTest {
         Assert.assertFalse(methods.get(Class.class).contains(descriptor));
 
         //internal class as input should fail
-        descriptor = new AvmDetails.MethodDescriptor("<init>", new Class<?>[]{IDeserializer.class, IPersistenceToken.class}, false);
+        descriptor = new AvmDetails.MethodDescriptor("<init>", new Class<?>[]{Void.class, int.class}, false);
         Assert.assertFalse(methods.get(BigInteger.class).contains(descriptor));
     }
 

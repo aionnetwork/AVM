@@ -1,9 +1,7 @@
 package org.aion.avm.core.persistence;
 
-import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.IPersistenceToken;
 
 
 public class TargetRoot {
@@ -15,9 +13,8 @@ public class TargetRoot {
     public TargetRoot() {
         this.readIndex = -1;
     }
-    // Temporarily use IDeserializer and IPersistenceToken to reduce the scope of this commit.
-    public TargetRoot(IDeserializer ignore, IPersistenceToken readIndex) {
-        this.readIndex = readIndex.readIndex;
+    public TargetRoot(Void ignore, int readIndex) {
+        this.readIndex = readIndex;
     }
     public void serializeSelf(Class<?> stopBefore, IObjectSerializer serializer) {
         serializer.writeInt(this.counter);

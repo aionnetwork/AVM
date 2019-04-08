@@ -1,8 +1,5 @@
 package org.aion.avm.core.persistence;
 
-import org.aion.avm.internal.IDeserializer;
-import org.aion.avm.internal.IPersistenceToken;
-
 
 /**
  * Used within ReflectionStructureCodecTest and LoadedDAppTest.
@@ -34,7 +31,7 @@ public class ReflectionStructureCodecTargetSub extends ReflectionStructureCodecT
     }
 
     // We need to manually define the deserialization constructor since we aren't a transformed test.
-    public ReflectionStructureCodecTargetSub(IDeserializer deserializer, IPersistenceToken persistenceToken) {
-        super(deserializer, persistenceToken);
+    public ReflectionStructureCodecTargetSub(Void ignore, int readIndex) {
+        super(ignore, readIndex);
     }
 }

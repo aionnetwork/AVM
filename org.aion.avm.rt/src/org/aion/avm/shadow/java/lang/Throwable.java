@@ -1,9 +1,8 @@
 package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.ClassNameExtractor;
-import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.IPersistenceToken;
+
 
 /**
  * Our shadow implementation of java.lang.Throwable.
@@ -46,8 +45,8 @@ public class Throwable extends Object {
     }
 
     // Deserializer support.
-    public Throwable(IDeserializer deserializer, IPersistenceToken persistenceToken) {
-        super(deserializer, persistenceToken);
+    public Throwable(java.lang.Void ignore, int readIndex) {
+        super(ignore, readIndex);
     }
 
     public String avm_getMessage() {

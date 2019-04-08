@@ -2,16 +2,12 @@ package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.arraywrapper.CharArray;
-import org.aion.avm.arraywrapper.IntArray;
 import org.aion.avm.internal.CodecIdioms;
-import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.IPersistenceToken;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 import org.aion.avm.RuntimeMethodFeeSchedule;
@@ -392,8 +388,8 @@ public class String extends Object implements Comparable<String>, CharSequence {
     }
 
     // Deserializer support.
-    public String(IDeserializer deserializer, IPersistenceToken persistenceToken) {
-        super(deserializer, persistenceToken);
+    public String(java.lang.Void ignore, int readIndex) {
+        super(ignore, readIndex);
     }
 
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {

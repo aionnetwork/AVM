@@ -170,7 +170,7 @@ public class ClassShadowingTest {
         Assert.assertNotNull(instance);
         
         // Try the deserialization constructor.
-        Object stub = clazz.getConstructor(IDeserializer.class, IPersistenceToken.class).newInstance(null, null);
+        Object stub = clazz.getConstructor(Void.class, int.class).newInstance(null, org.aion.avm.shadow.java.lang.Object.NEW_INSTANCE_READ_INDEX);
         Assert.assertNotNull(stub);
         avm.shutdown();
     }
@@ -188,7 +188,7 @@ public class ClassShadowingTest {
         Assert.assertNotNull(instance);
         
         // Try the deserialization constructor.
-        Object stub = clazz.getConstructor(IDeserializer.class, IPersistenceToken.class).newInstance(null, null);
+        Object stub = clazz.getConstructor(Void.class, int.class).newInstance(null, org.aion.avm.shadow.java.lang.Object.NEW_INSTANCE_READ_INDEX);
         Assert.assertNotNull(stub);
         avm.shutdown();
     }

@@ -108,8 +108,8 @@ public class ByteArray extends Array {
     // Persistent Memory Support
     //========================================================
 
-    public ByteArray(IDeserializer deserializer, IPersistenceToken persistenceToken) {
-        super(deserializer, persistenceToken);
+    public ByteArray(Void ignore, int readIndex) {
+        super(ignore, readIndex);
     }
 
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {

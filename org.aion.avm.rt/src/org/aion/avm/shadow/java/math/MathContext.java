@@ -1,11 +1,9 @@
 package org.aion.avm.shadow.java.math;
 
-import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.shadow.java.lang.Object;
 import org.aion.avm.shadow.java.lang.String;
 
@@ -93,8 +91,8 @@ public final class MathContext extends Object {
     }
 
     // Deserializer support.
-    public MathContext(IDeserializer deserializer, IPersistenceToken persistenceToken) {
-        super(deserializer, persistenceToken);
+    public MathContext(Void ignore, int readIndex) {
+        super(ignore, readIndex);
     }
 
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {

@@ -1,9 +1,7 @@
 package org.aion.avm.shadow.java.lang;
 
-import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IInstrumentation;
 
-import org.aion.avm.internal.IPersistenceToken;
 
 /**
  * Our shadow implementation of java.lang.TypeNotPresentException.
@@ -21,8 +19,8 @@ public class TypeNotPresentException extends RuntimeException {
         this.typeName = typeName;
     }
 
-    public TypeNotPresentException(IDeserializer deserializer, IPersistenceToken persistenceToken) {
-        super(deserializer, persistenceToken);
+    public TypeNotPresentException(java.lang.Void ignore, int readIndex) {
+        super(ignore, readIndex);
     }
 
     //=======================================================

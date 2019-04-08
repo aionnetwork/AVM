@@ -1,9 +1,7 @@
 package org.aion.avm.arraywrapper;
 
-import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
-import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.shadow.java.lang.Cloneable;
 import org.aion.avm.shadow.java.lang.Object;
 
@@ -14,8 +12,8 @@ public abstract class Array extends Object implements Cloneable, IArray {
     }
 
     // Deserializer support.
-    public Array(IDeserializer deserializer, IPersistenceToken persistenceToken) {
-        super(deserializer, persistenceToken);
+    public Array(Void ignore, int readIndex) {
+        super(ignore, readIndex);
     }
 
     public abstract java.lang.Object getUnderlyingAsObject();

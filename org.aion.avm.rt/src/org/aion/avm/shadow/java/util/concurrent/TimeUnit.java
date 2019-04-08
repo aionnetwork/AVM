@@ -2,10 +2,8 @@ package org.aion.avm.shadow.java.util.concurrent;
 
 import org.aion.avm.RuntimeMethodFeeSchedule;
 import org.aion.avm.arraywrapper.ObjectArray;
-import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObjectArray;
-import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.shadow.java.lang.Class;
 import org.aion.avm.shadow.java.lang.Enum;
 import org.aion.avm.shadow.java.lang.String;
@@ -88,8 +86,8 @@ public class TimeUnit extends Enum<TimeUnit> {
     }
 
     // Deserializer support.
-    public TimeUnit(IDeserializer deserializer, IPersistenceToken persistenceToken) {
-        super(deserializer, persistenceToken);
+    public TimeUnit(Void ignore, int readIndex) {
+        super(ignore, readIndex);
         lazyLoad();
     }
 

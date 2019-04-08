@@ -1,9 +1,6 @@
 package org.aion.avm.shadow.java.lang;
 
-import org.aion.avm.arraywrapper.CharArray;
-import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public class Character extends Object {
@@ -146,8 +143,8 @@ public class Character extends Object {
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    public Character(IDeserializer deserializer, IPersistenceToken persistenceToken) {
-        super(deserializer, persistenceToken);
+    public Character(java.lang.Void ignore, int readIndex) {
+        super(ignore, readIndex);
     }
 
     private char v;

@@ -1,12 +1,10 @@
 package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.ClassNameExtractor;
-import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
@@ -31,10 +29,9 @@ public class Object extends java.lang.Object implements IObject {
         this.readIndex = NEW_INSTANCE_READ_INDEX;
     }
 
-    // Special constructor only invoked when instantiating this as an instance stub.
-    public Object(IDeserializer deserializer, IPersistenceToken persistenceToken) {
-        // Note that this use of passing the readIndex through IPersistenceToken is just a temporarily stop-gap to reduce the scope of the change.
-        this.readIndex = (null != persistenceToken) ? persistenceToken.readIndex : NEW_INSTANCE_READ_INDEX;
+    // Special constructor only invoked when instantiating through the persistence system (the use of true Void here is just to make sure the user can't define it).
+    public Object(java.lang.Void ignore, int readIndex) {
+        this.readIndex = readIndex;
     }
 
     // We created this special allocator for cases where we don't want to change the hashcode (Classes, for example).

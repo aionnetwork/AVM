@@ -1,9 +1,7 @@
 package org.aion.avm.shadow.java.lang;
 
-import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
-import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
@@ -291,8 +289,8 @@ public class Integer extends Number implements Comparable<Integer> {
     // Methods below are used by runtime and test code only!
     //========================================================
 
-    public Integer(IDeserializer deserializer, IPersistenceToken persistenceToken) {
-        super(deserializer, persistenceToken);
+    public Integer(java.lang.Void ignore, int readIndex) {
+        super(ignore, readIndex);
     }
 
     private int v;

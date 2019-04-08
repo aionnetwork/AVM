@@ -1,9 +1,7 @@
 package org.aion.avm.shadow.java.lang;
 
-import org.aion.avm.internal.IDeserializer;
 import org.aion.avm.internal.IInstrumentation;
 
-import org.aion.avm.internal.IPersistenceToken;
 
 /**
  * Our shadow implementation of java.lang.Error.
@@ -33,7 +31,7 @@ public class Error extends Throwable {
     }
 
     // Deserializer support.
-    public Error(IDeserializer deserializer, IPersistenceToken persistenceToken) {
-        super(deserializer, persistenceToken);
+    public Error(java.lang.Void ignore, int readIndex) {
+        super(ignore, readIndex);
     }
 }
