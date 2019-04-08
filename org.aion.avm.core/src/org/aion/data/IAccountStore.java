@@ -62,4 +62,18 @@ public interface IAccountStore {
      * @return A map of the entries in the account's application key-value store.
      */
     public Map<ByteArrayWrapper, byte[]> getStorageEntries();
+
+    /**
+     * Writes the serialized application object graph.
+     * 
+     * @param data The raw serialized graph to write.
+     */
+    public void setObjectGraph(byte[] data);
+
+    /**
+     * Reads the serialized application object graph.
+     * 
+     * @return The raw serialized graph read.
+     */
+    public byte[] getObjectGraph();
 }

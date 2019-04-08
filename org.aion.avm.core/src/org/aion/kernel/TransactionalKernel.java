@@ -108,12 +108,20 @@ public class TransactionalKernel implements KernelInterface {
 
     @Override
     public void putObjectGraph(Address address, byte[] bytes) {
-
+        Consumer<KernelInterface> write = (kernel) -> {
+            kernel.putObjectGraph(address, bytes);
+        };
+        write.accept(writeCache);
+        writeLog.add(write);
     }
 
     @Override
     public byte[] getObjectGraph(Address address) {
-        return new byte[0];
+        byte[] result = this.writeCache.getObjectGraph(address);
+        if (null == result) {
+            result = this.parent.getObjectGraph(address);
+        }
+        return result;
     }
 
     @Override

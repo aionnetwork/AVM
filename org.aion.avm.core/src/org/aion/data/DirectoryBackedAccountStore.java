@@ -19,6 +19,7 @@ public class DirectoryBackedAccountStore implements IAccountStore {
     private static final String FILE_NAME_BALANCE = "balance";
     private static final String FILE_NAME_NONCE = "nonce";
     private static final String FILE_PREFIX_KEY = "key_";
+    private static final String FILE_GRAPH = "graph";
 
     private final File accountDirectory;
     public DirectoryBackedAccountStore(File accountDirectory) {
@@ -97,6 +98,16 @@ public class DirectoryBackedAccountStore implements IAccountStore {
             }
         }
         return result;
+    }
+
+    @Override
+    public void setObjectGraph(byte[] data) {
+        writeFile(FILE_GRAPH, data);
+    }
+
+    @Override
+    public byte[] getObjectGraph() {
+        return readFile(FILE_GRAPH);
     }
 
 

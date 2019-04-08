@@ -76,12 +76,12 @@ public class CachingKernel implements KernelInterface {
 
     @Override
     public void putObjectGraph(Address address, byte[] bytes) {
-
+        lazyCreateAccount(address.toBytes()).setObjectGraph(bytes);
     }
 
     @Override
     public byte[] getObjectGraph(Address address) {
-        return new byte[0];
+        return lazyCreateAccount(address.toBytes()).getObjectGraph();
     }
 
     @Override
