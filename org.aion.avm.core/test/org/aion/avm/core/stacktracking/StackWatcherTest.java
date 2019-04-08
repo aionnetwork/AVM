@@ -3,7 +3,6 @@ package org.aion.avm.core.stacktracking;
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.persistence.SingleInstanceSerializerTest;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.Helper;
@@ -55,7 +54,7 @@ public class StackWatcherTest {
         this.instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(this.instrumentation);
         this.runtimeSetup = Helpers.getSetupForLoader(classLoader);
-        InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, SingleInstanceSerializerTest.class.getClassLoader(), 1_000_000L, 1, null);
+        InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, TestResource.class.getClassLoader(), 1_000_000L, 1, null);
     }
 
     @After
