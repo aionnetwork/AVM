@@ -45,7 +45,7 @@ import org.aion.avm.internal.UncaughtException;
  */
 public class LoadedDApp {
     public final ClassLoader loader;
-    private final List<Class<?>> classes;
+    private final Class<?>[] sortedClasses;
     private final String originalMainClassName;
     // Note that this fieldCache is populated by the calls to ReflectionStructureCodec.
     private final ReflectedFieldCache fieldCache;
@@ -64,11 +64,14 @@ public class LoadedDApp {
      * Creates the LoadedDApp to represent the classes related to DApp at address.
      * 
      * @param loader The class loader to look up shape.
-     * @param classes The list of classes to populate (order must always be the same).
+     * @param classes The list of classes to populate.
      */
     public LoadedDApp(ClassLoader loader, List<Class<?>> classes, String originalMainClassName, boolean preserveDebuggability) {
         this.loader = loader;
-        this.classes = classes;
+        // Note that the storage system defines the classes as being sorted alphabetically.
+        this.sortedClasses = classes.stream()
+                .sorted((f1, f2) -> f1.getName().compareTo(f2.getName()))
+                .toArray(Class[]::new);
         this.originalMainClassName = originalMainClassName;
         this.fieldCache = new ReflectedFieldCache();
         this.preserveDebuggability = preserveDebuggability;
@@ -108,8 +111,8 @@ public class LoadedDApp {
         feeProcessor.readStaticDataFromStorage(preCallStaticData.getBillableSize());
         SerializedRepresentationCodec.Decoder decoder = new SerializedRepresentationCodec.Decoder(preCallStaticData);
         
-        // We will populate the classes, in-order (the order of the serialization/deserialization must always be the same).
-        for (Class<?> clazz : this.classes) {
+        // We populate the classes in alphabetical order.
+        for (Class<?> clazz : this.sortedClasses) {
             codec.deserializeClass(decoder, clazz);
         }
         return codec;
@@ -138,7 +141,7 @@ public class LoadedDApp {
      * @return The graph processor which has captured the state of the statics.
      */
     public ReentrantGraphProcessor replaceClassStaticsWithClones(IStorageFeeProcessor feeProcessor) {
-        ReentrantGraphProcessor processor = new ReentrantGraphProcessor(new ConstructorCache(this.loader), this.fieldCache, feeProcessor, this.classes);
+        ReentrantGraphProcessor processor = new ReentrantGraphProcessor(new ConstructorCache(this.loader), this.fieldCache, feeProcessor, this.sortedClasses);
         processor.captureAndReplaceStaticState();
         return processor;
     }
@@ -162,8 +165,8 @@ public class LoadedDApp {
                 instancesToWrite.add(t);
             }};
         
-        // We will serialize the classes, in-order (the order of the serialization/deserialization must always be the same).
-        for (Class<?> clazz : this.classes) {
+        // We serialize the classes in alphabetical order.
+        for (Class<?> clazz : this.sortedClasses) {
             codec.serializeClass(encoder, clazz, instanceSink);
         }
         
@@ -261,7 +264,7 @@ public class LoadedDApp {
      * long-term storage.
      */
     public void forceInitializeAllClasses() throws Throwable {
-        for (Class<?> clazz : this.classes) {
+        for (Class<?> clazz : this.sortedClasses) {
             try {
                 Class<?> initialized = Class.forName(clazz.getName(), true, this.loader);
                 // These must be the same instances we started with and they must have been loaded by this loader.
@@ -313,7 +316,7 @@ public class LoadedDApp {
      * Called before the DApp is about to be put into a cache.  This is so it can put itself into a "resumable" state.
      */
     public void cleanForCache() {
-        StaticClearer.nullAllStaticFields(this.classes, this.fieldCache);
+        StaticClearer.nullAllStaticFields(this.sortedClasses, this.fieldCache);
     }
 
 
@@ -367,7 +370,7 @@ public class LoadedDApp {
      */
     public void dumpTransformedByteCode(String path){
         AvmClassLoader appLoader = (AvmClassLoader) loader;
-        for (Class<?> clazz : this.classes){
+        for (Class<?> clazz : this.sortedClasses){
             byte[] bytecode = appLoader.getUserClassBytecode(clazz.getName());
             String output = path + "/" + clazz.getName() + ".class";
             Helpers.writeBytesToFile(bytecode, output);

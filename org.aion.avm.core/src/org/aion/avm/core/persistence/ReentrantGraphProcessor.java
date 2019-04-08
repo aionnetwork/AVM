@@ -44,7 +44,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
     private final ConstructorCache constructorCache;
     private final ReflectedFieldCache fieldCache;
     private final IStorageFeeProcessor feeProcessor;
-    private final List<Class<?>> classes;
+    private final Class<?>[] classes;
     
     // We need bidirectional identity maps:
     // -callee->caller for deserializing a callee object - it needs to lookup the caller source (although this could be managed by a field in the object).
@@ -68,7 +68,7 @@ public class ReentrantGraphProcessor implements LoopbackCodec.AutomaticSerialize
     private final PreLoadedDeserializer preLoadedDeserializer;
     private final IdentityHashMap<org.aion.avm.shadow.java.lang.Object, Integer> objectSizesLoadedForCallee;
 
-    public ReentrantGraphProcessor(ConstructorCache constructorCache, ReflectedFieldCache fieldCache, IStorageFeeProcessor feeProcessor, List<Class<?>> classes) {
+    public ReentrantGraphProcessor(ConstructorCache constructorCache, ReflectedFieldCache fieldCache, IStorageFeeProcessor feeProcessor, Class<?>[] classes) {
         this.constructorCache = constructorCache;
         this.fieldCache = fieldCache;
         this.feeProcessor = feeProcessor;

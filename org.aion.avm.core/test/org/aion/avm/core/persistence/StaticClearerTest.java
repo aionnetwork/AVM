@@ -1,8 +1,5 @@
 package org.aion.avm.core.persistence;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.Helper;
@@ -48,7 +45,7 @@ public class StaticClearerTest {
         ReflectionStructureCodecTarget.s_eight = 5.0d;
         ReflectionStructureCodecTarget.s_nine = new ReflectionStructureCodecTarget();
         
-        List<Class<?>> classes = Collections.singletonList(ReflectionStructureCodecTarget.class);
+        Class<?>[] classes = new Class[] { (ReflectionStructureCodecTarget.class) };
         StaticClearer.nullAllStaticFields(classes, new ReflectedFieldCache());
         
         // Prove that primitives are unchanged but the reference is null.

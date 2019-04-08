@@ -2,7 +2,6 @@ package org.aion.avm.core.persistence;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.List;
 
 import org.aion.avm.internal.RuntimeAssertionError;
 
@@ -13,7 +12,7 @@ import org.aion.avm.internal.RuntimeAssertionError;
  * NOTE:  The fieldCache provided MUST be populated.
  */
 public class StaticClearer {
-    public static void nullAllStaticFields(List<Class<?>> classes, ReflectedFieldCache fieldCache) {
+    public static void nullAllStaticFields(Class<?>[] classes, ReflectedFieldCache fieldCache) {
         for (Class<?> clazz : classes) {
             for (Field field : fieldCache.getDeclaredFieldsForClass(clazz)) {
                 // We only want static fields.
