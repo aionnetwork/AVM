@@ -38,6 +38,10 @@ public class RejectedClassException extends AvmException {
         throw new RejectedClassException("JCL implementation missing method: " + receiver + "#" + name + descriptor);
     }
 
+    public static void nameTooLong(String className) {
+        throw new RejectedClassException("Class name is too long: " + className);
+    }
+
 
     public RejectedClassException(String message) {
         super(message);

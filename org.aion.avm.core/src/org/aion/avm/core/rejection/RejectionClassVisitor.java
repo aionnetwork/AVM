@@ -1,5 +1,7 @@
 package org.aion.avm.core.rejection;
 
+import java.nio.charset.StandardCharsets;
+
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
@@ -24,6 +26,8 @@ import org.objectweb.asm.TypePath;
 public class RejectionClassVisitor extends ClassToolchain.ToolChainClassVisitor {
     // This will probably change, in the future, but we currently will only parse Java10 (version 54) classes.
     private static final int SUPPORTED_CLASS_VERSION = 54;
+    // TODO:  We eventually want to convert this to 255 - 1 (for "L" prefix) - max array dimensions but this shorter limit allows for more immediate testing.
+    private static final int MAX_UTF8_NAME_LENGTH = 127;
 
     // The names of the classes that the user defined in their JAR (note:  this does NOT include interfaces).
     private final PreRenameClassAccessRules preRenameClassAccessRules;
@@ -42,6 +46,9 @@ public class RejectionClassVisitor extends ClassToolchain.ToolChainClassVisitor 
         // Make sure that this is the version we can understand.
         if (SUPPORTED_CLASS_VERSION != version) {
             RejectedClassException.unsupportedClassVersion(version);
+        }
+        if (name.getBytes(StandardCharsets.UTF_8).length > MAX_UTF8_NAME_LENGTH) {
+            RejectedClassException.nameTooLong(name);
         }
         if (!this.preRenameClassAccessRules.canUserSubclass(superName)) {
             RejectedClassException.restrictedSuperclass(name, superName);
