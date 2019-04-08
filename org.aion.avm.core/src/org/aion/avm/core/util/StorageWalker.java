@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-import org.aion.avm.core.IExternalCapabilities;
 import org.aion.avm.core.types.ImmortalDappModule;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
@@ -63,7 +62,7 @@ public class StorageWalker {
      * @throws IllegalArgumentException A problem interpreting the data.
      * @throws IllegalAccessException A problem interpreting the data.
      */
-    public static void walkAllStaticsForDapp(IExternalCapabilities capabilities, PrintStream output, KernelInterface kernel, Address dappAddress) throws IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+    public static void walkAllStaticsForDapp(PrintStream output, KernelInterface kernel, Address dappAddress) throws IOException, NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         byte[] immortalDappJar = kernel.getCode(dappAddress);
         ImmortalDappModule app = ImmortalDappModule.readFromJar(immortalDappJar);
         Map<String, byte[]> allClasses = Helpers.mapIncludingHelperBytecode(app.classes, Helpers.loadDefaultHelperBytecode());
@@ -77,7 +76,7 @@ public class StorageWalker {
         InstrumentationHelpers.attachThread(instrumentation);
         IRuntimeSetup runtime = new Helper();
         InstrumentationHelpers.pushNewStackFrame(runtime, avmClassLoader, 1_000_000L, 1, null);
-        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(capabilities, kernel, dappAddress);
+        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, dappAddress);
         doReadEntireStorage(output, classLoader, objectGraph, alphabeticalContractClasses);
         InstrumentationHelpers.popExistingStackFrame(runtime);
         InstrumentationHelpers.detachThread(instrumentation);

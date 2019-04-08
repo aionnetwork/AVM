@@ -4,9 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
-import org.aion.avm.core.IExternalCapabilities;
 import org.aion.avm.core.NodeEnvironment;
-import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.persistence.keyvalue.KeyValueCodec;
 import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.util.Helpers;
@@ -34,7 +32,6 @@ public class ReflectionStructureCodecTest {
 
     private IInstrumentation instrumentation;
     private IRuntimeSetup runtimeSetup;
-    private IExternalCapabilities capabilities;
 
 
     @Before
@@ -46,7 +43,6 @@ public class ReflectionStructureCodecTest {
         InstrumentationHelpers.attachThread(this.instrumentation);
         this.runtimeSetup = new Helper();
         InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, ReflectionStructureCodecTarget.class.getClassLoader(), 1_000_000L, 1, null);
-        this.capabilities = new EmptyCapabilities();
     }
 
     @After
@@ -72,7 +68,7 @@ public class ReflectionStructureCodecTest {
         
         TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
-        KeyValueObjectGraph graph = new KeyValueObjectGraph(capabilities, kernel, address);
+        KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), null, FEE_PROCESSOR, graph);
         SerializedRepresentationCodec.Encoder encoder = new SerializedRepresentationCodec.Encoder();
         codec.serializeClass(encoder, ReflectionStructureCodecTarget.class, NULL_CONSUMER);
@@ -117,7 +113,7 @@ public class ReflectionStructureCodecTest {
         
         TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
-        KeyValueObjectGraph graph = new KeyValueObjectGraph(capabilities, kernel, address);
+        KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), null, FEE_PROCESSOR, graph);
         byte[] result = serializeSinceInstanceHelper(codec, target);
         // These are encoded in-order.  Some are obvious but we will explicitly decode the stub structure since it is harder to verify.
@@ -166,7 +162,7 @@ public class ReflectionStructureCodecTest {
         };
         TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
-        KeyValueObjectGraph graph = new KeyValueObjectGraph(capabilities, kernel, address);
+        KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         SerializedRepresentation extent = KeyValueCodec.decode(graph, expected);
         StandardFieldPopulator populator = new StandardFieldPopulator();
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph);
@@ -200,7 +196,7 @@ public class ReflectionStructureCodecTest {
         
         TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
-        KeyValueObjectGraph graph = new KeyValueObjectGraph(capabilities, kernel, address);
+        KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         // We want to verify that these instances only differ in their hashcodes and instanceIds for instance stubs.
         StandardFieldPopulator populator = new StandardFieldPopulator();
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph);
@@ -247,7 +243,7 @@ public class ReflectionStructureCodecTest {
         
         TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
-        KeyValueObjectGraph graph = new KeyValueObjectGraph(capabilities, kernel, address);
+        KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         // We want to verify that these instances only differ in their hashcodes and instanceIds for instance stubs.
         StandardFieldPopulator populator = new StandardFieldPopulator();
         ReflectionStructureCodec codec = new ReflectionStructureCodec(new ReflectedFieldCache(), populator, FEE_PROCESSOR, graph);
@@ -299,7 +295,7 @@ public class ReflectionStructureCodecTest {
         };
         TestingKernel kernel = new TestingKernel();
         Address address = Helpers.randomAddress();
-        KeyValueObjectGraph graph = new KeyValueObjectGraph(capabilities, kernel, address);
+        KeyValueObjectGraph graph = new KeyValueObjectGraph(kernel, address);
         SerializedRepresentation extent1 = KeyValueCodec.decode(graph, expected1);
         SerializedRepresentation extent2 = KeyValueCodec.decode(graph, expected2);
         StandardFieldPopulator populator = new StandardFieldPopulator();

@@ -179,7 +179,7 @@ public class AvmCLI {
         env.logLine("Account Balance : " + kernel.getBalance(toOpen));
     }
 
-    public static void exploreStorage(IExternalCapabilities capabilities, IEnvironment env, String storagePath, org.aion.types.Address dappAddress) {
+    public static void exploreStorage(IEnvironment env, String storagePath, org.aion.types.Address dappAddress) {
         // Create the PrintStream abstraction that walkAllStaticsForDapp expects.
         // (ideally, we would incrementally filter this but that could be a later improvement - current Dapps are very small).
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -190,7 +190,7 @@ public class AvmCLI {
         
         // Walk everything, treating unexpected exceptions as fatal.
         try {
-            StorageWalker.walkAllStaticsForDapp(capabilities, printer, kernel, dappAddress);
+            StorageWalker.walkAllStaticsForDapp(printer, kernel, dappAddress);
         } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | IOException e) {
             // This tool can fail out if something goes wrong.
             throw env.fail(e.getMessage());
@@ -263,7 +263,7 @@ public class AvmCLI {
                     RuntimeAssertionError.unreachable("This should be in the batching path");
                     break;
                 case EXPLORE:
-                    exploreStorage(capabilities, env, invocation.storagePath, org.aion.types.Address.wrap(Helpers.hexStringToBytes(command.contractAddress)));
+                    exploreStorage(env, invocation.storagePath, org.aion.types.Address.wrap(Helpers.hexStringToBytes(command.contractAddress)));
                     break;
                 case OPEN:
                     openAccount(env, invocation.storagePath, org.aion.types.Address.wrap(Helpers.hexStringToBytes(command.contractAddress)));

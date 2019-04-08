@@ -216,7 +216,7 @@ public class DAppCreator {
             TransformedDappModule transformedDapp = TransformedDappModule.fromTransformedClasses(transformedClasses, rawDapp.mainClass);
 
             // We can now construct the abstraction of the loaded DApp which has the machinery for the rest of the initialization.
-            IObjectGraphStore graphStore = new KeyValueObjectGraph(capabilities, kernel,dappAddress);
+            IObjectGraphStore graphStore = new KeyValueObjectGraph(kernel,dappAddress);
             dapp = DAppLoader.fromTransformed(transformedDapp, preserveDebuggability);
             
             // We start the nextHashCode at 1.
@@ -265,7 +265,6 @@ public class DAppCreator {
             result.setResultCode(AvmTransactionResult.Code.SUCCESS);
             result.setEnergyUsed(ctx.getTransaction().getEnergyLimit() - threadInstrumentation.energyLeft());
             result.setReturnData(dappAddress.toBytes());
-            result.setStorageRootHash(graphStore.simpleHashCode());
         } catch (OutOfEnergyException e) {
             if (verboseErrors) {
                 System.err.println("DApp deployment failed due to Out-of-Energy EXCEPTION: \"" + e.getMessage() + "\"");

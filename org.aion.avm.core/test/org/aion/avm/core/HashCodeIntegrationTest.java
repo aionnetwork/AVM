@@ -53,9 +53,6 @@ public class HashCodeIntegrationTest {
         AvmTransactionResult createResult = (AvmTransactionResult) avm.run(this.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(create, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
 
-        byte[] expStorageRootHash = Helpers.hexStringToBytes("000000030001006e56741711305625132b3b78387a78210956552034541b050d");
-        Assert.assertArrayEquals(expStorageRootHash, createResult.getStorageRootHash());
-
         Address contractAddr = new Address(createResult.getReturnData());
         // Store an object.
         int systemHash = callStatic(block, contractAddr, "persistNewObject");
@@ -73,9 +70,6 @@ public class HashCodeIntegrationTest {
         Transaction call = Transaction.call(deployer, org.aion.types.Address.wrap(contractAddr.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
         AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TransactionContext[] {TransactionContextImpl.forExternalTransaction(call, block)})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        // Both of the calls this test makes to this helper leave the data in the same state so we can check the hash, here.
-        byte[] expStorageRootHash = Helpers.hexStringToBytes("0000003d0001006e56741711305625132b3b78387a78210956552034541b0533");
-        Assert.assertArrayEquals(expStorageRootHash, result.getStorageRootHash());
         ABIDecoder decoder = new ABIDecoder(result.getReturnData());
         return decoder.decodeOneInteger();
     }

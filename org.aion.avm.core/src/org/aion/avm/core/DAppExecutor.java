@@ -26,7 +26,7 @@ public class DAppExecutor {
                             ReentrantDAppStack.ReentrantState stateToResume, TransactionTask task,
                             TransactionContext ctx, AvmTransactionResult result, boolean verboseErrors) {
         Address dappAddress = ctx.getDestinationAddress();
-        IObjectGraphStore graphStore = new KeyValueObjectGraph(capabilities, kernel, dappAddress);
+        IObjectGraphStore graphStore = new KeyValueObjectGraph(kernel, dappAddress);
         // Load the initial state of the environment.
         // (note that ContractEnvironmentState is immutable, so it is safe to just access the environment from a different invocation).
         ContractEnvironmentState initialState = (null != stateToResume)
@@ -87,7 +87,6 @@ public class DAppExecutor {
             result.setResultCode(AvmTransactionResult.Code.SUCCESS);
             result.setReturnData(ret);
             result.setEnergyUsed(ctx.getTransaction().getEnergyLimit() - threadInstrumentation.energyLeft());
-            result.setStorageRootHash(graphStore.simpleHashCode());
         } catch (OutOfEnergyException e) {
             if (verboseErrors) {
                 System.err.println("DApp execution failed due to Out-of-Energy EXCEPTION: \"" + e.getMessage() + "\"");

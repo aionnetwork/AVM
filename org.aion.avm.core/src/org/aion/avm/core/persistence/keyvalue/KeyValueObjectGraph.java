@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.aion.avm.core.IExternalCapabilities;
 import org.aion.avm.core.persistence.ClassNode;
 import org.aion.avm.core.persistence.ConstantNode;
 import org.aion.avm.core.persistence.ConstructorCache;
@@ -27,7 +26,6 @@ import org.aion.vm.api.interfaces.KernelInterface;
 public class KeyValueObjectGraph implements IObjectGraphStore {
     private static final long HIGH_RANGE_BIAS = 1_000_000_000L;
 
-    private final IExternalCapabilities capabilities;
     private final Map<Long, KeyValueNode> idToNodeMap;
     private final KernelInterface store;
     private final Address address;
@@ -35,19 +33,16 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
     // Tells us which half of the semi-space we are in:  0L or HIGH_RANGE_BIAS.
     // Note that this instanceId is used for segmented addressing, but is not stored in the stored data.
     private long instanceIdBias;
-    private byte[] deltaHash;
     // We store the initial root we read for the delta hash computation.
     private SerializedRepresentation initialRootRepresentation;
     private ConstructorCache constructorCache;
     private IDeserializer logicalDeserializer;
     private Function<IRegularNode, IPersistenceToken> tokenBuilder;
 
-    public KeyValueObjectGraph(IExternalCapabilities capabilities, KernelInterface store, Address address) {
-        this.capabilities = capabilities;
+    public KeyValueObjectGraph(KernelInterface store, Address address) {
         this.idToNodeMap = new HashMap<>();
         this.store = store;
         this.address = address;
-        this.deltaHash = new byte[32];
 
         // We will scoop the nextInstanceId out of our hidden key.
         byte[] rawData = this.store.getStorage(this.address, StorageKeys.INTERNAL_DATA);
@@ -55,7 +50,6 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
             StreamingPrimitiveCodec.Decoder decoder = new StreamingPrimitiveCodec.Decoder(rawData);
             this.nextInstanceId = decoder.decodeLong();
             this.instanceIdBias = decoder.decodeLong();
-            decoder.decodeBytesInto(this.deltaHash);
         } else {
             // This must be new.
             this.nextInstanceId = 1L;
@@ -98,18 +92,6 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
         byte[] rootBytes = KeyValueCodec.encode(root);
         RuntimeAssertionError.assertTrue(null != rootBytes);
         this.store.putStorage(this.address, StorageKeys.CLASS_STATICS, rootBytes);
-
-
-        if (null != this.initialRootRepresentation) {
-            byte[] initialRootHash = getConsensusHashForRepresentation(this.initialRootRepresentation);
-            for (int i = 0; i < this.deltaHash.length; ++i) {
-                this.deltaHash[i] ^= initialRootHash[i];
-            }
-        }
-        byte[] rootHash = getConsensusHashForRepresentation(root);
-        for (int i = 0; i < this.deltaHash.length; ++i) {
-            this.deltaHash[i] ^= rootHash[i];
-        }
     }
 
     @Override
@@ -155,14 +137,8 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
         StreamingPrimitiveCodec.Encoder encoder = new StreamingPrimitiveCodec.Encoder();
         encoder.encodeLong(this.nextInstanceId);
         encoder.encodeLong(this.instanceIdBias);
-        encoder.encodeBytes(this.deltaHash);
         byte[] rawData = encoder.toBytes();
         this.store.putStorage(this.address, StorageKeys.INTERNAL_DATA, rawData);
-    }
-
-    @Override
-    public byte[] simpleHashCode() {
-        return this.deltaHash;
     }
 
     @Override
@@ -195,45 +171,12 @@ public class KeyValueObjectGraph implements IObjectGraphStore {
     public void storeDataForInstance(long instanceId, SerializedRepresentation original, SerializedRepresentation updated) {
         byte[] data = KeyValueCodec.encode(updated);
         this.store.putStorage(this.address, StorageKeys.forInstance(instanceId + this.instanceIdBias), data);
-
-        if (null != original) {
-            byte[] originalHash = getConsensusHashForRepresentation(original);
-            for (int i = 0; i < this.deltaHash.length; ++i) {
-                this.deltaHash[i] ^= originalHash[i];
-            }
-        }
-        byte[] updatedHash = getConsensusHashForRepresentation(updated);
-        for (int i = 0; i < this.deltaHash.length; ++i) {
-            this.deltaHash[i] ^= updatedHash[i];
-        }
     }
 
-    private byte[] getConsensusHashForRepresentation(SerializedRepresentation representation) {
-        // Serialize this to a byte array.
-        byte[] dataToHash = new byte[representation.references.length * Integer.BYTES + representation.data.length];
-        int index = 0;
-        for (INode ref : representation.references) {
-            int hash = (null != ref)
-                    ? ref.getIdentityHashCode()
-                    : 0;
-            writeIntToBuffer(dataToHash, index, hash);
-            index += Integer.BYTES;
-        }
-        System.arraycopy(representation.data, 0, dataToHash, index, representation.data.length);
-
-        return this.capabilities.keccak256(dataToHash);
-    }
 
     private SerializedRepresentation loadRootOnly() {
         byte[] rootBytes = this.store.getStorage(this.address, StorageKeys.CLASS_STATICS);
         RuntimeAssertionError.assertTrue(null != rootBytes);
         return KeyValueCodec.decode(this, rootBytes);
-    }
-
-    private void writeIntToBuffer(byte[] buffer, int offset, int toEncode) {
-        buffer[offset] = (byte)(0xff & (toEncode >> 24));
-        buffer[offset + 1] = (byte)(0xff & (toEncode >> 16));
-        buffer[offset + 2] = (byte)(0xff & (toEncode >> 8));
-        buffer[offset + 3] = (byte)(0xff & toEncode);
     }
 }

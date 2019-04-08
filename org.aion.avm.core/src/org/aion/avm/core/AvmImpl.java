@@ -1,6 +1,5 @@
 package org.aion.avm.core;
 
-import org.aion.avm.core.persistence.IObjectGraphStore;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
 
@@ -365,7 +364,7 @@ public class AvmImpl implements AvmInternal {
                 if (null == dapp) {
                     // If we didn't find it there, just load it.
                     try {
-                        dapp = DAppLoader.loadFromGraph(new KeyValueObjectGraph(capabilities, thisTransactionKernel, recipient).getCode(), this.preserveDebuggability);
+                        dapp = DAppLoader.loadFromGraph(new KeyValueObjectGraph(thisTransactionKernel, recipient).getCode(), this.preserveDebuggability);
 
                         // If the dapp is freshly loaded, we set the block num
                         if (null != dapp){
