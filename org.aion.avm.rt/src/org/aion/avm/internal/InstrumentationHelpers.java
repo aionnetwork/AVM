@@ -1,8 +1,6 @@
 package org.aion.avm.internal;
 
 
-import java.util.IdentityHashMap;
-
 /**
  * Helpers related to how we attach or otherwise interact with IInstrumentation.
  */
@@ -16,7 +14,7 @@ public class InstrumentationHelpers {
         IInstrumentation.attachedThreadInstrumentation.remove();
     }
 
-    public static void pushNewStackFrame(IRuntimeSetup runtimeSetup, ClassLoader contractLoader, long energyLeft, int nextHashCode, IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>> classWrappers) {
+    public static void pushNewStackFrame(IRuntimeSetup runtimeSetup, ClassLoader contractLoader, long energyLeft, int nextHashCode, InternedClasses classWrappers) {
         // Get the instrumentation for this thread (must be attached).
         IInstrumentation instrumentation = IInstrumentation.attachedThreadInstrumentation.get();
         RuntimeAssertionError.assertTrue(null != instrumentation);

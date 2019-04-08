@@ -33,9 +33,9 @@ public class DAppExecutor {
                 ? stateToResume.getEnvironment()
                 : ContractEnvironmentState.loadFromGraph(graphStore);
 
-        IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>> initialClassWrappers = (null != stateToResume)
+        InternedClasses initialClassWrappers = (null != stateToResume)
             ? stateToResume.getInternedClassWrappers()
-            : new IdentityHashMap<java.lang.Class<?>, org.aion.avm.shadow.java.lang.Class<?>>();
+            : new InternedClasses();
 
         // Note that we need to store the state of this invocation on the reentrant stack in case there is another call into the same app.
         // This is required so that the call() mechanism can access it to save/reload its ContractEnvironmentState and so that the underlying

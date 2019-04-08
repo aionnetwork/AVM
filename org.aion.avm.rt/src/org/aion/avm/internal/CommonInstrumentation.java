@@ -28,7 +28,7 @@ public class CommonInstrumentation implements IInstrumentation {
         this.persistenceTokenField.setAccessible(true);
     }
 
-    public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode, IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>> classWrappers) {
+    public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode, InternedClasses classWrappers) {
         RuntimeAssertionError.assertTrue(null != contractLoader);
         FrameState newFrame = new FrameState();
         newFrame.lateLoader = contractLoader;
@@ -73,17 +73,13 @@ public class CommonInstrumentation implements IInstrumentation {
         org.aion.avm.shadow.java.lang.Class<T> wrapper = null;
         if (null != input) {
             wrapper = (org.aion.avm.shadow.java.lang.Class<T>) this.currentFrame.internedClassWrappers.get(input);
-            if (null == wrapper) {
-                wrapper = new org.aion.avm.shadow.java.lang.Class<T>(input);
-                // We treat classes much like constants, so add the IPersistenceToken for classes so that the persistence model knows how to ignore this.
-                try {
-                    persistenceTokenField.set(wrapper, new ClassPersistenceToken(input.getName()));
-                } catch (IllegalArgumentException | IllegalAccessException e) {
-                    // This is something statically wrong with the shadow JCL.
-                    RuntimeAssertionError.unexpected(e);
-                }
-                
-                this.currentFrame.internedClassWrappers.put(input, wrapper);
+            // NOTE: This is only temporarily set on every call - this will be removed in the forthcoming storage change.
+            // We treat classes much like constants, so add the IPersistenceToken for classes so that the persistence model knows how to ignore this.
+            try {
+                persistenceTokenField.set(wrapper, new ClassPersistenceToken(input.getName()));
+            } catch (IllegalArgumentException | IllegalAccessException e) {
+                // This is something statically wrong with the shadow JCL.
+                RuntimeAssertionError.unexpected(e);
             }
         }
         return wrapper;
@@ -328,7 +324,7 @@ public class CommonInstrumentation implements IInstrumentation {
          * The persistence layer also knows that classes are encoded differently so it will correctly resolve instance through this interning map.
          */
         private IdentityHashMap<String, org.aion.avm.shadow.java.lang.String> internedStringWrappers;
-        private IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>> internedClassWrappers;
+        private InternedClasses internedClassWrappers;
 
         // Set forceExitState to non-null to re-throw at the entry to every block (forces the contract to exit).
         private AvmThrowable forceExitState;

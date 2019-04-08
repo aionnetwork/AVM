@@ -1,6 +1,5 @@
 package org.aion.avm.internal;
 
-import java.util.IdentityHashMap;
 
 /**
  * The interface required to support the Helper injected class which provides the global callout points from within
@@ -12,7 +11,7 @@ public interface IInstrumentation {
     // The instrumentation instance associated with the given thread and also installed into the Helper of the currently-running DApp.
     public static final ThreadLocal<IInstrumentation> attachedThreadInstrumentation = new ThreadLocal<>();
 
-    void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode, IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>> classWrappers);
+    void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode, InternedClasses classWrappers);
     void exitCurrentFrame();
 
     <T> org.aion.avm.shadow.java.lang.Class<T> wrapAsClass(Class<T> input);

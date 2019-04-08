@@ -55,7 +55,7 @@ public class ClassShadowingTest {
         TestingInstrumentation instrumentation = new TestingInstrumentation(new CommonInstrumentation());
         InstrumentationHelpers.attachThread(instrumentation);
         IRuntimeSetup runtime = Helpers.getSetupForLoader(loader);
-        InstrumentationHelpers.pushNewStackFrame(runtime, loader, 1_000_000L, 1, new IdentityHashMap<java.lang.Class<?>, org.aion.avm.shadow.java.lang.Class<?>>());
+        InstrumentationHelpers.pushNewStackFrame(runtime, loader, 1_000_000L, 1, new InternedClasses());
         Class<?> clazz = loader.loadUserClassByOriginalName(className, false);
         Object obj = clazz.getConstructor().newInstance();
 
@@ -105,7 +105,7 @@ public class ClassShadowingTest {
         CommonInstrumentation instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
         IRuntimeSetup runtime = Helpers.getSetupForLoader(loader);
-        InstrumentationHelpers.pushNewStackFrame(runtime, loader, 1_000_000L, 1, new IdentityHashMap<java.lang.Class<?>, org.aion.avm.shadow.java.lang.Class<?>>());
+        InstrumentationHelpers.pushNewStackFrame(runtime, loader, 1_000_000L, 1, new InternedClasses());
 
         Class<?> clazz = loader.loadClass(mappedClassName);
         Object obj = clazz.getConstructor().newInstance();
@@ -145,7 +145,7 @@ public class ClassShadowingTest {
         CommonInstrumentation instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
         IRuntimeSetup runtime = Helpers.getSetupForLoader(loader);
-        InstrumentationHelpers.pushNewStackFrame(runtime, loader, 1_000_000L, 1, new IdentityHashMap<java.lang.Class<?>, org.aion.avm.shadow.java.lang.Class<?>>());
+        InstrumentationHelpers.pushNewStackFrame(runtime, loader, 1_000_000L, 1, new InternedClasses());
         Class<?> clazz = loader.loadUserClassByOriginalName(className, false);
 
         Method method = clazz.getMethod(NamespaceMapper.mapMethodName("getStringForNull"));
@@ -248,7 +248,7 @@ public class ClassShadowingTest {
             this.realImplementation = realImplementation;
         }
         @Override
-        public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode, IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>> classWrappers) {
+        public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode, InternedClasses classWrappers) {
             this.realImplementation.enterNewFrame(contractLoader, energyLeft, nextHashCode, classWrappers);
         }
         @Override

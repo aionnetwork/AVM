@@ -3,7 +3,6 @@ package org.aion.avm.core.persistence;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.aion.avm.core.NodeEnvironment;
@@ -16,6 +15,7 @@ import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
+import org.aion.avm.internal.InternedClasses;
 import org.aion.kernel.TestingKernel;
 import org.aion.types.Address;
 import org.junit.After;
@@ -44,7 +44,7 @@ public class LoadedDAppTest {
         this.instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(this.instrumentation);
         this.runtimeSetup = Helpers.getSetupForLoader(this.loader);
-        InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, this.loader, 1_000_000L, 1, new IdentityHashMap<java.lang.Class<?>, org.aion.avm.shadow.java.lang.Class<?>>());
+        InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, this.loader, 1_000_000L, 1, new InternedClasses());
 
         // Clear statics, since our tests interact with them.
         clearStaticState();

@@ -1,6 +1,5 @@
 package org.aion.avm.core;
 
-import java.util.IdentityHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.aion.avm.internal.*;
 
@@ -26,7 +25,7 @@ public class MockFailureInstrumentationFactory implements IInstrumentationFactor
         CommonInstrumentation underlying = new CommonInstrumentation();
         return new IInstrumentation() {
             @Override
-            public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode, IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>> classWrappers) {
+            public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode, InternedClasses classWrappers) {
                 underlying.enterNewFrame(contractLoader, energyLeft, nextHashCode, classWrappers);
             }
             @Override

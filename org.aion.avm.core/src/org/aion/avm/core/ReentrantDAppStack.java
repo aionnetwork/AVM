@@ -7,6 +7,7 @@ import java.util.IdentityHashMap;
 import org.aion.avm.core.persistence.ContractEnvironmentState;
 import org.aion.avm.core.persistence.ISuspendableInstanceLoader;
 import org.aion.avm.core.persistence.LoadedDApp;
+import org.aion.avm.internal.InternedClasses;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.types.Address;
 
@@ -78,9 +79,9 @@ public class ReentrantDAppStack {
         public final LoadedDApp dApp;
         private ISuspendableInstanceLoader instanceLoader;
         private ContractEnvironmentState environment;
-        private IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>> internedClassWrappers;
+        private InternedClasses internedClassWrappers;
 
-        public ReentrantState(Address address, LoadedDApp dApp, ContractEnvironmentState environment, IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>> internedClassWrappers) {
+        public ReentrantState(Address address, LoadedDApp dApp, ContractEnvironmentState environment, InternedClasses internedClassWrappers) {
             this.address = address;
             this.dApp = dApp;
             this.environment = environment;
@@ -91,7 +92,7 @@ public class ReentrantDAppStack {
             return this.environment;
         }
 
-        public IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>> getInternedClassWrappers() {
+        public InternedClasses getInternedClassWrappers() {
             return this.internedClassWrappers;
         }
 

@@ -1,6 +1,5 @@
 package org.aion.avm.core;
 
-import java.util.IdentityHashMap;
 import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.IBlockchainRuntime;
@@ -10,6 +9,7 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
+import org.aion.avm.internal.InternedClasses;
 import org.aion.avm.internal.RuntimeAssertionError;
 
 import java.util.Collections;
@@ -57,7 +57,7 @@ public class SimpleAvm {
         this.runtimeSetup = Helpers.getSetupForLoader(this.loader);
         this.instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(this.instrumentation);
-        InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, this.loader, energyLimit, 1, new IdentityHashMap<Class<?>, org.aion.avm.shadow.java.lang.Class<?>>());
+        InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, this.loader, energyLimit, 1, new InternedClasses());
     }
 
     public void attachBlockchainRuntime(IBlockchainRuntime rt) {
