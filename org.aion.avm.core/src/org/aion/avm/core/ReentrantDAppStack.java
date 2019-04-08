@@ -3,9 +3,6 @@ package org.aion.avm.core;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import java.util.IdentityHashMap;
-import org.aion.avm.core.persistence.ContractEnvironmentState;
-import org.aion.avm.core.persistence.ISuspendableInstanceLoader;
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.internal.InternedClasses;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -29,10 +26,6 @@ public class ReentrantDAppStack {
     public void pushState(ReentrantState state) {
         RuntimeAssertionError.assertTrue(null != state);
         
-        // Deactivate any existing "active" instance loader.
-        if (!this.stack.isEmpty()) {
-            this.stack.peek().instanceLoader.loaderDidBecomeInactive();
-        }
         this.stack.push(state);
     }
 
@@ -66,10 +59,6 @@ public class ReentrantDAppStack {
                 ? null
                 : this.stack.pop();
         
-        // Activate any instance loader under the running one.
-        if (!this.stack.isEmpty()) {
-            this.stack.peek().instanceLoader.loaderDidBecomeActive();
-        }
         return state;
     }
 
@@ -77,32 +66,26 @@ public class ReentrantDAppStack {
     public static class ReentrantState {
         public final Address address;
         public final LoadedDApp dApp;
-        private ISuspendableInstanceLoader instanceLoader;
-        private ContractEnvironmentState environment;
+        private int nextHashCode;
         private InternedClasses internedClassWrappers;
 
-        public ReentrantState(Address address, LoadedDApp dApp, ContractEnvironmentState environment, InternedClasses internedClassWrappers) {
+        public ReentrantState(Address address, LoadedDApp dApp, int nextHashCode, InternedClasses internedClassWrappers) {
             this.address = address;
             this.dApp = dApp;
-            this.environment = environment;
+            this.nextHashCode = nextHashCode;
             this.internedClassWrappers = internedClassWrappers;
         }
         
-        public ContractEnvironmentState getEnvironment() {
-            return this.environment;
+        public int getNextHashCode() {
+            return this.nextHashCode;
         }
 
         public InternedClasses getInternedClassWrappers() {
             return this.internedClassWrappers;
         }
 
-        public void updateEnvironment(int nextHashCode) {
-            this.environment = new ContractEnvironmentState(nextHashCode);
-        }
-        
-        public void setInstanceLoader(ISuspendableInstanceLoader instanceLoader) {
-            RuntimeAssertionError.assertTrue(null == this.instanceLoader);
-            this.instanceLoader = instanceLoader;
+        public void updateNextHashCode(int nextHashCode) {
+            this.nextHashCode = nextHashCode;
         }
     }
 }

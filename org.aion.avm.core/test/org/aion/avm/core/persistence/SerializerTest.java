@@ -1,6 +1,8 @@
 package org.aion.avm.core.persistence;
 
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.IObjectDeserializer;
+import org.aion.avm.internal.IObjectSerializer;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.junit.Assert;
 import org.junit.Before;
@@ -24,8 +26,8 @@ public class SerializerTest {
 
     @Before
     public void setup() throws Exception {
-        Method serializeSelf = TargetRoot.class.getMethod("serializeSelf", Class.class, ByteBufferObjectSerializer.class);
-        Method deserializeSelf = TargetRoot.class.getMethod("deserializeSelf", Class.class, ByteBufferObjectDeserializer.class);
+        Method serializeSelf = TargetRoot.class.getMethod("serializeSelf", Class.class, IObjectSerializer.class);
+        Method deserializeSelf = TargetRoot.class.getMethod("deserializeSelf", Class.class, IObjectDeserializer.class);
         Field readIndex = TargetRoot.class.getField("readIndex");
         this.cache = new SortedFieldCache(SerializerTest.class.getClassLoader(), serializeSelf, deserializeSelf, readIndex);
     }

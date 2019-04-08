@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.aion.avm.internal.IDeserializer;
+import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.RuntimeAssertionError;
 
 
@@ -106,12 +108,11 @@ public class SortedFieldCache {
             }
             this.internalNameClasses.put(internalClassName, clazz);
         }
-        // We define the Void class, since we just need to define a constructor that the user can't hook
-        // into (and their references to this would be mapped to shadow).
+        // NOTE:  We will temporarily use IDeserializer and IPersistenceToken but these will be changed, later.
         try {
-            Constructor<?> constructor = clazz.getConstructor(Void.class, int.class);
+            Constructor<?> constructor = clazz.getConstructor(IDeserializer.class, IPersistenceToken.class);
             constructor.setAccessible(true);
-            return constructor.newInstance((Void)null, readIndex);
+            return constructor.newInstance((IDeserializer)null, new IPersistenceToken(readIndex));
         } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             // We can't fail to find this since the type is datastore-safe.
             throw RuntimeAssertionError.unexpected(e);

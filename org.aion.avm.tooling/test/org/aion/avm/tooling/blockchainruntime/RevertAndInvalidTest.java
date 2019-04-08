@@ -42,7 +42,8 @@ public class RevertAndInvalidTest {
         assertTrue(energyLimit > txResult.getEnergyUsed());
         assertTrue(0 < txResult.getEnergyRemaining());
 
-        assertArrayEquals(new byte[]{0,0,0,0, 0,0,0,4, 0,0,0,0}, avmRule.kernel.getStorage(org.aion.types.Address.wrap(dappAddress.unwrap()), StorageKeys.CLASS_STATICS));
+        // Next hash code is 1 and the value is unchanged at 0.
+        assertArrayEquals(new byte[]{0,0,0,1, 0,0,0,0}, avmRule.kernel.getObjectGraph(org.aion.types.Address.wrap(dappAddress.unwrap())));
     }
 
     @Test
@@ -53,13 +54,7 @@ public class RevertAndInvalidTest {
         assertEquals(energyLimit, txResult.getEnergyUsed());
         assertEquals(0, txResult.getEnergyRemaining());
 
-        assertArrayEquals(new byte[]{0,0,0,0, 0,0,0,4, 0,0,0,0}, avmRule.kernel.getStorage(org.aion.types.Address.wrap(dappAddress.unwrap()), StorageKeys.CLASS_STATICS));
-    }
-
-    /**
-     * Note that this data is copied from org.aion.avm.core.persistence.keyvalue.StorageKeys.
-     */
-    private static class StorageKeys {
-        public static final byte[] CLASS_STATICS = new byte[] {11,12,13,14,15,16,17,18,19,10};
+        // Next hash code is 1 and the value is unchanged at 0.
+        assertArrayEquals(new byte[]{0,0,0,1, 0,0,0,0}, avmRule.kernel.getObjectGraph(org.aion.types.Address.wrap(dappAddress.unwrap())));
     }
 }

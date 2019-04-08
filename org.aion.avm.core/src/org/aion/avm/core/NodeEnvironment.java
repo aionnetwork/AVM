@@ -414,13 +414,11 @@ public class NodeEnvironment {
     }
 
     private void setConstantInstanceId(Map<Integer, org.aion.avm.shadow.java.lang.Object> constantMap, org.aion.avm.shadow.java.lang.Object object, int identityHashCode) {
-        object.persistenceToken = new ConstantPersistenceToken(identityHashCode);
         object.updateHashCodeForConstant(identityHashCode);
         constantMap.put(identityHashCode, object);
     }
 
     private void installConstantClass(Map<Integer, org.aion.avm.shadow.java.lang.Object> constantMap, org.aion.avm.shadow.java.lang.Class instance, int constantId) {
-        instance.persistenceToken = new ConstantPersistenceToken(constantId);
         constantMap.put(constantId, instance);
     }
 

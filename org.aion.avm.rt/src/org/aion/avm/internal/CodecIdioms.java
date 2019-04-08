@@ -52,7 +52,7 @@ public final class CodecIdioms {
         int length = deserializer.readInt();
         boolean[] array = new boolean[length];
         for (int i = 0; i < length; ++i) {
-            array[i] = (deserializer.readByte() == 0) ? false : true;
+            array[i] = deserializer.readBoolean();
         }
         return array;
     }
@@ -61,7 +61,7 @@ public final class CodecIdioms {
         // TODO:  We probably want faster array copies.
         serializer.writeInt(array.length);
         for (int i = 0; i < array.length; ++i) {
-            serializer.writeByte((byte) (array[i] ? 1 : 0));
+            serializer.writeBoolean(array[i]);
         }
     }
 }

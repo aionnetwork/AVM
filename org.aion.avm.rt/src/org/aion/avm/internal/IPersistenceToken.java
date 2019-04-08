@@ -2,7 +2,15 @@ package org.aion.avm.internal;
 
 
 /**
- * Used as the opaque token to associated an instance with its location in storage or in a parent heap (in the reentrant case).
+ * NOTE:  Temporarily used as a wrapper for the readIndex so we don't need to update all the constructors
+ * in the shadow JCL and generated code in the same commit which completely changes persistence
+ * functionality.
+ * This split keeps this commit more focused.
+ * That said, this in-between point is never meant to be long-lived.
  */
-public interface IPersistenceToken {
+public class IPersistenceToken {
+    public final int readIndex;
+    public IPersistenceToken(int readIndex) {
+        this.readIndex = readIndex;
+    }
 }

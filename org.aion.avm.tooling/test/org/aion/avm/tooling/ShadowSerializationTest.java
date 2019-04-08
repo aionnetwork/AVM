@@ -5,7 +5,6 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.tooling.deploy.JarOptimizer;
 import avm.Address;
-import org.aion.avm.core.InstrumentationBasedStorageFees;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
@@ -170,7 +169,7 @@ public class ShadowSerializationTest {
         while (0 == hash) {
             hash = getHashSuccessWithLimit(contractAddr, "JavaLang", energyLimit);
             // Allow at most one more read to succeed on the next attempt.
-            energyLimit += InstrumentationBasedStorageFees.FIXED_READ_COST;
+            energyLimit += 1_000;
         }
         Assert.assertEquals(firstHash, hash);
     }
@@ -194,7 +193,7 @@ public class ShadowSerializationTest {
         while (0 == hash) {
             hash = getHashSuccessWithLimit(contractAddr, "JavaMath", energyLimit);
             // Allow at most one more read to succeed on the next attempt.
-            energyLimit += InstrumentationBasedStorageFees.FIXED_READ_COST;
+            energyLimit += 1_000;
         }
         Assert.assertEquals(firstHash, hash);
     }
@@ -218,7 +217,7 @@ public class ShadowSerializationTest {
         while (0 == hash) {
             hash = getHashSuccessWithLimit(contractAddr, "Api", energyLimit);
             // Allow at most one more read to succeed on the next attempt.
-            energyLimit += InstrumentationBasedStorageFees.FIXED_READ_COST;
+            energyLimit += 1_000;
         }
         Assert.assertEquals(firstHash, hash);
     }

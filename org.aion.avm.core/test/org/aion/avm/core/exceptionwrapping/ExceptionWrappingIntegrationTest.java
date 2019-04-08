@@ -26,7 +26,7 @@ public class ExceptionWrappingIntegrationTest {
     // These tests work by throwing an exception after a certain number of calls to chargeEnergy
     // Currently, deploying the test class and userlib ABI makes around 70 and 100 calls to chargeEnergy for the 2 targets
     // Any changes that cause the number of chargeEnergy calls to change, such as changing the ABI might cause this test to fail, in which case the number needs to be updated
-    private final int persistentExceptionDeploymentEnergyCalls = 70;
+    private final int persistentExceptionDeploymentEnergyCalls = 30;
     private final int attackExceptionHandlingTargetDeploymentEnergyCalls = 100;
     @Test
     public void testExceptionPersistence() throws Exception {

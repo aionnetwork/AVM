@@ -7,17 +7,12 @@ import java.util.Map;
 
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
-import org.aion.avm.core.persistence.keyvalue.StorageKeys;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.core.util.NullFeeProcessor;
 import org.aion.avm.internal.CommonInstrumentation;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.InternedClasses;
-import org.aion.kernel.TestingKernel;
-import org.aion.types.Address;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -25,9 +20,8 @@ import org.junit.Test;
 
 
 public class LoadedDAppTest {
-    // We don't verify fees at this time so just use the "null" utility processor.
-    private static NullFeeProcessor FEE_PROCESSOR = new NullFeeProcessor();
-
+    private static final int MAX_GRAPH_SIZE = 1000;
+    
     private IInstrumentation instrumentation;
     private AvmClassLoader loader;
     private IRuntimeSetup runtimeSetup;
@@ -78,57 +72,51 @@ public class LoadedDAppTest {
         LoadedDAppTarget.s_seven = 5;
         LoadedDAppTarget.s_eight = 5.0d;
 
-        TestingKernel kernel = new TestingKernel();
-        Address address = Helpers.randomAddress();
-        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
         LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName(), this.preserveDebuggability);
-        ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
-        dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
-        byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
+        byte[] result = dapp.saveEntireGraph(1, MAX_GRAPH_SIZE);
         String expectedHex = ""
-                // reference list size
-                + "00000002"
-                //ReflectionStructureCodecTarget.s_nine (null)
-                + "00000000"
-                //LoadedDAppTarget.s_nine (null)
-                + "00000000"
-                
-                // primitives:
-                + "0000003c"
-                //s_one
-                + "01"
-                //s_two
-                + "05"
-                //s_three
-                + "0005"
-                //s_four
-                + "0005"
-                //s_five
-                + "00000005"
-                //s_six
-                + "40a00000"
-                //s_seven
-                + "0000000000000005"
-                //s_eight
-                + "4014000000000000"
-                
+                // hashcode
+                + "00000001"
                 // LoadedDAppTarget
-                //s_one
-                + "01"
-                //s_two
-                + "05"
-                //s_three
-                + "0005"
-                //s_four
-                + "0005"
-                //s_five
-                + "00000005"
-                //s_six
-                + "40a00000"
-                //s_seven
-                + "0000000000000005"
-                //s_eight
+                // (alphabetically sorted)
+                // double s_eight
                 + "4014000000000000"
+                // int s_five
+                + "00000005"
+                // char s_four
+                + "0005"
+                // instance s_nine - null
+                + "00"
+                // boolean s_one
+                + "01"
+                // long s_seven
+                + "0000000000000005"
+                // float s_six
+                + "40a00000"
+                // short s_three
+                + "0005"
+                // byte s_two
+                + "05"
+                // ReflectionStructureCodecTarget
+                // (alphabetically sorted)
+                // double s_eight
+                + "4014000000000000"
+                // int s_five
+                + "00000005"
+                // char s_four
+                + "0005"
+                // instance s_nine - null
+                + "00"
+                // boolean s_one
+                + "01"
+                // long s_seven
+                + "0000000000000005"
+                // float s_six
+                + "40a00000"
+                // short s_three
+                + "0005"
+                // byte s_two
+                + "05"
                 ;
         byte[] expected = Helpers.hexStringToBytes(expectedHex);
         Assert.assertArrayEquals(expected, result);
@@ -140,58 +128,54 @@ public class LoadedDAppTest {
     @Test
     public void deserializeClasses() {
         String expectedHex = ""
-                // reference list size
-                + "00000002"
-                //ReflectionStructureCodecTarget.s_nine (null)
-                + "00000000"
-                //LoadedDAppTarget.s_nine (null)
-                + "00000000"
-                
-                // primitives:
-                + "0000003c"
-                //s_one
-                + "01"
-                //s_two
-                + "05"
-                //s_three
-                + "0005"
-                //s_four
-                + "0005"
-                //s_five
-                + "00000005"
-                //s_six
-                + "40a00000"
-                //s_seven
-                + "0000000000000005"
-                //s_eight
-                + "4014000000000000"
-                
+                // hashcode
+                + "00000001"
                 // LoadedDAppTarget
-                //s_one
-                + "01"
-                //s_two
-                + "05"
-                //s_three
-                + "0005"
-                //s_four
-                + "0005"
-                //s_five
-                + "00000005"
-                //s_six
-                + "40a00000"
-                //s_seven
-                + "0000000000000005"
-                //s_eight
+                // (alphabetically sorted)
+                // double s_eight
                 + "4014000000000000"
+                // int s_five
+                + "00000005"
+                // char s_four
+                + "0005"
+                // instance s_nine - null
+                + "00"
+                // boolean s_one
+                + "01"
+                // long s_seven
+                + "0000000000000005"
+                // float s_six
+                + "40a00000"
+                // short s_three
+                + "0005"
+                // byte s_two
+                + "05"
+                // ReflectionStructureCodecTarget
+                // (alphabetically sorted)
+                // double s_eight
+                + "4014000000000000"
+                // int s_five
+                + "00000005"
+                // char s_four
+                + "0005"
+                // instance s_nine - null
+                + "00"
+                // boolean s_one
+                + "01"
+                // long s_seven
+                + "0000000000000005"
+                // float s_six
+                + "40a00000"
+                // short s_three
+                + "0005"
+                // byte s_two
+                + "05"
                 ;
         byte[] expected = Helpers.hexStringToBytes(expectedHex);
-        TestingKernel kernel = new TestingKernel();
-        Address address = Helpers.randomAddress();
-        kernel.putStorage(address, StorageKeys.CLASS_STATICS, expected);
         
         // Populate the classes.
-        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
-        new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName(), this.preserveDebuggability).populateClassStaticsFromStorage(FEE_PROCESSOR, objectGraph);
+        new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName(), this.preserveDebuggability)
+            .loadEntireGraph(new InternedClasses(), expected);
         
         // Verify that their static are as we expect.
         Assert.assertEquals(true, ReflectionStructureCodecTarget.s_one);
@@ -227,44 +211,54 @@ public class LoadedDAppTest {
         ReflectionStructureCodecTarget.s_eight = 5.0d;
         ReflectionStructureCodecTarget.s_nine = new ReflectionStructureCodecTarget();
         
-        TestingKernel kernel = new TestingKernel();
-        Address address = Helpers.randomAddress();
-        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
         LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class), ReflectionStructureCodecTarget.class.getName(), this.preserveDebuggability);
-        ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
-        dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
-        byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
+        byte[] result = dapp.saveEntireGraph(1, MAX_GRAPH_SIZE);
         String expectedHex = ""
+                // hashcode
+                + "00000001"
                 // ReflectionStructureCodecTarget
-                // reference list size
-                + "00000001"
-                //s_nine (class name length)
-                + "0000003c"
-                //s_nine (class name UTF8)
-                + "6f72672e61696f6e2e61766d2e636f72652e70657273697374656e63652e5265666c656374696f6e537472756374757265436f646563546172676574"
-                //s_nine (instanceId)
-                + "0000000000000001"
-                //s_nine (identity hash)
-                + "00000001"
-
-                // primitive size
-                + "0000001e"
-                //s_one
-                + "01"
-                //s_two
-                + "05"
-                //s_three
-                + "0005"
-                //s_four
-                + "0005"
-                //s_five
-                + "00000005"
-                //s_six
-                + "40a00000"
-                //s_seven
-                + "0000000000000005"
-                //s_eight
+                // (alphabetically sorted)
+                // double s_eight
                 + "4014000000000000"
+                // int s_five
+                + "00000005"
+                // char s_four
+                + "0005"
+                // instance s_nine - index 0
+                + "0300000000"
+                // boolean s_one
+                + "01"
+                // long s_seven
+                + "0000000000000005"
+                // float s_six
+                + "40a00000"
+                // short s_three
+                + "0005"
+                // byte s_two
+                + "05"
+                // ReflectionStructureCodecTarget instance
+                // Name "org.aion.avm.core.persistence.ReflectionStructureCodecTarget"
+                + "3c6f72672e61696f6e2e61766d2e636f72652e70657273697374656e63652e5265666c656374696f6e537472756374757265436f646563546172676574"
+                // Hashcode
+                + "00000001"
+                // double s_eight
+                + "0000000000000000"
+                // int s_five
+                + "00000000"
+                // char s_four
+                + "0000"
+                // instance s_nine - null
+                + "00"
+                // boolean s_one
+                + "00"
+                // long s_seven
+                + "0000000000000000"
+                // float s_six
+                + "00000000"
+                // short s_three
+                + "0000"
+                // byte s_two
+                + "00"
                 ;
         byte[] expected = Helpers.hexStringToBytes(expectedHex);
         Assert.assertArrayEquals(expected, result);
@@ -316,25 +310,28 @@ public class LoadedDAppTest {
         ((ReflectionStructureCodecTarget)ReflectionStructureCodecTargetSub.s_nine).i_five = 42;
         ((ReflectionStructureCodecTarget)ReflectionStructureCodecTargetSub.s_nine).i_nine = ReflectionStructureCodecTarget.s_nine;
         
-        TestingKernel kernel = new TestingKernel();
-        Address address = Helpers.randomAddress();
-        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
         LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class), ReflectionStructureCodecTarget.class.getName(), this.preserveDebuggability);
-        ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
-        dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
-        // Check the size of the saved static data (should only store local copies of statics, not superclass statics, per class).
-        byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
+        int hashCode = 1;
+        byte[] result = dapp.saveEntireGraph(hashCode, MAX_GRAPH_SIZE);
+        
+        // We always have a hashcode - both at the beginning of the buffer (next), and in each instance, before fields.
+        int hashCodeSize = 4;
         // Target size:  1 ref + primitives.
         int primitiveSize = 1 + Byte.BYTES + Short.BYTES + Character.BYTES + Integer.BYTES + Float.BYTES + Long.BYTES + Double.BYTES;
-        // Ref encoding:  type name length, type name bytes, instance ID, identity hash.
-        int targetRefSize = 4 + ReflectionStructureCodecTarget.class.getName().getBytes(StandardCharsets.UTF_8).length + 8 + 4;
-        int targetSubRefSize = 4 + ReflectionStructureCodecTargetSub.class.getName().getBytes(StandardCharsets.UTF_8).length + 8 + 4;
-        // We also add 2*4 since there are two (size) fields (number of refers, number of primitive bytes)
-        Assert.assertEquals((2 * primitiveSize) + targetRefSize + targetSubRefSize + (2 * 4), result.length);
+        // Ref encoding:  1 byte type and 4 byte index.
+        int refSize = 1 + 4;
+        int targetNameSize = 1 + ReflectionStructureCodecTarget.class.getName().getBytes(StandardCharsets.UTF_8).length;
+        int targetSubNameSize = 1 + ReflectionStructureCodecTargetSub.class.getName().getBytes(StandardCharsets.UTF_8).length;
+        int targetInstanceSize = targetNameSize + hashCodeSize + primitiveSize + refSize;
+        int targetSubInstanceSize = targetSubNameSize + hashCodeSize + primitiveSize + refSize + (primitiveSize + refSize);
+        // The statics are both primitives and 1 ref, each instance is a name, all primitives and one ref (and there are 2).
+        int expectedSize = hashCodeSize + 2 * (primitiveSize + refSize) + targetInstanceSize + targetSubInstanceSize;
+        Assert.assertEquals(expectedSize, result.length);
         
         // Now, clear the class states and reload this.
         clearStaticState();
-        dapp.populateClassStaticsFromStorage(FEE_PROCESSOR, objectGraph);
+        int nextHashCode = dapp.loadEntireGraph(new InternedClasses(), result);
+        Assert.assertEquals(hashCode, nextHashCode);
         
         // Verify that their static are as we expect.
         Assert.assertEquals(true, ReflectionStructureCodecTarget.s_one);
@@ -388,46 +385,40 @@ public class LoadedDAppTest {
     public void serializeDeserializeReferenceToJdkConstant() {
         LoadedDAppTarget.s_nine = org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_EVEN;
         
-        TestingKernel kernel = new TestingKernel();
-        Address address = Helpers.randomAddress();
-        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
         LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName(), this.preserveDebuggability);
-        ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
-        dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
-        byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
+        int hashcode = 1;
+        byte[] result = dapp.saveEntireGraph(hashcode, MAX_GRAPH_SIZE);
         String expectedHex = ""
-                // LoadedDAppTarget
-                // reference list size
+                // hashcode
                 + "00000001"
-                //s_nine (-1 since this is a constant)
-                + "ffffffff"
-                //s_nine (constant hash code)
-                + "0000000d"
-                // primitive size
-                + "0000001e"
-                //s_one
-                + "00"
-                //s_two
-                + "00"
-                //s_three
-                + "0000"
-                //s_four
-                + "0000"
-                //s_five
-                + "00000000"
-                //s_six
-                + "00000000"
-                //s_seven
+                // LoadedDAppTarget
+                // (alphabetically sorted)
+                // double s_eight
                 + "0000000000000000"
-                //s_eight
+                // int s_five
+                + "00000000"
+                // char s_four
+                + "0000"
+                // instance s_nine - pointing at constant 0x0d
+                + "020000000d"
+                // boolean s_one
+                + "00"
+                // long s_seven
                 + "0000000000000000"
+                // float s_six
+                + "00000000"
+                // short s_three
+                + "0000"
+                // byte s_two
+                + "00"
                 ;
         byte[] expected = Helpers.hexStringToBytes(expectedHex);
         Assert.assertArrayEquals(expected, result);
         
         // Now, clear the statics, deserialize this, and ensure that we are still pointing at the same constant.
         clearStaticState();
-        dapp.populateClassStaticsFromStorage(FEE_PROCESSOR, objectGraph);
+        int nextHashCode = dapp.loadEntireGraph(new InternedClasses(), expected);
+        Assert.assertEquals(hashcode, nextHashCode);
         Assert.assertTrue(org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_EVEN == LoadedDAppTarget.s_nine);
     }
 
@@ -436,51 +427,43 @@ public class LoadedDAppTest {
      */
     @Test
     public void serializeDeserializeReferenceToClass() {
-        org.aion.avm.shadow.java.lang.Class<?> originalClassRef = IInstrumentation.attachedThreadInstrumentation.get().wrapAsClass(String.class);
+        InternedClasses internedClasses = new InternedClasses();
+        org.aion.avm.shadow.java.lang.Class<?> originalClassRef = internedClasses.get(String.class);
         LoadedDAppTarget.s_nine = originalClassRef;
         
-        TestingKernel kernel = new TestingKernel();
-        Address address = Helpers.randomAddress();
-        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
         LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName(), this.preserveDebuggability);
-        ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
-        dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
-        byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
+        byte[] result = dapp.saveEntireGraph(1, MAX_GRAPH_SIZE);
         String expectedHex = ""
-                // LoadedDAppTarget
-                // reference list size
+                // hashcode
                 + "00000001"
-                //s_nine (-2 since this is a class)
-                + "fffffffe"
-                //s_nine (length)
-                + "00000010"
-                //s_nine (name of "java.lang.String")
-                + "6a6176612e6c616e672e537472696e67"
-                // primitive size
-                + "0000001e"
-                //s_one
-                + "00"
-                //s_two
-                + "00"
-                //s_three
-                + "0000"
-                //s_four
-                + "0000"
-                //s_five
-                + "00000000"
-                //s_six
-                + "00000000"
-                //s_seven
+                // LoadedDAppTarget
+                // (alphabetically sorted)
+                // double s_eight
                 + "0000000000000000"
-                //s_eight
+                // int s_five
+                + "00000000"
+                // char s_four
+                + "0000"
+                // instance s_nine - pointing at class "java.lang.String" (16)
+                + "01106a6176612e6c616e672e537472696e67"
+                // boolean s_one
+                + "00"
+                // long s_seven
                 + "0000000000000000"
+                // float s_six
+                + "00000000"
+                // short s_three
+                + "0000"
+                // byte s_two
+                + "00"
                 ;
         byte[] expected = Helpers.hexStringToBytes(expectedHex);
         Assert.assertArrayEquals(expected, result);
         
         // Now, clear the statics, deserialize this, and ensure that we are still pointing at the same constant.
         clearStaticState();
-        dapp.populateClassStaticsFromStorage(FEE_PROCESSOR, objectGraph);
+        int nextHashCode = dapp.loadEntireGraph(internedClasses, expected);
+        Assert.assertEquals(1, nextHashCode);
         Assert.assertTrue(originalClassRef == LoadedDAppTarget.s_nine);
     }
 
@@ -491,87 +474,40 @@ public class LoadedDAppTest {
     public void serializeDeserializeReferenceToConstantClass() {
         LoadedDAppTarget.s_nine = org.aion.avm.shadow.java.lang.Byte.avm_TYPE;
         
-        TestingKernel kernel = new TestingKernel();
-        Address address = Helpers.randomAddress();
-        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
         LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName(), this.preserveDebuggability);
-        ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
-        dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
-        byte[] result = kernel.getStorage(address, StorageKeys.CLASS_STATICS);
+        byte[] result = dapp.saveEntireGraph(1, MAX_GRAPH_SIZE);
         String expectedHex = ""
-                // LoadedDAppTarget
-                // reference list size
+                // hashcode
                 + "00000001"
-                //s_nine (-1 since this is a constant)
-                + "ffffffff"
-                //s_nine (constant hash code)
-                + "00000010"
-                // primitive size
-                + "0000001e"
-                //s_one
-                + "00"
-                //s_two
-                + "00"
-                //s_three
-                + "0000"
-                //s_four
-                + "0000"
-                //s_five
-                + "00000000"
-                //s_six
-                + "00000000"
-                //s_seven
+                // LoadedDAppTarget
+                // (alphabetically sorted)
+                // double s_eight
                 + "0000000000000000"
-                //s_eight
+                // int s_five
+                + "00000000"
+                // char s_four
+                + "0000"
+                // instance s_nine - pointing at constant 0x10
+                + "0200000010"
+                // boolean s_one
+                + "00"
+                // long s_seven
                 + "0000000000000000"
+                // float s_six
+                + "00000000"
+                // short s_three
+                + "0000"
+                // byte s_two
+                + "00"
                 ;
         byte[] expected = Helpers.hexStringToBytes(expectedHex);
         Assert.assertArrayEquals(expected, result);
         
         // Now, clear the statics, deserialize this, and ensure that we are still pointing at the same constant.
         clearStaticState();
-        dapp.populateClassStaticsFromStorage(FEE_PROCESSOR, objectGraph);
+        int nextHashCode = dapp.loadEntireGraph(new InternedClasses(), expected);
+        Assert.assertEquals(1, nextHashCode);
         Assert.assertTrue(org.aion.avm.shadow.java.lang.Byte.avm_TYPE == LoadedDAppTarget.s_nine);
-    }
-
-    /**
-     * A very simple test that shows we get the same number of fee schedule calls whether we use on-disk or in-memory abstraction.
-     */
-    @Test
-    public void memoryAndDiskSerializersSameCost() {
-        // Create the DApp.
-        Address address = Helpers.randomAddress();
-        TestingKernel kernel = new TestingKernel();
-        KeyValueObjectGraph objectGraph = new KeyValueObjectGraph(kernel, address);
-        LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class), ReflectionStructureCodecTarget.class.getName(), this.preserveDebuggability);
-        
-        // Set the empty state and write it to disk.
-        ReflectionStructureCodecTarget.s_nine = null;
-        ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(FEE_PROCESSOR, objectGraph);
-        dapp.saveClassStaticsToStorage(FEE_PROCESSOR, directGraphData, objectGraph);
-        
-        // First, the disk variant.
-        CallCountingProcessor diskCount = new CallCountingProcessor();
-        // Start from disk (we need this so that both versions start from "read initial state").
-        directGraphData = dapp.populateClassStaticsFromStorage(diskCount, objectGraph);
-        // Populate a basic state.
-        ReflectionStructureCodecTarget.s_nine = buildSmallGraph();
-        // Save to disk.
-        dapp.saveClassStaticsToStorage(diskCount, directGraphData, objectGraph);
-        
-        // Now, the in-memory variant.
-        CallCountingProcessor memoryCount = new CallCountingProcessor();
-        ReentrantGraphProcessor snapshot = dapp.replaceClassStaticsWithClones(memoryCount);
-        // Populate a basic state.
-        ReflectionStructureCodecTarget.s_nine = buildSmallGraph();
-        // Save to state.
-        snapshot.commitGraphToStoredFieldsAndRestore();
-        
-        // Verify that both saw the same number of calls.
-        Assert.assertEquals(diskCount.count_readStaticDataFromStorage, memoryCount.count_readStaticDataFromHeap);
-        Assert.assertEquals(diskCount.count_writeStaticDataToStorage, memoryCount.count_writeStaticDataToHeap);
-        Assert.assertEquals(diskCount.count_readOneInstanceFromStorage, memoryCount.count_readOneInstanceFromHeap);
-        Assert.assertEquals(diskCount.count_writeOneInstanceToStorage, memoryCount.count_writeOneInstanceToHeap);
     }
 
 
@@ -604,73 +540,5 @@ public class LoadedDAppTest {
         LoadedDAppTarget.s_six = 0.0f;
         LoadedDAppTarget.s_seven = 0;
         LoadedDAppTarget.s_eight = 0.0d;
-    }
-
-    private ReflectionStructureCodecTarget buildSmallGraph() {
-        ReflectionStructureCodecTarget one = new ReflectionStructureCodecTarget();
-        ReflectionStructureCodecTarget two = new ReflectionStructureCodecTarget();
-        ReflectionStructureCodecTarget three = new ReflectionStructureCodecTarget();
-        ReflectionStructureCodecTarget four = new ReflectionStructureCodecTarget();
-        one.i_nine = two;
-        two.i_nine = three;
-        three.i_nine = four;
-        return one;
-    }
-
-
-    private static class CallCountingProcessor implements IStorageFeeProcessor {
-        public int count_readStaticDataFromStorage;
-        public int count_writeStaticDataToStorage;
-        public int count_readOneInstanceFromStorage;
-        public int count_writeOneInstanceToStorage;
-        public int count_readStaticDataFromHeap;
-        public int count_writeStaticDataToHeap;
-        public int count_readOneInstanceFromHeap;
-        public int count_writeOneInstanceToHeap;
-        
-        @Override
-        public void readStaticDataFromStorage(int byteSize) {
-            this.count_readStaticDataFromStorage += 1;
-        }
-        @Override
-        public void writeFirstStaticDataToStorage(int byteSize) {
-            this.count_writeStaticDataToStorage += 1;
-        }
-        @Override
-        public void writeUpdateStaticDataToStorage(int byteSize) {
-            this.count_writeStaticDataToStorage += 1;
-        }
-        @Override
-        public void readOneInstanceFromStorage(int byteSize) {
-            this.count_readOneInstanceFromStorage += 1;
-        }
-        @Override
-        public void writeFirstOneInstanceToStorage(int byteSize) {
-            this.count_writeOneInstanceToStorage += 1;
-        }
-        @Override
-        public void writeUpdateOneInstanceToStorage(int byteSize) {
-            this.count_writeOneInstanceToStorage += 1;
-        }
-        @Override
-        public void readStaticDataFromHeap(int byteSize) {
-            this.count_readStaticDataFromHeap += 1;
-        }
-        @Override
-        public void writeUpdateStaticDataToHeap(int byteSize) {
-            this.count_writeStaticDataToHeap += 1;
-        }
-        @Override
-        public void readOneInstanceFromHeap(int byteSize) {
-            this.count_readOneInstanceFromHeap += 1;
-        }
-        @Override
-        public void writeFirstOneInstanceToHeap(int byteSize) {
-            this.count_writeOneInstanceToHeap += 1;
-        }
-        @Override
-        public void writeUpdateOneInstanceToHeap(int byteSize) {
-            this.count_writeOneInstanceToHeap += 1;
-        }
     }
 }

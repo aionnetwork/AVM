@@ -1,6 +1,5 @@
 package org.aion.avm.core;
 
-import org.aion.avm.core.persistence.ISuspendableInstanceLoader;
 import org.aion.types.Address;
 import org.junit.Assert;
 import org.junit.Test;
@@ -13,33 +12,22 @@ public class ReentrantDAppStackTest {
     @Test
     public void commonPushAndPop() throws Exception {
         ReentrantDAppStack stack = new ReentrantDAppStack();
-        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, null, null);
-        ReentrantDAppStack.ReentrantState state2 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x2), null, null, null);
-        ReentrantDAppStack.ReentrantState state3 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x3), null, null, null);
-        FlagInstanceLoader flag1 = new FlagInstanceLoader();
-        FlagInstanceLoader flag2 = new FlagInstanceLoader();
-        FlagInstanceLoader flag3 = new FlagInstanceLoader();
-        state1.setInstanceLoader(flag1);
-        state2.setInstanceLoader(flag2);
-        state3.setInstanceLoader(flag3);
+        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, 1, null);
+        ReentrantDAppStack.ReentrantState state2 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x2), null, 1, null);
+        ReentrantDAppStack.ReentrantState state3 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x3), null, 1, null);
         
         stack.pushState(state1);
         stack.pushState(state2);
         stack.pushState(state3);
-        Assert.assertFalse(flag1.flag);
-        Assert.assertFalse(flag2.flag);
-        Assert.assertTrue(flag3.flag);
         Assert.assertEquals(state3, stack.popState());
-        Assert.assertTrue(flag2.flag);
         Assert.assertEquals(state2, stack.popState());
-        Assert.assertTrue(flag1.flag);
         Assert.assertEquals(state1, stack.popState());
     }
 
     @Test
     public void popEmptyAsNull() throws Exception {
         ReentrantDAppStack stack = new ReentrantDAppStack();
-        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, null, null);
+        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, 1, null);
         
         stack.pushState(state1);
         Assert.assertEquals(state1, stack.popState());
@@ -49,12 +37,9 @@ public class ReentrantDAppStackTest {
     @Test
     public void basicSearch() throws Exception {
         ReentrantDAppStack stack = new ReentrantDAppStack();
-        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, null, null);
-        ReentrantDAppStack.ReentrantState state2 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x2), null, null, null);
-        ReentrantDAppStack.ReentrantState state3 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x3), null, null, null);
-        state1.setInstanceLoader(new FlagInstanceLoader());
-        state2.setInstanceLoader(new FlagInstanceLoader());
-        state3.setInstanceLoader(new FlagInstanceLoader());
+        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, 1, null);
+        ReentrantDAppStack.ReentrantState state2 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x2), null, 1, null);
+        ReentrantDAppStack.ReentrantState state3 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x3), null, 1, null);
         
         Assert.assertNull(stack.tryShareState(getNewAddress(0x1)));
         
@@ -77,14 +62,10 @@ public class ReentrantDAppStackTest {
     @Test
     public void shadowedSearch() throws Exception {
         ReentrantDAppStack stack = new ReentrantDAppStack();
-        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, null, null);
-        ReentrantDAppStack.ReentrantState state2 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x2), null, null, null);
-        ReentrantDAppStack.ReentrantState state3 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x3), null, null, null);
-        ReentrantDAppStack.ReentrantState state1_again = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, null, null);
-        state1.setInstanceLoader(new FlagInstanceLoader());
-        state2.setInstanceLoader(new FlagInstanceLoader());
-        state3.setInstanceLoader(new FlagInstanceLoader());
-        state1_again.setInstanceLoader(new FlagInstanceLoader());
+        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, 1, null);
+        ReentrantDAppStack.ReentrantState state2 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x2), null, 1, null);
+        ReentrantDAppStack.ReentrantState state3 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x3), null, 1, null);
+        ReentrantDAppStack.ReentrantState state1_again = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, 1, null);
         
         stack.pushState(state1);
         stack.pushState(state2);
@@ -107,21 +88,6 @@ public class ReentrantDAppStackTest {
     }
 
 
-    private static class FlagInstanceLoader implements ISuspendableInstanceLoader {
-        public boolean flag = true;
-        
-        @Override
-        public void loaderDidBecomeActive() {
-            Assert.assertFalse(this.flag);
-            this.flag = true;
-        }
-        @Override
-        public void loaderDidBecomeInactive() {
-            Assert.assertTrue(this.flag);
-            this.flag = false;
-        }
-    }
-    
     private static Address getNewAddress(int leadingByte) {
         byte[] address = new byte[Address.SIZE];
         address[0] = (byte) leadingByte;

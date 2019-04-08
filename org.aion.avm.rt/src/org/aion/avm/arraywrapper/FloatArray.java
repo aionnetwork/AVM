@@ -107,7 +107,7 @@ public class FloatArray extends Array {
         int length = deserializer.readInt();
         this.underlying = new float[length];
         for (int i = 0; i < length; ++i) {
-            this.underlying[i] = Float.intBitsToFloat(deserializer.readInt());
+            this.underlying[i] = deserializer.readFloat();
         }
     }
 
@@ -117,7 +117,7 @@ public class FloatArray extends Array {
         // TODO:  We probably want faster array copies.
         serializer.writeInt(this.underlying.length);
         for (int i = 0; i < this.underlying.length; ++i) {
-            serializer.writeInt(Float.floatToIntBits(this.underlying[i]));
+            serializer.writeFloat(this.underlying[i]);
         }
     }
 }

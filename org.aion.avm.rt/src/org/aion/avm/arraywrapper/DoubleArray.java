@@ -107,7 +107,7 @@ public class DoubleArray extends Array {
         int length = deserializer.readInt();
         this.underlying = new double[length];
         for (int i = 0; i < length; ++i) {
-            this.underlying[i] = Double.longBitsToDouble(deserializer.readLong());
+            this.underlying[i] = deserializer.readDouble();
         }
     }
 
@@ -117,7 +117,7 @@ public class DoubleArray extends Array {
         // TODO:  We probably want faster array copies.
         serializer.writeInt(this.underlying.length);
         for (int i = 0; i < this.underlying.length; ++i) {
-            serializer.writeLong(Double.doubleToLongBits(this.underlying[i]));
+            serializer.writeDouble(this.underlying[i]);
         }
     }
 }

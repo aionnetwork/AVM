@@ -367,7 +367,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         if (null != this.reentrantState) {
             // Note that we want to save out the current nextHashCode.
             int nextHashCode = currentThreadInstrumentation.peekNextHashCode();
-            this.reentrantState.updateEnvironment(nextHashCode);
+            this.reentrantState.updateNextHashCode(nextHashCode);
         }
         // Temporarily detach from the DApp we were in.
         InstrumentationHelpers.temporarilyExitFrame(this.thisDAppSetup);
@@ -394,7 +394,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         
         if (null != this.reentrantState) {
             // Update the next hashcode counter, in case this was a reentrant call and it was changed.
-            currentThreadInstrumentation.forceNextHashCode(this.reentrantState.getEnvironment().nextHashCode);
+            currentThreadInstrumentation.forceNextHashCode(this.reentrantState.getNextHashCode());
         }
 
         // charge energy consumed

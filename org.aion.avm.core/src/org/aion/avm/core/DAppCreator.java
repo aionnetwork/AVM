@@ -14,11 +14,7 @@ import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.miscvisitors.StrictFPVisitor;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.persistence.AutomaticGraphVisitor;
-import org.aion.avm.core.persistence.ContractEnvironmentState;
-import org.aion.avm.core.persistence.IObjectGraphStore;
 import org.aion.avm.core.persistence.LoadedDApp;
-import org.aion.avm.core.persistence.ReflectionStructureCodec;
-import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.rejection.MainMethodChecker;
 import org.aion.avm.core.rejection.RejectedClassException;
 import org.aion.avm.core.rejection.RejectionClassVisitor;
@@ -215,8 +211,6 @@ public class DAppCreator {
             Map<String, byte[]> transformedClasses = transformClasses(rawDapp.classes, dappClassesForest, preserveDebuggability);
             TransformedDappModule transformedDapp = TransformedDappModule.fromTransformedClasses(transformedClasses, rawDapp.mainClass);
 
-            // We can now construct the abstraction of the loaded DApp which has the machinery for the rest of the initialization.
-            IObjectGraphStore graphStore = new KeyValueObjectGraph(kernel,dappAddress);
             dapp = DAppLoader.fromTransformed(transformedDapp, preserveDebuggability);
             
             // We start the nextHashCode at 1.
@@ -255,13 +249,10 @@ public class DAppCreator {
             dapp.forceInitializeAllClasses();
 
             // Save back the state before we return.
-            // -first, save out the classes
-            InstrumentationBasedStorageFees feeProcessor = new InstrumentationBasedStorageFees(threadInstrumentation);
-            ReflectionStructureCodec directGraphData = dapp.createCodecForInitialStore(feeProcessor, graphStore);
-            dapp.saveClassStaticsToStorage(feeProcessor, directGraphData, graphStore);
-            // -finally, save back the final state of the environment so we restore it on the next invocation.
-            ContractEnvironmentState.saveToGraph(graphStore, new ContractEnvironmentState(threadInstrumentation.peekNextHashCode()));
-            graphStore.flushWrites();
+            byte[] rawGraphData = dapp.saveEntireGraph(threadInstrumentation.peekNextHashCode(), StorageFees.MAX_GRAPH_SIZE);
+            // Bill for writing this size.
+            threadInstrumentation.chargeEnergy(StorageFees.WRITE_PRICE_PER_BYTE * rawGraphData.length);
+            kernel.putObjectGraph(dappAddress, rawGraphData);
 
             // TODO: whether we should return the dapp address is subject to change
             result.setResultCode(AvmTransactionResult.Code.SUCCESS);

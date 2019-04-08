@@ -6,10 +6,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.IdentityHashMap;
 import java.util.Queue;
 
+import org.aion.avm.internal.IObjectSerializer;
 import org.aion.avm.internal.RuntimeAssertionError;
 
 
-public class ByteBufferObjectSerializer {
+public class ByteBufferObjectSerializer implements IObjectSerializer {
     private final ByteBuffer buffer;
     private final SortedFieldCache cache;
     private final IGlobalResolver resolver;
@@ -24,38 +25,47 @@ public class ByteBufferObjectSerializer {
         this.instanceMapper = new InstanceIndexMapper(out_ToProcessQueue);
     }
 
+    @Override
     public void writeBoolean(boolean value) {
         this.buffer.put((byte) (value ? 0x1 : 0x0));
     }
 
+    @Override
     public void writeByte(byte value) {
         this.buffer.put(value);
     }
 
+    @Override
     public void writeShort(short value) {
         this.buffer.putShort(value);
     }
 
+    @Override
     public void writeChar(char value) {
         this.buffer.putChar(value);
     }
 
+    @Override
     public void writeInt(int value) {
         this.buffer.putInt(value);
     }
 
+    @Override
     public void writeFloat(float value) {
         this.buffer.putFloat(value);
     }
 
+    @Override
     public void writeLong(long value) {
         this.buffer.putLong(value);
     }
 
+    @Override
     public void writeDouble(double value) {
         this.buffer.putDouble(value);
     }
 
+    @Override
     public void writeObject(Object value) {
         // Note that these need to be interpreted in a specific order, due to precedence of how difference kinds of immortal objects are resolved:
         // 1) Null - Since we can't proceed further with null
@@ -83,10 +93,12 @@ public class ByteBufferObjectSerializer {
         }
     }
 
+    @Override
     public void writeClassName(String internalClassName) {
         internalWriteClassName(internalClassName);
     }
 
+    @Override
     public void automaticallySerializeToRoot(Class<?> rootClass, Object instance) {
         // This is called after any root information has been serialized, including class name and root instance variables.
         // So, we just need to serialize all the fields defined by other classes, excluding the root class.

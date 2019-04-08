@@ -5,10 +5,11 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.RuntimeAssertionError;
 
 
-public class ByteBufferObjectDeserializer {
+public class ByteBufferObjectDeserializer implements IObjectDeserializer {
     private final ByteBuffer buffer;
     private final SortedFieldCache cache;
     private final IGlobalResolver resolver;
@@ -24,38 +25,47 @@ public class ByteBufferObjectDeserializer {
         this.instanceList = instanceList;
     }
 
+    @Override
     public boolean readBoolean() {
         return ((byte)0x1 == this.buffer.get());
     }
 
+    @Override
     public byte readByte() {
         return this.buffer.get();
     }
 
+    @Override
     public short readShort() {
         return this.buffer.getShort();
     }
 
+    @Override
     public char readChar() {
         return this.buffer.getChar();
     }
 
+    @Override
     public int readInt() {
         return this.buffer.getInt();
     }
 
+    @Override
     public float readFloat() {
         return this.buffer.getFloat();
     }
 
+    @Override
     public long readLong() {
         return this.buffer.getLong();
     }
 
+    @Override
     public double readDouble() {
         return this.buffer.getDouble();
     }
 
+    @Override
     public Object readObject() {
         // NOTE:  If the instance list is null, this is a pre-pass, meaning we shouldn't try to create/resolve the objects, since we will do this again.
         byte refType = this.buffer.get();
@@ -92,10 +102,12 @@ public class ByteBufferObjectDeserializer {
         return result;
     }
 
+    @Override
     public String readClassName() {
         return internalReadClassName();
     }
 
+    @Override
     public void automaticallyDeserializeFromRoot(Class<?> rootClass, Object instance) {
         // This is called after any rootClass instance variables have been deserialized.
         // So, we just need to deserialize all the fields defined by other classes, excluding the root class.

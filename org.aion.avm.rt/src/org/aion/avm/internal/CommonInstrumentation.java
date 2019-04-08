@@ -1,6 +1,5 @@
 package org.aion.avm.internal;
 
-import java.lang.reflect.Field;
 import java.util.*;
 
 
@@ -12,20 +11,10 @@ public class CommonInstrumentation implements IInstrumentation {
 
     // State which applies to the entire stack.
     private boolean abortState;
-    private final Field persistenceTokenField;
 
     public CommonInstrumentation() {
         this.callerFrames = new Stack<>();
         this.abortState = false;
-
-        // We need to look up the persistenceTokenField so we can install the special token for classes.
-        try {
-            this.persistenceTokenField = org.aion.avm.shadow.java.lang.Object.class.getDeclaredField("persistenceToken");
-        } catch (NoSuchFieldException | SecurityException e) {
-            // Clearly a fatal error.
-            throw RuntimeAssertionError.unexpected(e);
-        }
-        this.persistenceTokenField.setAccessible(true);
     }
 
     public void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode, InternedClasses classWrappers) {
@@ -73,14 +62,6 @@ public class CommonInstrumentation implements IInstrumentation {
         org.aion.avm.shadow.java.lang.Class<T> wrapper = null;
         if (null != input) {
             wrapper = (org.aion.avm.shadow.java.lang.Class<T>) this.currentFrame.internedClassWrappers.get(input);
-            // NOTE: This is only temporarily set on every call - this will be removed in the forthcoming storage change.
-            // We treat classes much like constants, so add the IPersistenceToken for classes so that the persistence model knows how to ignore this.
-            try {
-                persistenceTokenField.set(wrapper, new ClassPersistenceToken(input.getName()));
-            } catch (IllegalArgumentException | IllegalAccessException e) {
-                // This is something statically wrong with the shadow JCL.
-                RuntimeAssertionError.unexpected(e);
-            }
         }
         return wrapper;
     }

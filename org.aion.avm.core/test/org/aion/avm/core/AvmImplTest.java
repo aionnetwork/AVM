@@ -173,12 +173,7 @@ public class AvmImplTest {
         long basicCost = BillingRules.getBasicTransactionCost(txData);
         long codeInstantiationOfDeploymentFee = BillingRules.getDeploymentFee(1, jar.length);
         long clinitCost = 91l;
-        // Storage:  static 64 bytes (2 references) +  the 2 strings (hash code and string length: "CALL" + "NORMAL").
-        long initialStorageCost = (3 * InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW)
-                + (64 * InstrumentationBasedStorageFees.BYTE_WRITE_COST)
-                + (byteSizeOfSerializedString("CALL") * InstrumentationBasedStorageFees.BYTE_WRITE_COST)
-                + (byteSizeOfSerializedString("NORMAL") * InstrumentationBasedStorageFees.BYTE_WRITE_COST)
-                ;
+        long initialStorageCost = 342;
         long transactionCost = basicCost + codeInstantiationOfDeploymentFee + clinitCost + initialStorageCost;
         assertEquals(transactionCost, ((AvmTransactionResult) result1).getEnergyUsed());
         assertEquals(energyLimit - transactionCost, result1.getEnergyRemaining());
@@ -194,29 +189,8 @@ public class AvmImplTest {
         long costOfBlocks = 51l + 31l + 326l;
         //reentrant call cost including code block cost
         long costOfRuntimeCall = 51l + 31l + 66l + (100 + 600 + 630 + 600);
-        // All persistence load/store cost (note that this is a reentrant call):
-        long runStorageCost = 0L
-        // -read statics (outer)
-                + (InstrumentationBasedStorageFees.FIXED_READ_COST + (64 * InstrumentationBasedStorageFees.BYTE_READ_COST))
-        // -read statics (inner)
-                + (InstrumentationBasedStorageFees.FIXED_READ_COST + (64 * InstrumentationBasedStorageFees.BYTE_READ_COST))
-        // -read instance (outer) "NORMAL" (free because we are just loading it _for_ the inner case)
-        //        + (InstrumentationBasedStorageFees.FIXED_READ_COST + (byteSizeOfSerializedString("NORMAL") * InstrumentationBasedStorageFees.BYTE_READ_COST))
-        // -read instance (inner) "NORMAL"
-                + (InstrumentationBasedStorageFees.FIXED_READ_COST + (byteSizeOfSerializedString("NORMAL") * InstrumentationBasedStorageFees.BYTE_READ_COST))
-        // -write statics (inner)
-        //        + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (64 * InstrumentationBasedStorageFees.BYTE_WRITE_COST))
-        // -write instance (inner) "NORMAL"
-        //        + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (byteSizeOfSerializedString("NORMAL") * InstrumentationBasedStorageFees.BYTE_WRITE_COST))
-        // -read instance (outer) "CALL"
-                + (InstrumentationBasedStorageFees.FIXED_READ_COST + (byteSizeOfSerializedString("CALL") * InstrumentationBasedStorageFees.BYTE_READ_COST))
-        // -write statics (outer)
-        //        + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (64 * InstrumentationBasedStorageFees.BYTE_WRITE_COST))
-        // -write instance (outer) "CALL"
-        //        + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + (byteSizeOfSerializedString("CALL") * InstrumentationBasedStorageFees.BYTE_WRITE_COST))
-        // -write instance (outer) "NORMAL" (free because we didn't touch it, just loaded it for the inner case)
-        //        + (InstrumentationBasedStorageFees.FIXED_WRITE_COST + (byteSizeOfSerializedString("NORMAL") * InstrumentationBasedStorageFees.BYTE_WRITE_COST))
-                ;
+        // All persistence load/store cost (note that this is a reentrant call): (2 reads at 114, 2 writes at 342)
+        long runStorageCost = 114 + 114 + 342 + 342;
         // runtime cost of the initial call
         long runtimeCost = 100 + 600 + 100 + 600 + 600 + 100 + 100 + 600 + 100 + 620 + 600;
         transactionCost = runtimeCost + tx2.getTransactionCost() + costOfBlocks + costOfRuntimeCall + runStorageCost;

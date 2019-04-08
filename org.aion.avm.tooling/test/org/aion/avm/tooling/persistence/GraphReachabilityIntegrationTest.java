@@ -2,7 +2,7 @@ package org.aion.avm.tooling.persistence;
 
 import avm.Address;
 import org.aion.avm.core.BillingRules;
-import org.aion.avm.core.InstrumentationBasedStorageFees;
+import org.aion.avm.core.StorageFees;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
@@ -46,20 +46,15 @@ public class GraphReachabilityIntegrationTest {
         // Run test.
         long modify_basicCost = adjustBasicCost(21708L);
         long modify_miscCharges = 95L + 300L + 100L + 600L + 37234L + 65L + 29L + 85L;
-        long modify_storageCharges = 0L
-                // read static
-                    + (InstrumentationBasedStorageFees.FIXED_READ_COST + 161L)
-                // read instances (3)
-                    + (3 * (InstrumentationBasedStorageFees.FIXED_READ_COST + 40L))
-                // write static
-                //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
-                // write instances (3 - only 2 were actually modified)
-                    + (2 * (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
-                ;
+        int graphSizeBefore = 6260;
+        int graphSizeAfter = 6256;
+        int readCost = StorageFees.READ_PRICE_PER_BYTE * graphSizeBefore;
+        int writeCost = StorageFees.WRITE_PRICE_PER_BYTE * graphSizeAfter;
+        long modify_storageCharges = readCost + writeCost;
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -25857;
+        long userlibCost = -28736;
         callStatic(block, contractAddr, modify_basicCost + modify_miscCharges + modify_storageCharges + userlibCost + byteArrayReturnCost, "modify249");
         
         // Verify after.
@@ -86,34 +81,17 @@ public class GraphReachabilityIntegrationTest {
                 + 95L + 100L + 600L + 37234L + 65L + 29L + 85L
                 + 100L + 60L + 100L + 23L + 29L + 23L
                 ;
-        long run_storageCharges = 0L
-                // read static
-                    + (InstrumentationBasedStorageFees.FIXED_READ_COST + 161L)
-                // read instance
-                    + (InstrumentationBasedStorageFees.FIXED_READ_COST + 17L)
-                // (heap) read static
-                    + (InstrumentationBasedStorageFees.FIXED_READ_COST + 161L)
-                // (heap) read instances (3)
-                    + (3 * (InstrumentationBasedStorageFees.FIXED_READ_COST + 40L))
-                // (heap) write static
-                //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
-                // (heap) write instances (3 - only 2 modified)
-                    + (2 * (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
-                // read instances (3)
-                    + (3 * (InstrumentationBasedStorageFees.FIXED_READ_COST + 40L))
-                // write static
-                //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
-                // write instances (3 - we only see 1 from the callee, here)
-                // TODO: This accounting can be fixed by issue-296.
-                    + (1 * (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
-                // write instance
-                //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 17L)
-                ;
+        int graphSizeBefore = 6260;
+        int graphSizeAfter = 6256;
+        int readCost = StorageFees.READ_PRICE_PER_BYTE * graphSizeBefore;
+        int writeCost = StorageFees.WRITE_PRICE_PER_BYTE * graphSizeAfter;
+        // 2 reads/writes of the same cost.
+        long run_storageCharges = 2 * readCost + 2 * writeCost;
         // added byteArrayReturnCost cost for 3 methods with void return type
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -69579;
+        long userlibCost = -74700;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + userlibCost + byteArrayReturnCost * 3, "run249_reentrant_notLoaded");
         
@@ -141,33 +119,16 @@ public class GraphReachabilityIntegrationTest {
             + 95L + 100L + 600L + 37234L + 65L + 29L + 85L
             + 100L + 60L + 100L + 23L + 29L + 23L
             ;
-        long run_storageCharges = 0L
-                // read static
-                    + (InstrumentationBasedStorageFees.FIXED_READ_COST + 161L)
-                // read instances (3)
-                    + (3 * (InstrumentationBasedStorageFees.FIXED_READ_COST + 40L))
-                // read instance
-                    + (InstrumentationBasedStorageFees.FIXED_READ_COST + 17L)
-                // (heap) read static
-                    + (InstrumentationBasedStorageFees.FIXED_READ_COST + 161L)
-                // (heap) read instances (3)
-                    + (3 * (InstrumentationBasedStorageFees.FIXED_READ_COST + 40L))
-                // (heap) write static
-                //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
-                // (heap) write instances (3 - only 2 modified)
-                    + (2 * (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
-                // write static
-                //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
-                // write instances (3 - we only see 1 from the callee, here)
-                // TODO: This accounting can be fixed by issue-296.
-                    + (1 * (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
-                // write instance
-                //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 17L)
-                ;
+        int graphSizeBefore = 6260;
+        int graphSizeAfter = 6256;
+        int readCost = StorageFees.READ_PRICE_PER_BYTE * graphSizeBefore;
+        int writeCost = StorageFees.WRITE_PRICE_PER_BYTE * graphSizeAfter;
+        // 2 reads/writes of the same cost.
+        long run_storageCharges = 2 * readCost + 2 * writeCost;
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -68722;
+        long userlibCost = -73974;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + userlibCost + byteArrayReturnCost * 3, "run249_reentrant_loaded");
         
@@ -191,50 +152,27 @@ public class GraphReachabilityIntegrationTest {
                 + 95L + 100L + 600L + 37234L + 194L + 63L
                 + 100L + 60L + 100L + 23L
                 ;
-        long run_storageCharges = 0L
-                // read static
-                    + (InstrumentationBasedStorageFees.FIXED_READ_COST + 161L)
-                // read instance
-                    + (InstrumentationBasedStorageFees.FIXED_READ_COST + 25L)
-                // (heap) read static
-                    + (InstrumentationBasedStorageFees.FIXED_READ_COST + 161L)
-                // (heap) read instances (3)
-                    + (3 * (InstrumentationBasedStorageFees.FIXED_READ_COST + 40L))
-                // (heap) write static
-                //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
-                // (heap) write instances (4 = 3 + new 1)
-                // (note that only 2 existing instances were modified)
-                    + (2 * (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
-                    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW + 40L)
-                // write static
-                //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
-                // write instance
-                //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 25L)
-                ;
+        int graphSizeBefore = 6260;
+        int graphSizeAfter = 6256;
+        int readCost = StorageFees.READ_PRICE_PER_BYTE * graphSizeBefore;
+        int writeCost = StorageFees.WRITE_PRICE_PER_BYTE * graphSizeAfter;
+        // 2 reads/writes of the same cost.
+        long run_storageCharges = 2 * readCost + 2 * writeCost;
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long run_userlibCost = -66476;
+        long run_userlibCost = -71985;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + run_userlibCost + byteArrayReturnCost * 3, "runNewInstance_reentrant");
         
         // Verify result.
         long check_basicCost = adjustBasicCost(22156L);
         long check_miscCharges = 0L + 95L + 300L + 100L + 600L + 37234L + 63L + 600L;
-        long check_storageCharges = 0L
-                // read static
-                    + (InstrumentationBasedStorageFees.FIXED_READ_COST + 161L)
-                // read instances (4)
-                    + (4 * (InstrumentationBasedStorageFees.FIXED_READ_COST + 40L))
-                // write static
-                //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
-                // write instances (4)
-                //    + (4 * (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
-                ;
+        long check_storageCharges = (StorageFees.READ_PRICE_PER_BYTE * graphSizeAfter) + writeCost;
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long check_userlibCost = -26212;
+        long check_userlibCost = -28974;
 
         int value = (Integer) callStatic(block, contractAddr, check_basicCost + check_miscCharges + check_storageCharges + check_userlibCost, "checkNewInstance");
         Assert.assertEquals(5, value);
@@ -257,58 +195,28 @@ public class GraphReachabilityIntegrationTest {
                 + 100L + 60L + 100L + 23L
                 + 100L + 60L + 100L + 23L
                 ;
-        long run_storageCharges = 0L
-                // read static
-                    + (InstrumentationBasedStorageFees.FIXED_READ_COST + 161L)
-                // read instance
-                    + (InstrumentationBasedStorageFees.FIXED_READ_COST + 32L)
-                // (heap) read static
-                    + (InstrumentationBasedStorageFees.FIXED_READ_COST + 161L)
-                // (heap) read instance
-                    + (InstrumentationBasedStorageFees.FIXED_READ_COST + 25L)
-                // (heap) read static
-                    + (InstrumentationBasedStorageFees.FIXED_READ_COST + 161L)
-                // (heap) read instances (3)
-                    + (3 * (InstrumentationBasedStorageFees.FIXED_READ_COST + 40L))
-                // (heap) write static
-                //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
-                // (heap) write instances (4 = 3 + new 1)
-                // (note that only 2 existing instances were modified)
-                    + (2 * (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
-                    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW + 40L)
-                // (heap) write static
-                //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
-                // (heap) write instance
-                //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 25L)
-                // write static
-                //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
-                // write instance
-                //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 32L)
-                ;
+        int graphSizeBefore = 6260;
+        int graphSizeAfter = 6256;
+        int readCost = StorageFees.READ_PRICE_PER_BYTE * graphSizeBefore;
+        int writeCost = StorageFees.WRITE_PRICE_PER_BYTE * graphSizeAfter;
+        // 3 reads/writes of the same cost.
+        long run_storageCharges = 3 * readCost + 3 * writeCost;
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long run_userlibCost = -107439;
+        long run_userlibCost = -115454;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + run_userlibCost + byteArrayReturnCost * 5, "runNewInstance_reentrant2");
         
         // Verify result.
         long check_basicCost = adjustBasicCost(22156L);
         long check_miscCharges = 95L + 300L + 100L + 600L + 37234L + 63L + 600L;
-        long check_storageCharges = 0L
-                // read static
-                    + (InstrumentationBasedStorageFees.FIXED_READ_COST + 161L)
-                // read instances (4)
-                    + (4 * (InstrumentationBasedStorageFees.FIXED_READ_COST + 40L))
-                // write static
-                //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
-                // write instances (4)
-                //    + (4 * (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
-                ;
+        // Reads/write of the same cost.
+        long check_storageCharges = (StorageFees.READ_PRICE_PER_BYTE * graphSizeAfter) + writeCost;
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long check_userlibCost = -26212;
+        long check_userlibCost = -28974;
 
         int value = (Integer) callStatic(block, contractAddr, check_basicCost + check_miscCharges + check_storageCharges + check_userlibCost, "checkNewInstance");
         Assert.assertEquals(5, value);
@@ -337,21 +245,13 @@ public class GraphReachabilityIntegrationTest {
         // The first three numbers here are: basic cost of tx, processing cost and storage cost
         long basicCost = BillingRules.getBasicTransactionCost(txData);
         long codeInstantiationOfDeploymentFee = BillingRules.getDeploymentFee(11, optimizedJar.length);
-        long miscCharges = basicCost + codeInstantiationOfDeploymentFee + 185L + 1500L + 3L + 31L;
-        long storageCharges = 0L
-                // static
-                    + InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW + 161L
-                // instance
-                    + InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW + 32L
-                // instance
-                    + InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW + 17L
-                // instance
-                    + InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW + 25L
-                ;
+        long miscCharges = basicCost + codeInstantiationOfDeploymentFee + 185L + 300L + 1500L + 3L + 31L;
+        // One write of 17223.
+        long storageCharges = 17223L;
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = 57972;
+        long userlibCost = -5282L;
 
         long totalExpectedCost = miscCharges + storageCharges + userlibCost;
 
@@ -382,20 +282,15 @@ public class GraphReachabilityIntegrationTest {
         } else {
             miscCharges += 23L;
         }
-        long storageCharges = 0L
-                // read static
-                    + InstrumentationBasedStorageFees.FIXED_READ_COST + 161L
-                // read instances (5)
-                    + (5 * (InstrumentationBasedStorageFees.FIXED_READ_COST + 40L))
-                // write static
-                //    + (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L)
-                // write instances (5)
-                //    + (5 * (InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 40L))
-                ;
+        int graphSizeBefore = 6260;
+        int graphSizeAfter = 6256;
+        long storageCharges = before
+                ? (StorageFees.READ_PRICE_PER_BYTE * graphSizeBefore) + (StorageFees.WRITE_PRICE_PER_BYTE * graphSizeBefore)
+                : (StorageFees.READ_PRICE_PER_BYTE * graphSizeAfter) + (StorageFees.WRITE_PRICE_PER_BYTE * graphSizeAfter);
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -30313;
+        long userlibCost = -32421;
         return basicCost + miscCharges + storageCharges + userlibCost + byteArrayReturnCost;
     }
 
@@ -403,26 +298,15 @@ public class GraphReachabilityIntegrationTest {
 
         long basicCost = adjustBasicCost(21644L);
         long miscCharges = 95L + 300L + 100L + 600L + 37234L + 716L + 63L + 63L + 63L + 63L + 63L;
-        long storageCharges = 0L
-                // read static
-                    + InstrumentationBasedStorageFees.FIXED_READ_COST + 161L
-                // write static
-                    + InstrumentationBasedStorageFees.PER_OBJECT_WRITE_UPDATE + 161L
-                // instance
-                    + InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW + 40L
-                // instance
-                    + InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW + 40L
-                // instance
-                    + InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW + 40L
-                // instance
-                    + InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW + 40L
-                // instance
-                    + InstrumentationBasedStorageFees.PER_OBJECT_WRITE_NEW + 40L
-                ;
+        int graphSizeBefore = 5741;
+        int graphSizeAfter = 6260;
+        int readCost = StorageFees.READ_PRICE_PER_BYTE * graphSizeBefore;
+        int writeCost = StorageFees.WRITE_PRICE_PER_BYTE * graphSizeAfter;
+        long storageCharges = readCost + writeCost;
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO: Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -29868;
+        long userlibCost = -33736;
 
         return basicCost + miscCharges + storageCharges + userlibCost + byteArrayReturnCost;
     }

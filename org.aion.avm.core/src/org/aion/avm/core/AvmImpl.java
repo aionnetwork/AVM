@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import org.aion.avm.core.persistence.LoadedDApp;
-import org.aion.avm.core.persistence.keyvalue.KeyValueObjectGraph;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.SoftCache;
 import org.aion.avm.internal.IInstrumentation;
@@ -357,14 +356,14 @@ public class AvmImpl implements AvmInternal {
                 // If we didn't find it there (that is only for reentrant calls so it is rarely found in the stack), try the hot DApp cache.
                 ByteArrayWrapper addressWrapper = new ByteArrayWrapper(recipient.toBytes());
                 LoadedDApp dappInHotCache = this.hotCache.checkout(addressWrapper);
-                //'parentKernel.getCode(recipient) != null' means this recipient's DApp is not self-destructed.
+                //'parentKernel.getTransformedCode(recipient) != null' means this recipient's DApp is not self-destructed.
                 if (thisTransactionKernel.getTransformedCode(recipient) != null) {
                     dapp = dappInHotCache;
                 }
                 if (null == dapp) {
                     // If we didn't find it there, just load it.
                     try {
-                        dapp = DAppLoader.loadFromGraph(new KeyValueObjectGraph(thisTransactionKernel, recipient).getCode(), this.preserveDebuggability);
+                        dapp = DAppLoader.loadFromGraph(thisTransactionKernel.getTransformedCode(recipient), this.preserveDebuggability);
 
                         // If the dapp is freshly loaded, we set the block num
                         if (null != dapp){

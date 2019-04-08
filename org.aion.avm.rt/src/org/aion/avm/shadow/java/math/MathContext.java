@@ -102,8 +102,11 @@ public final class MathContext extends Object {
         
         // We store this as the precision (int) and the RoundingMode (stub).
         int precision = deserializer.readInt();
-        RoundingMode mode = (RoundingMode)deserializer.readStub();
-        this.v = new java.math.MathContext(precision, java.math.RoundingMode.valueOf(mode.getName().getUnderlying()));
+        RoundingMode mode = (RoundingMode)deserializer.readObject();
+        // Note that this will be null in our pre-pass, so check that.
+        if (null != mode) {
+            this.v = new java.math.MathContext(precision, java.math.RoundingMode.valueOf(mode.getName().getUnderlying()));
+        }
     }
 
     public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
@@ -112,7 +115,7 @@ public final class MathContext extends Object {
         // We store this as the precision (int) and the RoundingMode (stub).
         serializer.writeInt(this.v.getPrecision());
         RoundingMode roundingMode = RoundingMode.internalValueOf(new String(this.v.getRoundingMode().name()));
-        serializer.writeStub(roundingMode);
+        serializer.writeObject(roundingMode);
     }
 
     //========================================================

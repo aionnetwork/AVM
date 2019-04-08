@@ -4,22 +4,21 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.LinkedList;
+import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.Queue;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.aion.avm.core.util.DebugNameResolver;
 import org.aion.avm.internal.AvmThrowable;
 import org.aion.avm.internal.IBlockchainRuntime;
+import org.aion.avm.internal.IObjectDeserializer;
+import org.aion.avm.internal.IObjectSerializer;
 import org.aion.avm.shadowapi.avm.Blockchain;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.IPersistenceToken;
 import org.aion.avm.internal.IRuntimeSetup;
+import org.aion.avm.internal.InternedClasses;
 import org.aion.avm.internal.MethodAccessException;
 import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -44,11 +43,26 @@ import org.aion.avm.internal.UncaughtException;
  * such that it is fully usable.  Attempting to eagerly interact with it before then might not be safe.
  */
 public class LoadedDApp {
+    private static final Method SERIALIZE_SELF;
+    private static final Method DESERIALIZE_SELF;
+    private static final Field FIELD_READ_INDEX;
+    
+    static {
+        try {
+            Class<?> shadowObject = org.aion.avm.shadow.java.lang.Object.class;
+            SERIALIZE_SELF = shadowObject.getDeclaredMethod("serializeSelf", Class.class, IObjectSerializer.class);
+            DESERIALIZE_SELF = shadowObject.getDeclaredMethod("deserializeSelf", Class.class, IObjectDeserializer.class);
+            FIELD_READ_INDEX = shadowObject.getDeclaredField("readIndex");
+        } catch (NoSuchMethodException | SecurityException | NoSuchFieldException e) {
+            // These are statically defined so can't fail.
+            throw RuntimeAssertionError.unexpected(e);
+        }
+    }
+
     public final ClassLoader loader;
     private final Class<?>[] sortedClasses;
     private final String originalMainClassName;
-    // Note that this fieldCache is populated by the calls to ReflectionStructureCodec.
-    private final ReflectedFieldCache fieldCache;
+    private final SortedFieldCache fieldCache;
 
     // Other caches of specific pieces of data which are lazily built.
     private final Class<?> helperClass;
@@ -73,7 +87,7 @@ public class LoadedDApp {
                 .sorted((f1, f2) -> f1.getName().compareTo(f2.getName()))
                 .toArray(Class[]::new);
         this.originalMainClassName = originalMainClassName;
-        this.fieldCache = new ReflectedFieldCache();
+        this.fieldCache = new SortedFieldCache(this.loader, SERIALIZE_SELF, DESERIALIZE_SELF, FIELD_READ_INDEX);
         this.preserveDebuggability = preserveDebuggability;
         // We also know that we need the runtimeSetup, meaning we also need the helperClass.
         try {
@@ -88,113 +102,65 @@ public class LoadedDApp {
     }
 
     /**
-     * Populates the statics of the DApp classes with the primitives and instance stubs described by the on-disk data.
+     * Requests that the Classes in the receiver be populated with data from the rawGraphData.
+     * NOTE:  The caller is expected to manage billing - none of that is done in here.
      * 
-     * @param feeProcessor The billing mechanism for storage operations.
-     * @param graphStore The storage under the DApp.
-     * @return The codec which should be used when saving the state of the receiver back out (since the codec could
-     * have state needed for serialization).
+     * @param internedClassMap The interned classes, in case class references need to be instantiated.
+     * @param rawGraphData The data from which to read the graph (note that this must encompass all and only a completely serialized graph.
+     * @return The nextHashCode serialized within the graph.
      */
-    public ReflectionStructureCodec populateClassStaticsFromStorage(IStorageFeeProcessor feeProcessor, IObjectGraphStore graphStore) {
-        // We will create the field populator to build objects with the correct canonicalizing caches.
-        StandardFieldPopulator populator = new StandardFieldPopulator();
-        // Create the codec which will make up the long-lived deserialization approach, within the system.
-        ReflectionStructureCodec codec = new ReflectionStructureCodec(this.fieldCache, populator, feeProcessor, graphStore);
-        // Configure the storage graph.
-        // (we pass in false for isNewlyWritten since this token building is only invoked for loaded instances, not newly-written ones).
-        Function<IRegularNode, IPersistenceToken> tokenBuilder = (regularNode) -> new NodePersistenceToken(regularNode, false);
-        graphStore.setLateComponents(this.loader, codec.getInitialLoadDeserializer(), tokenBuilder);
-
-        // Extract the raw data for the class statics and store it on the codec so we can use it later to determine what changed.
-        SerializedRepresentation preCallStaticData = graphStore.getRoot();
-        codec.setPreCallStaticData(preCallStaticData);
-        feeProcessor.readStaticDataFromStorage(preCallStaticData.getBillableSize());
-        SerializedRepresentationCodec.Decoder decoder = new SerializedRepresentationCodec.Decoder(preCallStaticData);
-        
-        // We populate the classes in alphabetical order.
-        for (Class<?> clazz : this.sortedClasses) {
-            codec.deserializeClass(decoder, clazz);
-        }
-        return codec;
+    public int loadEntireGraph(InternedClasses internedClassMap, byte[] rawGraphData) {
+        ByteBuffer inputBuffer = ByteBuffer.wrap(rawGraphData);
+        List<Object> existingObjectIndex = null;
+        StandardGlobalResolver resolver = new StandardGlobalResolver(internedClassMap, this.loader);
+        StandardNameMapper classNameMapper = new StandardNameMapper();
+        int nextHashCode = Deserializer.deserializeEntireGraphAndNextHashCode(inputBuffer, existingObjectIndex, resolver, this.fieldCache, classNameMapper, this.sortedClasses);
+        return nextHashCode;
     }
 
     /**
-     * Creates the codec to be used to save out the initial state of the DApp (only configuration, but no data loaded).
+     * Requests that the Classes in the receiver be walked and all referenced objects be serialized into a graph.
+     * NOTE:  The caller is expected to manage billing - none of that is done in here.
      * 
-     * @param feeProcessor The billing mechanism for storage operations.
-     * @param graphStore The storage under the DApp.
-     * @return The codec which should be used when saving the initial DApp state.
+     * @param nextHashCode The nextHashCode to serialize into the graph so that this can be resumed in the future.
+     * @param maximumSizeInBytes The size limit on the serialized graph size (this is a parameter for testing but also to allow the caller to impose energy-based limits).
+     * @return The enter serialized object graph.
      */
-    public ReflectionStructureCodec createCodecForInitialStore(IStorageFeeProcessor feeProcessor, IObjectGraphStore graphStore) {
-        // We will create the field populator to build objects with the correct canonicalizing caches.
-        StandardFieldPopulator populator = new StandardFieldPopulator();
-        // Create the codec which will make up the long-lived deserialization approach, within the system.
-        return new ReflectionStructureCodec(this.fieldCache, populator, feeProcessor, graphStore);
+    public byte[] saveEntireGraph(int nextHashCode, int maximumSizeInBytes) {
+        ByteBuffer outputBuffer = ByteBuffer.allocate(maximumSizeInBytes);
+        List<Object> out_instanceIndex = null;
+        List<Integer> out_calleeToCallerIndexMap = null;
+        StandardGlobalResolver resolver = new StandardGlobalResolver(null, this.loader);
+        StandardNameMapper classNameMapper = new StandardNameMapper();
+        Serializer.serializeEntireGraph(outputBuffer, out_instanceIndex, out_calleeToCallerIndexMap, resolver, this.fieldCache, classNameMapper, nextHashCode, this.sortedClasses);
+        
+        byte[] finalBytes = new byte[outputBuffer.position()];
+        System.arraycopy(outputBuffer.array(), 0, finalBytes, 0, finalBytes.length);
+        return finalBytes;
     }
 
-    /**
-     * Used in the reentrant path to save out the statics held by the caller DApp instance, while replacing the statics it has with clones
-     * pointing at instance stubs (which, themselves, are backed by the instances in the caller DApp).
-     * Note that these can't be serialized since they point to the actual object graph we want to resume.
-     * 
-     * @param feeProcessor The billing mechanism for storage operations.
-     * @return The graph processor which has captured the state of the statics.
-     */
-    public ReentrantGraphProcessor replaceClassStaticsWithClones(IStorageFeeProcessor feeProcessor) {
-        ReentrantGraphProcessor processor = new ReentrantGraphProcessor(new ConstructorCache(this.loader), this.fieldCache, feeProcessor, this.sortedClasses);
-        processor.captureAndReplaceStaticState();
-        return processor;
+    public ReentrantGraph captureStateAsCaller(int nextHashCode, int maxGraphSize) {
+        StandardGlobalResolver resolver = new StandardGlobalResolver(null, this.loader);
+        StandardNameMapper classNameMapper = new StandardNameMapper();
+        return ReentrantGraph.captureCallerState(resolver, this.fieldCache, classNameMapper, maxGraphSize, nextHashCode, this.sortedClasses);
     }
 
-    /**
-     * Serializes the static fields of the DApp classes and stores them on disk.
-     * 
-     * @param feeProcessor The billing mechanism for storage operations.
-     * @param codec The codec which did the initial state reading (populateClassStaticsFromStorage or createCodecForInitialStore).
-     * @param graphStore The storage under the DApp.
-     */
-    public void saveClassStaticsToStorage(IStorageFeeProcessor feeProcessor, ReflectionStructureCodec codec, IObjectGraphStore graphStore) {
-        // Build the encoder.
-        SerializedRepresentationCodec.Encoder encoder = new SerializedRepresentationCodec.Encoder();
-        
-        // Create the queue of instances reachable from here and consumer abstraction.
-        Queue<org.aion.avm.shadow.java.lang.Object> instancesToWrite = new LinkedList<>();
-        Consumer<org.aion.avm.shadow.java.lang.Object> instanceSink = new Consumer<>() {
-            @Override
-            public void accept(org.aion.avm.shadow.java.lang.Object t) {
-                instancesToWrite.add(t);
-            }};
-        
-        // We serialize the classes in alphabetical order.
-        for (Class<?> clazz : this.sortedClasses) {
-            codec.serializeClass(encoder, clazz, instanceSink);
-        }
-        
-        // Save the raw bytes.
-        SerializedRepresentation staticData = encoder.toSerializedRepresentation();
-        SerializedRepresentation preCallStaticData = codec.getPreCallStaticData();
-        if (null != preCallStaticData) {
-            // See if we should do the write-back.
-            if (!preCallStaticData.equals(staticData)) {
-                feeProcessor.writeUpdateStaticDataToStorage(staticData.getBillableSize());
-                graphStore.setRoot(staticData);
-            }
-        } else {
-            feeProcessor.writeFirstStaticDataToStorage(staticData.getBillableSize());
-            graphStore.setRoot(staticData);
-        }
-        
-        // Do the pass over additional roots.
-        codec.reserializeAdditionalRoots(instanceSink);
-        
-        // Now, drain the queue.
-        while (!instancesToWrite.isEmpty()) {
-            org.aion.avm.shadow.java.lang.Object instance = instancesToWrite.poll();
-            codec.serializeInstance(instance, instanceSink);
-        }
-        
-        // Finish the commit.
-        codec.finishCommit();
+    public ReentrantGraph captureStateAsCallee(int updatedNextHashCode, int maxGraphSize) {
+        StandardGlobalResolver resolver = new StandardGlobalResolver(null, this.loader);
+        StandardNameMapper classNameMapper = new StandardNameMapper();
+        return ReentrantGraph.captureCalleeState(resolver, this.fieldCache, classNameMapper, maxGraphSize, updatedNextHashCode, this.sortedClasses);
+    }
+
+    public void commitReentrantChanges(InternedClasses internedClassMap, ReentrantGraph callerState, ReentrantGraph calleeState) {
+        StandardGlobalResolver resolver = new StandardGlobalResolver(internedClassMap, this.loader);
+        StandardNameMapper classNameMapper = new StandardNameMapper();
+        callerState.commitChangesToState(resolver, this.fieldCache, classNameMapper, this.sortedClasses, calleeState);
+    }
+
+    public void revertToCallerState(InternedClasses internedClassMap, ReentrantGraph callerState) {
+        StandardGlobalResolver resolver = new StandardGlobalResolver(internedClassMap, this.loader);
+        StandardNameMapper classNameMapper = new StandardNameMapper();
+        callerState.revertChangesToState(resolver, this.fieldCache, classNameMapper, this.sortedClasses);
     }
 
     /**
@@ -316,7 +282,7 @@ public class LoadedDApp {
      * Called before the DApp is about to be put into a cache.  This is so it can put itself into a "resumable" state.
      */
     public void cleanForCache() {
-        StaticClearer.nullAllStaticFields(this.sortedClasses, this.fieldCache);
+        // TODO: Implement - we want to wipe the statics so it no longer keeps its graph alive.
     }
 
 
