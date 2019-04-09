@@ -29,11 +29,7 @@ public class Address extends Object {
      */
     public Address(ByteArray raw) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Address_avm_constructor);
-        if (raw == null || raw.length() != avm_LENGTH) {
-            throw new IllegalArgumentException();
-        }
-
-        this.underlying = raw;
+        setUnderlying(raw);
     }
 
     /**
@@ -111,7 +107,7 @@ public class Address extends Object {
      * @param raw The raw bytes representing the address.
      */
     public Address(byte[] raw) {
-        this(new ByteArray(raw));
+        setUnderlying(new ByteArray(raw));
     }
 
     /**
@@ -154,5 +150,12 @@ public class Address extends Object {
     // Support for deserialization
     public Address(Void ignore, int readIndex) {
         super(ignore, readIndex);
+    }
+
+    private void setUnderlying(ByteArray raw) {
+        if (raw == null || raw.length() != avm_LENGTH) {
+            throw new IllegalArgumentException();
+        }
+        this.underlying = raw;
     }
 }

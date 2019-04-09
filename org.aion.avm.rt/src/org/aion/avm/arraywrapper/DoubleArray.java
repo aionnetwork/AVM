@@ -63,7 +63,6 @@ public class DoubleArray extends Array {
     }
 
     public DoubleArray(double[] underlying) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.DoubleArray_avm_constructor_1);
         RuntimeAssertionError.assertTrue(null != underlying);
         this.underlying = underlying;
     }

@@ -175,7 +175,6 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
     private java.math.BigDecimal v;
 
     public BigDecimal(java.math.BigDecimal u) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigDecimal_avm_constructor_16);
         v = u;
     }
 
