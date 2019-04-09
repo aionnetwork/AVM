@@ -166,16 +166,6 @@ public class AionSet<E> implements Set<E> {
         map.clear();
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
     /**
      * Returns an iterator over the elements in this set.  The elements
      * are returned in no particular order.

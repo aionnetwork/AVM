@@ -172,4 +172,39 @@ public class AionSetTest {
             Assert.assertEquals(2, hash);
         }
     }
+
+    @Test
+    public void checkEquals() {
+        final int size = 20;
+        final int hashCount = 10;
+        AionSet<TestElement> set = createAionSet(size, hashCount);
+
+        AionSet<TestElement> setSame = set;
+        Assert.assertTrue(set.equals(setSame));
+
+        AionSet<TestElement> setDifferent = createAionSet(size, hashCount);
+        Assert.assertFalse(set.equals(setDifferent));
+    }
+
+    private AionSet<TestElement> createAionSet(int size, int hashCount) {
+        AionSet<TestElement> set = new AionSet<>();
+        for (int i = 0; i < size; ++i) {
+            TestElement elt = new TestElement(i % hashCount, i);
+            set.add(elt);
+        }
+        return set;
+    }
+
+    @Test
+    public void checkHashCode() {
+        final int size = 20;
+        final int hashCount = 10;
+        AionSet<TestElement> set = createAionSet(size, hashCount);
+
+        AionSet<TestElement> setSame = set;
+        Assert.assertEquals(set.hashCode(), setSame.hashCode());
+
+        AionSet<TestElement> mapDifferent = createAionSet(size, hashCount);
+        Assert.assertNotEquals(set.hashCode(), mapDifferent.hashCode());
+    }
 }

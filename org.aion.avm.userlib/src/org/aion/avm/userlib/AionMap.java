@@ -270,16 +270,6 @@ public class AionMap<K, V> implements Map<K, V> {
         return containsKey(key) ? get(key) : defaultValue;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
     /**
      * Abstract representation of a node of the BTree
      * It can be a {@link BInternalNode} or {@link BLeafNode}
@@ -744,11 +734,6 @@ public class AionMap<K, V> implements Map<K, V> {
             V ret = this.value;
             this.value = value;
             return ret;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return super.equals(obj);
         }
 
         // Since our map is hashcode based, the hashcode of an entry is defined as hashcode of the key.

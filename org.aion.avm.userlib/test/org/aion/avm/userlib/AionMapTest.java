@@ -295,4 +295,39 @@ public class AionMapTest {
             Assert.assertEquals(2, hash);
         }
     }
+
+    @Test
+    public void checkEquals() {
+        final int size = 20;
+        final int hashCount = 10;
+        AionMap<TestElement, String> map = createAionMap(size, hashCount);
+
+        AionMap<TestElement, String> mapSame = map;
+        Assert.assertTrue(map.equals(mapSame));
+
+        AionMap<TestElement, String> mapDifferent = createAionMap(size, hashCount);
+        Assert.assertFalse(map.equals(mapDifferent));
+    }
+
+    private AionMap<TestElement, String> createAionMap(int size, int hashCount) {
+        AionMap<TestElement, String> map = new AionMap<>();
+        for (int i = 0; i < size; ++i) {
+            TestElement elt = new TestElement(i % hashCount, i);
+            map.put(elt, elt.toString());
+        }
+        return map;
+    }
+
+    @Test
+    public void checkHashCode() {
+        final int size = 20;
+        final int hashCount = 10;
+        AionMap<TestElement, String> map = createAionMap(size, hashCount);
+
+        AionMap<TestElement, String> mapSame = map;
+        Assert.assertEquals(map.hashCode(), mapSame.hashCode());
+
+        AionMap<TestElement, String> mapDifferent = createAionMap(size, hashCount);
+        Assert.assertNotEquals(map.hashCode(), mapDifferent.hashCode());
+    }
 }
