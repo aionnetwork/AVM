@@ -73,7 +73,7 @@ public class ContractBalanceTest {
         assertEquals(BigInteger.ZERO, balance);
 
         // Increase the contract balance and check the amount.
-        BigInteger delta1 = BigInteger.TWO.pow(1024);
+        BigInteger delta1 = BigInteger.TWO.pow(250);
         kernel.adjustBalance(contract, delta1);
         balance = callContractToGetItsBalance(contract);
         assertEquals(delta1, balance);

@@ -191,8 +191,10 @@ public class CryptoUtilMethodFeeBenchmarkTest {
      */
     @Test
     public void testAll3HashFunctionsAndCompare2(){
-        int warmUp = 1000;
-        int loopCount = 1000000;
+        //following values should be increased for a more accurate result
+        // recommended values are 1000, 1000000
+        int warmUp = WARMUP_COUNT;
+        int loopCount = LOOP_COUNT;
         byte[] msg = hashMessageLong; // change this message to see variance in result
 
         // warm up blake2b, then make multiple calls within the dapp
@@ -222,8 +224,9 @@ public class CryptoUtilMethodFeeBenchmarkTest {
      */
     @Test
     public void testEdverifyComparisionToBlake2bInDepth(){
-        int warmUp = 1000;
-        int loopCount = 10000;
+        //following values should be increased for a more accurate result
+        int warmUp = WARMUP_COUNT;
+        int loopCount = LOOP_COUNT;
         byte[] msg = hashMessageLong; // change this message to see variance in result
 
         // warm up blake2b, then make multiple calls within the dapp

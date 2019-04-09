@@ -20,25 +20,25 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
 
     public BigInteger(ByteArray val, int off, int len) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_constructor);
-        v = new java.math.BigInteger(val.getUnderlying(), off, len);
+        setUnderlying(new java.math.BigInteger(val.getUnderlying(), off, len));
     }
 
     public BigInteger(ByteArray val) {
         this(val, 0, val.length());
     }
 
-    public BigInteger(int signum, ByteArray magnitude, int off, int len){
+    public BigInteger(int signum, ByteArray magnitude, int off, int len) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_constructor_2);
-        v = new java.math.BigInteger(signum, magnitude.getUnderlying(), off, len);
+        setUnderlying(new java.math.BigInteger(signum, magnitude.getUnderlying(), off, len));
     }
 
-    public BigInteger(int signum, ByteArray magnitude){
+    public BigInteger(int signum, ByteArray magnitude) {
         this(signum, magnitude, 0, magnitude.length());
     }
 
     public BigInteger(String val, int radix) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_constructor_4);
-        v = new java.math.BigInteger(val.getUnderlying(), radix);
+        setUnderlying(new java.math.BigInteger(val.getUnderlying(), radix));
     }
 
     public BigInteger(String val) {
@@ -348,8 +348,13 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
     private java.math.BigInteger v;
 
     public BigInteger(java.math.BigInteger u) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_constructor_6);
-        v = u;
+        setUnderlying(u);
+    }
+
+    private void setUnderlying(java.math.BigInteger u) {
+        if (isValidLength(u.toByteArray().length)) {
+            v = u;
+        }
     }
 
     public java.math.BigInteger getUnderlying() {
@@ -374,6 +379,14 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
         
         // We can serialize this as its actual 2s compliment byte array.
         CodecIdioms.serializeByteArray(serializer, this.v.toByteArray());
+    }
+
+    private boolean isValidLength(int length) {
+        if (length > 32) {
+            //we're limiting the size of BigInteger to 32 bytes to have better control over the billing
+            throw new ArithmeticException();
+        }
+        return true;
     }
 
     //========================================================
