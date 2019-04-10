@@ -1,5 +1,4 @@
-package org.aion.avm.core;
-
+package org.aion.avm;
 
 /**
  * A few constants to describe how we limit and bill for storage graph serialization/deserialization.

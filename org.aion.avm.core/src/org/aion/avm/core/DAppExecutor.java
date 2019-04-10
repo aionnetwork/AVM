@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.avm.StorageFees;
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.persistence.ReentrantGraph;
 import org.aion.avm.core.util.Helpers;

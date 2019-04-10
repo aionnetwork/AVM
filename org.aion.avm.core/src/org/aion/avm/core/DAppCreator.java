@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.avm.StorageFees;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
