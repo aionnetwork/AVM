@@ -61,6 +61,11 @@ public class MemoryBackedAccountStore implements IAccountStore {
     }
 
     @Override
+    public void removeData(byte[] key) {
+        this.storage.remove(new ByteArrayWrapper(key));
+    }
+
+    @Override
     public Map<ByteArrayWrapper, byte[]> getStorageEntries() {
         return this.storage;
     }

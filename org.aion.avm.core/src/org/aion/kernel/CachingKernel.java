@@ -46,7 +46,7 @@ public class CachingKernel implements KernelInterface {
 
     @Override
     public void removeStorage(Address address, byte[] key) {
-        throw RuntimeAssertionError.unreachable("This class does not implement this method.");
+        lazyCreateAccount(address.toBytes()).removeData(key);
     }
 
     @Override

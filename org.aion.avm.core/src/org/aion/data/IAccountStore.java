@@ -61,6 +61,13 @@ public interface IAccountStore {
     public void setData(byte[] key, byte[] value);
 
     /**
+     * Removes the application key-value store.
+     *
+     * @param key The key to remove.
+     */
+    public void removeData(byte[] key);
+
+    /**
      * Used only for testing and will be removed in the future.
      * 
      * @return A map of the entries in the account's application key-value store.

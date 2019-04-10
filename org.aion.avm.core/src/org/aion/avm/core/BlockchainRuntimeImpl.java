@@ -106,6 +106,31 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     @Override
+    public void avm_putStorage(ByteArray key, ByteArray value) {
+        require(key != null, "Key can't be NULL");
+        require(key.getUnderlying().length == 32, "Key must be 32 bytes");
+
+        org.aion.types.Address contractAddress = getContractAddress();
+        if (value == null) {
+            kernel.removeStorage(contractAddress, key.getUnderlying());
+        } else {
+            kernel.putStorage(contractAddress, key.getUnderlying(), value.getUnderlying());
+        }
+    }
+
+    @Override
+    public ByteArray avm_getStorage(ByteArray key) {
+        require(key != null, "Key can't be NULL");
+        require(key.getUnderlying().length == 32, "Key must be 32 bytes");
+
+        org.aion.types.Address contractAddress = getContractAddress();
+        byte[] data = this.kernel.getStorage(contractAddress, key.getUnderlying());
+        return (null != data)
+            ? new ByteArray(data)
+            : null;
+    }
+
+    @Override
     public org.aion.avm.shadow.java.math.BigInteger avm_getBalance(Address address) {
         require(null != address, "Address can't be NULL");
 
@@ -117,9 +142,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     @Override
     public org.aion.avm.shadow.java.math.BigInteger avm_getBalanceOfThisContract() {
         // This method can be called inside clinit so CREATE is a valid context.
-        org.aion.types.Address contractAddress = (tx.isContractCreationTransaction())
-            ? this.capabilities.generateContractAddress(this.tx)
-            : tx.getDestinationAddress();
+        org.aion.types.Address contractAddress = getContractAddress();
 
         // Acquire resource before reading
         avm.getResourceMonitor().acquire(contractAddress.toBytes(), this.task);
@@ -407,5 +430,14 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
         return new Result(newResult.getResultCode().isSuccess(),
                 newResult.getReturnData() == null ? null : new ByteArray(newResult.getReturnData()));
+    }
+
+    private org.aion.types.Address getContractAddress() {
+        org.aion.types.Address contractAddress =
+            (tx.isContractCreationTransaction())
+                ? this.capabilities.generateContractAddress(this.tx)
+                : tx.getDestinationAddress();
+
+        return contractAddress;
     }
 }

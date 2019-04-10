@@ -109,7 +109,8 @@ public class TestingKernel implements KernelInterface {
 
     @Override
     public void removeStorage(Address address, byte[] key) {
-        throw new AssertionError("This class does not implement this method.");
+        IAccountStore account = this.dataStore.openAccount(address.toBytes());
+        lazyCreateAccount(address.toBytes()).removeData(key);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.aion.avm.shadowapi.avm;
 
+import org.aion.avm.StorageFees;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.shadow.java.lang.String;
@@ -78,6 +79,23 @@ public final class Blockchain {
         return blockchainRuntime.avm_getBlockDifficulty();
     }
 
+    public static void avm_putStorage(ByteArray key, ByteArray value) {
+        int valueSize = value != null ? value.length() : 0;
+
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(
+            RuntimeMethodFeeSchedule.BlockchainRuntime_avm_putStorage
+            + StorageFees.WRITE_PRICE_PER_BYTE * valueSize);
+        blockchainRuntime.avm_putStorage(key, value);
+    }
+
+    public static ByteArray avm_getStorage(ByteArray key) {
+        // Note that we must charge the linear portion of the read _after_ the read happens.
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_getStorage);
+        ByteArray value = blockchainRuntime.avm_getStorage(key);
+        int valueSize = value != null ? value.length() : 0;
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(StorageFees.READ_PRICE_PER_BYTE * valueSize);
+        return value;
+    }
 
     public static BigInteger avm_getBalance(Address address) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_getBalance);

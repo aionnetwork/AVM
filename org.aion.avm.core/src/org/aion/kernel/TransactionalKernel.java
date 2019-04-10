@@ -291,7 +291,11 @@ public class TransactionalKernel implements KernelInterface {
 
     @Override
     public void removeStorage(Address address, byte[] key) {
-        throw new AssertionError("This class does not implement this method.");
+        Consumer<KernelInterface> write = (kernel) -> {
+            kernel.removeStorage(address, key);
+        };
+        write.accept(writeCache);
+        writeLog.add(write);
     }
 
     @Override

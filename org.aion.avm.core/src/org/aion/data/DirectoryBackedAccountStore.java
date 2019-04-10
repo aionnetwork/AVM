@@ -83,6 +83,11 @@ public class DirectoryBackedAccountStore implements IAccountStore {
     }
 
     @Override
+    public void removeData(byte[] key) {
+        deleteFile(fileNameForKey(key));
+    }
+
+    @Override
     public Map<ByteArrayWrapper, byte[]> getStorageEntries() {
         Map<ByteArrayWrapper, byte[]> result = new HashMap<>();
         // List the files and parse any names with FILE_PREFIX_KEY as a prefix.
@@ -134,6 +139,16 @@ public class DirectoryBackedAccountStore implements IAccountStore {
         Path oneFile = new File(this.accountDirectory, fileName).toPath();
         try {
             Files.write(oneFile, data);
+        } catch (IOException e) {
+            // This implementation doesn't handle exceptions.
+            throw RuntimeAssertionError.unexpected(e);
+        }
+    }
+
+    private void deleteFile(String fileName) {
+        Path oneFile = new File(this.accountDirectory, fileName).toPath();
+        try {
+            Files.deleteIfExists(oneFile);
         } catch (IOException e) {
             // This implementation doesn't handle exceptions.
             throw RuntimeAssertionError.unexpected(e);

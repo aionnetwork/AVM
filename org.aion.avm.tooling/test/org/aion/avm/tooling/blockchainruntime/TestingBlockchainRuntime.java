@@ -157,6 +157,25 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     }
 
     @Override
+    public void avm_putStorage(ByteArray key, ByteArray value) {
+        Objects.requireNonNull(address);
+        if (value == null) {
+            kernel.removeStorage(address, key.getUnderlying());
+        } else {
+            kernel.putStorage(address, key.getUnderlying(), value.getUnderlying());
+        }
+    }
+
+    @Override
+    public ByteArray avm_getStorage(ByteArray key) {
+        Objects.requireNonNull(key);
+        byte[] data = this.kernel.getStorage(address, key.getUnderlying());
+        return (null != data)
+            ? new ByteArray(data)
+            : null;
+    }
+
+    @Override
     public BigInteger avm_getBalance(Address address) {
         Objects.requireNonNull(address);
         return new BigInteger(kernel.getBalance(org.aion.types.Address.wrap(address.unwrap())));
