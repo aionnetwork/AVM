@@ -155,7 +155,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
         // Acquire resource before reading
         avm.getResourceMonitor().acquire(address.unwrap(), this.task);
-        byte[] vc = this.kernel.getTransformedCode(org.aion.types.Address.wrap(address.unwrap()));
+        byte[] vc = this.kernel.getCode(org.aion.types.Address.wrap(address.unwrap()));
         return vc == null ? 0 : vc.length;
     }
 

@@ -98,8 +98,14 @@ public class TransactionalKernel implements KernelInterface {
 
     @Override
     public byte[] getCode(Address address) {
-        // getCode is an interface for fvm, the avm should not call this method.
-        throw new AssertionError("This class does not implement this method.");
+        byte[] result = null;
+        if (!this.deletedAccountProjection.contains(new ByteArrayWrapper(address.toBytes()))) {
+            result = this.writeCache.getCode(address);
+            if (null == result) {
+                result = this.parent.getCode(address);
+            }
+        }
+        return result;
     }
 
     @Override

@@ -10,6 +10,12 @@ import org.aion.avm.core.util.ByteArrayWrapper;
  * The abstract interface over a single account residing in an IDataStore instance.
  */
 public interface IAccountStore {
+
+    /**
+     * @return The deploy code stored for this account.
+     */
+    public byte[] getCode();
+
     /**
      * @param code The code to store for this account.
      */

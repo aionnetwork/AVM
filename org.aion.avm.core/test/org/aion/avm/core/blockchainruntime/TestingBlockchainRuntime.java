@@ -191,7 +191,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     @Override
     public int avm_getCodeSize(Address address) {
         Objects.requireNonNull(address);
-        byte[] vc = kernel.getTransformedCode(org.aion.types.Address.wrap(address.unwrap()));
+        byte[] vc = kernel.getCode(org.aion.types.Address.wrap(address.unwrap()));
         return vc == null ? 0 : vc.length;
     }
 

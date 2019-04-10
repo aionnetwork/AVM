@@ -61,8 +61,10 @@ public class CachingKernel implements KernelInterface {
 
     @Override
     public byte[] getCode(Address address) {
-        // getCode is an interface for fvm, the avm should not call this method.
-        throw RuntimeAssertionError.unreachable("This class does not implement this method.");
+        IAccountStore account = this.dataStore.openAccount(address.toBytes());
+        return (null != account)
+            ? account.getCode()
+            : null;
     }
 
     @Override

@@ -28,6 +28,11 @@ public class DirectoryBackedAccountStore implements IAccountStore {
     }
 
     @Override
+    public byte[] getCode() {
+        return readFile(FILE_NAME_CODE);
+    }
+
+    @Override
     public void setCode(byte[] code) {
         writeFile(FILE_NAME_CODE, code);
     }

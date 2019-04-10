@@ -125,8 +125,10 @@ public class TestingKernel implements KernelInterface {
 
     @Override
     public byte[] getCode(Address address) {
-        // getCode is an interface for fvm, the avm should not call this method.
-        throw new AssertionError("This class does not implement this method.");
+        IAccountStore account = this.dataStore.openAccount(address.toBytes());
+        return (null != account)
+            ? account.getCode()
+            : null;
     }
 
     @Override
@@ -136,7 +138,7 @@ public class TestingKernel implements KernelInterface {
 
     @Override
     public byte[] getTransformedCode(Address address) {
-        return internalGetCode(address);
+        return internalGetTransformedCode(address);
     }
 
     @Override
@@ -232,7 +234,7 @@ public class TestingKernel implements KernelInterface {
     public boolean destinationAddressIsSafeForThisVM(Address address) {
         // This implementation knows about contract address prefixes (just used by tests - real kernel stores out-of-band meta-data).
         // So, it is valid to use any regular address or AVM contract address.
-        byte[] code = internalGetCode(address);
+        byte[] code = internalGetTransformedCode(address);
         return (code == null) || (address.toBytes()[0] == TestingKernel.AVM_CONTRACT_PREFIX);
     }
 
@@ -294,7 +296,7 @@ public class TestingKernel implements KernelInterface {
         account.setBalance(start.add(delta));
     }
 
-    private byte[] internalGetCode(Address address) {
+    private byte[] internalGetTransformedCode(Address address) {
         IAccountStore account = this.dataStore.openAccount(address.toBytes());
         return (null != account)
                 ? account.getTransformedCode()

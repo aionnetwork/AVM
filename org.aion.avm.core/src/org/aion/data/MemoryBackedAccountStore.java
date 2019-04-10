@@ -16,6 +16,11 @@ public class MemoryBackedAccountStore implements IAccountStore {
     private byte[] graph = null;
 
     @Override
+    public byte[] getCode() {
+        return this.code;
+    }
+
+    @Override
     public void setCode(byte[] code) {
         this.code = code;
     }

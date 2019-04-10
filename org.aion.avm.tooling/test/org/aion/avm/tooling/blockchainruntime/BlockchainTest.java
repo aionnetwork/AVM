@@ -15,6 +15,8 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 
@@ -31,35 +33,12 @@ public class BlockchainTest {
     @Test
     public void testBlockchainRuntime() {
         Address dappAddress = installJarAsDApp(avmRule.getDappBytes(BlockchainTestResource.class, new byte[0], AionBuffer.class));
-        org.aion.types.Address dappAddressApi = new org.aion.types.Address(dappAddress.unwrap());
-
         byte[] txData = "tx_data".getBytes();
 
         AvmRule.ResultWrapper result = avmRule.call(premined, dappAddress, BigInteger.ONE, txData, energyLimit, energyPrice);
+        ByteBuffer returnData = getReturnData(dappAddress, txData);
 
-        Block block = avmRule.getBlock();
-
-        ByteBuffer buffer = ByteBuffer.allocate(1024);
-        buffer.put(dappAddress.unwrap());
-        buffer.put(premined.unwrap());
-        buffer.put(premined.unwrap());
-        buffer.putLong(energyLimit);
-        buffer.putLong(energyPrice);
-        buffer.putLong(BigInteger.ONE.longValue());
-        buffer.put(txData);
-        buffer.putLong(block.getTimestamp());
-        buffer.putLong(block.getNumber());
-        buffer.putLong(block.getEnergyLimit());
-        buffer.put(block.getCoinbase().toBytes());
-        buffer.put(block.getDifficulty().toByteArray());
-        buffer.put("value".getBytes());
-        buffer.putLong(avmRule.kernel.getBalance(org.aion.types.Address.wrap(new byte[32])).longValue());
-        buffer.putLong(avmRule.kernel.getTransformedCode(dappAddressApi).length);
-        buffer.put(HashUtils.blake2b("blake2b-message".getBytes()));
-        buffer.put(HashUtils.sha256("sha256-message".getBytes()));
-        buffer.put(HashUtils.keccak256("keccak256-message".getBytes()));
-
-        byte[] expected = Arrays.copyOfRange(buffer.array(), 0, buffer.position());
+        byte[] expected = Arrays.copyOfRange(returnData.array(), 0, returnData.position());
         assertArrayEquals(expected, result.getTransactionResult().getReturnData());
     }
 
@@ -77,10 +56,56 @@ public class BlockchainTest {
         assertArrayEquals(txData, result.getTransactionResult().getReturnData());
     }
 
+    @Test
+    public void testAVMContractCodeDistinguish() {
+        byte[] jar = avmRule.getDappBytes(BlockchainTestResource.class, new byte[0], AionBuffer.class);
+        Address dappAddress = installJarAsDApp(jar);
+        org.aion.types.Address dappAddressApi = new org.aion.types.Address(dappAddress.unwrap());
+
+        CodeAndArguments decodeFromBytes = CodeAndArguments.decodeFromBytes(jar);
+        assertEquals(decodeFromBytes.code.length, avmRule.kernel.getCode(dappAddressApi).length);
+
+        assertNotEquals(avmRule.kernel.getCode(dappAddressApi).length, avmRule.kernel.getTransformedCode(dappAddressApi).length);
+
+        byte[] txData = "tx_data".getBytes();
+        AvmRule.ResultWrapper result = avmRule.call(premined, dappAddress, BigInteger.ONE, txData, energyLimit, energyPrice);
+        assertTrue(result.getTransactionResult().getResultCode().isSuccess());
+
+        ByteBuffer returnData = getReturnData(dappAddress, txData);
+        byte[] expected = Arrays.copyOfRange(returnData.array(), 0, returnData.position());
+        assertArrayEquals(expected, result.getTransactionResult().getReturnData());
+    }
+
     private Address installJarAsDApp(byte[] jar) {
         AvmRule.ResultWrapper result = avmRule.deploy(premined, BigInteger.ZERO, jar, energyLimit, energyPrice);
         assertTrue(result.getTransactionResult().getResultCode().isSuccess());
         return result.getDappAddress();
     }
 
+    private ByteBuffer getReturnData(Address dappAddress, byte[] txData) {
+        Block block = avmRule.getBlock();
+        org.aion.types.Address dappAddressApi = new org.aion.types.Address(dappAddress.unwrap());
+
+        ByteBuffer buffer = ByteBuffer.allocate(1024);
+        buffer.put(dappAddress.unwrap());
+        buffer.put(premined.unwrap());
+        buffer.put(premined.unwrap());
+        buffer.putLong(energyLimit);
+        buffer.putLong(energyPrice);
+        buffer.putLong(BigInteger.ONE.longValue());
+        buffer.put(txData);
+        buffer.putLong(block.getTimestamp());
+        buffer.putLong(block.getNumber());
+        buffer.putLong(block.getEnergyLimit());
+        buffer.put(block.getCoinbase().toBytes());
+        buffer.put(block.getDifficulty().toByteArray());
+        buffer.put("value".getBytes());
+        buffer.putLong(avmRule.kernel.getBalance(org.aion.types.Address.wrap(new byte[32])).longValue());
+        buffer.putLong(avmRule.kernel.getCode(dappAddressApi).length);
+        buffer.put(HashUtils.blake2b("blake2b-message".getBytes()));
+        buffer.put(HashUtils.sha256("sha256-message".getBytes()));
+        buffer.put(HashUtils.keccak256("keccak256-message".getBytes()));
+
+        return buffer;
+    }
 }
