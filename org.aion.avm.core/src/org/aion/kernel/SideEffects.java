@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.types.Address;
 import org.aion.vm.api.interfaces.IExecutionLog;
 import org.aion.vm.api.interfaces.InternalTransactionInterface;
@@ -19,7 +20,6 @@ import org.aion.vm.api.interfaces.TransactionSideEffects;
  */
 public class SideEffects implements TransactionSideEffects {
     private List<IExecutionLog> logs;
-    private List<Address> addressesMarkedForDeletion;
     private List<InternalTransactionInterface> internalTransactions;
 
     /**
@@ -27,14 +27,12 @@ public class SideEffects implements TransactionSideEffects {
      */
     public SideEffects() {
         this.logs = new ArrayList<>();
-        this.addressesMarkedForDeletion = new ArrayList<>();
         this.internalTransactions = new ArrayList<>();
     }
 
     @Override
     public void merge(TransactionSideEffects sideEffects) {
         addLogs(sideEffects.getExecutionLogs());
-        addAllToDeletedAddresses(sideEffects.getAddressesToBeDeleted());
         addInternalTransactions(sideEffects.getInternalTransactions());
     }
 
@@ -57,12 +55,12 @@ public class SideEffects implements TransactionSideEffects {
 
     @Override
     public void addToDeletedAddresses(Address address) {
-        this.addressesMarkedForDeletion.add(address);
+        throw new AssertionError("We shouldn't be adding and deleted addresses in the AVM");
     }
 
     @Override
     public void addAllToDeletedAddresses(Collection<Address> addresses) {
-        this.addressesMarkedForDeletion.addAll(addresses);
+        throw new AssertionError("We shouldn't be adding and deleted addresses in the AVM");
     }
 
     @Override
@@ -82,7 +80,7 @@ public class SideEffects implements TransactionSideEffects {
 
     @Override
     public List<Address> getAddressesToBeDeleted() {
-        return this.addressesMarkedForDeletion;
+        return new ArrayList<>();
     }
 
     @Override
