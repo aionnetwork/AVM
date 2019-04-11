@@ -95,6 +95,19 @@ public class ContractLoggingTest {
         verifyLogs(sideEffects.getExecutionLogs(), depth + 1);
     }
 
+    @Test
+    public void testLogsFiredOffInEachInternalTransactionUptoFive() {
+        Transaction transaction = generateTxForMethodCall("spawnInternalTransactionsAndFailAtDepth5", 9);
+        TransactionResult result = runTransaction(transaction);
+        assertTrue(result.getResultCode().isSuccess());
+
+        TransactionSideEffects sideEffects = result.getSideEffects();
+        assertEquals(NUM_LOGS * 5, sideEffects.getExecutionLogs().size());
+        assertEquals(5, sideEffects.getInternalTransactions().size());
+
+        verifyLogs(sideEffects.getExecutionLogs(), 5);
+    }
+
     /**
      * Checks that each of the logs is in its expected state and that it has been generated the
      * appropriate number of times.

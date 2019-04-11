@@ -271,7 +271,16 @@ public class AvmImpl implements AvmInternal {
         if (null != this.backgroundFatalError) {
             throw this.backgroundFatalError;
         }
-        return commonInvoke(parentKernel, task, tx, 0);
+        RuntimeAssertionError.assertTrue(!task.isSideEffectsStackEmpty());
+        task.pushSideEffects(new SideEffects());
+        AvmTransactionResult result = commonInvoke(parentKernel, task, tx, 0);
+        SideEffects txSideEffects = task.popSideEffects();
+        if (!result.getResultCode().isSuccess()) {
+            txSideEffects.getExecutionLogs().clear();
+            txSideEffects.markAllInternalTransactionsAsRejected();
+        }
+        task.peekSideEffects().merge(txSideEffects);
+        return result;
     }
 
     private AvmTransactionResult runExternalInvoke(KernelInterface parentKernel, TransactionTask task, TransactionInterface tx) {
@@ -310,6 +319,11 @@ public class AvmImpl implements AvmInternal {
 
         // Transfer fees to miner
         parentKernel.adjustBalance(parentKernel.getMinerAddress(), BigInteger.valueOf(result.getEnergyUsed()).multiply(BigInteger.valueOf(tx.getEnergyPrice())));
+
+        if (!result.getResultCode().isSuccess()) {
+            task.peekSideEffects().getExecutionLogs().clear();
+            task.peekSideEffects().markAllInternalTransactionsAsRejected();
+        }
 
         return result;
     }
@@ -390,9 +404,6 @@ public class AvmImpl implements AvmInternal {
 
         if (result.getResultCode().isSuccess()) {
             thisTransactionKernel.commit();
-        } else {
-            task.getSideEffects().getExecutionLogs().clear();
-            task.getSideEffects().markAllInternalTransactionsAsRejected();
         }
 
         logger.debug("Result: {}", result);

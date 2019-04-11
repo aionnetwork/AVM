@@ -267,7 +267,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
                 List.of(),
                 data.getUnderlying()
         );
-        task.getSideEffects().addLog(log);
+        task.peekSideEffects().addLog(log);
     }
 
     @Override
@@ -279,7 +279,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
                 List.of(LogSizeUtils.truncatePadTopic(topic1.getUnderlying())),
                 data.getUnderlying()
         );
-        task.getSideEffects().addLog(log);
+        task.peekSideEffects().addLog(log);
     }
 
     @Override
@@ -292,7 +292,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
                 List.of(LogSizeUtils.truncatePadTopic(topic1.getUnderlying()), LogSizeUtils.truncatePadTopic(topic2.getUnderlying())),
                 data.getUnderlying()
         );
-        task.getSideEffects().addLog(log);
+        task.peekSideEffects().addLog(log);
     }
 
     @Override
@@ -306,7 +306,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
                 List.of(LogSizeUtils.truncatePadTopic(topic1.getUnderlying()), LogSizeUtils.truncatePadTopic(topic2.getUnderlying()), LogSizeUtils.truncatePadTopic(topic3.getUnderlying())),
                 data.getUnderlying()
         );
-        task.getSideEffects().addLog(log);
+        task.peekSideEffects().addLog(log);
     }
 
     @Override
@@ -321,7 +321,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
                 List.of(LogSizeUtils.truncatePadTopic(topic1.getUnderlying()), LogSizeUtils.truncatePadTopic(topic2.getUnderlying()), LogSizeUtils.truncatePadTopic(topic3.getUnderlying()), LogSizeUtils.truncatePadTopic(topic4.getUnderlying())),
                 data.getUnderlying()
         );
-        task.getSideEffects().addLog(log);
+        task.peekSideEffects().addLog(log);
     }
 
     @Override
@@ -389,7 +389,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     private Result runInternalCall(InternalTransaction internalTx) {
         // add the internal transaction to result
-        task.getSideEffects().addInternalTransaction(internalTx);
+        task.peekSideEffects().addInternalTransaction(internalTx);
 
         // we should never leave this method without decrementing this
         task.incrementTransactionStackDepth();

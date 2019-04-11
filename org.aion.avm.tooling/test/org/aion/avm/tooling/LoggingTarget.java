@@ -1,9 +1,12 @@
 package org.aion.avm.tooling;
 
 import java.math.BigInteger;
+import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.avm.tooling.arraywrapping.TestResource.B;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import avm.Blockchain;
 import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.kernel.Block;
 
 public class LoggingTarget {
     public static final byte[] TOPIC1 = new byte[]{ 0xf, 0xe, 0xd, 0xc, 0xb, 0xa };
@@ -17,6 +20,8 @@ public class LoggingTarget {
     public static final byte[] DATA4 = new byte[]{ 0x4 };
     public static final byte[] DATA5 = new byte[]{ 0x5 };
 
+    public static int depth = 0;
+
     public static byte[] main() {
         ABIDecoder decoder = new ABIDecoder(Blockchain.getData());
         String methodName = decoder.decodeMethodName();
@@ -28,6 +33,9 @@ public class LoggingTarget {
                 return new byte[0];
             } else if (methodName.equals("spawnInternalTransactionsAndHitLogsAtBottomLevel")) {
                 spawnInternalTransactionsAndHitLogsAtBottomLevel(decoder.decodeOneInteger());
+                return new byte[0];
+            } else if (methodName.equals("spawnInternalTransactionsAndFailAtDepth5")) {
+                spawnInternalTransactionsAndFailAtDepth5(decoder.decodeOneInteger());
                 return new byte[0];
             } else if (methodName.equals("hitLogs")) {
                 hitLogs();
@@ -60,6 +68,23 @@ public class LoggingTarget {
             Blockchain.call(Blockchain.getAddress(), BigInteger.ZERO, data, Blockchain.getRemainingEnergy());
         } else {
             hitLogs();
+        }
+    }
+
+    public static void spawnInternalTransactionsAndFailAtDepth5(int numInternals) {
+        hitLogs();
+        if (depth > 4) {
+            depth = 0;
+            Blockchain.require(false);
+        }
+        depth++;
+        if (numInternals > 0) {
+            byte[] arg1 = ABIEncoder.encodeOneString("spawnInternalTransactionsAndFailAtDepth5");
+            byte[] arg2 = ABIEncoder.encodeOneInteger(numInternals  -1);
+            byte[] data = new byte[arg1.length + arg2.length];
+            System.arraycopy(arg1, 0, data, 0, arg1.length);
+            System.arraycopy(arg2, 0, data, arg1.length, arg2.length);
+            Blockchain.call(Blockchain.getAddress(), BigInteger.ZERO, data, Blockchain.getRemainingEnergy());
         }
     }
 

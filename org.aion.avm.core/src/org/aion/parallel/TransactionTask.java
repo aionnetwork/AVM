@@ -1,6 +1,7 @@
 package org.aion.parallel;
 
 import avm.Address;
+import java.util.Stack;
 import org.aion.avm.core.ReentrantDAppStack;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IInstrumentation;
@@ -23,7 +24,7 @@ public class TransactionTask implements Comparable<TransactionTask>{
     private int index;
     private StringBuffer outBuffer;
     private TransactionalKernel thisTransactionKernel;
-    private SideEffects sideEffects;
+    private Stack<SideEffects> sideEffectsStack;
     private Address origin;
     private int depth;
 
@@ -37,7 +38,8 @@ public class TransactionTask implements Comparable<TransactionTask>{
         this.outBuffer = new StringBuffer();
         this.origin = new Address(origin.toBytes());
         this.depth = 0;
-        this.sideEffects = new SideEffects();
+        this.sideEffectsStack = new Stack<>();
+        this.sideEffectsStack.push(new SideEffects());
     }
 
     public void startNewTransaction() {
@@ -134,8 +136,20 @@ public class TransactionTask implements Comparable<TransactionTask>{
         this.outBuffer.append(toPrint + "\n");
     }
 
-    public SideEffects getSideEffects() {
-        return sideEffects;
+    public void pushSideEffects(SideEffects se) {
+        sideEffectsStack.push(se);
+    }
+
+    public SideEffects popSideEffects() {
+        return sideEffectsStack.pop();
+    }
+
+    public SideEffects peekSideEffects() {
+        return sideEffectsStack.peek();
+    }
+
+    public boolean isSideEffectsStackEmpty() {
+        return sideEffectsStack.empty();
     }
 
     public Address getOriginAddress() {
