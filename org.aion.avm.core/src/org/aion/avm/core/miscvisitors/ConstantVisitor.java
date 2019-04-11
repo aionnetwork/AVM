@@ -88,7 +88,7 @@ public class ConstantVisitor extends ClassToolchain.ToolChainClassVisitor {
             public void visitLdcInsn(Object value) {
                 if (value instanceof Type && ((Type) value).getSort() == Type.OBJECT) {
                     // class constants
-                    // TODO: should we load the original class or the shadow class?
+                    // TODO (AKI-103): verify that we are correctly handling all constant types.
                     super.visitLdcInsn(value);
                     super.visitMethodInsn(Opcodes.INVOKESTATIC, Helper.RUNTIME_HELPER_NAME, wrapClassMethodName, wrapClassMethodDescriptor, false);
                 } else if (value instanceof String) {

@@ -4,10 +4,7 @@ import org.aion.avm.arraywrapper.CharArray;
 import org.aion.avm.internal.*;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
-/**
- * TODO:  Ensure that none of the interface we have provided exposes underlying implementation details (slack buffer space, etc), since we would
- * otherwise need to take that into account with our serialization strategy.
- */
+
 public class StringBuffer extends Object implements CharSequence, Appendable{
     static {
         // Shadow classes MUST be loaded during bootstrap phase.

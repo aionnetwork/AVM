@@ -233,7 +233,7 @@ public class AionMap<K, V> implements Map<K, V> {
      *
      * @return a set view of the keys contained in this map
      */
-    // TODO: Make this a reflection view instead of a snapshot
+    // TODO (AKI-122): Make this a reflection view instead of a snapshot
     @Override
     public Set<K> keySet() {
         Set<K> ret = new AionMapKeySet();
@@ -247,7 +247,7 @@ public class AionMap<K, V> implements Map<K, V> {
      *
      * @return a view of the values contained in this map
      */
-    // TODO: Make this a reflection view instead of a snapshot
+    // TODO (AKI-122): Make this a reflection view instead of a snapshot
     @Override
     public Collection<V> values() {
         return new AionMapValues();
@@ -260,7 +260,7 @@ public class AionMap<K, V> implements Map<K, V> {
      *
      * @return a set view of the mappings contained in this map
      */
-    // TODO: Make this a reflection view instead of a snapshot
+    // TODO (AKI-122): Make this a reflection view instead of a snapshot
     @Override
     public Set<Entry<K, V>> entrySet() {
         return new AionMapEntrySet();
@@ -274,9 +274,9 @@ public class AionMap<K, V> implements Map<K, V> {
      * Abstract representation of a node of the BTree
      * It can be a {@link BInternalNode} or {@link BLeafNode}
      */
-    //TODO: remove public
+    //TODO (AKI-122): remove public
     public abstract class BNode<K, V>{
-        //TODO: parent pointer can be discard if we adopt better delete implementation
+        //TODO (AKI-122): parent pointer can be discard if we adopt better delete implementation
         BNode parent;
 
         BNode next;
@@ -1083,7 +1083,7 @@ public class AionMap<K, V> implements Map<K, V> {
         // Left node has t children
         y.nodeSize = order;
         // Remove reference from left node
-        // TODO: This may not be necessary
+        // TODO (AKI-122): This may not be necessary
         int newXRouter = y.routers[order - 1];
         for (int j = order; j < (2 * order) - 1; j++){
             y.routers [j] = 0;
@@ -1124,7 +1124,7 @@ public class AionMap<K, V> implements Map<K, V> {
 
         y.nodeSize = order;
         // Remove reference from left node to prevent future memory leak
-        // TODO: This may not be necessary
+        // TODO (AKI-122): This may not be necessary
         for (int j = order; j < (2 * order); j++){
             y.entries[j] = null;
         }

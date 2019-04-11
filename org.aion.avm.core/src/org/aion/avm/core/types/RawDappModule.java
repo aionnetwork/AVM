@@ -32,7 +32,7 @@ public class RawDappModule {
                     ? new RawDappModule(classes, mainClass, forest, jar.length, classes.size())
                     : null;
         } catch (Throwable t) {
-            // TODO:  Find the right place to log or right way to re-throw this once we see if it happens in unexpected places.
+            // TODO (AKI-111):  Find the right place to log or right way to re-throw this once we see if it happens in unexpected places.
             return null;
         }
     }

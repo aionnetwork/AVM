@@ -194,8 +194,7 @@ public class RejectionMethodVisitor extends MethodVisitor {
         String mappedOwner = this.namespaceMapper.mapType(owner, this.preserveDebuggability);
         String mappedName = NamespaceMapper.mapMethodName(name);
         String mappedDescriptor = this.namespaceMapper.mapDescriptor(descriptor, this.preserveDebuggability);
-        // TODO:  Determine if we need to implement some kind of cache for these reflected operations.
-        // (if so, it should probably be implemented in NodeEnvironment, since these classes are shared and long-lived).
+        // TODO (AKI-107):  Move this reflection logic into a cached location inside NodeEnvironment, as a higher-level call.
         try {
             Class<?> ownerShadowClass = NodeEnvironment.singleton.loadSharedClass(Helpers.internalNameToFulllyQualifiedName(mappedOwner));
             if ("<init>".equals(name)) {
@@ -249,7 +248,7 @@ public class RejectionMethodVisitor extends MethodVisitor {
             builder.append(DescriptorParser.ARRAY);
             writeClass(builder, clazz.getComponentType());
         } else if (!clazz.isPrimitive()) {
-            // TODO:  Move the explicit IObject->Object special-case into the NamespaceMapper if we can generalize the descriptor case (since,
+            // TODO (AKI-109):  Move the explicit IObject->Object special-case into the NamespaceMapper if we can generalize the descriptor case (since,
             // in general, this mapping should not be applied but it is something we need to do for method descriptors, specifically).
             String className = clazz.getName();
             if (className.startsWith(PackageConstants.kArrayWrapperDotPrefix )) {

@@ -144,13 +144,11 @@ public class DAppCreator {
 
         /*
          * Another pass to deal with static fields in interfaces.
+         * Note that all fields in interfaces are defined as static.
          */
         GeneratedClassConsumer consumer = generatedClassesSink;
         Set<String> userInterfaceSlashNames = new HashSet<>();
         preRenameClassHierarchy.walkPreOrder(new Forest.VisitorAdapter<>() {
-            public void onVisitRoot(Forest.Node<String, ClassInfo> root) {
-                // TODO: we have any interface with fields?
-            }
             public void onVisitNotRootNode(Forest.Node<String, ClassInfo> node) {
                 if (node.getContent().isInterface()) {
                     userInterfaceSlashNames.add(Helpers.fulllyQualifiedNameToInternalName(DebugNameResolver.getUserPackageDotPrefix(node.getId(), preserveDebuggability)));
@@ -255,7 +253,7 @@ public class DAppCreator {
             threadInstrumentation.chargeEnergy(StorageFees.WRITE_PRICE_PER_BYTE * rawGraphData.length);
             kernel.putObjectGraph(dappAddress, rawGraphData);
 
-            // TODO: whether we should return the dapp address is subject to change
+            // Return data of a CREATE transaction is the new DApp address.
             result.setResultCode(AvmTransactionResult.Code.SUCCESS);
             result.setEnergyUsed(tx.getEnergyLimit() - threadInstrumentation.energyLeft());
             result.setReturnData(dappAddress.toBytes());

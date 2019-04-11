@@ -75,7 +75,7 @@ public class DeploymentArgumentTarget {
 
 
     // Note that we currently don't have a way to encode the CodeAndArguments from inside a contract.
-    // TODO:  This capability should be added to the new user-space ABI.
+    // TODO (AKI-117):  This capability should be added to the new user-space ABI.
     private static byte[] encodeCodeAndArguments(byte[] deploymentArgs) {
         byte[] codeAndArguments = new byte[Integer.BYTES + smallJar.length + Integer.BYTES + deploymentArgs.length];
         AionBuffer codeAndArgumentsBuffer = AionBuffer.wrap(codeAndArguments);

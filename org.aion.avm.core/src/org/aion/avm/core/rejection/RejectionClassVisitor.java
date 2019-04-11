@@ -26,7 +26,7 @@ import org.objectweb.asm.TypePath;
 public class RejectionClassVisitor extends ClassToolchain.ToolChainClassVisitor {
     // This will probably change, in the future, but we currently will only parse Java10 (version 54) classes.
     private static final int SUPPORTED_CLASS_VERSION = 54;
-    // TODO:  We eventually want to convert this to 255 - 1 (for "L" prefix) - max array dimensions but this shorter limit allows for more immediate testing.
+    // TODO (AKI-105):  We eventually want to convert this to 255 - 1 (for "L" prefix) - max array dimensions but this shorter limit allows for more immediate testing.
     private static final int MAX_UTF8_NAME_LENGTH = 127;
 
     // The names of the classes that the user defined in their JAR (note:  this does NOT include interfaces).
@@ -65,7 +65,7 @@ public class RejectionClassVisitor extends ClassToolchain.ToolChainClassVisitor 
 
     @Override
     public ModuleVisitor visitModule(String name, int access, String version) {
-        throw RuntimeAssertionError.unimplemented("TODO:  Determine if/how to handle module definitions");
+        throw RuntimeAssertionError.unimplemented("TODO (AKI-106):  Determine if/how to handle module definitions");
     }
 
     @Override

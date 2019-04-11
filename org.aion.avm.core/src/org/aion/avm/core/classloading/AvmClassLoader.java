@@ -96,7 +96,6 @@ public class AvmClassLoader extends ClassLoader {
         } else if (this.bytecodeMap.containsKey(name)) {
             byte[] injected = this.bytecodeMap.get(name);
             result = defineClass(name, injected, 0, injected.length);
-            // TODO: Can this check be removed?
             // Note that this class loader should only be able to see classes we have transformed.  This means no enums.
             RuntimeAssertionError.assertTrue(0 == (CLASS_IS_ENUM & result.getModifiers()));
             this.cache.put(name, result);

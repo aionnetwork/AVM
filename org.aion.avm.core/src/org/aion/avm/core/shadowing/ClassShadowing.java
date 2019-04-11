@@ -141,7 +141,6 @@ public class ClassShadowing extends ClassToolchain.ToolChainClassVisitor {
     public void visitInnerClass(String name, String outerName, String innerName, int access) {
         // Note that, in case the inner class is an enum, we need to also clear the ACC_ENUM modifier here, otherwise the class still gets the enum modifier, at runtime.
         int newAccess = ~Opcodes.ACC_ENUM & access;
-        // TODO:  Do we need to carry over any other logic from the visit() to here?
         super.visitInnerClass(name, outerName, innerName, newAccess);
     }
 }

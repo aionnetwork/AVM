@@ -37,7 +37,7 @@ public class StandardGlobalResolver implements IGlobalResolver {
 
     @Override
     public int getAsConstant(Object target) {
-        // TODO: Replace this with an inline constant readIndex value.
+        // TODO (AKI-97): Replace this with an inline constant readIndex value.
         int constant = 0;
         for (Map.Entry<Integer, org.aion.avm.shadow.java.lang.Object> elt : NodeEnvironment.singleton.getConstantMap().entrySet()) {
             if (elt.getValue() == target) {

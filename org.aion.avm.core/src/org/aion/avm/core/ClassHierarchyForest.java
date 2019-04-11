@@ -50,7 +50,6 @@ public final class ClassHierarchyForest extends Forest<String, ClassInfo> {
         for (Map.Entry<String, byte[]> entry : classNameToBytes.entrySet()) {
             Pair<String, ClassInfo> pair = analyzeClass(entry.getValue());
 
-            // TODO: verify if the NULL bytes in class info break any assumptions
             if (!pair.value.isInterface()) {
                 String parentName = pair.key;
                 byte[] parentBytes = classNameToBytes.get(parentName);

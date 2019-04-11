@@ -221,7 +221,6 @@ public class ArgumentParser {
     }
 
     private static String usageString() {
-        // TODO:  This should probably be generated from the description, above, if we want to keep this parser.
         return "Usage: AvmCLI [options] [command] [command options]";
     }
 

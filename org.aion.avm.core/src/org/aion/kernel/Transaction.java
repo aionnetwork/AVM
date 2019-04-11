@@ -88,7 +88,7 @@ public class Transaction implements TransactionInterface {
         this.data = data;
         this.energyLimit = energyLimit;
         this.energyPrice = energyPrice;
-        //TODO: Make sure this constructor is only used for testing purpose. Kernel should always pass AVM the transaction hash.
+        //TODO (AKI-114): Make sure this constructor is only used for testing purpose. Kernel should always pass AVM the transaction hash.
         this.transactionHash = Helpers.randomBytes(32);
     }
 

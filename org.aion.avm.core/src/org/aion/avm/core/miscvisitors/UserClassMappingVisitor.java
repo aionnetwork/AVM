@@ -18,7 +18,6 @@ import org.objectweb.asm.Type;
  * 1) User-defined code are moved to `org.aion.avm.user`;
  * 2) All method declarations and references has been prepended with `avm_`;
  * 3) All fields declarations and references has been prepended with `avm_`;
- * 4) TODO: `java.base` types has been replaced with shadow `java.base`, i.e. `org.aion.avm.shadow.**`.
  *
  * NOTE: String & class constant wrapping is in separate class visitor
  */
@@ -168,9 +167,6 @@ public class UserClassMappingVisitor extends ClassToolchain.ToolChainClassVisito
         String newOuterName = (null != outerName)
                 ? this.mapper.mapType(outerName, this.preserveDebuggability)
                 : null;
-        String newInnerName = (null != innerName)
-                ? innerName // mapType(innerName) TODO: disable because it's simple name, more investigation may be required
-                : null;
-        super.visitInnerClass(newName, newOuterName, newInnerName, access);
+        super.visitInnerClass(newName, newOuterName, innerName, access);
     }
 }

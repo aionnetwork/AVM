@@ -45,8 +45,7 @@ public class Block {
         return data;
     }
 
-    // TODO: consider adding the following fields into constructor
-
+    // TODO (AKI-114): consider adding the following fields into constructor
     public long getEnergyLimit() {
         return 10_000_000L;
     }

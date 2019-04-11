@@ -60,7 +60,6 @@ public class TransactionTask implements Comparable<TransactionTask>{
         RuntimeAssertionError.assertTrue(null == this.threadOwningTask);
         this.threadOwningTask = IInstrumentation.attachedThreadInstrumentation.get();
         RuntimeAssertionError.assertTrue(null != this.threadOwningTask);
-        //TODO: potential broken state
         if (this.abortState){
             threadOwningTask.setAbortState();
         }
@@ -77,7 +76,6 @@ public class TransactionTask implements Comparable<TransactionTask>{
      */
     public void setAbortState() {
         this.abortState = true;
-        //TODO: potential broken state
         if (null != this.threadOwningTask){
             this.threadOwningTask.setAbortState();
         }

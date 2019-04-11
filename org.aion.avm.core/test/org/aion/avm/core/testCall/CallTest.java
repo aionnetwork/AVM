@@ -9,6 +9,7 @@ import org.aion.avm.core.blockchainruntime.TestingBlockchainRuntime;
 import org.aion.avm.core.SuspendedInstrumentation;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.shadow.java.math.BigInteger;
 import org.junit.Test;
 
@@ -77,18 +78,12 @@ public class CallTest {
                     Class<?> clazz = avm2.getClassLoader().loadUserClassByOriginalName(Callee.class.getName(), CallTest.this.preserveDebuggability);
                     Object ret = clazz.getMethod(NamespaceMapper.mapMethodName("main")).invoke(null);
 
-                    // TODO: refund remaining energy
-
-                    // TODO: how to restore the Helper state after call
-
                     // we have to re-wrap the byte array rather than returning the previous one.
                     return new Result(true, new ByteArray(((ByteArray)ret).getUnderlying()));
 
                 } catch (Exception ex) {
-                    ex.printStackTrace();
-
-                    // TODO: how to interpret failure
-                    return null;
+                    // We don't expect failure in this test-case.
+                    throw RuntimeAssertionError.unexpected(ex);
                 } finally {
                     avm2.shutdown();
                     suspended.resume();

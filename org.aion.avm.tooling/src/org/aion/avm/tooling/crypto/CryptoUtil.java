@@ -8,7 +8,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
 public class CryptoUtil {
-    // TODO:  Determine if we want to impose a maximum on the data size for signatures.
+    // TODO (AKI-119):  Determine if we want to impose a maximum on the data size for signatures.
     private static final int VERIFY_EDDSA_MAX_MESSAGE_LENGTH = Integer.MAX_VALUE;
 
     /**

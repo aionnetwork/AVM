@@ -3,7 +3,7 @@ package org.aion.avm.core.instrument;
 
 /**
  * This class is used only as a testing resource for BlockBuildingMethodVisitorTest.
- * TODO:  We should check in the compiled class file so we aren't the victim of compiler differences.
+ * Note that compiler differences could cause tests using the code compiled from this to fail, but the test is simple enough that this is unlikely.
  */
 public class BlockTestResource {
     public int returnInt() {

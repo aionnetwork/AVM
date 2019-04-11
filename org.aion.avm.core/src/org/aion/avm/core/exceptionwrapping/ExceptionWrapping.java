@@ -19,7 +19,7 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
     /**
      * We need to handle the case of how to unify exceptions originating directly from the JVM, so we check the "java/lang/" prefix.
      * NOTE: This prefix handles all the cases which are thrown asynchronously from the JVM.
-     * TODO: Detect this case by looking for a non-match with any of our prefixes.
+     * TODO (AKI-101): Replace this explicit prefix check with a more general name mapper.
      */
     private static final String SYSTEM_EXCEPTION_DETECTION_PREFIX = "java/lang/";
 

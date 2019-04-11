@@ -82,7 +82,7 @@ public class ClassMetering extends ClassToolchain.ToolChainClassVisitor {
                 }
             }
         }
-        // Apply the heap size cost model (TODO: the heap cost model is linear for now. May revise it later)
+        // Apply the heap size cost model.  Note that this is a linear function of the heap allocation size.
         blockFee += heapSize * BytecodeFeeScheduler.BytecodeEnergyLevels.MEMORY.getVal();
 
         return blockFee;

@@ -113,7 +113,7 @@ public class AvmTransactionResult implements TransactionResult {
 
         @Override
         public boolean isRevert() {
-            //TODO: confirm whether or not we want the same REVERT behaviour as the fvm.
+            //TODO (AKI-113): confirm whether or not we want the same REVERT behaviour as the fvm.
             return false;
         }
 

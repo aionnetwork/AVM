@@ -15,8 +15,9 @@ import org.aion.avm.internal.PackageConstants;
  * 2)  The AVM runtime package.
  * 3)  The types defined within the user contract, itself.
  * 
+ * NOTE:  This class is expected to be used only on post-renamed classes, only.
+ * Additionally, this class does not consider debug mode.
  * Note that all predicates here are requested in terms of "slash-style" (aka "internal") class names.
- * TODO:  We need to add some additional restrictions to our JDK filter since we won't shadow all java/lang sub-packages ("ref", for example).
  */
 public class ClassWhiteList {
     /**
@@ -25,7 +26,6 @@ public class ClassWhiteList {
      * @param slashClassName The class to check.
      * @return True if we are allowed to access this class by any means we know.
      */
-    // Node that this does not consider debug mode assumptions
     public boolean isInWhiteList(String slashClassName) {
         return (slashClassName.startsWith(PackageConstants.kUserSlashPrefix)
                 || slashClassName.startsWith(PackageConstants.kShadowSlashPrefix)

@@ -51,7 +51,7 @@ public class GraphReachabilityIntegrationTest {
         long modify_storageCharges = readCost + writeCost;
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
-        // TODO: Get rid of this number, by adjusting the precise measures in the factors above
+        // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
         long userlibCost = -28136;
         callStatic(block, contractAddr, modify_basicCost + modify_miscCharges + modify_storageCharges + userlibCost, "modify249");
         
@@ -87,7 +87,7 @@ public class GraphReachabilityIntegrationTest {
         long run_storageCharges = 2 * readCost + 2 * writeCost;
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
-        // TODO: Get rid of this number, by adjusting the precise measures in the factors above
+        // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
         long userlibCost = -74100;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + userlibCost, "run249_reentrant_notLoaded");
@@ -124,7 +124,7 @@ public class GraphReachabilityIntegrationTest {
         long run_storageCharges = 2 * readCost + 2 * writeCost;
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
-        // TODO: Get rid of this number, by adjusting the precise measures in the factors above
+        // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
         long userlibCost = -73374;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + userlibCost, "run249_reentrant_loaded");
@@ -157,7 +157,7 @@ public class GraphReachabilityIntegrationTest {
         long run_storageCharges = 2 * readCost + 2 * writeCost;
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
-        // TODO: Get rid of this number, by adjusting the precise measures in the factors above
+        // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
         long run_userlibCost = -71385;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + run_userlibCost, "runNewInstance_reentrant");
@@ -168,7 +168,7 @@ public class GraphReachabilityIntegrationTest {
         long check_storageCharges = (StorageFees.READ_PRICE_PER_BYTE * graphSizeAfter) + writeCost;
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
-        // TODO: Get rid of this number, by adjusting the precise measures in the factors above
+        // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
         long check_userlibCost = -28974;
 
         int value = (Integer) callStatic(block, contractAddr, check_basicCost + check_miscCharges + check_storageCharges + check_userlibCost, "checkNewInstance");
@@ -200,7 +200,7 @@ public class GraphReachabilityIntegrationTest {
         long run_storageCharges = 3 * readCost + 3 * writeCost;
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
-        // TODO: Get rid of this number, by adjusting the precise measures in the factors above
+        // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
         long run_userlibCost = -114854;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + run_userlibCost, "runNewInstance_reentrant2");
@@ -212,7 +212,7 @@ public class GraphReachabilityIntegrationTest {
         long check_storageCharges = (StorageFees.READ_PRICE_PER_BYTE * graphSizeAfter) + writeCost;
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
-        // TODO: Get rid of this number, by adjusting the precise measures in the factors above
+        // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
         long check_userlibCost = -28974;
 
         int value = (Integer) callStatic(block, contractAddr, check_basicCost + check_miscCharges + check_storageCharges + check_userlibCost, "checkNewInstance");
@@ -247,7 +247,7 @@ public class GraphReachabilityIntegrationTest {
         long storageCharges = 17223L;
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
-        // TODO: Get rid of this number, by adjusting the precise measures in the factors above
+        // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
         long userlibCost = -5282L;
 
         long totalExpectedCost = miscCharges + storageCharges + userlibCost;
@@ -286,7 +286,7 @@ public class GraphReachabilityIntegrationTest {
                 : (StorageFees.READ_PRICE_PER_BYTE * graphSizeAfter) + (StorageFees.WRITE_PRICE_PER_BYTE * graphSizeAfter);
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
-        // TODO: Get rid of this number, by adjusting the precise measures in the factors above
+        // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
         long userlibCost = -31821;
         return basicCost + miscCharges + storageCharges + userlibCost;
     }
@@ -302,7 +302,7 @@ public class GraphReachabilityIntegrationTest {
         long storageCharges = readCost + writeCost;
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
-        // TODO: Get rid of this number, by adjusting the precise measures in the factors above
+        // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
         long userlibCost = -33136;
 
         return basicCost + miscCharges + storageCharges + userlibCost;

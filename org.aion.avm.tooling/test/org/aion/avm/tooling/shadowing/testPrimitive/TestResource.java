@@ -120,7 +120,7 @@ public class TestResource {
     // Test for java.lang.Character
     //========================================================
 
-    //TODO
+    //TODO (AKI-121)
     public boolean testCharacter(){
         return true;
     }

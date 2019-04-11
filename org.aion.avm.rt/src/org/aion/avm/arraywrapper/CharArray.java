@@ -102,7 +102,7 @@ public class CharArray extends Array {
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
         super.deserializeSelf(CharArray.class, deserializer);
 
-        // TODO:  We probably want faster array copies.
+        // TODO (AKI-118):  We probably want faster array copies.
         int length = deserializer.readInt();
         this.underlying = new char[length];
         for (int i = 0; i < length; ++i) {
@@ -113,7 +113,7 @@ public class CharArray extends Array {
     public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
         super.serializeSelf(CharArray.class, serializer);
 
-        // TODO:  We probably want faster array copies.
+        // TODO (AKI-118):  We probably want faster array copies.
         serializer.writeInt(this.underlying.length);
         for (int i = 0; i < this.underlying.length; ++i) {
             serializer.writeChar(this.underlying[i]);

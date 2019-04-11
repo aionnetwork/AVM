@@ -95,7 +95,7 @@ public class AvmCLI {
 
         TestingKernel kernel = new TestingKernel(storageFile, block);
 
-        // TODO:  Remove this bias when/if we change this to no longer send all transactions from the same account.
+        // Note that we can remove this bias when/if we change this to no longer send all transactions from the same account.
         BigInteger biasedNonce = kernel.getNonce(sender).add(BigInteger.valueOf(nonceBias));
         return Transaction.call(sender, target, biasedNonce, balance, data, energyLimit, 1L);
     }

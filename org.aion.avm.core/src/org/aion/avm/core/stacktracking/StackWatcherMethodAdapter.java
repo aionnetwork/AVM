@@ -32,7 +32,7 @@ class StackWatcherMethodAdapter extends AdviceAdapter implements Opcodes {
         super(Opcodes.ASM6, mv, access, name, desc);
     }
 
-    //TODO: Test the assumption of using 2 and 1
+    //TODO (AKI-108): Test the assumption of using 2 and 1
     public void setMax(MethodNode node, int l, int s){
         this.maxL = l + 2;
         this.maxS = s + 1;

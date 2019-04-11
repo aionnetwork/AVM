@@ -473,7 +473,6 @@ public class NodeEnvironment {
                 } else {
                     parentClass = generatedShadowJDK.get(parentName);
                 }
-                // TODO: figure out the name of the grandparent class
                 rtClassesForest.add(new Forest.Node<>(parentName, new ClassInfo(false, parentClass)),
                         new Forest.Node<>(generatedClassName, new ClassInfo(false, generatedShadowJDK.get(generatedClassName))));
             }

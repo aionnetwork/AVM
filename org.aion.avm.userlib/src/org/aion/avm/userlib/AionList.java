@@ -13,7 +13,7 @@ import java.util.*;
  * That is, these classes are transformed and accessible to contract code, without any special support from our VM.
  * We may expand, change, or remove this idea in favour of something else, as we proceed.  This solution isn't set in stone.
  *
- * TODO:  This is a VERY basic implementation which must be replace if we expect to proceed this way.
+ * TODO (AKI-122):  This is a VERY basic implementation which must be replace if we expect to proceed this way.
  * We might also want to make the class into a constructor argument, so we can add more aggressive type safety to the internals.
  */
 public class AionList<E> implements List<E> {
@@ -250,7 +250,7 @@ public class AionList<E> implements List<E> {
 
     @Override
     public List<E> subList(int fromIndex, int toIndex) {
-        // TODO:  Add sublist handling if we want to continue using this implementation (not included for alpha release).
+        // TODO (AKI-122):  Add sublist handling if we want to continue using this implementation (not included for alpha release).
         return null;
     }
 
