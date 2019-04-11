@@ -12,6 +12,7 @@
     <property name="dir.global.build.test" value="../build/test"/>
     <property name="dir.global.jar" value="../out/jar"/>
     <property name="junit.heap" value="32m"/>
+    <property name="junit.threads" value="4"/>
 
     <!-- Set this property to run a specific test. -->
     <property name="unit.test" value="*Test" />
@@ -80,7 +81,7 @@
 
     <target name="test" depends="clean_buildtest">
         <mkdir dir="../org.aion.avm.userlib/testreports" />
-        <junit printsummary="on" haltonfailure="true" fork="true" maxmemory="${junit.heap}" dir="${dir.local.workspace}">
+        <junit printsummary="on" haltonfailure="true" fork="true" maxmemory="${junit.heap}" threads="${junit.threads}" dir="${dir.local.workspace}">
             <classpath>
                 <pathelement location="${dir.global.lib}/junit-4.12.jar"/>
                 <pathelement location="${dir.global.lib}/hamcrest-all-1.3.jar"/>
