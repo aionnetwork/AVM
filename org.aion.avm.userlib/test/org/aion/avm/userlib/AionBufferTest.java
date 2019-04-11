@@ -17,10 +17,10 @@ import org.junit.Test;
 public class AionBufferTest {
     private static final int RANGE_1BYTE = BigInteger.TWO.pow(8).intValue();
     private static final int RANGE_2BYTES = BigInteger.TWO.pow(16).intValue();
-    private static final int INT_SLICE = BigInteger.TWO.pow(20).intValue();
-    private static final int LONG_SLICE = BigInteger.TWO.pow(22).intValue();
-    private static final int FLOAT_SLICE = BigInteger.TWO.pow(20).intValue();
-    private static final int DOUBLE_SLICE = BigInteger.TWO.pow(22).intValue();
+    private static final int INT_SLICE = BigInteger.TWO.pow(18).intValue();
+    private static final int LONG_SLICE = BigInteger.TWO.pow(16).intValue();
+    private static final int FLOAT_SLICE = BigInteger.TWO.pow(18).intValue();
+    private static final int DOUBLE_SLICE = BigInteger.TWO.pow(16).intValue();
     private static Random random;
 
     @Before

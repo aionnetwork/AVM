@@ -11,6 +11,7 @@
     <property name="dir.global.build.main" value="../build/main"/>
     <property name="dir.global.build.test" value="../build/test"/>
     <property name="dir.global.jar" value="../out/jar"/>
+    <property name="junit.heap" value="32m"/>
 
     <target name="clean" >
         <antcall target="cleanmain" />
@@ -76,7 +77,7 @@
 
     <target name="test" depends="clean_buildtest" >
         <mkdir dir="${dir.local.testreports}" />
-        <junit printsummary="on" haltonfailure="true" fork="true" dir="${dir.local.workspace}">
+        <junit printsummary="on" haltonfailure="true" fork="true" maxmemory="${junit.heap}" dir="${dir.local.workspace}">
             <classpath>
                 <pathelement location="${dir.global.lib}/junit-4.12.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-core.jar"/>
