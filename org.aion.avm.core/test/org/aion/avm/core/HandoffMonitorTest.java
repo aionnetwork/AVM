@@ -2,6 +2,8 @@ package org.aion.avm.core;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.AvmTransactionResult;
@@ -17,7 +19,7 @@ import org.junit.Test;
 public class HandoffMonitorTest {
     @Test
     public void startupShutdown() {
-        MonitorThread thread = new MonitorThread();
+        MonitorThread thread = new MonitorThread(null);
         Set<Thread> executorThreads = new HashSet<>();
         executorThreads.add(thread);
         HandoffMonitor monitor = new HandoffMonitor(executorThreads);
@@ -29,7 +31,7 @@ public class HandoffMonitorTest {
     @Test
     public void failEnqueueBeforeFutureGet() {
         // Startup.
-        MonitorThread thread = new MonitorThread();
+        MonitorThread thread = new MonitorThread(null);
         Set<Thread> executorThreads = new HashSet<>();
         executorThreads.add(thread);
         HandoffMonitor monitor = new HandoffMonitor(executorThreads);
@@ -53,7 +55,7 @@ public class HandoffMonitorTest {
     @Test
     public void commonCallSequence() {
         // Startup.
-        MonitorThread thread = new MonitorThread();
+        MonitorThread thread = new MonitorThread(null);
         Set<Thread> executorThreads = new HashSet<>();
         executorThreads.add(thread);
         HandoffMonitor monitor = new HandoffMonitor(executorThreads);
@@ -76,7 +78,7 @@ public class HandoffMonitorTest {
     @Test
     public void batchingCallSequence() {
         // Startup.
-        MonitorThread thread = new MonitorThread();
+        MonitorThread thread = new MonitorThread(null);
         Set<Thread> executorThreads = new HashSet<>();
         executorThreads.add(thread);
         HandoffMonitor monitor = new HandoffMonitor(executorThreads);
@@ -102,10 +104,11 @@ public class HandoffMonitorTest {
     @Test
     public void batchingCallMultithreaded() {
         // Startup.
-        MonitorThread t1 = new MonitorThread("Executor 0");
-        MonitorThread t2 = new MonitorThread("Executor 1");
-        MonitorThread t3 = new MonitorThread("Executor 2");
-        MonitorThread t4 = new MonitorThread("Executor 3");
+        CyclicBarrier firstTaskBarrier = new CyclicBarrier(4);
+        MonitorThread t1 = new MonitorThread(firstTaskBarrier);
+        MonitorThread t2 = new MonitorThread(firstTaskBarrier);
+        MonitorThread t3 = new MonitorThread(firstTaskBarrier);
+        MonitorThread t4 = new MonitorThread(firstTaskBarrier);
         Set<Thread> executorThreads = new HashSet<>();
         executorThreads.add(t1);
         executorThreads.add(t2);
@@ -143,11 +146,14 @@ public class HandoffMonitorTest {
 
     @Test
     public void verifyCallMultithreaded() {
+        final int threadCount = 16;
+        // Note that want to force the tasks to spread across the threads so we will give them a barrier to synchronize after their first tasks.
+        CyclicBarrier firstTaskBarrier = new CyclicBarrier(threadCount);
+        
         // Startup.
-
         Set<Thread> executorThreads = new HashSet<>();
-        for (int i = 0; i < 16; i++){
-            executorThreads.add(new MonitorThread());
+        for (int i = 0; i < threadCount; i++){
+            executorThreads.add(new MonitorThread(firstTaskBarrier));
         }
         HandoffMonitor monitor = new HandoffMonitor(executorThreads);
 
@@ -168,8 +174,7 @@ public class HandoffMonitorTest {
             verifySet.add(((FakeResult) results[i].get()).executor);
         }
 
-        Assert.assertTrue(verifySet.size() > 1);
-        Assert.assertTrue(verifySet.size() <= 128);
+        Assert.assertEquals(threadCount, verifySet.size());
 
         monitor.stopAndWaitForShutdown();
 
@@ -179,14 +184,11 @@ public class HandoffMonitorTest {
     }
 
     private class MonitorThread extends Thread {
+        private final CyclicBarrier firstTaskBarrier;
         private HandoffMonitor monitor;
 
-        public MonitorThread(){
-            super();
-        }
-
-        public MonitorThread(String name){
-            super(name);
+        public MonitorThread(CyclicBarrier firstTaskBarrier){
+            this.firstTaskBarrier = firstTaskBarrier;
         }
 
         public void startAgainstMonitor(HandoffMonitor monitor) {
@@ -196,6 +198,16 @@ public class HandoffMonitorTest {
         @Override
         public void run() {
             TransactionTask task = this.monitor.blockingPollForTransaction(null, null);
+            if (null != this.firstTaskBarrier) {
+                // We want to wait until each thread has picked up a transaction before proceeding.
+                try {
+                    this.firstTaskBarrier.await();
+                } catch (InterruptedException | BrokenBarrierException e) {
+                    // We don't use interruption and shouldn't see broken barriers.
+                    e.printStackTrace();
+                    Assert.fail();
+                }
+            }
             while (null != task) {
                 // Fake up a result.
                 AvmTransactionResult result = new FakeResult(this);
