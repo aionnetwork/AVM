@@ -6,8 +6,8 @@ public class RuntimeMethodFeeSchedule {
     public static final long RT_METHOD_FEE_LEVEL_3 = 600;
     public static final long RT_METHOD_FEE_LEVEL_4 = 1500;
 
-    public static final long RT_HASH_METHOD_FEE_LEVEL_1 = 2000; // for hashes calls
-    public static final long RT_VERIFY_METHOD_FEE_LEVEL_1 = RT_HASH_METHOD_FEE_LEVEL_1 * 50; // for edverify
+    public static final long RT_HASH_METHOD_FEE_LEVEL_1 = 2000;
+    public static final long RT_VERIFY_METHOD_FEE_LEVEL_1 = 3000; // for edverify
 
     public static final long RT_METHOD_FEE_FACTOR = 5;
 
@@ -125,7 +125,6 @@ public class RuntimeMethodFeeSchedule {
 
     public static final long ByteArray_avm_clone = RT_METHOD_FEE_LEVEL_3; // totalCost - 762; // byte code cost - 362; invoked methods cost - 400;
     public static final long ByteArray_avm_constructor = RT_METHOD_FEE_LEVEL_1; // totalCost - 176;
-    public static final long ByteArray_avm_constructor_1 = RT_METHOD_FEE_LEVEL_3; // totalCost - 400; //maximum cost of multiple blocks; // byte code cost - 300; invoked methods cost - 100;
 
     public static final long Double_avm_toHexString = RT_METHOD_FEE_LEVEL_3; // totalCost - 576; // byte code cost - 276; invoked methods cost - 300;
     public static final long Double_avm_toString = RT_METHOD_FEE_LEVEL_3; // totalCost - 576; // byte code cost - 276; invoked methods cost - 300;
@@ -159,11 +158,9 @@ public class RuntimeMethodFeeSchedule {
 
     public static final long FloatArray_avm_clone = RT_METHOD_FEE_LEVEL_3; // totalCost - 562; // byte code cost - 362; invoked methods cost - 200;
     public static final long FloatArray_avm_constructor = RT_METHOD_FEE_LEVEL_1; // totalCost - 176;
-    public static final long FloatArray_avm_constructor_1 = RT_METHOD_FEE_LEVEL_3; // totalCost - 400; //maximum cost of multiple blocks; // byte code cost - 300; invoked methods cost - 100;
 
     public static final long DoubleArray_avm_clone = RT_METHOD_FEE_LEVEL_3; // totalCost - 562; // byte code cost - 362; invoked methods cost - 200;
     public static final long DoubleArray_avm_constructor = RT_METHOD_FEE_LEVEL_1; // totalCost - 176;
-    public static final long DoubleArray_avm_constructor_1 = RT_METHOD_FEE_LEVEL_3; // totalCost - 400; //maximum cost of multiple blocks; // byte code cost - 300; invoked methods cost - 100;
 
     public static final long Address_avm_constructor = RT_METHOD_FEE_LEVEL_3; // totalCost - 687; //maximum cost of multiple blocks; // byte code cost - 457; invoked methods cost - 230;
     public static final long Address_avm_unwrap = RT_METHOD_FEE_LEVEL_1; // totalCost - 62;
@@ -233,7 +230,6 @@ public class RuntimeMethodFeeSchedule {
     public static final long BigDecimal_avm_byteValueExact = RT_METHOD_FEE_LEVEL_4; // totalCost - 1122; // byte code cost - 122; invoked methods cost - 1000;
     public static final long BigDecimal_avm_floatValue = RT_METHOD_FEE_LEVEL_4; // totalCost - 1122; // byte code cost - 122; invoked methods cost - 1000;
     public static final long BigDecimal_avm_doubleValue = RT_METHOD_FEE_LEVEL_4; // totalCost - 1122; // byte code cost - 122; invoked methods cost - 1000;
-    public static final long BigDecimal_avm_constructor_16 = RT_METHOD_FEE_LEVEL_1; // totalCost - 131;
 
     public static final long ObjectArray_avm_clone = RT_METHOD_FEE_LEVEL_3; // totalCost - 562; // byte code cost - 362; invoked methods cost - 200;
     public static final long ObjectArray_avm_constructor = RT_METHOD_FEE_LEVEL_1; // totalCost - 176;
@@ -241,7 +237,6 @@ public class RuntimeMethodFeeSchedule {
 
     public static final long IntArray_avm_clone = RT_METHOD_FEE_LEVEL_3; // totalCost - 562; // byte code cost - 362; invoked methods cost - 200;
     public static final long IntArray_avm_constructor = RT_METHOD_FEE_LEVEL_1; // totalCost - 176;
-    public static final long IntArray_avm_constructor_1 = RT_METHOD_FEE_LEVEL_3; // totalCost - 400; //maximum cost of multiple blocks; // byte code cost - 300; invoked methods cost - 100;
 
     public static final long LongArray2D_avm_clone = RT_METHOD_FEE_LEVEL_3; // totalCost - 762; // byte code cost - 362; invoked methods cost - 400;
     public static final long LongArray2D_avm_constructor_2 = RT_METHOD_FEE_LEVEL_3; // totalCost - 704; //maximum cost of multiple blocks;
@@ -349,14 +344,16 @@ public class RuntimeMethodFeeSchedule {
     public static final long BlockchainRuntime_avm_print = RT_METHOD_FEE_LEVEL_1; // totalCost - 122;
     public static final long BlockchainRuntime_avm_println = RT_METHOD_FEE_LEVEL_3; // totalCost - 696; // byte code cost - 122; invoked methods cost - 574;
 
-    public static final long BlockchainRuntime_avm_blake2b = RT_HASH_METHOD_FEE_LEVEL_1;
-    public static final long BlockchainRuntime_avm_sha256 = RT_HASH_METHOD_FEE_LEVEL_1;
-    public static final long BlockchainRuntime_avm_keccak256 = RT_HASH_METHOD_FEE_LEVEL_1;
+    public static final long BlockchainRuntime_avm_blake2b_base = RT_HASH_METHOD_FEE_LEVEL_1;
+    public static final long BlockchainRuntime_avm_sha256_base = RT_METHOD_FEE_LEVEL_4;
+    public static final long BlockchainRuntime_avm_keccak256_base = RT_HASH_METHOD_FEE_LEVEL_1;
+    public static final long BlockchainRuntime_avm_sha256_per_10_bytes = 2;
+    public static final long BlockchainRuntime_avm_blake2b_per_10_bytes = 12; //6 * sha256 cost
+    public static final long BlockchainRuntime_avm_keccak256_per_10_bytes = 24; //12 * sha256 cost
     public static final long BlockchainRuntime_avm_edverify = RT_VERIFY_METHOD_FEE_LEVEL_1;
 
     public static final long ShortArray_avm_clone = RT_METHOD_FEE_LEVEL_3; // totalCost - 462; // byte code cost - 362; invoked methods cost - 100;
     public static final long ShortArray_avm_constructor = RT_METHOD_FEE_LEVEL_1; // totalCost - 176;
-    public static final long ShortArray_avm_constructor_1 = RT_METHOD_FEE_LEVEL_3; // totalCost - 400; //maximum cost of multiple blocks; // byte code cost - 300; invoked methods cost - 100;
 
     public static final long Object_avm_getClass = RT_METHOD_FEE_LEVEL_2; // totalCost - 344; // byte code cost - 244; invoked methods cost - 100;
     public static final long Object_avm_hashCode = RT_METHOD_FEE_LEVEL_1; // totalCost - 128;
@@ -422,7 +419,6 @@ public class RuntimeMethodFeeSchedule {
     public static final long Class_avm_cast = RT_METHOD_FEE_LEVEL_2; // totalCost - 230; // byte code cost - 130; invoked methods cost - 100;
     public static final long Class_avm_getSuperclass = RT_METHOD_FEE_LEVEL_3; // totalCost - 429; //maximum cost of multiple blocks; // byte code cost - 329; invoked methods cost - 100;
     public static final long Class_avm_desiredAssertionStatus = RT_METHOD_FEE_LEVEL_4; // totalCost - 1997; // byte code cost - 56; invoked methods cost - 1941;
-    public static final long Class_avm_constructor = RT_METHOD_FEE_LEVEL_2; // totalCost - 231; // byte code cost - 131; invoked methods cost - 100;
 
     public static final long StringBuilder_avm_constructor = RT_METHOD_FEE_LEVEL_2; // totalCost - 391; // byte code cost - 291; invoked methods cost - 100;
     public static final long StringBuilder_avm_constructor_1 = RT_METHOD_FEE_LEVEL_3; // totalCost - 579; // byte code cost - 351; invoked methods cost - 228;
@@ -636,11 +632,9 @@ public class RuntimeMethodFeeSchedule {
 
     public static final long CharArray_avm_clone = RT_METHOD_FEE_LEVEL_3; // totalCost - 562; // byte code cost - 362; invoked methods cost - 200;
     public static final long CharArray_avm_constructor = RT_METHOD_FEE_LEVEL_1; // totalCost - 176;
-    public static final long CharArray_avm_constructor_1 = RT_METHOD_FEE_LEVEL_3; // totalCost - 400; //maximum cost of multiple blocks; // byte code cost - 300; invoked methods cost - 100;
 
     public static final long LongArray_avm_clone = RT_METHOD_FEE_LEVEL_3; // totalCost - 562; // byte code cost - 362; invoked methods cost - 200;
     public static final long LongArray_avm_constructor = RT_METHOD_FEE_LEVEL_1; // totalCost - 176;
-    public static final long LongArray_avm_constructor_1 = RT_METHOD_FEE_LEVEL_3; // totalCost - 400; //maximum cost of multiple blocks; // byte code cost - 300; invoked methods cost - 100;
 
     public static final long Long_avm_toString = RT_METHOD_FEE_LEVEL_3; // totalCost - 582; // byte code cost - 282; invoked methods cost - 300;
     public static final long Long_avm_toUnsignedString = RT_METHOD_FEE_LEVEL_3; // totalCost - 582; // byte code cost - 282; invoked methods cost - 300;

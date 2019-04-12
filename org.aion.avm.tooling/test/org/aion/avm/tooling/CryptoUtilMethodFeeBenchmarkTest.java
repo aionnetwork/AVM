@@ -6,7 +6,6 @@ import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
-import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
 import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -52,7 +51,6 @@ public class CryptoUtilMethodFeeBenchmarkTest {
 
     private long energyLimit = 100_000_000_000L;
     private long energyPrice = 1L;
-    private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
     private org.aion.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
     private org.aion.types.Address dappAddress;
@@ -79,8 +77,8 @@ public class CryptoUtilMethodFeeBenchmarkTest {
      * - FACTOR = 100, must be a factor of LIST_OF_STRING_COUNT
      * - should focus on relative time of each method call as different systems will yield different numbers.
      */
-    private static final int WARMUP_COUNT = 2;
-    private static final int LOOP_COUNT = 10;
+    private static final int WARMUP_COUNT = 1;
+    private static final int LOOP_COUNT = 2;
     private static final int AVG_COUNT = 1;
     private static final int LIST_OF_STRING_COUNT = 5;
     private static final int FACTOR = 1;
@@ -111,13 +109,13 @@ public class CryptoUtilMethodFeeBenchmarkTest {
     public void testBlake2b(){
         // warm up
         for (int i = 0; i < WARMUP_COUNT; i++) {
-            getAvgCallTime(blake2bMethodName, AVG_COUNT, hashMessage);
+            getAvgCallTime(blake2bMethodName, AVG_COUNT, 1, hashMessage);
         }
 
         // call method and record result, measure average call time
         long recordSum = 0;
         for (int i = 0; i < LOOP_COUNT; i++){
-            recordSum = recordSum + getCallTime(blake2bMethodName, hashMessage, 1);
+            recordSum = recordSum + getCallTime(blake2bMethodName, 1, hashMessage);
         }
         System.out.println("Average time per api call for blake2b hashing: " + recordSum/LOOP_COUNT + "ns");
     }
@@ -126,13 +124,13 @@ public class CryptoUtilMethodFeeBenchmarkTest {
     public void testSha(){
         // warm up
         for (int i = 0; i < WARMUP_COUNT; i++) {
-            getAvgCallTime(shaMethodName, AVG_COUNT, hashMessage);
+            getAvgCallTime(shaMethodName, AVG_COUNT, 1, hashMessage);
         }
 
         // call method and record result, measure average call time
         long recordSum = 0;
         for (int i = 0; i < LOOP_COUNT; i++){
-            recordSum = recordSum + getCallTime(shaMethodName, hashMessage, 1);
+            recordSum = recordSum + getCallTime(shaMethodName, 1, hashMessage);
         }
         System.out.println("Average time per api call for sha hashing: " + recordSum/LOOP_COUNT + "ns");
     }
@@ -141,13 +139,13 @@ public class CryptoUtilMethodFeeBenchmarkTest {
     public void testKeccak(){
         // warm up
         for (int i = 0; i < WARMUP_COUNT; i++) {
-            getAvgCallTime(keccakMethodName, AVG_COUNT, hashMessage);
+            getAvgCallTime(keccakMethodName, AVG_COUNT, 1, hashMessage);
         }
 
         // call method and record result, measure average call time
         long recordSum = 0;
         for (int i = 0; i < LOOP_COUNT; i++){
-            recordSum = recordSum + getCallTime(keccakMethodName, hashMessage, 1);
+            recordSum = recordSum + getCallTime(keccakMethodName, 1, hashMessage);
         }
         System.out.println("Average time per api call for keccak hashing: " + recordSum/LOOP_COUNT + "ns");
     }
@@ -165,13 +163,13 @@ public class CryptoUtilMethodFeeBenchmarkTest {
 
         for (int i = 0; i < LOOP_COUNT; i++){
             if (i < WARMUP_COUNT){
-                getCallTime(blake2bMethodName, msg, 1);
-                getCallTime(shaMethodName, msg, 1);
-                getCallTime(keccakMethodName, msg, 1);
+                getCallTime(blake2bMethodName, 1, msg);
+                getCallTime(shaMethodName, 1, msg);
+                getCallTime(keccakMethodName, 1, msg);
             } else {
-                blake2bSum = blake2bSum + getCallTime(blake2bMethodName, msg, 1);
-                shaSum = shaSum + getCallTime(shaMethodName, msg, 1);
-                keccakSum = keccakSum + getCallTime(keccakMethodName, msg, 1);
+                blake2bSum = blake2bSum + getCallTime(blake2bMethodName, 1, msg);
+                shaSum = shaSum + getCallTime(shaMethodName, 1, msg);
+                keccakSum = keccakSum + getCallTime(keccakMethodName, 1, msg);
             }
         }
 
@@ -197,24 +195,51 @@ public class CryptoUtilMethodFeeBenchmarkTest {
 
         // warm up blake2b, then make multiple calls within the dapp
         for (int i = 0; i < warmUp; i++) {
-            getAvgCallTime(blake2bMethodName, AVG_COUNT, hashMessage);
+            getAvgCallTime(blake2bMethodName, AVG_COUNT, 1, hashMessage);
         }
-        long blake2bTime = getCallTime(blake2bMethodName, msg, loopCount);
+        long blake2bTime = getCallTime(blake2bMethodName, loopCount, msg);
         System.out.println("blake2b avg: " + blake2bTime);
 
         // warm up sha, then make multiple calls within the dapp
         for (int i = 0; i < warmUp; i++) {
-            getAvgCallTime(shaMethodName, AVG_COUNT, hashMessage);
+            getAvgCallTime(shaMethodName, AVG_COUNT, 1, hashMessage);
         }
-        long shaSumTime = getCallTime(shaMethodName, msg, loopCount);
+        long shaSumTime = getCallTime(shaMethodName, loopCount, msg);
         System.out.println("sha avg: " + shaSumTime + ", is " + String.format("%.3f", (double)shaSumTime/blake2bTime) + " times speed comparing to blake2b");
 
         // warm up keccak, then make multiple calls within the dapp
         for (int i = 0; i < warmUp; i++) {
-            getAvgCallTime(keccakMethodName, AVG_COUNT, hashMessage);
+            getAvgCallTime(keccakMethodName, AVG_COUNT, 1, hashMessage);
         }
-        long keccakTime = getCallTime(keccakMethodName, msg, loopCount);
+        long keccakTime = getCallTime(keccakMethodName, loopCount, msg);
         System.out.println("keccak avg: " + keccakTime + ", is " + String.format("%.3f", (double)keccakTime/blake2bTime) + " times speed comparing to blake2b");
+    }
+
+    @Test
+    public void testAll3HashFunctionsLargeInput() {
+        int loopCount = LOOP_COUNT;
+        int messageSize = 100000;
+
+        for (int i = 0; i < WARMUP_COUNT; i++) {
+            getAvgCallTime(blake2bMethodName, AVG_COUNT, 1, hashMessage);
+        }
+        double blake2bAvg = getAvgCallTime("blake2bLargeInput", AVG_COUNT, loopCount, messageSize);
+        System.out.println("blake2b avg for " + messageSize + " bytes input:" + blake2bAvg);
+
+        for (int i = 0; i < WARMUP_COUNT; i++) {
+            getAvgCallTime(shaMethodName, AVG_COUNT, 1, hashMessage);
+        }
+
+        double sha256Sum = getAvgCallTime("shaLargeInput", AVG_COUNT, loopCount, messageSize);
+
+        System.out.println("sha256 avg for " + messageSize + " bytes input:" + sha256Sum);
+
+        for (int i = 0; i < WARMUP_COUNT; i++) {
+            getAvgCallTime(keccakMethodName, AVG_COUNT, 1, hashMessage);
+        }
+
+        double keccakSum = getAvgCallTime("keccakLargeInput", AVG_COUNT, loopCount, messageSize);
+        System.out.println("keccak avg for " + messageSize + " bytes input:"  + keccakSum);
     }
 
     /**
@@ -229,16 +254,16 @@ public class CryptoUtilMethodFeeBenchmarkTest {
 
         // warm up blake2b, then make multiple calls within the dapp
         for (int i = 0; i < warmUp; i++) {
-            getAvgCallTime(blake2bMethodName, AVG_COUNT, hashMessage);
+            getAvgCallTime(blake2bMethodName, AVG_COUNT, 1, hashMessage);
         }
-        long blake2bTime = getCallTime(blake2bMethodName, msg, loopCount);
+        long blake2bTime = getCallTime(blake2bMethodName, loopCount, msg);
         System.out.println("blake2b avg: " + blake2bTime);
 
         // warm up blake2b, then make multiple calls within the dapp
         for (int i = 0; i < warmUp; i++) {
-            getAvgCallTime(edverifyMethodName, AVG_COUNT, hashMessage);
+            getAvgCallTime(edverifyMethodName, AVG_COUNT, 1, hashMessage);
         }
-        long edverifyTime = getCallTime(edverifyMethodName, msg, loopCount);
+        long edverifyTime = getCallTime(edverifyMethodName, loopCount, msg);
         System.out.println("edverify avg: " + edverifyTime + ", which is " + String.format("%.3f", (double)edverifyTime/blake2bTime) + " times speed comparing to blake2b");
     }
 
@@ -249,7 +274,7 @@ public class CryptoUtilMethodFeeBenchmarkTest {
     public void testBlake2bMessageLength(){
         String[] listOfMessage = generateListOfStrings(LIST_OF_STRING_COUNT);
         for (int i = 0; i < LIST_OF_STRING_COUNT; i = i + FACTOR){
-            long time = getCallTime(blake2bMethodName, listOfMessage[i].getBytes(), 1);
+            long time = getCallTime(blake2bMethodName, 1, listOfMessage[i].getBytes());
             System.out.println("Signing using blake2b: msg length = " + i+1 + " time = " + time);
         }
     }
@@ -258,7 +283,7 @@ public class CryptoUtilMethodFeeBenchmarkTest {
     public void testShaMessageLength(){
         String[] listOfMessage = generateListOfStrings(LIST_OF_STRING_COUNT);
         for (int i = 0; i < LIST_OF_STRING_COUNT; i = i + FACTOR){
-            long time = getCallTime(shaMethodName, listOfMessage[i].getBytes(), 1);
+            long time = getCallTime(shaMethodName, 1, listOfMessage[i].getBytes());
             System.out.println("Signing using sha: msg length = " + i+1 + " time = " + time);
         }
     }
@@ -267,7 +292,7 @@ public class CryptoUtilMethodFeeBenchmarkTest {
     public void testKeccakMessageLength(){
         String[] listOfMessage = generateListOfStrings(LIST_OF_STRING_COUNT);
         for (int i = 0; i < LIST_OF_STRING_COUNT; i = i + FACTOR){
-            long time = getCallTime(keccakMethodName, listOfMessage[i].getBytes(), 1);
+            long time = getCallTime(keccakMethodName,  1, listOfMessage[i].getBytes());
             System.out.println("Signing using keccak: msg length = " + i+1 + " time = " + time);
         }
     }
@@ -277,24 +302,24 @@ public class CryptoUtilMethodFeeBenchmarkTest {
      * Helper methods for benchmark
      */
 
-    private double getAvgCallTime(String methodName, int loopCount, byte[] message){
+    private double getAvgCallTime(String methodName, int loopCount, Object... arguments) {
         long sum = 0;
-        for(int i = 0; i < loopCount; i++){
-            sum = sum + getCallTime(methodName, message, 1);
+        for (int i = 0; i < loopCount; i++) {
+            sum = sum + getCallTime(methodName, arguments);
         }
         return sum / loopCount;
     }
 
-    private long getCallTime(String methodName, byte[] message, int count){
+    private long getCallTime(String methodName, Object... arguments) {
         long st;
         long et;
-        Transaction tx = setupTransaction(methodName,count, message);
+        Transaction tx = setupTransaction(methodName, arguments);
 
         st = System.nanoTime();
         TransactionResult result = avm.run(this.kernel, new Transaction[]{tx})[0].get();
         et = System.nanoTime();
 
-        Assert.assertEquals(result.getResultCode(), Code.SUCCESS);
+        Assert.assertEquals(Code.SUCCESS, result.getResultCode());
 
         return et - st;
     }

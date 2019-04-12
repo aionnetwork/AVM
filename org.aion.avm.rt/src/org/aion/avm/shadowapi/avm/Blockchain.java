@@ -178,17 +178,23 @@ public final class Blockchain {
     }
 
     public static ByteArray avm_blake2b(ByteArray data) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_blake2b);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(
+                RuntimeMethodFeeSchedule.BlockchainRuntime_avm_blake2b_base
+                        + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_blake2b_per_10_bytes * (data != null ? (int) Math.ceil((double) data.length()/10) : 0));
         return blockchainRuntime.avm_blake2b(data);
     }
 
     public static ByteArray avm_sha256(ByteArray data) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_sha256);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(
+                RuntimeMethodFeeSchedule.BlockchainRuntime_avm_sha256_base
+                    + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_sha256_per_10_bytes * (data != null ?  (int) Math.ceil((double) data.length()/10) : 0));
         return blockchainRuntime.avm_sha256(data);
     }
 
     public static ByteArray avm_keccak256(ByteArray data){
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_keccak256);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(
+                RuntimeMethodFeeSchedule.BlockchainRuntime_avm_keccak256_base
+                    + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_keccak256_per_10_bytes * (data != null ?  (int) Math.ceil((double) data.length()/10) : 0));
         return blockchainRuntime.avm_keccak256(data);
     }
 
