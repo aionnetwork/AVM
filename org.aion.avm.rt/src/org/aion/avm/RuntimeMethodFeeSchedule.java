@@ -329,13 +329,10 @@ public class RuntimeMethodFeeSchedule {
     public static final long BlockchainRuntime_avm_call = RT_METHOD_FEE_LEVEL_1; // totalCost - 140;
     public static final long BlockchainRuntime_avm_create = RT_METHOD_FEE_LEVEL_1; // totalCost - 134;
     public static final long BlockchainRuntime_avm_selfDestruct = RT_METHOD_FEE_LEVEL_1; // totalCost - 122;
-    public static final long BlockchainRuntime_avm_log = RT_METHOD_FEE_LEVEL_1; // totalCost - 122;
-    public static final long BlockchainRuntime_avm_log_1 = RT_METHOD_FEE_LEVEL_1; // totalCost - 128;
-    public static final long BlockchainRuntime_avm_log_2 = RT_METHOD_FEE_LEVEL_1; // totalCost - 134;
-    public static final long BlockchainRuntime_avm_log_3 = RT_METHOD_FEE_LEVEL_1; // totalCost - 140;
-    public static final long BlockchainRuntime_avm_log_4 = RT_METHOD_FEE_LEVEL_1; // totalCost - 146;
+    public static final long BlockchainRuntime_avm_log_base = 375; // totalCost - 122;
+
     // These are based on Ethereum per-topic and per-byte (data) values.
-    public static final long BlockchainRuntime_avm_log_per_topic = 100;
+    public static final long BlockchainRuntime_avm_log_per_topic = 375;
     public static final long BlockchainRuntime_avm_log_per_data_byte= 8;
 
     public static final long BlockchainRuntime_avm_revert = RT_METHOD_FEE_LEVEL_1; // totalCost - 116;
