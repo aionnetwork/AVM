@@ -36,10 +36,8 @@ public class InternalCallContractBalanceTest {
      */
     @Test
     public void testBalanceOfContractAtSpecificDepthInCallStack() {
-        for (int numInternalContracts = 1; numInternalContracts < MAX_CALL_DEPTH; numInternalContracts++) {
-            for (int depthOfContractToQuery = 1; depthOfContractToQuery <= numInternalContracts; depthOfContractToQuery++) {
-                verifyBalanceOfContractAtSpecificDepthInCallStack(numInternalContracts, depthOfContractToQuery);
-            }
+        for (int depthOfContractToQuery = 1; depthOfContractToQuery < MAX_CALL_DEPTH; depthOfContractToQuery++) {
+            verifyBalanceOfContractAtSpecificDepthInCallStack(MAX_CALL_DEPTH, depthOfContractToQuery);
         }
     }
 
@@ -50,10 +48,8 @@ public class InternalCallContractBalanceTest {
      */
     @Test
     public void testBalanceOfContractAtspecificDepthInCallStackAfterTransferringMoreValue() {
-        for (int numInternalContracts = 1; numInternalContracts < MAX_CALL_DEPTH; numInternalContracts++) {
-            for (int depthOfContractToQuery = 1; depthOfContractToQuery <= numInternalContracts; depthOfContractToQuery++) {
-                verifyBalanceOfContractAtSpecificDepthInCallStackAfterTransferringMoreValue(numInternalContracts, depthOfContractToQuery);
-            }
+        for (int depthOfContractToQuery = 1; depthOfContractToQuery < MAX_CALL_DEPTH; depthOfContractToQuery++) {
+            verifyBalanceOfContractAtSpecificDepthInCallStackAfterTransferringMoreValue(MAX_CALL_DEPTH, depthOfContractToQuery);
         }
     }
 
