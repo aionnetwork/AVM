@@ -186,7 +186,7 @@ public class AvmImpl implements AvmInternal {
         RuntimeAssertionError.assertTrue(tx != null);
 
         // value/energyPrice/energyLimit sanity check
-        BigInteger value = new BigInteger(tx.getValue());
+        BigInteger value = new BigInteger(1, tx.getValue());
         if ((value.compareTo(BigInteger.ZERO) < 0) || (tx.getEnergyPrice() <= 0)) {
             error = AvmTransactionResult.Code.REJECTED;
         }
@@ -290,7 +290,7 @@ public class AvmImpl implements AvmInternal {
         // Sanity checks around energy pricing and nonce are done in the caller.
         // balance check
         Address sender = tx.getSenderAddress();
-        BigInteger value = new BigInteger(tx.getValue());
+        BigInteger value = new BigInteger(1, tx.getValue());
         BigInteger transactionCost = BigInteger.valueOf(tx.getEnergyLimit()).multiply(BigInteger.valueOf(tx.getEnergyPrice())).add(value);
         if (!parentKernel.accountBalanceIsAtLeast(sender, transactionCost)) {
             error = AvmTransactionResult.Code.REJECTED_INSUFFICIENT_BALANCE;
@@ -347,7 +347,7 @@ public class AvmImpl implements AvmInternal {
         Address recipient = (tx.getKind() == Type.CREATE.toInt()) ? this.capabilities.generateContractAddress(tx) : tx.getDestinationAddress();
 
         // conduct value transfer
-        BigInteger value = new BigInteger(tx.getValue());
+        BigInteger value = new BigInteger(1, tx.getValue());
         thisTransactionKernel.adjustBalance(tx.getSenderAddress(), value.negate());
         thisTransactionKernel.adjustBalance(recipient, value);
 
