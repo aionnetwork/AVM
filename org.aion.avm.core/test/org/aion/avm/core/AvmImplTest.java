@@ -24,6 +24,7 @@ import org.aion.kernel.TestingKernel;
 import org.aion.kernel.Transaction;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionResult;
+import org.aion.vm.api.interfaces.TransactionInterface;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -84,6 +85,117 @@ public class AvmImplTest {
         assertEquals(0, kernel.getNonce(to).intValue());
         assertEquals(value, kernel.getBalance(to));
         avm.shutdown();
+    }
+
+    @Test
+    public void testTransactionWithoutSignBytes() {
+        TestingKernel kernel = new TestingKernel(block);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
+
+        org.aion.types.Address from = deployer;
+        org.aion.types.Address to = org.aion.types.Address.wrap(new byte[32]);
+        // large value that caused issues when not specifically interpreted as a positive integer
+        BigInteger value = BigInteger.valueOf(13).multiply(BigInteger.TEN.pow(18));
+        byte[] data = new byte[0];
+        long energyLimit = 50_000L;
+        long energyPrice = 1L;
+        Transaction tx = Transaction.call(from, to, kernel.getNonce(from), value, data, energyLimit, energyPrice);
+        AvmTransactionResult result = (AvmTransactionResult) avm.run(kernel, new TransactionInterface[]{convertToInterfaceWithShortenedBytes(tx)})[0].get();
+
+        // verify results
+        assertTrue(result.getResultCode().isSuccess());
+        assertNull(result.getReturnData());
+        assertEquals(tx.getTransactionCost(), result.getEnergyUsed());
+        assertEquals(energyLimit - tx.getTransactionCost(), result.getEnergyRemaining());
+        assertEquals(0, result.getSideEffects().getExecutionLogs().size());
+        assertEquals(0, result.getSideEffects().getInternalTransactions().size());
+
+        // verify state change
+        assertEquals(1, kernel.getNonce(from).intValue());
+        assertEquals(TestingKernel.PREMINED_AMOUNT.subtract(value).subtract(BigInteger.valueOf(tx.getTransactionCost() * energyPrice)), kernel.getBalance(deployer));
+        assertEquals(0, kernel.getNonce(to).intValue());
+        assertEquals(value, kernel.getBalance(to));
+        avm.shutdown();
+    }
+
+    public static TransactionInterface convertToInterfaceWithShortenedBytes(Transaction tx) {
+        // use transaction interface
+        return new TransactionInterface() {
+            @Override
+            public byte[] getTransactionHash() {
+                return tx.getTransactionHash();
+            }
+
+            @Override
+            public org.aion.types.Address getSenderAddress() {
+                return tx.getSenderAddress();
+            }
+
+            @Override
+            public org.aion.types.Address getDestinationAddress() { return tx.getDestinationAddress(); }
+
+            @Override
+            public org.aion.types.Address getContractAddress() {
+                return tx.getContractAddress();
+            }
+
+            @Override
+            public byte[] getNonce() { return omitSignByte(tx.getNonce()); }
+
+            @Override
+            public byte[] getValue() { return omitSignByte(tx.getValue()); }
+
+            @Override
+            public byte[] getData() {
+                return tx.getData();
+            }
+
+            @Override
+            public byte getTargetVM() {
+                return tx.getTargetVM();
+            }
+
+            @Override
+            public long getEnergyLimit() {
+                return tx.getEnergyLimit();
+            }
+
+            @Override
+            public long getEnergyPrice() {
+                return tx.getEnergyPrice();
+            }
+
+            @Override
+            public long getTransactionCost() {
+                return tx.getTransactionCost();
+            }
+
+            @Override
+            public byte[] getTimestamp() {
+                return tx.getTimestamp();
+            }
+
+            @Override
+            public boolean isContractCreationTransaction() { return tx.isContractCreationTransaction(); }
+
+            @Override
+            public byte getKind() {
+                return tx.getKind();
+            }
+        };
+    }
+
+    /** Omits sign indication byte. Used by the Aion kernel. */
+    public static byte[] omitSignByte(byte[] data) {
+        if (data == null) {
+            return null;
+        }
+        if (data.length != 1 && data[0] == 0) {
+            byte[] tmp = new byte[data.length - 1];
+            System.arraycopy(data, 1, tmp, 0, tmp.length);
+            data = tmp;
+        }
+        return data;
     }
 
     @Test

@@ -23,7 +23,7 @@ public class TestingKernel implements KernelInterface {
 
     public static final Address PREMINED_ADDRESS = Address.wrap(Helpers.hexStringToBytes("a025f4fd54064e869f158c1b4eb0ed34820f67e60ee80a53b469f725efc06378"));
     public static final Address BIG_PREMINED_ADDRESS = Address.wrap(Helpers.hexStringToBytes("a035f4fd54064e869f158c1b4eb0ed34820f67e60ee80a53b469f725efc06378"));
-    public static final BigInteger PREMINED_AMOUNT = BigInteger.TEN.pow(18);
+    public static final BigInteger PREMINED_AMOUNT = BigInteger.TEN.pow(20);
     public static final BigInteger PREMINED_BIG_AMOUNT = BigInteger.valueOf(465000000).multiply(PREMINED_AMOUNT);
 
     private BigInteger blockDifficulty;
