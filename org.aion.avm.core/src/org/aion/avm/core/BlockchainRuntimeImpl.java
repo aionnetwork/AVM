@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.avm.shadow.java.math.BigInteger;
 import org.aion.avm.shadowapi.avm.Address;
 import org.aion.avm.shadowapi.avm.Result;
 import org.aion.avm.internal.*;
@@ -11,6 +12,7 @@ import org.aion.kernel.Transaction.Type;
 import org.aion.parallel.TransactionTask;
 
 import java.util.List;
+
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionInterface;
 
@@ -29,6 +31,15 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     private TransactionTask task;
     private final IRuntimeSetup thisDAppSetup;
 
+    private ByteArray dAppDataCache;
+    private Address addressCache;
+    private Address callerCache;
+    private Address originCache;
+    private BigInteger valueCache;
+    private Address blockCoinBaseCache;
+    private BigInteger blockDifficultyCache;
+
+
     public BlockchainRuntimeImpl(IExternalCapabilities capabilities, KernelInterface kernel, AvmInternal avm, ReentrantDAppStack.ReentrantState reentrantState, TransactionTask task, TransactionInterface tx, byte[] dAppData, IRuntimeSetup thisDAppSetup) {
         this.capabilities = capabilities;
         this.kernel = kernel;
@@ -38,22 +49,42 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         this.dAppData = dAppData;
         this.task = task;
         this.thisDAppSetup = thisDAppSetup;
+
+        this.dAppDataCache = null;
+        this.addressCache = null;
+        this.callerCache = null;
+        this.originCache = null;
+        this.valueCache = null;
+        this.blockCoinBaseCache = null;
+        this.blockDifficultyCache = null;
     }
 
     @Override
     public Address avm_getAddress() {
-        org.aion.types.Address address = (tx.getKind() == Type.CREATE.toInt()) ? this.capabilities.generateContractAddress(this.tx) : tx.getDestinationAddress();
-        return new Address(address.toBytes());
+        if (null == this.addressCache) {
+            org.aion.types.Address address = (tx.getKind() == Type.CREATE.toInt()) ? this.capabilities.generateContractAddress(this.tx) : tx.getDestinationAddress();
+            this.addressCache = new Address(address.toBytes().clone());
+        }
+
+        return this.addressCache;
     }
 
     @Override
     public Address avm_getCaller() {
-        return new Address(tx.getSenderAddress().toBytes());
+        if (null == this.callerCache) {
+            this.callerCache = new Address(tx.getSenderAddress().toBytes().clone());
+        }
+
+        return this.callerCache;
     }
 
     @Override
     public Address avm_getOrigin() {
-        return new Address(task.getOriginAddress().unwrap());
+        if (null == this.originCache) {
+            this.originCache = new Address(task.getOriginAddress().unwrap().clone());
+        }
+
+        return this.originCache;
     }
 
     @Override
@@ -68,15 +99,23 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public org.aion.avm.shadow.java.math.BigInteger avm_getValue() {
-        java.math.BigInteger value = new java.math.BigInteger(tx.getValue());
-        return new org.aion.avm.shadow.java.math.BigInteger(value);
+        if (null == this.valueCache) {
+            java.math.BigInteger value = new java.math.BigInteger(tx.getValue());
+            this.valueCache = new org.aion.avm.shadow.java.math.BigInteger(value);
+        }
+
+        return this.valueCache;
     }
 
     @Override
     public ByteArray avm_getData() {
-        return (null != this.dAppData)
-                ? new ByteArray(this.dAppData)
-                : null;
+        if (null == this.dAppDataCache) {
+            this.dAppDataCache = (null != this.dAppData)
+                    ? new ByteArray(this.dAppData.clone())
+                    : null;
+        }
+
+        return this.dAppDataCache;
     }
 
 
@@ -97,12 +136,20 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public Address avm_getBlockCoinbase() {
-        return new Address(kernel.getMinerAddress().toBytes());
+        if (null == this.blockCoinBaseCache) {
+            this.blockCoinBaseCache = new Address(kernel.getMinerAddress().toBytes().clone());
+        }
+
+        return this.blockCoinBaseCache;
     }
 
     @Override
     public org.aion.avm.shadow.java.math.BigInteger avm_getBlockDifficulty() {
-        return org.aion.avm.shadow.java.math.BigInteger.avm_valueOf(kernel.getBlockDifficulty());
+        if (null == this.blockDifficultyCache) {
+            this.blockDifficultyCache = org.aion.avm.shadow.java.math.BigInteger.avm_valueOf(kernel.getBlockDifficulty());
+        }
+
+        return this.blockDifficultyCache;
     }
 
     @Override
