@@ -4,8 +4,12 @@ import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.dappreading.LoadedJar;
+import org.aion.avm.core.types.ClassHierarchy;
 import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
+import org.aion.avm.core.types.ClassInformation;
+import org.aion.avm.core.types.ClassInformationFactory;
+import org.aion.avm.core.types.ClassHierarchyBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.*;
 
@@ -44,6 +48,9 @@ public class NodeEnvironment {
     public final Map<String, Integer> apiObjectSizeMap;     // post-rename; API objects
     public final Map<String, Integer> preRenameRuntimeObjectSizeMap;     // pre-rename; runtime objects including shadow objects, exceptions and API objects
     public final Map<String, Integer> postRenameRuntimeObjectSizeMap;    // post-rename; runtime objects including shadow objects, exceptions and API objects
+
+    // The full class hierarchy; we only ever give away deep copies of this object!
+    private ClassHierarchy classHierarchy;
 
     private NodeEnvironment() {
         Map<String, byte[]> generatedShadowJDK = CommonGenerators.generateShadowJDK();
@@ -371,6 +378,15 @@ public class NodeEnvironment {
     }
 
     /**
+     * Returns a deep copy of a class hierarchy that already is populated with all of the shadow
+     * JCL and API classes.
+     */
+    public ClassHierarchy deepCopyOfClassHierarchy() {
+        RuntimeAssertionError.assertTrue(this.classHierarchy != null);
+        return this.classHierarchy.deepCopy();
+    }
+
+    /**
      * Computes the object size of shadow java.base classes
      *
      * @return a mapping between class name and object size
@@ -400,6 +416,15 @@ public class NodeEnvironment {
         ClassHierarchyForest rtClassesForest = null;
         try {
             rtClassesForest = ClassHierarchyForest.createForestFrom(runtimeJar);
+
+            // Construct the full class hierarchy.
+            ClassInformationFactory classInfoFactory = new ClassInformationFactory();
+            Set<ClassInformation> classInfos = classInfoFactory.fromPostRenameJar(runtimeJar);
+
+            this.classHierarchy = new ClassHierarchyBuilder()
+                .addPostRenameNonUserDefinedClasses(classInfos)
+                .build();
+
         } catch (IOException e) {
             // If the RT jar being something we can't process, our installation is clearly corrupt.
             throw RuntimeAssertionError.unexpected(e);

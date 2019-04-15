@@ -12,6 +12,15 @@ public class ClassNameExtractor {
         }
     }
 
+    public static boolean isPostRenameClassDotStyle(String className) {
+        return className.startsWith(PackageConstants.kShadowDotPrefix)
+            || className.startsWith(PackageConstants.kUserDotPrefix)
+            || className.startsWith(PackageConstants.kShadowApiDotPrefix)
+            || className.startsWith(PackageConstants.kArrayWrapperDotPrefix)
+            || className.startsWith(PackageConstants.kExceptionWrapperDotPrefix)
+            || className.startsWith(PackageConstants.kInternalDotPrefix);
+    }
+
     private static String removeInternalPrefix(String className) {
         if (className.startsWith(PackageConstants.kShadowDotPrefix)) {
             return className.substring(PackageConstants.kShadowDotPrefix.length());
