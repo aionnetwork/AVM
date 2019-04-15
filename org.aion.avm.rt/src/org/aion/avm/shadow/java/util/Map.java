@@ -2,7 +2,7 @@ package org.aion.avm.shadow.java.util;
 
 import org.aion.avm.internal.IObject;
 
-public interface Map<K, V> {
+public interface Map<K, V> extends IObject {
 
     // Query Operations
 
@@ -32,7 +32,7 @@ public interface Map<K, V> {
 
     Set<Map.Entry<K, V>> avm_entrySet();
 
-    interface Entry<K, V> {
+    interface Entry<K, V> extends IObject {
         IObject avm_getKey();
 
         IObject avm_getValue();

@@ -4,12 +4,13 @@ import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
+import org.aion.avm.shadow.java.io.Serializable;
 import org.aion.avm.shadow.java.lang.Object;
 import org.aion.avm.shadow.java.lang.String;
 
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
-public final class MathContext extends Object {
+public final class MathContext extends Object implements Serializable {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
         IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();

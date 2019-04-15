@@ -11,8 +11,9 @@ import org.aion.avm.internal.IObjectSerializer;
 import java.nio.charset.StandardCharsets;
 
 import org.aion.avm.RuntimeMethodFeeSchedule;
+import org.aion.avm.shadow.java.io.Serializable;
 
-public class String extends Object implements Comparable<String>, CharSequence {
+public final class String extends Object implements Comparable<String>, CharSequence, Serializable {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
         IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();

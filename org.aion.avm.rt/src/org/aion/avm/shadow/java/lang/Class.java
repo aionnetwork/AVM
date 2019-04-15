@@ -12,8 +12,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.aion.avm.RuntimeMethodFeeSchedule;
+import org.aion.avm.shadow.java.io.Serializable;
 
-public class Class<T> extends Object {
+public final class Class<T> extends Object implements Serializable {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
         IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();

@@ -8,7 +8,7 @@ import org.aion.avm.shadow.java.lang.Class;
 import org.aion.avm.shadow.java.lang.Enum;
 import org.aion.avm.shadow.java.lang.String;
 
-public class TimeUnit extends Enum<TimeUnit> {
+public final class TimeUnit extends Enum<TimeUnit> {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
         IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();

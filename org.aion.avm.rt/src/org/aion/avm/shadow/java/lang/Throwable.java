@@ -2,7 +2,7 @@ package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.ClassNameExtractor;
 import org.aion.avm.internal.IInstrumentation;
-
+import org.aion.avm.shadow.java.io.Serializable;
 
 /**
  * Our shadow implementation of java.lang.Throwable.
@@ -17,7 +17,7 @@ import org.aion.avm.internal.IInstrumentation;
  * methods are free of energy charges as well. Then the user doesn't experience different charges in slightly different scenarios (created and thrown, caught or not caught).
  * Also note that at the creation of these exception/error objects, the 'new' bytecode and the heap size are billed.
  */
-public class Throwable extends Object {
+public class Throwable extends Object implements Serializable {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
         IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();

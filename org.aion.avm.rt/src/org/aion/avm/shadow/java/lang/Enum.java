@@ -3,8 +3,9 @@ package org.aion.avm.shadow.java.lang;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
 import org.aion.avm.RuntimeMethodFeeSchedule;
+import org.aion.avm.shadow.java.io.Serializable;
 
-public abstract class Enum<E extends Enum<E>> extends Object {
+public abstract class Enum<E extends Enum<E>> extends Object implements Serializable {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
         IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();

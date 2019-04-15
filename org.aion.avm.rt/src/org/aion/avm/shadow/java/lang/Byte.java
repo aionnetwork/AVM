@@ -5,7 +5,7 @@ import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
-public final class Byte extends Object implements Comparable<Byte> {
+public final class Byte extends Number implements Comparable<Byte> {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
         IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();

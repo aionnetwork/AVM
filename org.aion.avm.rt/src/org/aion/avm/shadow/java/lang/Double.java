@@ -6,7 +6,7 @@ import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 
-public class Double extends Number implements Comparable<Double>{
+public final class Double extends Number implements Comparable<Double>{
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
         IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();

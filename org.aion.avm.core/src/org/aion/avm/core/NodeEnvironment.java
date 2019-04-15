@@ -103,6 +103,8 @@ public class NodeEnvironment {
                     , org.aion.avm.shadow.java.lang.System.class
                     , org.aion.avm.shadow.java.lang.Throwable.class
                     , org.aion.avm.shadow.java.lang.TypeNotPresentException.class
+                    , org.aion.avm.shadow.java.lang.Appendable.class
+                    , org.aion.avm.shadow.java.lang.Cloneable.class
 
                     , org.aion.avm.shadow.java.lang.invoke.LambdaMetafactory.class
                     , org.aion.avm.shadow.java.lang.invoke.StringConcatFactory.class
@@ -126,6 +128,8 @@ public class NodeEnvironment {
                     , org.aion.avm.shadow.java.util.function.Function.class
 
                     , org.aion.avm.shadow.java.util.concurrent.TimeUnit.class
+                
+                    , org.aion.avm.shadow.java.io.Serializable.class
             };
 
             this.jclClassNames = new HashSet<>();

@@ -5,7 +5,7 @@ import org.aion.avm.internal.IObject;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
-public class Long extends Number implements Comparable<Long> {
+public final class Long extends Number implements Comparable<Long> {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
         IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();

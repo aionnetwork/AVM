@@ -3,9 +3,10 @@ package org.aion.avm.shadow.java.lang;
 import org.aion.avm.arraywrapper.CharArray;
 import org.aion.avm.internal.*;
 import org.aion.avm.RuntimeMethodFeeSchedule;
+import org.aion.avm.shadow.java.io.Serializable;
 
 
-public class StringBuffer extends Object implements CharSequence, Appendable{
+public final class StringBuffer extends Object implements CharSequence, Serializable, Appendable{
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
         IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();

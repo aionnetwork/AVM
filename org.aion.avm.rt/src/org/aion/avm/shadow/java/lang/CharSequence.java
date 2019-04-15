@@ -1,6 +1,8 @@
 package org.aion.avm.shadow.java.lang;
 
-public interface CharSequence {
+import org.aion.avm.internal.IObject;
+
+public interface CharSequence extends IObject {
 
     int avm_length();
 

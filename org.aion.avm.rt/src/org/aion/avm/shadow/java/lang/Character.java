@@ -2,8 +2,9 @@ package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.RuntimeMethodFeeSchedule;
+import org.aion.avm.shadow.java.io.Serializable;
 
-public class Character extends Object {
+public final class Character extends Object implements Serializable, Comparable<Character> {
     static {
         // Shadow classes MUST be loaded during bootstrap phase.
         IInstrumentation.attachedThreadInstrumentation.get().bootstrapOnly();
