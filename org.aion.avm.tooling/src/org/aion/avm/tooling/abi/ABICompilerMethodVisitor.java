@@ -1,6 +1,5 @@
 package org.aion.avm.tooling.abi;
 
-import avm.Address;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -25,12 +24,12 @@ public class ABICompilerMethodVisitor extends MethodVisitor {
 
         StringJoiner arguments = new StringJoiner(", ");
         for (Type type : Type.getArgumentTypes(this.methodDescriptor)) {
-            arguments.add(shortenClassName(type.getClassName()));
+            arguments.add(ABIUtils.shortenClassName(type.getClassName()));
         }
         String returnType = Type.getReturnType(this.methodDescriptor).getClassName();
         signature = ("public ")
                 + ("static ")
-                + shortenClassName(returnType) + " "
+                + ABIUtils.shortenClassName(returnType) + " "
                 + this.methodName + "("
                 + arguments.toString()
                 + ")";
@@ -72,70 +71,25 @@ public class ABICompilerMethodVisitor extends MethodVisitor {
             }
             isFallback = true;
             return null;
-        }
-        else {
+        } else if (Type.getType(descriptor).getClassName().equals(Initializable.class.getName())) {
+            throw new ABICompilerException(
+                "Methods cannot be annotated @Initializable", methodName);
+        } else {
             return super.visitAnnotation(descriptor, visible);
         }
     }
 
     private void checkArgumentsAndReturnType() {
         for (Type type : Type.getArgumentTypes(this.methodDescriptor)) {
-            if(!isAllowedType(type)) {
+            if(!ABIUtils.isAllowedType(type)) {
                 throw new ABICompilerException(
                     type.getClassName() + " is not an allowed parameter type", methodName);
             }
         }
         Type returnType = Type.getReturnType(methodDescriptor);
-        if(!isAllowedType(returnType) && returnType != Type.VOID_TYPE) {
+        if(!ABIUtils.isAllowedType(returnType) && returnType != Type.VOID_TYPE) {
             throw new ABICompilerException(
                 returnType.getClassName() + " is not an allowed return type", methodName);
-        }
-    }
-
-    private boolean isAllowedType(Type type) {
-        if(isPrimitiveType(type) || isAllowedObject(type)) {
-            return true;
-        }
-        if (type.getSort() == Type.ARRAY) {
-            switch(type.getDimensions()) {
-                case 1:
-                    return isAllowedType(type.getElementType());
-                case 2:
-                    // We do not allow 2-dimensional arrays of Strings and Addresses
-                    return isPrimitiveType(type.getElementType());
-                default:
-                    return false;
-            }
-        }
-        return false;
-    }
-
-    private boolean isPrimitiveType(Type type) {
-        switch (type.getSort()) {
-            case Type.BYTE:
-            case Type.BOOLEAN:
-            case Type.CHAR:
-            case Type.SHORT:
-            case Type.INT:
-            case Type.FLOAT:
-            case Type.LONG:
-            case Type.DOUBLE:
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    private boolean isAllowedObject(Type type) {
-        return type.getClassName().equals(String.class.getName())
-            || type.getClassName().equals(Address.class.getName());
-    }
-
-    private String shortenClassName(String s) {
-        if(s.contains(".")) {
-            return s.substring(s.lastIndexOf('.') + 1);
-        } else {
-            return s;
         }
     }
 

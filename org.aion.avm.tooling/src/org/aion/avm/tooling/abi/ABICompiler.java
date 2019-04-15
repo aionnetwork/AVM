@@ -30,6 +30,7 @@ import java.util.jar.Manifest;
 
 import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.userlib.abi.ABIDecoder;
+import org.objectweb.asm.Type;
 
 public class ABICompiler {
 
@@ -42,6 +43,7 @@ public class ABICompiler {
     private byte[] mainClassBytes;
     private byte[] outputJarFile;
     private List<String> callables = new ArrayList<>();
+    private List<Type> initializables = new ArrayList<>();
     private Map<String, byte[]> classMap = new HashMap<>();
 
     public static void main(String[] args) {
@@ -65,6 +67,11 @@ public class ABICompiler {
 
         System.out.println(VERSION_NUMBER);
         System.out.println(compiler.mainClassName);
+        System.out.print("Clinit: ");
+        for (Type t: compiler.initializables) {
+            System.out.print(ABIUtils.shortenClassName(t.getClassName()) + " ");
+        }
+        System.out.println();
         for (String s : compiler.callables) {
             System.out.println(s);
         }
@@ -100,6 +107,7 @@ public class ABICompiler {
         reader.accept(classVisitor, 0);
 
         callables = classVisitor.getCallableSignatures();
+        initializables = classVisitor.getInitializableTypes();
         mainClassBytes = classWriter.toByteArray();
 
         if(classVisitor.addedMainMethod()) {

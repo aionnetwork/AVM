@@ -58,6 +58,7 @@ public class ABICompilerTest {
         Assert.assertEquals(
             ABICompiler.getVersionNumber()
                 + "\norg.aion.avm.tooling.abi.TestDAppTarget"
+                + "\nClinit: "
                 + "\npublic static String returnHelloWorld()"
                 + "\npublic static String returnGoodbyeWorld()"
                 + "\npublic static String returnEcho(String)"
@@ -93,6 +94,32 @@ public class ABICompilerTest {
         Assert.assertEquals(
             ABICompiler.getVersionNumber()
                 + "\norg.aion.avm.tooling.abi.ChattyCalculatorTarget"
+                + "\nClinit: "
+                + "\npublic static String amIGreater(int, int)\n",
+            outContent.toString());
+        File outputJar = new File(System.getProperty("user.dir") + "/outputJar.jar");
+        boolean didDelete = outputJar.delete();
+        Assert.assertTrue(didDelete);
+    }
+
+    @Test
+    public void testStaticInitializers() throws IOException {
+
+        byte[] jar =
+            JarBuilder
+                .buildJarForMainAndClasses(StaticInitializersTarget.class,
+                    SilentCalculatorTarget.class);
+        Path tempDir = Files.createTempDirectory("tempResources");
+        DataOutputStream dout =
+            new DataOutputStream(new FileOutputStream(tempDir.toString() + "/dapp.jar"));
+        dout.write(jar);
+        dout.close();
+
+        ABICompiler.main(new String[]{tempDir.toString() + "/dapp.jar"});
+        Assert.assertEquals(
+            ABICompiler.getVersionNumber()
+                + "\norg.aion.avm.tooling.abi.StaticInitializersTarget"
+                + "\nClinit: int String "
                 + "\npublic static String amIGreater(int, int)\n",
             outContent.toString());
         File outputJar = new File(System.getProperty("user.dir") + "/outputJar.jar");

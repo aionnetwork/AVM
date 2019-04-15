@@ -7,6 +7,7 @@ import java.util.Set;
 import avm.Address;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -18,9 +19,11 @@ public class ABICompilerClassVisitor extends ClassVisitor {
     private boolean hasMainMethod = false;
     private String className;
     private String fallbackMethodName = "";
+    private List<ABICompilerFieldVisitor> fieldVisitors = new ArrayList<>();
     private List<ABICompilerMethodVisitor> methodVisitors = new ArrayList<>();
     private List<ABICompilerMethodVisitor> callableMethodVisitors = new ArrayList<>();
     private List<String> callableSignatures = new ArrayList<>();
+    private List<Type> initializableTypes = new ArrayList<>();
 
     public ABICompilerClassVisitor(ClassWriter cw) {
         super(Opcodes.ASM6, cw);
@@ -28,6 +31,10 @@ public class ABICompilerClassVisitor extends ClassVisitor {
 
     public List<String> getCallableSignatures() {
         return callableSignatures;
+    }
+
+    public List<Type> getInitializableTypes() {
+        return initializableTypes;
     }
 
     public List<ABICompilerMethodVisitor> getCallableMethodVisitors() {
@@ -59,12 +66,26 @@ public class ABICompilerClassVisitor extends ClassVisitor {
                 }
             }
         }
+        for (ABICompilerFieldVisitor fv : fieldVisitors) {
+            if (fv.isInitializable()) {
+                initializableTypes.add(Type.getType(fv.getFieldDescriptor()));
+            }
+        }
     }
 
     @Override
     public void visit(int version, int access, java.lang.String name, java.lang.String signature, java.lang.String superName, java.lang.String[] interfaces) {
         this.className = name;
         super.visit(version, access, name, signature, superName, interfaces);
+    }
+
+    @Override
+    public FieldVisitor visitField(
+        int access, String name, String descriptor, String signature, Object value) {
+        ABICompilerFieldVisitor fv = new ABICompilerFieldVisitor(access, name, descriptor,
+            super.visitField(access, name, descriptor, signature, value));
+        fieldVisitors.add(fv);
+        return fv;
     }
 
     @Override
