@@ -1,22 +1,11 @@
 package org.aion.avm.core.classgeneration;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.aion.avm.core.ClassToolchain;
-import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
-import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef;
-import org.aion.avm.core.miscvisitors.NamespaceMapper;
-import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
-import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
-import org.aion.avm.core.shadowing.ClassShadowing;
-import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
 
 
 /**
@@ -99,11 +88,6 @@ public class CommonGenerators {
             "java.lang.ClassNotFoundException",
     });
 
-    public static final Set<String> kShadowEnumClassNames = Set.of(new String[] {
-            PackageConstants.kShadowDotPrefix + "java.math.RoundingMode",
-            PackageConstants.kShadowDotPrefix + "java.util.concurrent.TimeUnit",
-    });
-
     // Record the parent class of each generated class. This information is needed by the heap size calculation.
     // Both class names are in the shadowed version.
     public static Map<String, String> parentClassMap;
@@ -112,9 +96,7 @@ public class CommonGenerators {
         Map<String, byte[]> shadowJDK = new HashMap<>();
 
         Map<String, byte[]> shadowException = generateShadowException();
-        //Map<String, byte[]> shadowEnum = generateShadowEnum();
 
-        //shadowJDK.putAll(shadowEnum);
         shadowJDK.putAll(shadowException);
 
         return shadowJDK;
@@ -159,32 +141,6 @@ public class CommonGenerators {
             byte[] wrapperBytes = generateWrapperClass(wrapperName, wrapperSuperName);
             generatedClasses.put(wrapperName, wrapperBytes);
         }
-        return generatedClasses;
-    }
-
-    public static Map<String, byte[]> generateShadowEnum(boolean preserveDebuggability){
-        Map<String, byte[]> generatedClasses = new HashMap<>();
-
-        for (String name : kShadowEnumClassNames){
-            byte[] cnt = Helpers.loadRequiredResourceAsBytes(name.replaceAll("\\.", "/") + ".class");
-
-            PreRenameClassAccessRules emptyUserRuleRuleSet = new PreRenameClassAccessRules(Collections.emptySet(), Collections.emptySet());
-            byte[] bytecode = new ClassToolchain.Builder(cnt, ClassReader.EXPAND_FRAMES)
-                    .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(emptyUserRuleRuleSet), preserveDebuggability))
-                    .addNextVisitor(new ClassShadowing(PackageConstants.kShadowSlashPrefix))
-                    .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
-                    .build()
-                    .runAndGetBytecode();
-            bytecode = new ClassToolchain.Builder(bytecode, ClassReader.EXPAND_FRAMES)
-                    .addNextVisitor(new ArrayWrappingClassAdapterRef())
-                    .addNextVisitor(new ArrayWrappingClassAdapter())
-                    .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
-                    .build()
-                    .runAndGetBytecode();
-
-            generatedClasses.put(name, bytecode);
-        }
-
         return generatedClasses;
     }
 
