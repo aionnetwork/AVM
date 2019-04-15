@@ -2,13 +2,14 @@ package org.aion.parallel;
 
 import avm.Address;
 import java.util.Stack;
+
+import org.aion.avm.core.AvmTransaction;
 import org.aion.avm.core.ReentrantDAppStack;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.KernelInterface;
-import org.aion.vm.api.interfaces.TransactionInterface;
 
 
 /**
@@ -17,7 +18,7 @@ import org.aion.vm.api.interfaces.TransactionInterface;
  */
 public class TransactionTask implements Comparable<TransactionTask>{
     private final KernelInterface parentKernel;
-    private TransactionInterface externalTransaction;
+    private AvmTransaction externalTransaction;
     private volatile boolean abortState;
     private IInstrumentation threadOwningTask;
     private ReentrantDAppStack reentrantDAppStack;
@@ -28,7 +29,7 @@ public class TransactionTask implements Comparable<TransactionTask>{
     private Address origin;
     private int depth;
 
-    public TransactionTask(KernelInterface parentKernel, TransactionInterface tx, int index, org.aion.types.Address origin){
+    public TransactionTask(KernelInterface parentKernel, AvmTransaction tx, int index, org.aion.types.Address origin){
         this.parentKernel = parentKernel;
         this.externalTransaction = tx;
         this.index = index;
@@ -113,7 +114,7 @@ public class TransactionTask implements Comparable<TransactionTask>{
      *
      * @return The entry (external) transaction of the task.
      */
-    public TransactionInterface getExternalTransaction() {
+    public AvmTransaction getTransaction() {
         return externalTransaction;
     }
 
@@ -168,7 +169,7 @@ public class TransactionTask implements Comparable<TransactionTask>{
 
     void outputFlush(){
         if (this.outBuffer.length() > 0) {
-            System.out.println("Output from transaction " + Helpers.bytesToHexString(externalTransaction.getTransactionHash()));
+            System.out.println("Output from transaction " + Helpers.bytesToHexString(externalTransaction.transactionHash));
             System.out.println(this.outBuffer);
             System.out.flush();
         }

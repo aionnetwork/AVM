@@ -18,7 +18,6 @@ import org.aion.avm.internal.IInstrumentationFactory;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.JvmError;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.kernel.Transaction.Type;
 import org.aion.parallel.AddressResourceMonitor;
 import org.aion.parallel.TransactionTask;
 import org.aion.types.Address;
@@ -168,13 +167,23 @@ public class AvmImpl implements AvmInternal {
             validateCodeCache(currentBlockNum);
         }
         
+        // Filter these transactions into the safe kind we use internally (the type passed in may not be well-formed).
+        AvmTransaction[] safeTransactions = checkTransactions(transactions);
         // Create tasks for these new transactions and send them off to be asynchronously executed.
         TransactionTask[] tasks = new TransactionTask[transactions.length];
         for (int i = 0; i < transactions.length; i++){
-            tasks[i] = new TransactionTask(kernel, transactions[i], i, transactions[i].getSenderAddress());
+            tasks[i] = new TransactionTask(kernel, safeTransactions[i], i, safeTransactions[i].senderAddress);
         }
 
         return this.handoff.sendTransactionsAsynchronously(tasks);
+    }
+
+    private AvmTransaction[] checkTransactions(TransactionInterface[] transactions) {
+        AvmTransaction[] result = new AvmTransaction[transactions.length];
+        for (int i = 0; i < result.length; ++i) {
+            result[i] = AvmTransaction.from(this.capabilities, transactions[i]);
+        }
+        return result;
     }
 
     private AvmTransactionResult backgroundProcessTransaction(TransactionTask task) {
@@ -182,34 +191,34 @@ public class AvmImpl implements AvmInternal {
         AvmTransactionResult.Code error = null;
 
         RuntimeAssertionError.assertTrue(task != null);
-        TransactionInterface tx = task.getExternalTransaction();
+        AvmTransaction tx = task.getTransaction();
         RuntimeAssertionError.assertTrue(tx != null);
 
         // value/energyPrice/energyLimit sanity check
-        BigInteger value = new BigInteger(1, tx.getValue());
-        if ((value.compareTo(BigInteger.ZERO) < 0) || (tx.getEnergyPrice() <= 0)) {
+        BigInteger value = tx.value;
+        if ((value.compareTo(BigInteger.ZERO) < 0) || (tx.energyPrice <= 0)) {
             error = AvmTransactionResult.Code.REJECTED;
         }
         
-        if (tx.getKind() == Type.CREATE.toInt()) {
-            if (!task.getThisTransactionalKernel().isValidEnergyLimitForCreate(tx.getEnergyLimit())) {
+        if (tx.isCreate) {
+            if (!task.getThisTransactionalKernel().isValidEnergyLimitForCreate(tx.energyLimit)) {
                 error = AvmTransactionResult.Code.REJECTED;
             }
         } else {
-            if (!task.getThisTransactionalKernel().isValidEnergyLimitForNonCreate(tx.getEnergyLimit())) {
+            if (!task.getThisTransactionalKernel().isValidEnergyLimitForNonCreate(tx.energyLimit)) {
                 error = AvmTransactionResult.Code.REJECTED;
             }
         }
 
         // Acquire both sender and target resources
-        Address sender = tx.getSenderAddress();
-        Address target = (tx.getKind() == Type.CREATE.toInt()) ? this.capabilities.generateContractAddress(tx) : tx.getDestinationAddress();
+        Address sender = tx.senderAddress;
+        Address target = tx.destinationAddress;
 
         this.resourceMonitor.acquire(sender.toBytes(), task);
         this.resourceMonitor.acquire(target.toBytes(), task);
 
         // nonce check
-        if (!task.getThisTransactionalKernel().accountNonceEquals(sender, new BigInteger(1, tx.getNonce()))) {
+        if (!task.getThisTransactionalKernel().accountNonceEquals(sender, tx.nonce)) {
             error = AvmTransactionResult.Code.REJECTED_INVALID_NONCE;
         }
 
@@ -218,7 +227,7 @@ public class AvmImpl implements AvmInternal {
             // The CREATE/CALL case is handled via the common external invoke path.
             result = runExternalInvoke(task.getThisTransactionalKernel(), task, tx);
         } else {
-            result = new AvmTransactionResult(tx.getEnergyLimit(), tx.getEnergyLimit());
+            result = new AvmTransactionResult(tx.energyLimit, tx.energyLimit);
             result.setResultCode(error);
         }
 
@@ -267,7 +276,7 @@ public class AvmImpl implements AvmInternal {
     }
 
     @Override
-    public AvmTransactionResult runInternalTransaction(KernelInterface parentKernel, TransactionTask task, TransactionInterface tx) {
+    public AvmTransactionResult runInternalTransaction(KernelInterface parentKernel, TransactionTask task, AvmTransaction tx) {
         if (null != this.backgroundFatalError) {
             throw this.backgroundFatalError;
         }
@@ -283,22 +292,23 @@ public class AvmImpl implements AvmInternal {
         return result;
     }
 
-    private AvmTransactionResult runExternalInvoke(KernelInterface parentKernel, TransactionTask task, TransactionInterface tx) {
+    private AvmTransactionResult runExternalInvoke(KernelInterface parentKernel, TransactionTask task, AvmTransaction tx) {
         // to capture any error during validation
         AvmTransactionResult.Code error = null;
 
         // Sanity checks around energy pricing and nonce are done in the caller.
         // balance check
-        Address sender = tx.getSenderAddress();
-        BigInteger value = new BigInteger(1, tx.getValue());
-        BigInteger transactionCost = BigInteger.valueOf(tx.getEnergyLimit()).multiply(BigInteger.valueOf(tx.getEnergyPrice())).add(value);
+        Address sender = tx.senderAddress;
+        long energyPrice = tx.energyPrice;
+        BigInteger value = tx.value;
+        BigInteger transactionCost = BigInteger.valueOf(tx.energyLimit).multiply(BigInteger.valueOf(energyPrice)).add(value);
         if (!parentKernel.accountBalanceIsAtLeast(sender, transactionCost)) {
             error = AvmTransactionResult.Code.REJECTED_INSUFFICIENT_BALANCE;
         }
 
         // exit if validation check fails
         if (error != null) {
-            AvmTransactionResult result = new AvmTransactionResult(tx.getEnergyLimit(), tx.getEnergyLimit());
+            AvmTransactionResult result = new AvmTransactionResult(tx.energyLimit, tx.energyLimit);
             result.setResultCode(error);
             return result;
         }
@@ -308,17 +318,17 @@ public class AvmImpl implements AvmInternal {
          */
 
         // Deduct the total energy cost
-        parentKernel.adjustBalance(sender, BigInteger.valueOf(tx.getEnergyLimit()).multiply(BigInteger.valueOf(tx.getEnergyPrice()).negate()));
+        parentKernel.adjustBalance(sender, BigInteger.valueOf(tx.energyLimit).multiply(BigInteger.valueOf(energyPrice).negate()));
 
         // Run the common logic with the parent kernel as the top-level one.
-        AvmTransactionResult result = commonInvoke(parentKernel, task, tx, BillingRules.getBasicTransactionCost(tx.getData()));
+        AvmTransactionResult result = commonInvoke(parentKernel, task, tx, BillingRules.getBasicTransactionCost(tx.data));
 
         // Refund energy for transaction
-        BigInteger refund = BigInteger.valueOf(result.getEnergyRemaining()).multiply(BigInteger.valueOf(tx.getEnergyPrice()));
+        BigInteger refund = BigInteger.valueOf(result.getEnergyRemaining()).multiply(BigInteger.valueOf(energyPrice));
         parentKernel.refundAccount(sender, refund);
 
         // Transfer fees to miner
-        parentKernel.adjustBalance(parentKernel.getMinerAddress(), BigInteger.valueOf(result.getEnergyUsed()).multiply(BigInteger.valueOf(tx.getEnergyPrice())));
+        parentKernel.adjustBalance(parentKernel.getMinerAddress(), BigInteger.valueOf(result.getEnergyUsed()).multiply(BigInteger.valueOf(energyPrice)));
 
         if (!result.getResultCode().isSuccess()) {
             task.peekSideEffects().getExecutionLogs().clear();
@@ -328,35 +338,35 @@ public class AvmImpl implements AvmInternal {
         return result;
     }
 
-    private AvmTransactionResult commonInvoke(KernelInterface parentKernel, TransactionTask task, TransactionInterface tx, long transactionBaseCost) {
+    private AvmTransactionResult commonInvoke(KernelInterface parentKernel, TransactionTask task, AvmTransaction tx, long transactionBaseCost) {
         if (logger.isDebugEnabled()) {
             logger.debug("Transaction: address = {}, caller = {}, value = {}, data = {}, energyLimit = {}",
-                tx.getDestinationAddress(),
-                tx.getSenderAddress(),
-                Helpers.bytesToHexString(tx.getValue()),
-                    Helpers.bytesToHexString(tx.getData()),
-                tx.getEnergyLimit());
+                tx.destinationAddress,
+                tx.senderAddress,
+                Helpers.bytesToHexString(tx.value.toByteArray()),
+                Helpers.bytesToHexString(tx.data),
+                tx.energyLimit);
         }
         // Invoke calls must build their transaction on top of an existing "parent" kernel.
         TransactionalKernel thisTransactionKernel = new TransactionalKernel(parentKernel);
 
         // only one result (mutable) shall be created per transaction execution
-        AvmTransactionResult result = new AvmTransactionResult(tx.getEnergyLimit(), transactionBaseCost);
+        AvmTransactionResult result = new AvmTransactionResult(tx.energyLimit, transactionBaseCost);
 
         // grab the recipient address as either the new contract address or the given account address.
-        Address recipient = (tx.getKind() == Type.CREATE.toInt()) ? this.capabilities.generateContractAddress(tx) : tx.getDestinationAddress();
+        Address recipient = tx.destinationAddress;
 
         // conduct value transfer
-        BigInteger value = new BigInteger(1, tx.getValue());
-        thisTransactionKernel.adjustBalance(tx.getSenderAddress(), value.negate());
+        BigInteger value = tx.value;
+        thisTransactionKernel.adjustBalance(tx.senderAddress, value.negate());
         thisTransactionKernel.adjustBalance(recipient, value);
 
         // At this stage, transaction can no longer be rejected.
         // The nonce increment will be done regardless of the transaction result.
-        task.getThisTransactionalKernel().incrementNonce(tx.getSenderAddress());
+        task.getThisTransactionalKernel().incrementNonce(tx.senderAddress);
 
         // do nothing for balance transfers of which the recipient is not a DApp address.
-        if (tx.getKind() == Type.CREATE.toInt()) { // create
+        if (tx.isCreate) {
             DAppCreator.create(this.capabilities, thisTransactionKernel, this, task, tx, result, this.preserveDebuggability, this.enableVerboseContractErrors);
         } else { // call
             // See if this call is trying to reenter one already on this call-stack.  If so, we will need to partially resume its state.

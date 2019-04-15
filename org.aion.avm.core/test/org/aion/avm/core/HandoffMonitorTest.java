@@ -227,24 +227,24 @@ public class HandoffMonitorTest {
 
 
     /**
-     * No calls on this are expected.
+     * Note that we don't expect any calls into this except for the bare minimum required for the conversion to
+     * AvmTransaction.
+     * In those cases, we will just return something benign.
      */
     private static class FakeTransaction implements TransactionInterface {
-
         @Override
         public byte[] getTransactionHash() {
-            throw new AssertionError("No calls expected");
-
+            return new byte[0];
         }
 
         @Override
         public Address getSenderAddress() {
-            throw new AssertionError("No calls expected");
+            return Address.ZERO_ADDRESS();
         }
 
         @Override
         public Address getDestinationAddress() {
-            throw new AssertionError("No calls expected");
+            return Address.ZERO_ADDRESS();
         }
 
         @Override
@@ -254,17 +254,17 @@ public class HandoffMonitorTest {
 
         @Override
         public byte[] getNonce() {
-            throw new AssertionError("No calls expected");
+            return new byte[0];
         }
 
         @Override
         public byte[] getValue() {
-            throw new AssertionError("No calls expected");
+            return new byte[0];
         }
 
         @Override
         public byte[] getData() {
-            throw new AssertionError("No calls expected");
+            return new byte[0];
         }
 
         @Override
@@ -274,12 +274,12 @@ public class HandoffMonitorTest {
 
         @Override
         public long getEnergyLimit() {
-            throw new AssertionError("No calls expected");
+            return 1L;
         }
 
         @Override
         public long getEnergyPrice() {
-            throw new AssertionError("No calls expected");
+            return 1L;
         }
 
         @Override
@@ -294,7 +294,7 @@ public class HandoffMonitorTest {
 
         @Override
         public boolean isContractCreationTransaction() {
-            throw new AssertionError("No calls expected");
+            return false;
         }
 
         @Override
@@ -305,8 +305,10 @@ public class HandoffMonitorTest {
 
     private static TransactionTask[] wrapTransactionInTasks(FakeTransaction[] transactions) {
         TransactionTask[] tasks = new TransactionTask[transactions.length];
+        // (we don't consult the capabilities since there is no creation)
+        IExternalCapabilities capabilities = null;
         for (int i = 0; i < transactions.length; ++i) {
-            tasks[i] = new TransactionTask(null, transactions[i], i, Address.ZERO_ADDRESS());
+            tasks[i] = new TransactionTask(null, AvmTransaction.from(capabilities, transactions[i]), i, Address.ZERO_ADDRESS());
         }
         return tasks;
     }

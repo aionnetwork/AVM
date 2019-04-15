@@ -14,6 +14,7 @@ import org.aion.types.Address;
 import org.aion.vm.api.interfaces.InternalTransactionInterface;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -119,5 +120,28 @@ public class AvmFailureTest {
 
         assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, txResult.getResultCode());
         assertTrue(txResult.getUncaughtException() instanceof RuntimeException);
+    }
+
+    @Test
+    public void testInvalidTransaction() {
+        // We will encode a transaction with invalid data (null data).
+        byte[] data = null;
+        Transaction falingTransaction = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        boolean didFail = false;
+        // This next call should fail with IllegalArgumentException so catch it.
+        try {
+            avm.run(this.kernel, new Transaction[] {falingTransaction})[0].get();
+        } catch (IllegalArgumentException e) {
+            didFail = true;
+        }
+        Assert.assertTrue(didFail);
+        
+        // Make sure that we haven't corrupted the system and can still deploy new things
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(AvmFailureTestResource.class);
+        byte[] arguments = null;
+        Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
+        TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult.getResultCode());
+        Assert.assertNotNull(Address.wrap(txResult.getReturnData()));
     }
 }

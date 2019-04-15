@@ -21,7 +21,7 @@ public interface AvmInternal extends VirtualMachine {
      * @param tx The transaction to run.
      * @return The result of the transaction.
      */
-    AvmTransactionResult runInternalTransaction(KernelInterface parentKernel, TransactionTask task, TransactionInterface tx);
+    AvmTransactionResult runInternalTransaction(KernelInterface parentKernel, TransactionTask task, AvmTransaction tx);
 
     /**
      * Get the address resource monitor using by the current AVM.
