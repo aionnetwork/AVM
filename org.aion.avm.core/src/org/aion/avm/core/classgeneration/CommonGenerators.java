@@ -1,9 +1,12 @@
 package org.aion.avm.core.classgeneration;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.aion.avm.ClassNameExtractor;
+import org.aion.avm.core.types.CommonType;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 
@@ -16,76 +19,26 @@ public class CommonGenerators {
     // so we will list the names of all the classes we need and assemble them that way.
     // We should at least be able to use the original Throwable's classloader to look up the subclasses (again, since they are in java.lang).
     // Note:  "java.lang.VirtualMachineError" and children are deliberately absent from this since user code can never see them.
-    public static final String[] kExceptionClassNames = new String[] {
-            "java.lang.Error",
-            "java.lang.AssertionError",
-            "java.lang.LinkageError",
-            "java.lang.BootstrapMethodError",
-            "java.lang.ClassCircularityError",
-            "java.lang.ClassFormatError",
-            "java.lang.UnsupportedClassVersionError",
-            "java.lang.ExceptionInInitializerError",
-            "java.lang.IncompatibleClassChangeError",
-            "java.lang.AbstractMethodError",
-            "java.lang.IllegalAccessError",
-            "java.lang.InstantiationError",
-            "java.lang.NoSuchFieldError",
-            "java.lang.NoSuchMethodError",
-            "java.lang.NoClassDefFoundError",
-            "java.lang.UnsatisfiedLinkError",
-            "java.lang.VerifyError",
-            "java.lang.ThreadDeath",
-            "java.lang.Exception",
-            "java.lang.CloneNotSupportedException",
-            "java.lang.InterruptedException",
-            "java.lang.ReflectiveOperationException",
-            "java.lang.ClassNotFoundException",
-            "java.lang.IllegalAccessException",
-            "java.lang.InstantiationException",
-            "java.lang.NoSuchFieldException",
-            "java.lang.NoSuchMethodException",
-            "java.lang.RuntimeException",
-            "java.lang.ArithmeticException",
-            "java.lang.ArrayStoreException",
-            "java.lang.ClassCastException",
-            "java.lang.EnumConstantNotPresentException",
-            "java.lang.IllegalArgumentException",
-            "java.lang.IllegalThreadStateException",
-            "java.lang.NumberFormatException",
-            "java.lang.IllegalCallerException",
-            "java.lang.IllegalMonitorStateException",
-            "java.lang.IllegalStateException",
-            "java.lang.IndexOutOfBoundsException",
-            "java.lang.ArrayIndexOutOfBoundsException",
-            "java.lang.StringIndexOutOfBoundsException",
-            "java.lang.LayerInstantiationException",
-            "java.lang.NegativeArraySizeException",
-            "java.lang.NullPointerException",
-            "java.lang.SecurityException",
-            "java.lang.TypeNotPresentException",
-            "java.lang.UnsupportedOperationException",
-
-            "java.util.NoSuchElementException",
-            "java.nio.BufferUnderflowException",
-            "java.nio.BufferOverflowException"
-    };
+    public static final String[] kExceptionClassNames = Arrays.stream(CommonType.values())
+        .filter((type) -> (type.isShadowException && !type.isVirtualMachineErrorOrChildError && !type.dotName.equals(CommonType.SHADOW_THROWABLE.dotName)))
+        .map((type) -> (ClassNameExtractor.getOriginalClassName(type.dotName)))
+        .toArray(String[]::new);
 
     // We don't generate the shadows for these ones since we have hand-written them (but wrappers are still required).
     public static final Set<String> kHandWrittenExceptionClassNames = Set.of(new String[] {
-            "java.lang.Error",
-            "java.lang.AssertionError",
-            "java.lang.Exception",
-            "java.lang.RuntimeException",
-            "java.lang.EnumConstantNotPresentException",
-            "java.lang.TypeNotPresentException",
-
-            "java.util.NoSuchElementException",
+        ClassNameExtractor.getOriginalClassName(CommonType.SHADOW_ERROR.dotName),
+        ClassNameExtractor.getOriginalClassName(CommonType.SHADOW_ASSERTION_ERROR.dotName),
+        ClassNameExtractor.getOriginalClassName(CommonType.SHADOW_EXCEPTION.dotName),
+        ClassNameExtractor.getOriginalClassName(CommonType.SHADOW_RUNTIME_EXCEPTION.dotName),
+        ClassNameExtractor.getOriginalClassName(CommonType.SHADOW_ENUM_CONSTANT_EXCEPTION.dotName),
+        ClassNameExtractor.getOriginalClassName(CommonType.SHADOW_NO_TYPE_PRESENT_EXCEPTION.dotName),
+        ClassNameExtractor.getOriginalClassName(CommonType.SHADOW_NO_SUCH_ELEMENT_EXCEPTION.dotName),
     });
 
     // We generate "legacy-style exception" shadows for these ones (and wrappers are still required).
     public static final Set<String> kLegacyExceptionClassNames = Set.of(new String[] {
-            "java.lang.ExceptionInInitializerError",
-            "java.lang.ClassNotFoundException",
+        ClassNameExtractor.getOriginalClassName(CommonType.SHADOW_INITIALIZER_ERROR.dotName),
+        ClassNameExtractor.getOriginalClassName(CommonType.SHADOW_CLASS_NOT_FOUND_EXCEPTION.dotName),
     });
 
     // Record the parent class of each generated class. This information is needed by the heap size calculation.
