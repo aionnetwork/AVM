@@ -120,6 +120,8 @@ public class ABICompilerTest {
             ABICompiler.getVersionNumber()
                 + "\norg.aion.avm.tooling.abi.StaticInitializersTarget"
                 + "\nClinit: int String "
+                + "\npublic static int getInt()"
+                + "\npublic static String getString()"
                 + "\npublic static String amIGreater(int, int)\n",
             outContent.toString());
         File outputJar = new File(System.getProperty("user.dir") + "/outputJar.jar");

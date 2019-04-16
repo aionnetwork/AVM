@@ -1,8 +1,5 @@
 package org.aion.avm.tooling.abi;
 
-import avm.Blockchain;
-import org.aion.avm.userlib.abi.ABIDecoder;
-
 public class StaticInitializersTarget {
 
     @Initializable
@@ -12,9 +9,17 @@ public class StaticInitializersTarget {
     static String valueString;
 
     static {
-        ABIDecoder decoder = new ABIDecoder(Blockchain.getData());
-        valueInt = decoder.decodeOneInteger();
-        valueString = decoder.decodeOneString();
+        valueInt = 10;
+    }
+
+    @Callable
+    public static int getInt() {
+        return valueInt;
+    }
+
+    @Callable
+    public static String getString() {
+        return valueString;
     }
 
     @Callable()

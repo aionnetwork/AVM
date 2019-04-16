@@ -190,4 +190,32 @@ public class IntegTest {
         assertEquals(Code.FAILED_REVERT, result.getResultCode());
         assertNull(result.getReturnData());
     }
+
+    @Test
+    public void testClinitGeneration() {
+        byte[] deploymentArgs = ABIUtil.encodeDeploymentArguments(5, "hello");
+        byte[] jar =
+            avmRule.getDappBytes(DAppNoClinitTarget.class, deploymentArgs);
+
+        Address dapp = installTestDApp(jar);
+
+        int intResult = (Integer) callStatic(dapp, "getInt");
+        assertEquals(5, intResult);
+
+        String stringResult = (String) callStatic(dapp, "getString");
+        assertEquals("hello", stringResult);
+
+        jar =
+            avmRule.getDappBytes(StaticInitializersTarget.class, deploymentArgs, SilentCalculatorTarget.class);
+
+        dapp = installTestDApp(jar);
+
+        intResult = (Integer) callStatic(dapp, "getInt");
+        // this value should be 10, since the class's static initializer should override the deployment arg
+        assertEquals(10, intResult);
+
+        stringResult = (String) callStatic(dapp, "getString");
+        assertEquals("hello", stringResult);
+    }
+
 }

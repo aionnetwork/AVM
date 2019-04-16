@@ -12,18 +12,21 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.MethodNode;
 
 import static org.objectweb.asm.Opcodes.*;
 
 public class ABICompilerClassVisitor extends ClassVisitor {
     private boolean hasMainMethod = false;
+    private boolean hasClinit = false;
     private String className;
     private String fallbackMethodName = "";
     private List<ABICompilerFieldVisitor> fieldVisitors = new ArrayList<>();
     private List<ABICompilerMethodVisitor> methodVisitors = new ArrayList<>();
     private List<ABICompilerMethodVisitor> callableMethodVisitors = new ArrayList<>();
+    private MethodNode clinitNode;
+    private List<ABICompilerFieldVisitor> initializableFieldVisitors = new ArrayList<>();
     private List<String> callableSignatures = new ArrayList<>();
-    private List<Type> initializableTypes = new ArrayList<>();
 
     public ABICompilerClassVisitor(ClassWriter cw) {
         super(Opcodes.ASM6, cw);
@@ -34,6 +37,10 @@ public class ABICompilerClassVisitor extends ClassVisitor {
     }
 
     public List<Type> getInitializableTypes() {
+        List<Type> initializableTypes = new ArrayList<>();
+        for (ABICompilerFieldVisitor fv : initializableFieldVisitors) {
+            initializableTypes.add(Type.getType(fv.getFieldDescriptor()));
+        }
         return initializableTypes;
     }
 
@@ -68,7 +75,7 @@ public class ABICompilerClassVisitor extends ClassVisitor {
         }
         for (ABICompilerFieldVisitor fv : fieldVisitors) {
             if (fv.isInitializable()) {
-                initializableTypes.add(Type.getType(fv.getFieldDescriptor()));
+                initializableFieldVisitors.add(fv);
             }
         }
     }
@@ -91,18 +98,28 @@ public class ABICompilerClassVisitor extends ClassVisitor {
     @Override
     public MethodVisitor visitMethod(
             int access, String name, String descriptor, String signature, String[] exceptions) {
-        if (name.equals("main") && ((access & Opcodes.ACC_PUBLIC) != 0)) {
-            hasMainMethod = true;
-        }
-        ABICompilerMethodVisitor mv = new ABICompilerMethodVisitor(access, name, descriptor,
+        if (name.equals("<clinit>")) {
+            clinitNode = new MethodNode(access, name, descriptor, signature, exceptions);
+            hasClinit = true;
+            return clinitNode;
+        } else {
+            if (name.equals("main") && ((access & Opcodes.ACC_PUBLIC) != 0)) {
+                hasMainMethod = true;
+            }
+
+            ABICompilerMethodVisitor mv = new ABICompilerMethodVisitor(access, name, descriptor,
                 super.visitMethod(access, name, descriptor, signature, exceptions));
             methodVisitors.add(mv);
-        return mv;
+            return mv;
+        }
     }
 
     @Override
     public void visitEnd() {
         postProcess();
+        if (!initializableFieldVisitors.isEmpty() || hasClinit) {
+            addStaticInitializers();
+        }
         if (!hasMainMethod) {
             addMainMethod();
         }
@@ -111,6 +128,39 @@ public class ABICompilerClassVisitor extends ClassVisitor {
 
     private boolean hasFallback() {
         return !fallbackMethodName.isEmpty();
+    }
+
+    private void addStaticInitializers() {
+        MethodVisitor methodVisitor =
+            super.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
+        methodVisitor.visitCode();
+
+        if (!initializableFieldVisitors.isEmpty()) {
+            // ABIDecoder decoder = new ABIDecoder(Blockchain.getData())
+
+            methodVisitor.visitTypeInsn(NEW, "org/aion/avm/userlib/abi/ABIDecoder");
+            methodVisitor.visitInsn(DUP);
+            methodVisitor.visitMethodInsn(INVOKESTATIC, "avm/Blockchain", "getData", "()[B", false);
+            methodVisitor
+                .visitMethodInsn(INVOKESPECIAL, "org/aion/avm/userlib/abi/ABIDecoder", "<init>",
+                    "([B)V", false);
+
+            for (ABICompilerFieldVisitor fv : initializableFieldVisitors) {
+                methodVisitor.visitInsn(DUP);
+                callTheDecoder(methodVisitor, Type.getType(fv.getFieldDescriptor()));
+                methodVisitor
+                    .visitFieldInsn(PUTSTATIC, className, fv.getFieldName(),
+                        fv.getFieldDescriptor());
+            }
+            methodVisitor.visitInsn(POP);
+        }
+        if (null != clinitNode) {
+            clinitNode.accept(methodVisitor);
+        } else {
+            methodVisitor.visitInsn(RETURN);
+            methodVisitor.visitMaxs(0, 0);
+            methodVisitor.visitEnd();
+        }
     }
 
     private void addMainMethod() {
@@ -168,65 +218,7 @@ public class ABICompilerClassVisitor extends ClassVisitor {
 
             for (int i = 0; i < argTypes.length; i++) {
                 methodVisitor.visitInsn(DUP);
-                if (argTypes[i] == Type.BYTE_TYPE) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneByte", "()B", false);
-                } else if (argTypes[i] == Type.BOOLEAN_TYPE) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneBoolean", "()Z", false);
-                } else if (argTypes[i] == Type.CHAR_TYPE) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneCharacter", "()C", false);
-                } else if (argTypes[i] == Type.SHORT_TYPE) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneShort", "()S", false);
-                } else if (argTypes[i] == Type.INT_TYPE) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneInteger", "()I", false);
-                } else if (argTypes[i] == Type.LONG_TYPE) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneLong", "()J", false);
-                } else if (argTypes[i] == Type.FLOAT_TYPE) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneFloat", "()F", false);
-                } else if (argTypes[i] == Type.DOUBLE_TYPE) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneDouble", "()D", false);
-                } else if (isArrayOfTypeAndDimensions(argTypes[i], Type.BYTE_TYPE, 1)) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneByteArray", "()[B", false);
-                } else if (isArrayOfTypeAndDimensions(argTypes[i], Type.BOOLEAN_TYPE, 1)) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneBooleanArray", "()[Z", false);
-                } else if (isArrayOfTypeAndDimensions(argTypes[i], Type.CHAR_TYPE, 1)) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneCharacterArray", "()[C", false);
-                } else if (isArrayOfTypeAndDimensions(argTypes[i], Type.SHORT_TYPE, 1)) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneShortArray", "()[S", false);
-                } else if (isArrayOfTypeAndDimensions(argTypes[i], Type.INT_TYPE, 1)) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneIntegerArray", "()[I", false);
-                } else if (isArrayOfTypeAndDimensions(argTypes[i], Type.LONG_TYPE, 1)) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneLongArray", "()[J", false);
-                } else if (isArrayOfTypeAndDimensions(argTypes[i], Type.FLOAT_TYPE, 1)) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneFloatArray", "()[F", false);
-                } else if (isArrayOfTypeAndDimensions(argTypes[i], Type.DOUBLE_TYPE, 1)) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneDoubleArray", "()[D", false);
-                } else if (isString(argTypes[i])) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneString", "()Ljava/lang/String;", false);
-                } else if (isAddress(argTypes[i])) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneAddress", "()Lavm/Address;", false);
-                } else if (isArrayOfTypeAndDimensions(argTypes[i], Type.BYTE_TYPE, 2)) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOne2DByteArray", "()[[B", false);
-                } else if (isArrayOfTypeAndDimensions(argTypes[i], Type.BOOLEAN_TYPE, 2)) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOne2DBooleanArray", "()[[Z", false);
-                } else if (isArrayOfTypeAndDimensions(argTypes[i], Type.CHAR_TYPE, 2)) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOne2DCharacterArray", "()[[C", false);
-                } else if (isArrayOfTypeAndDimensions(argTypes[i], Type.SHORT_TYPE, 2)) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOne2DShortArray", "()[[S", false);
-                } else if (isArrayOfTypeAndDimensions(argTypes[i], Type.INT_TYPE, 2)) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOne2DIntegerArray", "()[[I", false);
-                } else if (isArrayOfTypeAndDimensions(argTypes[i], Type.LONG_TYPE, 2)) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOne2DLongArray", "()[[J", false);
-                } else if (isArrayOfTypeAndDimensions(argTypes[i], Type.FLOAT_TYPE, 2)) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOne2DFloatArray", "()[[F", false);
-                } else if (isArrayOfTypeAndDimensions(argTypes[i], Type.DOUBLE_TYPE, 2)) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOne2DDoubleArray", "()[[D", false);
-                } else if (argTypes[i].getSort() == Type.ARRAY && argTypes[i].getDimensions() == 1 && isString(argTypes[i].getElementType())) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneStringArray", "()[Ljava/lang/String;", false);
-                } else if (argTypes[i].getSort() == Type.ARRAY && argTypes[i].getDimensions() == 1 && isAddress(argTypes[i].getElementType())) {
-                    methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneAddressArray", "()[Lavm/Address;", false);
-                } else {
-                    throw new ABICompilerException("Need to decode an unsupported ABI type");
-                }
+                callTheDecoder(methodVisitor, argTypes[i]);
                 visitSwap(methodVisitor, argTypes[i]);
             }
 
@@ -320,6 +312,70 @@ public class ABICompilerClassVisitor extends ClassVisitor {
 
         methodVisitor.visitMaxs(0, 0);
         methodVisitor.visitEnd();
+    }
+
+    // This helper method assumes that the decoder is the top element on the stack.
+    // After it has callefd INVOKEVIRTUAL, the decoder will no longer be on top, it is the responsibility of the caller to push it back on if needed.
+    private void callTheDecoder(MethodVisitor methodVisitor, Type type) {
+        if (type == Type.BYTE_TYPE) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneByte", "()B", false);
+        } else if (type == Type.BOOLEAN_TYPE) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneBoolean", "()Z", false);
+        } else if (type == Type.CHAR_TYPE) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneCharacter", "()C", false);
+        } else if (type == Type.SHORT_TYPE) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneShort", "()S", false);
+        } else if (type == Type.INT_TYPE) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneInteger", "()I", false);
+        } else if (type == Type.LONG_TYPE) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneLong", "()J", false);
+        } else if (type == Type.FLOAT_TYPE) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneFloat", "()F", false);
+        } else if (type == Type.DOUBLE_TYPE) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneDouble", "()D", false);
+        } else if (isArrayOfTypeAndDimensions(type, Type.BYTE_TYPE, 1)) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneByteArray", "()[B", false);
+        } else if (isArrayOfTypeAndDimensions(type, Type.BOOLEAN_TYPE, 1)) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneBooleanArray", "()[Z", false);
+        } else if (isArrayOfTypeAndDimensions(type, Type.CHAR_TYPE, 1)) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneCharacterArray", "()[C", false);
+        } else if (isArrayOfTypeAndDimensions(type, Type.SHORT_TYPE, 1)) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneShortArray", "()[S", false);
+        } else if (isArrayOfTypeAndDimensions(type, Type.INT_TYPE, 1)) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneIntegerArray", "()[I", false);
+        } else if (isArrayOfTypeAndDimensions(type, Type.LONG_TYPE, 1)) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneLongArray", "()[J", false);
+        } else if (isArrayOfTypeAndDimensions(type, Type.FLOAT_TYPE, 1)) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneFloatArray", "()[F", false);
+        } else if (isArrayOfTypeAndDimensions(type, Type.DOUBLE_TYPE, 1)) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneDoubleArray", "()[D", false);
+        } else if (isString(type)) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneString", "()Ljava/lang/String;", false);
+        } else if (isAddress(type)) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneAddress", "()Lavm/Address;", false);
+        } else if (isArrayOfTypeAndDimensions(type, Type.BYTE_TYPE, 2)) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOne2DByteArray", "()[[B", false);
+        } else if (isArrayOfTypeAndDimensions(type, Type.BOOLEAN_TYPE, 2)) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOne2DBooleanArray", "()[[Z", false);
+        } else if (isArrayOfTypeAndDimensions(type, Type.CHAR_TYPE, 2)) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOne2DCharacterArray", "()[[C", false);
+        } else if (isArrayOfTypeAndDimensions(type, Type.SHORT_TYPE, 2)) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOne2DShortArray", "()[[S", false);
+        } else if (isArrayOfTypeAndDimensions(type, Type.INT_TYPE, 2)) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOne2DIntegerArray", "()[[I", false);
+        } else if (isArrayOfTypeAndDimensions(type, Type.LONG_TYPE, 2)) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOne2DLongArray", "()[[J", false);
+        } else if (isArrayOfTypeAndDimensions(type, Type.FLOAT_TYPE, 2)) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOne2DFloatArray", "()[[F", false);
+        } else if (isArrayOfTypeAndDimensions(type, Type.DOUBLE_TYPE, 2)) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOne2DDoubleArray", "()[[D", false);
+        } else if (type.getSort() == Type.ARRAY && type.getDimensions() == 1 && isString(type.getElementType())) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneStringArray", "()[Ljava/lang/String;", false);
+        } else if (type.getSort() == Type.ARRAY && type.getDimensions() == 1 && isAddress(type.getElementType())) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneAddressArray", "()[Lavm/Address;", false);
+        } else {
+            throw new ABICompilerException("Need to decode an unsupported ABI type");
+        }
     }
 
     private void visitSwap(MethodVisitor mv, Type topType) {

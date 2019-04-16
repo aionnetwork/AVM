@@ -3,8 +3,8 @@ package org.aion.rules;
 import avm.Address;
 import avm.Blockchain;
 import org.aion.avm.tooling.abi.Callable;
+import org.aion.avm.tooling.abi.Initializable;
 import org.aion.avm.userlib.AionMap;
-import org.aion.avm.userlib.abi.ABIDecoder;
 
 public class JUnitRuleTestTarget {
 
@@ -12,12 +12,11 @@ public class JUnitRuleTestTarget {
     private static AionMap<Integer, String> map1 = new AionMap<>();
     private static byte[] TOPIC1 = new byte[]{ 0xf, 0xe, 0xd, 0xc, 0xb, 0xa };
     private static byte[] DATA1 = new byte[]{ 0x1 };
+    @Initializable
     private static int intVal;
     public static Address owner;
 
     static {
-        ABIDecoder decoder = new ABIDecoder(Blockchain.getData());
-        intVal =  decoder.decodeOneInteger();
         owner = Blockchain.getCaller();
     }
 
