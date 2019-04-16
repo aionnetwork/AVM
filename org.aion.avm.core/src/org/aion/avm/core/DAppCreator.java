@@ -22,6 +22,7 @@ import org.aion.avm.core.rejection.RejectionClassVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.shadowing.InvokedynamicShadower;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
+import org.aion.avm.core.types.ClassHierarchy;
 import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.types.GeneratedClassConsumer;
@@ -82,20 +83,17 @@ public class DAppCreator {
      * Note that this is public since some unit tests call it, directly.
      *
      * @param inputClasses The class of DApp (names specified in .-style)
-     * @param preRenameClassHierarchy The pre-rename hierarchy of user-defined classes in the DApp (/-style).
+     * @param oldPreRenameForest The pre-rename forest of user-defined classes in the DApp (/-style).
+     * @param classHierarchy The class hierarchy of all classes in the system (.-style).
+     * @param preserveDebuggability Whether or not debug mode is enabled.
      * @return the transformed classes and any generated classes (names specified in .-style)
      */
-    public static Map<String, byte[]> transformClasses(Map<String, byte[]> inputClasses, Forest<String, ClassInfo> preRenameClassHierarchy, boolean preserveDebuggability) {
+    public static Map<String, byte[]> transformClasses(Map<String, byte[]> inputClasses, Forest<String, ClassInfo> oldPreRenameForest, ClassHierarchy classHierarchy, boolean preserveDebuggability) {
         // Before anything, pass the list of classes through the verifier.
         // (this will throw UncaughtException, on verification failure).
         Verifier.verifyUntrustedClasses(inputClasses);
-        
-        // Note:  preRenameUserDefinedClasses includes ONLY classes while preRenameUserClassAndInterfaceSet includes classes AND interfaces.
-        Set<String> preRenameUserDefinedClasses = ClassWhiteList.extractDeclaredClasses(preRenameClassHierarchy);
-        ParentPointers parentClassResolver = new ParentPointers(preRenameUserDefinedClasses, preRenameClassHierarchy, preserveDebuggability);
-        
         // We need to run our rejection filter and static rename pass.
-        Map<String, byte[]> safeClasses = rejectionAndRenameInputClasses(inputClasses, preRenameUserDefinedClasses, parentClassResolver, preserveDebuggability);
+        Map<String, byte[]> safeClasses = rejectionAndRenameInputClasses(inputClasses, classHierarchy, preserveDebuggability);
         
         // merge the generated classes and processed classes, assuming the package spaces do not conflict.
         Map<String, byte[]> processedClasses = new HashMap<>();
@@ -106,7 +104,7 @@ public class DAppCreator {
             String classDotName = Helpers.internalNameToFulllyQualifiedName(classSlashName);
             processedClasses.put(classDotName, bytecode);
         };
-        Map<String, Integer> postRenameObjectSizes = computeAllPostRenameObjectSizes(preRenameClassHierarchy, preserveDebuggability);
+        Map<String, Integer> postRenameObjectSizes = computeAllPostRenameObjectSizes(oldPreRenameForest, preserveDebuggability);
 
         Map<String, byte[]> transformedClasses = new HashMap<>();
 
@@ -126,16 +124,16 @@ public class DAppCreator {
                     .addNextVisitor(new InvokedynamicShadower(PackageConstants.kShadowSlashPrefix))
                     .addNextVisitor(new ClassShadowing(PackageConstants.kShadowSlashPrefix))
                     .addNextVisitor(new StackWatcherClassAdapter())
-                    .addNextVisitor(new ExceptionWrapping(parentClassResolver, generatedClassesSink))
+                    .addNextVisitor(new ExceptionWrapping(generatedClassesSink, classHierarchy))
                     .addNextVisitor(new AutomaticGraphVisitor())
                     .addNextVisitor(new StrictFPVisitor())
-                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver))
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, preserveDebuggability))
                     .build()
                     .runAndGetBytecode();
             bytecode = new ClassToolchain.Builder(bytecode, parsingOptions)
-                    .addNextVisitor(new ArrayWrappingClassAdapterRef())
+                    .addNextVisitor(new ArrayWrappingClassAdapterRef(classHierarchy))
                     .addNextVisitor(new ArrayWrappingClassAdapter())
-                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver))
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, preserveDebuggability))
                     .build()
                     .runAndGetBytecode();
             transformedClasses.put(name, bytecode);
@@ -145,22 +143,32 @@ public class DAppCreator {
          * Another pass to deal with static fields in interfaces.
          * Note that all fields in interfaces are defined as static.
          */
-        GeneratedClassConsumer consumer = generatedClassesSink;
+
+        // We grab all of the user-defined interfaces.
+        Set<String> preRenameUserClassesAndInterfaces = classHierarchy.getPreRenameUserDefinedClassesAndInterfaces();
         Set<String> userInterfaceSlashNames = new HashSet<>();
-        preRenameClassHierarchy.walkPreOrder(new Forest.VisitorAdapter<>() {
-            public void onVisitNotRootNode(Forest.Node<String, ClassInfo> node) {
-                if (node.getContent().isInterface()) {
-                    userInterfaceSlashNames.add(Helpers.fulllyQualifiedNameToInternalName(DebugNameResolver.getUserPackageDotPrefix(node.getId(), preserveDebuggability)));
+
+        for (String preRenameUserClassOrInterface : preRenameUserClassesAndInterfaces) {
+            if (preserveDebuggability) {
+                // In debug mode, our pre-rename classes are not renamed, so we query as if it is post-rename.
+                if (classHierarchy.postRenameTypeIsInterface(preRenameUserClassOrInterface)) {
+                    userInterfaceSlashNames.add(PackageConstants.kUserSlashPrefix + Helpers.fulllyQualifiedNameToInternalName(preRenameUserClassOrInterface));
+                }
+            } else {
+                if (classHierarchy.preRenameTypeIsInterface(preRenameUserClassOrInterface)) {
+                    userInterfaceSlashNames.add(PackageConstants.kUserSlashPrefix + Helpers.fulllyQualifiedNameToInternalName(preRenameUserClassOrInterface));
                 }
             }
-        });
+        }
+
         String javaLangObjectSlashName = PackageConstants.kShadowSlashPrefix + "java/lang/Object";
         for (String name : transformedClasses.keySet()) {
             byte[] bytecode = new ClassToolchain.Builder(transformedClasses.get(name), parsingOptions)
-                    .addNextVisitor(new InterfaceFieldMappingVisitor(consumer, userInterfaceSlashNames, javaLangObjectSlashName))
-                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver))
+                    .addNextVisitor(new InterfaceFieldMappingVisitor(generatedClassesSink, userInterfaceSlashNames, javaLangObjectSlashName))
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, preserveDebuggability))
                     .build()
                     .runAndGetBytecode();
+
             processedClasses.put(name, bytecode);
         }
 
@@ -183,7 +191,7 @@ public class DAppCreator {
                 return;
             }
 
-            RawDappModule rawDapp = RawDappModule.readFromJar(codeAndArguments.code);
+            RawDappModule rawDapp = RawDappModule.readFromJar(codeAndArguments.code, preserveDebuggability);
             if (rawDapp == null) {
                 if (verboseErrors) {
                     System.err.println("DApp deployment failed due to corrupt JAR data");
@@ -206,7 +214,7 @@ public class DAppCreator {
             ClassHierarchyForest dappClassesForest = rawDapp.classHierarchyForest;
 
             // transform
-            Map<String, byte[]> transformedClasses = transformClasses(rawDapp.classes, dappClassesForest, preserveDebuggability);
+            Map<String, byte[]> transformedClasses = transformClasses(rawDapp.classes, dappClassesForest, rawDapp.classHierarchy, preserveDebuggability);
             TransformedDappModule transformedDapp = TransformedDappModule.fromTransformedClasses(transformedClasses, rawDapp.mainClass);
 
             dapp = DAppLoader.fromTransformed(transformedDapp, preserveDebuggability);
@@ -358,10 +366,12 @@ public class DAppCreator {
         }
     }
 
-
-    private static Map<String, byte[]> rejectionAndRenameInputClasses(Map<String, byte[]> inputClasses, Set<String> preRenameUserDefinedClasses, ParentPointers parentClassResolver, boolean preserveDebuggability) {
+    private static Map<String, byte[]> rejectionAndRenameInputClasses(Map<String, byte[]> inputClasses, ClassHierarchy classHierarchy, boolean preserveDebuggability) {
         Map<String, byte[]> safeClasses = new HashMap<>();
-        Set<String> preRenameUserClassAndInterfaceSet = inputClasses.keySet();
+
+        Set<String> preRenameUserClassAndInterfaceSet = classHierarchy.getPreRenameUserDefinedClassesAndInterfaces();
+        Set<String> preRenameUserDefinedClasses = classHierarchy.getPreRenameUserDefinedClassesOnly(preserveDebuggability);
+
         PreRenameClassAccessRules preRenameClassAccessRules = new PreRenameClassAccessRules(preRenameUserDefinedClasses, preRenameUserClassAndInterfaceSet);
         NamespaceMapper namespaceMapper = new NamespaceMapper(preRenameClassAccessRules);
         
@@ -374,8 +384,7 @@ public class DAppCreator {
                     .addNextVisitor(new RejectionClassVisitor(preRenameClassAccessRules, namespaceMapper, preserveDebuggability))
                     .addNextVisitor(new LoopingExceptionStrippingVisitor())
                     .addNextVisitor(new UserClassMappingVisitor(namespaceMapper, preserveDebuggability))
-                    // (note that we need to pass a bogus HierarchyTreeBuilder into the class writer - can be empty, but not null)
-                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentClassResolver))
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, preserveDebuggability))
                     .build()
                     .runAndGetBytecode();
             String mappedName = DebugNameResolver.getUserPackageDotPrefix(name, preserveDebuggability);

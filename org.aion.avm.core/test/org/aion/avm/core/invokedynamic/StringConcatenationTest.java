@@ -1,5 +1,7 @@
 package org.aion.avm.core.invokedynamic;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.aion.avm.core.*;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.ConstantVisitor;
@@ -7,8 +9,10 @@ import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.shadowing.InvokedynamicShadower;
-import org.aion.avm.core.types.ClassInfo;
-import org.aion.avm.core.types.Forest;
+import org.aion.avm.core.types.ClassHierarchy;
+import org.aion.avm.core.types.ClassInformation;
+import org.aion.avm.core.types.ClassHierarchyBuilder;
+import org.aion.avm.core.types.CommonType;
 import org.aion.avm.core.util.DebugNameResolver;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.CommonInstrumentation;
@@ -24,7 +28,6 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -133,18 +136,26 @@ public class StringConcatenationTest {
     }
 
     private static byte[] transformForStringConcatTest(byte[] origBytecode, String className) {
-        final Forest<String, ClassInfo> classHierarchy = new HierarchyTreeBuilder()
-                .addClass(className, "java.lang.Object", false, origBytecode)
-                .asMutableForest();
-        final var shadowPackage = PackageConstants.kShadowSlashPrefix;
+        ClassHierarchy classHierarchy = buildNewHierarchy(className, preserveDebuggability);
+
+        final String shadowPackage = PackageConstants.kShadowSlashPrefix;
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(buildSingletonAccessRules(classHierarchy, className)), StringConcatenationTest.preserveDebuggability))
+                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(buildSingletonAccessRules(classHierarchy, preserveDebuggability)), StringConcatenationTest.preserveDebuggability))
                 .addNextVisitor(new ConstantVisitor())
                 .addNextVisitor(new ClassShadowing(shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
-                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
-                        new ParentPointers(Collections.singleton(className), classHierarchy, StringConcatenationTest.preserveDebuggability)))
+                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, preserveDebuggability))
                 .build()
                 .runAndGetBytecode();
+    }
+
+    private static ClassHierarchy buildNewHierarchy(String classDotName, boolean preserveDebuggability) {
+        Set<ClassInformation> classToAdd = new HashSet<>();
+        classToAdd.add(ClassInformation
+            .preRenameInfoFor(false, classDotName, CommonType.JAVA_LANG_OBJECT.dotName, null));
+
+        return new ClassHierarchyBuilder()
+            .addPreRenameUserDefinedClasses(classToAdd, preserveDebuggability)
+            .build();
     }
 }

@@ -1,5 +1,8 @@
 package org.aion.avm.core.arraywrapping;
 
+import org.aion.avm.core.types.ClassHierarchy;
+import org.aion.avm.core.types.CommonType;
+import org.aion.avm.core.util.Helpers;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -14,9 +17,11 @@ import org.objectweb.asm.tree.analysis.BasicValue;
  */
 
 public class ArrayWrappingInterpreter extends BasicInterpreter{
+    private final ClassHierarchy hierarchy;
 
-    ArrayWrappingInterpreter() {
+    ArrayWrappingInterpreter(ClassHierarchy hierarchy) {
       super(Opcodes.ASM6);
+      this.hierarchy = hierarchy;
     }
 
     @Override
@@ -113,6 +118,92 @@ public class ArrayWrappingInterpreter extends BasicInterpreter{
             default:
                 throw new AssertionError();
         }
+    }
+
+    @Override
+    public BasicValue merge(BasicValue value1, BasicValue value2) {
+        BasicValue b = super.merge(value1, value2);
+
+        if (b.equals(BasicValue.UNINITIALIZED_VALUE)) {
+
+            if (value1.equals(BasicValue.UNINITIALIZED_VALUE) && value2.equals(BasicValue.UNINITIALIZED_VALUE)) {
+                return b;
+            }
+
+            // Grab the value descriptors.
+            String cleanDescriptor1 = value1.toString();
+            String cleanDescriptor2 = value2.toString();
+
+            int dimension1 = getArrayDimension(cleanDescriptor1);
+            int dimension2 = getArrayDimension(cleanDescriptor2);
+
+            if (dimension1 == 0 || dimension2 == 0) {
+                return new BasicValue(Type.getType("[L" + Helpers.fulllyQualifiedNameToInternalName(CommonType.SHADOW_OBJECT.dotName) + ";"));
+            }
+
+            if (dimension1 != dimension2) {
+                return new BasicValue(Type.getType("[L" + Helpers.fulllyQualifiedNameToInternalName(CommonType.I_OBJECT_ARRAY.dotName) + ";"));
+            }
+
+            // Strip the leading array signifiers (the '[' characters)
+            cleanDescriptor1 = cleanDescriptor1.substring(dimension1);
+            cleanDescriptor2 = cleanDescriptor2.substring(dimension2);
+
+            boolean descriptor1isObject = cleanDescriptor1.startsWith("L");
+            boolean descriptor2isObject = cleanDescriptor2.startsWith("L");
+
+            // If we have object arrays, since we know they must differ, we return IObjectArray
+            if (!descriptor1isObject && !descriptor2isObject) {
+                return new BasicValue(Type.getType("[L" + Helpers.fulllyQualifiedNameToInternalName(CommonType.I_OBJECT_ARRAY.dotName) + ";"));
+            }
+
+            // If we have one object array and one non-object array then we return object.
+            if ((descriptor1isObject && !descriptor2isObject) || (!descriptor1isObject && descriptor2isObject)) {
+                return new BasicValue(Type.getType("[L" + Helpers.fulllyQualifiedNameToInternalName(CommonType.SHADOW_OBJECT.dotName) + ";"));
+            }
+
+            // Strip the 'L' character.
+            cleanDescriptor1 = cleanDescriptor1.substring(1);
+            cleanDescriptor2 = cleanDescriptor2.substring(1);
+
+            // Next we strip the trailing ';' character.
+            cleanDescriptor1 = cleanDescriptor1.substring(0,cleanDescriptor1.length() - 1);
+            cleanDescriptor2 = cleanDescriptor2.substring(0, cleanDescriptor2.length() - 1);
+
+            // Finally, convert them to dot-style names.
+            cleanDescriptor1 = Helpers.internalNameToFulllyQualifiedName(cleanDescriptor1);
+            cleanDescriptor2 = Helpers.internalNameToFulllyQualifiedName(cleanDescriptor2);
+
+            // Find the common super class.
+            String commonSuper = this.hierarchy.getTightestCommonSuperClass(cleanDescriptor1, cleanDescriptor2);
+
+            // Convert back to slash-style and re-add the characters we stripped.
+            commonSuper = Helpers.fulllyQualifiedNameToInternalName(commonSuper);
+
+            // Re-construct the descriptor that we took apart and return it.
+            return new BasicValue(Type.getType(getArrayDimensionPrefix(dimension1) + "L" + commonSuper + ";"));
+        }
+
+        return b;
+    }
+
+    private int getArrayDimension(String descriptor) {
+        int length = descriptor.length();
+
+        int dimension = 0;
+        for (int i = 0; i < length; i++) {
+            if (descriptor.charAt(i) != '[') {
+                return dimension;
+            }
+
+            dimension++;
+        }
+
+        return dimension;
+    }
+
+    private String getArrayDimensionPrefix(int dimension) {
+        return new String(new char[dimension]).replaceAll("\0", "[");
     }
 
 }

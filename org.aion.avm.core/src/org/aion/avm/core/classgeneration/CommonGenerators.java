@@ -2,6 +2,7 @@ package org.aion.avm.core.classgeneration;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,6 +24,18 @@ public class CommonGenerators {
         .filter((type) -> (type.isShadowException && !type.isVirtualMachineErrorOrChildError && !type.dotName.equals(CommonType.SHADOW_THROWABLE.dotName)))
         .map((type) -> (ClassNameExtractor.getOriginalClassName(type.dotName)))
         .toArray(String[]::new);
+    private static Set<String> allJclExceptions = null;
+
+    public static boolean isJclExceptionType(String className) {
+        if (allJclExceptions == null) {
+            Set<String> exceptions = new HashSet<>(Arrays.asList(CommonGenerators.kExceptionClassNames));
+            exceptions.addAll(CommonGenerators.kHandWrittenExceptionClassNames);
+            exceptions.addAll(CommonGenerators.kLegacyExceptionClassNames);
+            exceptions.add(CommonType.JAVA_LANG_THROWABLE.dotName);  // Missing from the other lists, but definitely an exception.
+            allJclExceptions = exceptions;
+        }
+        return allJclExceptions.contains(className);
+    }
 
     // We don't generate the shadows for these ones since we have hand-written them (but wrappers are still required).
     public static final Set<String> kHandWrittenExceptionClassNames = Set.of(new String[] {

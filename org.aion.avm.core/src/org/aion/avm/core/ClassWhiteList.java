@@ -1,10 +1,5 @@
 package org.aion.avm.core;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.aion.avm.core.types.ClassInfo;
-import org.aion.avm.core.types.Forest;
 import org.aion.avm.internal.PackageConstants;
 
 
@@ -41,24 +36,5 @@ public class ClassWhiteList {
      */
     public boolean isJdkClass(String slashClassName) {
         return slashClassName.startsWith(PackageConstants.kShadowSlashPrefix);
-    }
-
-
-    public static Set<String> extractDeclaredClasses(Forest<String, ClassInfo> classHierarchy) {
-        Set<String> providedClassNames = new HashSet<>();
-        // We will build this set by walking the roots (note that roots, by definition, are not provided by the application, but the JDK)
-        // and recursively collecting all reachable children.
-        for (Forest.Node<String, ClassInfo> root : classHierarchy.getRoots()) {
-            // Note that we don't add the roots, just walk their children.
-            deepAddChildrenToSet(providedClassNames, root);
-        }
-        return providedClassNames;
-    }
-
-    private static void deepAddChildrenToSet(Set<String> providedClassNames, Forest.Node<String, ClassInfo> node) {
-        for (Forest.Node<String, ClassInfo> child : node.getChildren()) {
-            providedClassNames.add(child.getId());
-            deepAddChildrenToSet(providedClassNames, child);
-        }
     }
 }

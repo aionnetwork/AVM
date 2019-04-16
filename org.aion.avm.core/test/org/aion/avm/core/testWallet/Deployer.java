@@ -1,7 +1,7 @@
 package org.aion.avm.core.testWallet;
 
-import java.util.IdentityHashMap;
 import avm.Address;
+import java.util.Set;
 import org.aion.avm.core.ClassHierarchyForest;
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.DAppCreator;
@@ -14,6 +14,10 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.miscvisitors.ClassRenameVisitor;
 import org.aion.avm.core.miscvisitors.SingleLoader;
+import org.aion.avm.core.types.ClassInformation;
+import org.aion.avm.core.types.ClassHierarchy;
+import org.aion.avm.core.types.ClassInformationFactory;
+import org.aion.avm.core.types.ClassHierarchyBuilder;
 import org.aion.avm.core.util.BlockchainRuntime;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.TestingHelper;
@@ -227,7 +231,10 @@ public class Deployer {
         );
         LoadedJar jar = LoadedJar.fromBytes(jarBytes);
 
-        Map<String, byte[]> transformedClasses = Helpers.mapIncludingHelperBytecode(DAppCreator.transformClasses(jar.classBytesByQualifiedNames, ClassHierarchyForest.createForestFrom(jar), preserveDebuggability), Helpers.loadDefaultHelperBytecode());
+        ClassHierarchy classHierarchy = buildNewHierarchy(jar);
+
+        Map<String, byte[]> transformedClasses = Helpers.mapIncludingHelperBytecode(DAppCreator.transformClasses(jar.classBytesByQualifiedNames, ClassHierarchyForest.createForestFrom(jar), classHierarchy,
+            preserveDebuggability), Helpers.loadDefaultHelperBytecode());
 
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(transformedClasses);
 
@@ -342,6 +349,18 @@ public class Deployer {
         
         InstrumentationHelpers.popExistingStackFrame(runtimeSetup);
         InstrumentationHelpers.detachThread(instrumentation);
+    }
+
+    private static ClassHierarchy buildNewHierarchy(LoadedJar jar) {
+        ClassInformationFactory classInfoFactory = new ClassInformationFactory();
+        Set<ClassInformation> classInfos = classInfoFactory.fromUserDefinedPreRenameJar(jar, preserveDebuggability);
+
+        return new ClassHierarchyBuilder()
+            .addShadowJcl()
+            .addPreRenameUserDefinedClasses(classInfos, preserveDebuggability)
+            .addHandwrittenArrayWrappers()
+            .addPostRenameJclExceptions()
+            .build();
     }
 
     private static Address buildAddress(int fillByte) {

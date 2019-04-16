@@ -1,12 +1,12 @@
 package org.aion.avm.core.exceptionwrapping;
 
 import org.aion.avm.core.ClassToolchain;
-import org.aion.avm.core.ParentPointers;
 import org.aion.avm.core.classgeneration.StubGenerator;
+import org.aion.avm.core.types.ClassHierarchy;
 import org.aion.avm.core.types.GeneratedClassConsumer;
+import org.aion.avm.core.types.CommonType;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -23,13 +23,44 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
      */
     private static final String SYSTEM_EXCEPTION_DETECTION_PREFIX = "java/lang/";
 
-    private final ParentPointers pointers;
     private final GeneratedClassConsumer generatedClassesSink;
 
-    public ExceptionWrapping(ParentPointers parentClassResolver, GeneratedClassConsumer generatedClassesSink) {
+    private final ClassHierarchy classHierarchy;
+
+    public ExceptionWrapping(GeneratedClassConsumer generatedClassesSink, ClassHierarchy classHierarchy) {
         super(Opcodes.ASM6);
-        this.pointers = parentClassResolver;
         this.generatedClassesSink = generatedClassesSink;
+        this.classHierarchy = classHierarchy;
+    }
+
+    private boolean isExceptionType(String dotNameClass) {
+
+        boolean isDescendantOfThrowable = false;
+        boolean isDescendantOfShadowObject = false;
+
+        String currentDotNameClass = dotNameClass;
+        while (!isDescendantOfThrowable && !isDescendantOfShadowObject) {
+
+            String superClass = this.classHierarchy.getConcreteSuperClassDotName(currentDotNameClass);
+
+            if (superClass == null) {
+                // If we have no super class then we must have a super interface. But an interface cannot
+                // subclass a concrete class and therefore can never be part of the exception hierarchy
+                // since all exceptions are concrete classes.
+                isDescendantOfShadowObject = true;
+            } else {
+                if (superClass.equals(CommonType.SHADOW_OBJECT.dotName)) {
+                    isDescendantOfShadowObject = true;
+                } else if (superClass.equals(CommonType.SHADOW_THROWABLE.dotName)) {
+                    isDescendantOfThrowable = true;
+                }
+            }
+
+            // If the above while condition is true then this value will always be non-null.
+            currentDotNameClass = superClass;
+        }
+
+        return isDescendantOfThrowable;
     }
 
     @Override
@@ -39,31 +70,9 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
         // Note that we want to decide whether or not to generate a wrapper for this class (added to the "generatedClasses" out parameter), at this point.
         // We do this by walking the hierarchy backward until we get to the java.lang and then seeing if we walk to "java.lang.Throwable" before
         // "java.lang.Object".
-        String thisClass = name.replaceAll("/", ".");
+        String classDotName = name.replaceAll("/", ".");
 
-        boolean isThrowable = false;
-        while (!isThrowable && !(PackageConstants.kShadowDotPrefix + "java.lang.Object").equals(thisClass)) {
-            if ((PackageConstants.kShadowDotPrefix + "java.lang.Throwable").equals(thisClass)) {
-                isThrowable = true;
-            } else {
-                // We assume that we can only descend from objects already in the ClassHierarchyForest or in "java/lang".
-                String superClass = this.pointers.getSuperClassName(thisClass);
-                if (null == superClass) {
-                    // We will try to load this from the default class loader and ask its parent.
-                    // (we can only land outside if we fell into the java.lang package, which is a problem we should have filtered, earlier)
-                    RuntimeAssertionError.assertTrue(thisClass.startsWith(PackageConstants.kShadowDotPrefix + "java.lang"));
-                    try {
-                        Class<?> clazz = Class.forName(thisClass);
-                        superClass = clazz.getSuperclass().getName();
-                    } catch (ClassNotFoundException e) {
-                        // This is something we should have caught earlier so this is a hard failure.
-                        throw RuntimeAssertionError.unexpected(e);
-                    }
-                }
-                thisClass = superClass;
-            }
-        }
-        if (isThrowable) {
+        if (isExceptionType(classDotName)) {
             // Generate our handler for this.
             String reparentedName = ExceptionWrapperNameMapper.slashWrapperNameForClassName(name);
             String reparentedSuperName = ExceptionWrapperNameMapper.slashWrapperNameForClassName(superName);

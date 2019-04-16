@@ -16,9 +16,13 @@ import org.aion.avm.core.shadowing.InvokedynamicShadower;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.testindy.java.lang.Double;
 import org.aion.avm.core.testindy.java.lang.invoke.LambdaMetafactory;
+import org.aion.avm.core.types.ClassHierarchy;
 import org.aion.avm.core.types.ClassInfo;
+import org.aion.avm.core.types.ClassInformation;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.types.GeneratedClassConsumer;
+import org.aion.avm.core.types.ClassHierarchyBuilder;
+import org.aion.avm.core.types.CommonType;
 import org.aion.avm.core.util.DebugNameResolver;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.CommonInstrumentation;
@@ -64,12 +68,11 @@ public class InvokedynamicTransformationTest {
         InstrumentationHelpers.detachThread(this.instrumentation);
     }
 
-
     @Test
     public void given_parametrizedLambda_then_allUserAccessableObjectsShouldBeShadowed() throws Exception {
-        final var className = ParametrizedLambda.class.getName();
+        final String className = ParametrizedLambda.class.getName();
         final byte[] origBytecode = loadRequiredResourceAsBytes(InvokedynamicUtils.getSlashClassNameFrom(className));
-        final byte[] transformedBytecode = transformForParametrizedLambdaTest(origBytecode, className);
+        final byte[] transformedBytecode = transformForParametrizedLambdaTest(origBytecode, className, this.preserveDebuggability);
         assertFalse(Arrays.equals(origBytecode, transformedBytecode));
         final Double actual =
                 (Double) callInstanceTestMethod(transformedBytecode, className, NamespaceMapper.mapMethodName("test"));
@@ -77,18 +80,16 @@ public class InvokedynamicTransformationTest {
         assertTrue(actual.avm_valueOfWasCalled);
     }
 
-    private byte[] transformForParametrizedLambdaTest(byte[] origBytecode, String className) {
-        final Forest<String, ClassInfo> classHierarchy = new HierarchyTreeBuilder()
-                .addClass(className, "java.lang.Object", false, origBytecode)
-                .asMutableForest();
-        final var shadowPackage = "org/aion/avm/core/testindy/";
+    private byte[] transformForParametrizedLambdaTest(byte[] origBytecode, String classDotName, boolean preserveDebuggability) {
+        ClassHierarchy classHierarchy = buildNewClassHierarchy(classDotName, preserveDebuggability);
+
+        final String shadowPackage = "org/aion/avm/core/testindy/";
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(InvokedynamicUtils.buildSingletonAccessRules(classHierarchy, className), shadowPackage), this.preserveDebuggability))
+                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(InvokedynamicUtils.buildSingletonAccessRules(classHierarchy, preserveDebuggability), shadowPackage), preserveDebuggability))
                 .addNextVisitor(new ConstantVisitor())
                 .addNextVisitor(new ClassShadowing(shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
-                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
-                        new ParentPointers(Collections.singleton(className), classHierarchy, this.preserveDebuggability)))
+                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, preserveDebuggability))
                 .build()
                 .runAndGetBytecode();
     }
@@ -97,25 +98,23 @@ public class InvokedynamicTransformationTest {
     public void given_MethodReference_then_itsTransformedAsUsual() throws Exception {
         final var testClassDotName = MethodReferenceTestResource.class.getName();
         final var originalBytecode = loadRequiredResourceAsBytes(InvokedynamicUtils.getSlashClassNameFrom(testClassDotName));
-        final var transformedBytecode = transformForMethodReference(originalBytecode, testClassDotName);
+        final var transformedBytecode = transformForMethodReference(originalBytecode, testClassDotName, this.preserveDebuggability);
         Assert.assertFalse(Arrays.equals(originalBytecode, transformedBytecode));
         final org.aion.avm.core.testindy.java.lang.Integer actual =
                 (org.aion.avm.core.testindy.java.lang.Integer) callStaticTestMethod(transformedBytecode, testClassDotName, NamespaceMapper.mapMethodName("function"));
         assertEquals(MethodReferenceTestResource.VALUE.intValue(), actual.avm_intValue());
     }
 
-    private byte[] transformForMethodReference(byte[] originalBytecode, String classDotName) {
-        final Forest<String, ClassInfo> classHierarchy = new HierarchyTreeBuilder()
-                .addClass(classDotName, "java.lang.Object", false, originalBytecode)
-                .asMutableForest();
-        final var shadowPackage = "org/aion/avm/core/testindy/";
+    private byte[] transformForMethodReference(byte[] originalBytecode, String classDotName, boolean preserveDebuggability) {
+        ClassHierarchy classHierarchy = buildNewClassHierarchy(classDotName, preserveDebuggability);
+
+        final String shadowPackage = "org/aion/avm/core/testindy/";
         return new ClassToolchain.Builder(originalBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(InvokedynamicUtils.buildSingletonAccessRules(classHierarchy, classDotName), shadowPackage), this.preserveDebuggability))
+                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(InvokedynamicUtils.buildSingletonAccessRules(classHierarchy, preserveDebuggability), shadowPackage), preserveDebuggability))
                 .addNextVisitor(new ConstantVisitor())
                 .addNextVisitor(new ClassShadowing(shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
-                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS,
-                        new ParentPointers(Collections.singleton(classDotName), classHierarchy, this.preserveDebuggability)))
+                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, preserveDebuggability))
                 .build()
                 .runAndGetBytecode();
     }
@@ -124,17 +123,21 @@ public class InvokedynamicTransformationTest {
     public void given_MultiLineLambda_then_itsTransformedAsUsualCode() throws Exception {
         final var className = LongLambda.class.getName();
         final byte[] origBytecode = Helpers.loadRequiredResourceAsBytes(InvokedynamicUtils.getSlashClassNameFrom(className));
-        final byte[] transformedBytecode = transformForMultiLineLambda(origBytecode, className);
+        final byte[] transformedBytecode = transformForMultiLineLambda(origBytecode, className, this.preserveDebuggability);
         Assert.assertFalse(Arrays.equals(origBytecode, transformedBytecode));
         final org.aion.avm.shadow.java.lang.Double actual =
                 (org.aion.avm.shadow.java.lang.Double) callInstanceTestMethod(transformedBytecode, className, NamespaceMapper.mapMethodName("test"));
         assertEquals(100., actual.avm_doubleValue(), 0);
     }
 
-    private byte[] transformForMultiLineLambda(byte[] origBytecode, String className) {
-        final Forest<String, ClassInfo> classHierarchy = new HierarchyTreeBuilder()
+    private byte[] transformForMultiLineLambda(byte[] origBytecode, String className, boolean preserveDebuggability) {
+        ClassHierarchy classHierarchy = buildNewClassHierarchy(className, preserveDebuggability);
+
+        // We build this old hierarchy just because we will compute object sizes.
+        final Forest<String, ClassInfo> classHierarchyForest = new HierarchyTreeBuilder()
                 .addClass(className, "java.lang.Object", false, origBytecode)
                 .asMutableForest();
+
         final var shadowPackage = PackageConstants.kShadowSlashPrefix;
         final Map<String, byte[]> processedClasses = new HashMap<>();
         // WARNING:  This dynamicHierarchyBuilder is both mutable and shared by TypeAwareClassWriter instances.
@@ -145,25 +148,25 @@ public class InvokedynamicTransformationTest {
             processedClasses.put(classDotName, bytecode);
             dynamicHierarchyBuilder.addClass(classSlashName, superClassSlashName, false, bytecode);
         };
-        ParentPointers parentPointers = new ParentPointers(Collections.singleton(className), classHierarchy, this.preserveDebuggability);
-        PreRenameClassAccessRules singletonRules = InvokedynamicUtils.buildSingletonAccessRules(classHierarchy, className);
+
+        PreRenameClassAccessRules singletonRules = InvokedynamicUtils.buildSingletonAccessRules(classHierarchy, preserveDebuggability);
         NamespaceMapper mapper = new NamespaceMapper(singletonRules);
         byte[] bytecode = new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new RejectionClassVisitor(singletonRules, mapper, this.preserveDebuggability))
-                .addNextVisitor(new UserClassMappingVisitor(mapper, this.preserveDebuggability))
+                .addNextVisitor(new RejectionClassVisitor(singletonRules, mapper, preserveDebuggability))
+                .addNextVisitor(new UserClassMappingVisitor(mapper, preserveDebuggability))
                 .addNextVisitor(new ConstantVisitor())
-                .addNextVisitor(new ClassMetering(DAppCreator.computeAllPostRenameObjectSizes(classHierarchy, this.preserveDebuggability)))
+                .addNextVisitor(new ClassMetering(DAppCreator.computeAllPostRenameObjectSizes(classHierarchyForest, preserveDebuggability)))
                 .addNextVisitor(new ClassShadowing(shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addNextVisitor(new StackWatcherClassAdapter())
-                .addNextVisitor(new ExceptionWrapping(parentPointers, generatedClassConsumer))
-                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentPointers))
+                .addNextVisitor(new ExceptionWrapping(generatedClassConsumer, classHierarchy))
+                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, preserveDebuggability))
                 .build()
                 .runAndGetBytecode();
         bytecode = new ClassToolchain.Builder(bytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new ArrayWrappingClassAdapterRef())
+                .addNextVisitor(new ArrayWrappingClassAdapterRef(null))
                 .addNextVisitor(new ArrayWrappingClassAdapter())
-                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, parentPointers))
+                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, preserveDebuggability))
                 .build()
                 .runAndGetBytecode();
         return bytecode;
@@ -199,5 +202,14 @@ public class InvokedynamicTransformationTest {
         this.runtimeSetup = Helpers.getSetupForLoader(dappLoader);
         InstrumentationHelpers.pushNewStackFrame(this.runtimeSetup, dappLoader, 1_000_000L, 1, null);
         return dappLoader.loadClass(mappedClassName);
+    }
+
+    private ClassHierarchy buildNewClassHierarchy(String classDotName, boolean preserveDebuggability) {
+        Set<ClassInformation> classToAdd = new HashSet<>();
+        classToAdd.add(ClassInformation.preRenameInfoFor(false, classDotName, CommonType.JAVA_LANG_OBJECT.dotName, null));
+
+        return new ClassHierarchyBuilder()
+            .addPreRenameUserDefinedClasses(classToAdd, preserveDebuggability)
+            .build();
     }
 }

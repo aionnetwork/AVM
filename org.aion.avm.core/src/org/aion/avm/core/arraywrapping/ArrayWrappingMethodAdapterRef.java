@@ -2,6 +2,7 @@ package org.aion.avm.core.arraywrapping;
 
 import org.aion.avm.arraywrapper.BooleanArray;
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.core.types.ClassHierarchy;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IObjectArray;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -32,6 +33,7 @@ import org.objectweb.asm.tree.analysis.Frame;
  */
 
 class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
+    private final ClassHierarchy hierarchy;
 
     private String className;
     private MethodVisitor mv;
@@ -42,11 +44,13 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
                                          final String signature,
                                          final String[] exceptions,
                                          MethodVisitor mv,
-                                         String className)
+                                         String className,
+                                         ClassHierarchy hierarchy)
     {
         super(Opcodes.ASM6, access, name, descriptor, signature, exceptions);
         this.className = className;
         this.mv = mv;
+        this.hierarchy = hierarchy;
     }
 
     @Override
@@ -55,12 +59,13 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
         Frame<BasicValue>[] frames = null;
         if (instructions.size() > 0) {
             try{
-                Analyzer<BasicValue> analyzer = new Analyzer<>(new ArrayWrappingInterpreter());
+                Analyzer<BasicValue> analyzer = new Analyzer<>(new ArrayWrappingInterpreter(this.hierarchy));
                 analyzer.analyze(this.className, this);
                 frames = analyzer.getFrames();
             }catch (AnalyzerException e){
-                System.out.println("Analyzer fail :" + this.className);
-                System.out.println(e.getMessage());
+                // If we fail to run the analyzer, that is a serious internal error.
+                // NOTE:  We can limit this failure to the contract deployment to avoid DDoS against the AVM in the network.
+                throw RuntimeAssertionError.unexpected(e);
             }
         }
 

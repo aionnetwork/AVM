@@ -177,8 +177,11 @@ public class HashCodeTest {
         // Load the testing class.
         String className = HashCodeTestTarget.class.getName();
         byte[] transformed = getTransformedTestClass(className);
-        Map<String, byte[]> classes = Collections.singletonMap(PackageConstants.kUserDotPrefix + className, transformed);
-        
+
+        String prefix = (preserveDebuggability) ? "" : PackageConstants.kUserDotPrefix;
+
+        Map<String, byte[]> classes = Collections.singletonMap(prefix + className, transformed);
+
         // Create 2 instances of the contract-specific loaders, each with the same class, and prove that we get 2 instances.
         AvmClassLoader loader1 = NodeEnvironment.singleton.createInvocationClassLoader(classes);
         Class<?> clazz1 = loader1.loadUserClassByOriginalName(className, preserveDebuggability);
@@ -212,7 +215,10 @@ public class HashCodeTest {
         // Load the testing class and the Helper.
         String targetClassName = HashCodeTestTarget.class.getName();
         byte[] transformedTarget = getTransformedTestClass(targetClassName);
-        Map<String, byte[]> classes = Helpers.mapIncludingHelperBytecode(Collections.singletonMap(PackageConstants.kUserDotPrefix + targetClassName, transformedTarget), Helpers.loadDefaultHelperBytecode());
+
+        String prefix = (preserveDebuggability) ? "" : PackageConstants.kUserDotPrefix;
+
+        Map<String, byte[]> classes = Helpers.mapIncludingHelperBytecode(Collections.singletonMap(prefix + targetClassName, transformedTarget), Helpers.loadDefaultHelperBytecode());
 
         // Now, we will create 2 class loaders with the same classes:  these will be contract-level loaders.
         AvmClassLoader loader1 = NodeEnvironment.singleton.createInvocationClassLoader(classes);
@@ -323,10 +329,12 @@ public class HashCodeTest {
                 .addClass(className, "java.lang.Object", false, raw)
                 .asMutableForest();
 
-        Map<String, byte[]> transformedClasses = DAppCreator.transformClasses(Collections.singletonMap(className, raw), classHierarchy, preserveDebuggability);
-        
+        Map<String, byte[]> transformedClasses = DAppCreator.transformClasses(Collections.singletonMap(className, raw), classHierarchy, this.avm.getClassHierarchy(), preserveDebuggability);
+
         // Note that the class is renamed during this transformation.
-        return transformedClasses.get(PackageConstants.kUserDotPrefix + className);
+        String prefix = (preserveDebuggability) ? "" : PackageConstants.kUserDotPrefix;
+        
+        return transformedClasses.get(prefix + className);
     }
 
     private int callIntReturnMethod(String preTransformMethodName) throws Exception {

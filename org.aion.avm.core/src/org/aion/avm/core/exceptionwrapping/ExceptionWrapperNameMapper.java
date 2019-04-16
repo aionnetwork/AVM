@@ -25,9 +25,25 @@ public class ExceptionWrapperNameMapper {
         return wrapperName.substring(PackageConstants.kExceptionWrapperSlashPrefix.length());
     }
 
+    public static String dotClassNameForWrapperName(String wrapperName) {
+        // NOTE:  These are ".-style" names.
+        RuntimeAssertionError.assertTrue(-1 == wrapperName.indexOf("/"));
+        // This should only be called on wrapper names.
+        RuntimeAssertionError.assertTrue(wrapperName.startsWith(PackageConstants.kExceptionWrapperDotPrefix));
+
+        return wrapperName.substring(PackageConstants.kExceptionWrapperDotPrefix.length());
+    }
+
     public static boolean isExceptionWrapper(String typeName) {
         // NOTE:  These are "/-style" names.
         RuntimeAssertionError.assertTrue(-1 == typeName.indexOf("."));
         return typeName.startsWith(PackageConstants.kExceptionWrapperSlashPrefix);
     }
+
+    public static boolean isExceptionWrapperDotName(String typeName) {
+        // NOTE:  These are ".-dot" names.
+        RuntimeAssertionError.assertTrue(-1 == typeName.indexOf("/"));
+        return typeName.startsWith(PackageConstants.kExceptionWrapperDotPrefix);
+    }
+
 }

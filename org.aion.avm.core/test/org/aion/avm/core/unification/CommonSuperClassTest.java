@@ -9,7 +9,6 @@ import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.RuntimeAssertionError;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
@@ -45,8 +44,6 @@ public class CommonSuperClassTest {
     private static TestingKernel KERNEL = new TestingKernel(BLOCK);
     private AvmImpl avm;
 
-    //TODO: Every test here should pass naturally once issue #362 is complete.
-
     @Before
     public void setup() {
         AvmConfiguration config = new AvmConfiguration();
@@ -57,14 +54,10 @@ public class CommonSuperClassTest {
 
     @After
     public void tearDown() {
-        try {
-            avm.shutdown();
-        } catch (Throwable t) {
-            // Note that combineClassAndJclInterface() leaves the AVM instance in a broken state, which will be reported here, but we aren't concerned.
-        }
+        avm.shutdown();
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void combineInterfaces() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineWithInterfaces.class, CommonSuperClassTypes.class,
             AionList.class, AionBuffer.class, ABIEncoder.class, ABIToken.class, ABIException.class);
@@ -81,7 +74,7 @@ public class CommonSuperClassTest {
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void combineJcl() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineWithJcl.class, CommonSuperClassTypes.class, ABIException.class);
         byte[] arguments = new byte[0];
@@ -92,7 +85,7 @@ public class CommonSuperClassTest {
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, deploymentResult.getResultCode());
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void combineApi() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineWithApi.class, CommonSuperClassTypes.class, AionBuffer.class);
         byte[] arguments = new byte[0];
@@ -103,7 +96,7 @@ public class CommonSuperClassTest {
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, deploymentResult.getResultCode());
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void combineUserlib() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineWithUserlib.class, CommonSuperClassTarget_combineWithApi.class, CommonSuperClassTypes.class, AionMap.class, AionBuffer.class);
         byte[] arguments = new byte[0];
@@ -114,7 +107,7 @@ public class CommonSuperClassTest {
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, deploymentResult.getResultCode());
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void combineEnums() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineWithEnums.class, CommonSuperClassTypes.class, AionList.class);
         byte[] arguments = new byte[0];
@@ -129,7 +122,7 @@ public class CommonSuperClassTest {
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void combineExceptions() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineWithExceptions.class, CommonSuperClassTypes.class, AionMap.class, ABIException.class);
         byte[] arguments = new byte[0];
@@ -145,7 +138,7 @@ public class CommonSuperClassTest {
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void combineArrays() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineWithArrays.class, CommonSuperClassTypes.class, AionBuffer.class);
         byte[] arguments = new byte[0];
@@ -156,7 +149,7 @@ public class CommonSuperClassTest {
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, deploymentResult.getResultCode());
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void combineAmbiguousUserClasses() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineAmbiguousClasses.class, CommonSuperClassTypes.class);
         byte[] arguments = new byte[0];
@@ -172,7 +165,7 @@ public class CommonSuperClassTest {
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void combineAmbiguousArrays() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineAmbiguousArrays.class, CommonSuperClassTypes.class);
         byte[] arguments = new byte[0];

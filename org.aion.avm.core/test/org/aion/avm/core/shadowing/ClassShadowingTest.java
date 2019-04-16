@@ -50,7 +50,11 @@ public class ClassShadowingTest {
                         .build()
                         .runAndGetBytecode();
         Map<String, byte[]> classes = new HashMap<>();
-        classes.put(PackageConstants.kUserDotPrefix + className, transformer.apply(bytecode));
+
+        String prefix = (preserveDebuggability) ? "" : PackageConstants.kUserDotPrefix;
+
+        classes.put(prefix + className, transformer.apply(bytecode));
+
         Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, Helpers.loadDefaultHelperBytecode());
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
 
@@ -86,7 +90,9 @@ public class ClassShadowingTest {
     @Test
     public void testField() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         String className = TestResource2.class.getName();
-        String mappedClassName = PackageConstants.kUserDotPrefix + className;
+        String prefix = (preserveDebuggability) ? "" : PackageConstants.kUserDotPrefix;
+        String mappedClassName = prefix + className;
+
         byte[] bytecode = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
 
         Function<byte[], byte[]> transformer = (inputBytes) ->
@@ -138,8 +144,11 @@ public class ClassShadowingTest {
                         .runAndGetBytecode();
         Map<String, byte[]> classes = new HashMap<>();
         byte[] transformed = transformer.apply(bytecode);
-        classes.put(PackageConstants.kUserDotPrefix + className, transformed);
-        classes.put(PackageConstants.kUserDotPrefix + innerClassName, transformer.apply(innerBytecode));
+
+        String prefix = (preserveDebuggability) ? "" : PackageConstants.kUserDotPrefix;
+
+        classes.put(prefix + className, transformed);
+        classes.put(prefix + innerClassName, transformer.apply(innerBytecode));
 
         Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, Helpers.loadDefaultHelperBytecode());
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
@@ -223,7 +232,6 @@ public class ClassShadowingTest {
         // which hasn't been renamed.
         // We believe that this is reasonable behaviour (as local debug requires disabling the renaming security feature) but it is why
         // debug should only ever be enabled, locally.
-        boolean preserveDebuggability = true;
         new ClassToolchain.Builder(inputBytes, 0)
                 .addNextVisitor(new UserClassMappingVisitor(createTestingMapper(className), true))
                 .addNextVisitor(new ConstantVisitor())
