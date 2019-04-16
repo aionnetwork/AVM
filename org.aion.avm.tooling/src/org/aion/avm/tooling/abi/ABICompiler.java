@@ -102,7 +102,7 @@ public class ABICompiler {
         }
 
         ClassReader reader = new ClassReader(mainClassBytes);
-        ClassWriter classWriter = new ClassWriter(0);
+        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         ABICompilerClassVisitor classVisitor = new ABICompilerClassVisitor(classWriter) {};
         reader.accept(classVisitor, 0);
 

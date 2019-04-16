@@ -127,19 +127,16 @@ public class ABICompilerClassVisitor extends ClassVisitor {
         methodVisitor.visitMethodInsn(INVOKESPECIAL, "org/aion/avm/userlib/abi/ABIDecoder", "<init>", "([B)V", false);
         methodVisitor.visitVarInsn(ASTORE, 0);
 
-        Label label1 = new Label();
-        methodVisitor.visitLabel(label1);
-
         // set methodName = ABIDecoder.decodeMethodName(inputBytes);
         methodVisitor.visitVarInsn(ALOAD, 0);
         methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeMethodName", "()Ljava/lang/String;", false);
         methodVisitor.visitVarInsn(ASTORE, 1);
-        Label label2 = new Label();
+        Label methodNameNotNullLabel = new Label();
 
         // if methodName is null, call fallback(), or return empty byte array
 
         methodVisitor.visitVarInsn(ALOAD, 1);
-        methodVisitor.visitJumpInsn(IFNONNULL, label2);
+        methodVisitor.visitJumpInsn(IFNONNULL, methodNameNotNullLabel);
         if(hasFallback()) {
             methodVisitor.visitMethodInsn(
                 INVOKESTATIC, className, fallbackMethodName, "()V", false);
@@ -148,7 +145,7 @@ public class ABICompilerClassVisitor extends ClassVisitor {
         methodVisitor.visitIntInsn(NEWARRAY, T_BYTE);
         methodVisitor.visitInsn(ARETURN);
 
-        methodVisitor.visitLabel(label2);
+        methodVisitor.visitLabel(methodNameNotNullLabel);
 
         Label latestLabel = new Label();
 
@@ -321,11 +318,7 @@ public class ABICompilerClassVisitor extends ClassVisitor {
             methodVisitor.visitInsn(ARETURN);
         }
 
-        Label lastLabel = new Label();
-        methodVisitor.visitLabel(lastLabel);
-        methodVisitor.visitLocalVariable("decoder", "Lorg/aion/avm/userlib/abi/ABIDecoder;", null, label1, lastLabel, 0);
-        methodVisitor.visitLocalVariable("methodName", "Ljava/lang/String;", null, label2, lastLabel, 1);
-        methodVisitor.visitMaxs(2, 3);
+        methodVisitor.visitMaxs(0, 0);
         methodVisitor.visitEnd();
     }
 
