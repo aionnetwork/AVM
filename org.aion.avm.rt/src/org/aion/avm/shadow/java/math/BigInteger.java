@@ -1,11 +1,7 @@
 package org.aion.avm.shadow.java.math;
 
 import org.aion.avm.arraywrapper.ByteArray;
-import org.aion.avm.internal.CodecIdioms;
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.IObject;
-import org.aion.avm.internal.IObjectDeserializer;
-import org.aion.avm.internal.IObjectSerializer;
+import org.aion.avm.internal.*;
 import org.aion.avm.shadow.java.lang.Comparable;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.lang.Number;
@@ -50,13 +46,13 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
         return new BigInteger(java.math.BigInteger.valueOf(val));
     }
 
-    public static final BigInteger avm_ZERO = new BigInteger(java.math.BigInteger.ZERO);
+    public static final BigInteger avm_ZERO = new BigInteger(java.math.BigInteger.ZERO, new ConstantToken(ShadowClassConstantId.BigInteger_avm_ZERO));
 
-    public static final BigInteger avm_ONE = new BigInteger(java.math.BigInteger.ONE);
+    public static final BigInteger avm_ONE = new BigInteger(java.math.BigInteger.ONE, new ConstantToken(ShadowClassConstantId.BigInteger_avm_ONE));
 
-    public static final BigInteger avm_TWO = new BigInteger(java.math.BigInteger.TWO);
+    public static final BigInteger avm_TWO = new BigInteger(java.math.BigInteger.TWO, new ConstantToken(ShadowClassConstantId.BigInteger_avm_TWO));
 
-    public static final BigInteger avm_TEN = new BigInteger(java.math.BigInteger.TEN);
+    public static final BigInteger avm_TEN = new BigInteger(java.math.BigInteger.TEN, new ConstantToken(ShadowClassConstantId.BigInteger_avm_TEN));
 
     public BigInteger avm_add(BigInteger val) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_add);
@@ -360,6 +356,11 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
     public java.math.BigInteger getUnderlying() {
         lazyLoad();
         return v;
+    }
+
+    private BigInteger(java.math.BigInteger u, ConstantToken constantToken) {
+        super(constantToken);
+        setUnderlying(u);
     }
 
     // Deserializer support.

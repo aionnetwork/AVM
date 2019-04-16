@@ -1,8 +1,6 @@
 package org.aion.avm.shadow.java.lang;
 
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.IObject;
-import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.avm.internal.*;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public final class Byte extends Number implements Comparable<Byte> {
@@ -15,7 +13,7 @@ public final class Byte extends Number implements Comparable<Byte> {
 
     public static final byte avm_MAX_VALUE = java.lang.Byte.MAX_VALUE;
 
-    public static final Class<Byte> avm_TYPE = new Class(java.lang.Byte.TYPE);
+    public static final Class<Byte> avm_TYPE = new Class(java.lang.Byte.TYPE, new ConstantToken(ShadowClassConstantId.Byte_avm_TYPE));
 
     public static String avm_toString(byte b) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Byte_avm_toString);

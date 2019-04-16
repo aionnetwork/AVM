@@ -1,8 +1,10 @@
 package org.aion.avm.shadow.java.math;
 
 import org.aion.avm.arraywrapper.ObjectArray;
+import org.aion.avm.internal.ConstantToken;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObjectArray;
+import org.aion.avm.internal.ShadowClassConstantId;
 import org.aion.avm.shadow.java.lang.Enum;
 import org.aion.avm.shadow.java.lang.String;
 import org.aion.avm.shadow.java.lang.Class;
@@ -39,8 +41,8 @@ public final class RoundingMode extends Enum<RoundingMode>{
 
     private static final ObjectArray avm_$VALUES;
 
-    private RoundingMode(org.aion.avm.shadow.java.lang.String s, int a, int b, java.math.RoundingMode u){
-        super(s, a);
+    private RoundingMode(org.aion.avm.shadow.java.lang.String s, int a, int b, java.math.RoundingMode u, ConstantToken constantToken) {
+        super(s, a, constantToken);
         avm_oldMode = b;
         v = u;
     }
@@ -76,28 +78,28 @@ public final class RoundingMode extends Enum<RoundingMode>{
 
     static {
         avm_UP          = new RoundingMode(new String("UP"), 0, java.math.BigDecimal.ROUND_UP,
-                            java.math.RoundingMode.UP);
+                            java.math.RoundingMode.UP, new ConstantToken(ShadowClassConstantId.RoundingMode_avm_UP));
 
         avm_DOWN        = new RoundingMode(new String("DOWN"), 1, java.math.BigDecimal.ROUND_DOWN,
-                            java.math.RoundingMode.DOWN);
+                            java.math.RoundingMode.DOWN, new ConstantToken(ShadowClassConstantId.RoundingMode_avm_DOWN));
 
         avm_CEILING     = new RoundingMode(new String("CEILING"), 2, java.math.BigDecimal.ROUND_CEILING,
-                            java.math.RoundingMode.CEILING);
+                            java.math.RoundingMode.CEILING, new ConstantToken(ShadowClassConstantId.RoundingMode_avm_CEILING));
 
         avm_FLOOR       = new RoundingMode(new String("FLOOR"), 3, java.math.BigDecimal.ROUND_FLOOR,
-                            java.math.RoundingMode.FLOOR);
+                            java.math.RoundingMode.FLOOR, new ConstantToken(ShadowClassConstantId.RoundingMode_avm_FLOOR));
 
         avm_HALF_UP     = new RoundingMode(new String("HALF_UP"), 4, java.math.BigDecimal.ROUND_HALF_UP,
-                            java.math.RoundingMode.HALF_UP);
+                            java.math.RoundingMode.HALF_UP, new ConstantToken(ShadowClassConstantId.RoundingMode_avm_HALF_UP));
 
         avm_HALF_DOWN   = new RoundingMode(new String("HALF_DOWN"), 5, java.math.BigDecimal.ROUND_HALF_DOWN,
-                            java.math.RoundingMode.HALF_DOWN);
+                            java.math.RoundingMode.HALF_DOWN, new ConstantToken(ShadowClassConstantId.RoundingMode_avm_HALF_DOWN));
 
         avm_HALF_EVEN   = new RoundingMode(new String("HALF_EVEN"), 6, java.math.BigDecimal.ROUND_HALF_EVEN,
-                            java.math.RoundingMode.HALF_EVEN);
+                            java.math.RoundingMode.HALF_EVEN, new ConstantToken(ShadowClassConstantId.RoundingMode_avm_HALF_EVEN));
 
         avm_UNNECESSARY = new RoundingMode(new String("UNNECESSARY"), 7, java.math.BigDecimal.ROUND_UNNECESSARY,
-                            java.math.RoundingMode.UNNECESSARY);
+                            java.math.RoundingMode.UNNECESSARY, new ConstantToken(ShadowClassConstantId.RoundingMode_avm_UNNECESSARY));
 
         avm_$VALUES = ObjectArray.initArray(8);
         avm_$VALUES.set(0, avm_UP);

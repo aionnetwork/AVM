@@ -1,8 +1,6 @@
 package org.aion.avm.shadow.java.lang;
 
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.IObject;
-import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.avm.internal.*;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public final class Short extends Number implements Comparable<Short> {
@@ -15,7 +13,7 @@ public final class Short extends Number implements Comparable<Short> {
 
     public static final short avm_MAX_VALUE = java.lang.Short.MAX_VALUE;
 
-    public static final Class<Short> avm_TYPE = new Class(java.lang.Short.TYPE);
+    public static final Class<Short> avm_TYPE = new Class(java.lang.Short.TYPE, new ConstantToken(ShadowClassConstantId.Short_avm_TYPE));
 
     public static String avm_toString(short s) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Short_avm_toString);

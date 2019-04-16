@@ -1,8 +1,7 @@
 package org.aion.avm.core.persistence;
 
-import java.util.Map;
-
 import org.aion.avm.core.NodeEnvironment;
+import org.aion.avm.internal.ConstantToken;
 import org.aion.avm.internal.InternedClasses;
 import org.aion.avm.internal.RuntimeAssertionError;
 
@@ -37,13 +36,12 @@ public class StandardGlobalResolver implements IGlobalResolver {
 
     @Override
     public int getAsConstant(Object target) {
-        // TODO (AKI-97): Replace this with an inline constant readIndex value.
         int constant = 0;
-        for (Map.Entry<Integer, org.aion.avm.shadow.java.lang.Object> elt : NodeEnvironment.singleton.getConstantMap().entrySet()) {
-            if (elt.getValue() == target) {
-                constant = elt.getKey();
-                break;
-            }
+
+        RuntimeAssertionError.assertTrue(target instanceof org.aion.avm.shadow.java.lang.Object);
+        if(((org.aion.avm.shadow.java.lang.Object) target).readIndex < -1)
+        {
+            constant = ConstantToken.getConstantIdFromReadIndex(((org.aion.avm.shadow.java.lang.Object) target).readIndex);
         }
         return constant;
     }

@@ -1,5 +1,6 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.internal.ConstantToken;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 import org.aion.avm.shadow.java.io.Serializable;
@@ -12,6 +13,10 @@ public abstract class Number extends Object implements Serializable {
 
     public Number(java.lang.Void ignore, int readIndex) {
         super(ignore, readIndex);
+    }
+
+    protected Number(ConstantToken constantToken) {
+        super(constantToken);
     }
 
     public Number(){};

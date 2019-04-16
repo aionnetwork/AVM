@@ -1,8 +1,6 @@
 package org.aion.avm.shadow.java.lang;
 
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.IObject;
-import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.avm.internal.*;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 public final class Float extends Number implements Comparable<Float> {
@@ -31,7 +29,7 @@ public final class Float extends Number implements Comparable<Float> {
 
     public static final int avm_BYTES = java.lang.Float.BYTES;
 
-    public static final Class<Float> avm_TYPE = new Class(java.lang.Float.TYPE);
+    public static final Class<Float> avm_TYPE = new Class(java.lang.Float.TYPE, new ConstantToken(ShadowClassConstantId.Float_avm_TYPE));
 
     // These are the constructors provided in the JDK but we mark them private since they are deprecated.
     // (in the future, we may change these to not exist - depends on the kind of error we want to give the user).

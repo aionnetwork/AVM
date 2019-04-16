@@ -1,11 +1,7 @@
 package org.aion.avm.shadow.java.lang;
 
 import org.aion.avm.ClassNameExtractor;
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.IObject;
-import org.aion.avm.internal.IObjectDeserializer;
-import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.avm.internal.*;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 
@@ -39,12 +35,13 @@ public class Object extends java.lang.Object implements IObject {
         this.hashCode = hashCode;
         this.readIndex = NEW_INSTANCE_READ_INDEX;
     }
- 
-    public void updateHashCodeForConstant(int hashCode) {
-        // Note that this can only be called for constants and their hash codes are initialized by a special IInstrumentation, under NodeEnvironment, which gives them
-        // this MIN_VALUE hash code so we can detect this case.
-        RuntimeAssertionError.assertTrue(java.lang.Integer.MIN_VALUE == this.hashCode);
-        this.hashCode = hashCode;
+
+    // Special constructor only invoked when instantiating constants
+    protected Object(ConstantToken constantToken) {
+        this.hashCode = constantToken.constantId;
+        //readIndex will be used to identify constants during serialization. It can also be used to derive constantId
+        this.readIndex = ConstantToken.getReadIndexFromConstantId(hashCode);
+        ConstantsHolder.addConstant(hashCode, this);
     }
 
     /**

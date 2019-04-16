@@ -2,8 +2,10 @@ package org.aion.avm.shadow.java.util.concurrent;
 
 import org.aion.avm.RuntimeMethodFeeSchedule;
 import org.aion.avm.arraywrapper.ObjectArray;
+import org.aion.avm.internal.ConstantToken;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObjectArray;
+import org.aion.avm.internal.ShadowClassConstantId;
 import org.aion.avm.shadow.java.lang.Class;
 import org.aion.avm.shadow.java.lang.Enum;
 import org.aion.avm.shadow.java.lang.String;
@@ -26,8 +28,8 @@ public final class TimeUnit extends Enum<TimeUnit> {
 
     private static final ObjectArray avm_$VALUES;
 
-    private TimeUnit(org.aion.avm.shadow.java.lang.String name, int ordinal, java.util.concurrent.TimeUnit u) {
-        super(name, ordinal);
+    private TimeUnit(org.aion.avm.shadow.java.lang.String name, int ordinal, java.util.concurrent.TimeUnit u, ConstantToken constantToken) {
+        super(name, ordinal, constantToken);
         v = u;
     }
 
@@ -92,13 +94,20 @@ public final class TimeUnit extends Enum<TimeUnit> {
     }
 
     static {
-        avm_DAYS = new TimeUnit(new String("DAYS"), 0, java.util.concurrent.TimeUnit.DAYS);
-        avm_HOURS = new TimeUnit(new String("HOURS"), 1, java.util.concurrent.TimeUnit.HOURS);
-        avm_MINUTES = new TimeUnit(new String("MINUTES"), 2, java.util.concurrent.TimeUnit.MINUTES);
-        avm_SECONDS = new TimeUnit(new String("SECONDS"), 3, java.util.concurrent.TimeUnit.SECONDS);
-        avm_MILLISECONDS = new TimeUnit(new String("MILLISECONDS"), 4, java.util.concurrent.TimeUnit.MILLISECONDS);
-        avm_MICROSECONDS = new TimeUnit(new String("MICROSECONDS"), 5, java.util.concurrent.TimeUnit.MICROSECONDS);
-        avm_NANOSECONDS = new TimeUnit(new String("NANOSECONDS"), 6, java.util.concurrent.TimeUnit.NANOSECONDS);
+        avm_DAYS = new TimeUnit(new String("DAYS"), 0, java.util.concurrent.TimeUnit.DAYS,
+                new ConstantToken(ShadowClassConstantId.TimeUnit_avm_DAYS));
+        avm_HOURS = new TimeUnit(new String("HOURS"), 1, java.util.concurrent.TimeUnit.HOURS,
+                new ConstantToken(ShadowClassConstantId.TimeUnit_avm_HOURS));
+        avm_MINUTES = new TimeUnit(new String("MINUTES"), 2, java.util.concurrent.TimeUnit.MINUTES,
+                new ConstantToken(ShadowClassConstantId.TimeUnit_avm_MINUTES));
+        avm_SECONDS = new TimeUnit(new String("SECONDS"), 3, java.util.concurrent.TimeUnit.SECONDS,
+                new ConstantToken(ShadowClassConstantId.TimeUnit_avm_SECONDS));
+        avm_MILLISECONDS = new TimeUnit(new String("MILLISECONDS"), 4, java.util.concurrent.TimeUnit.MILLISECONDS,
+                new ConstantToken(ShadowClassConstantId.TimeUnit_avm_MILLISECONDS));
+        avm_MICROSECONDS = new TimeUnit(new String("MICROSECONDS"), 5, java.util.concurrent.TimeUnit.MICROSECONDS,
+                new ConstantToken(ShadowClassConstantId.TimeUnit_avm_MICROSECONDS));
+        avm_NANOSECONDS = new TimeUnit(new String("NANOSECONDS"), 6, java.util.concurrent.TimeUnit.NANOSECONDS,
+                new ConstantToken(ShadowClassConstantId.TimeUnit_avm_NANOSECONDS));
 
         avm_$VALUES = ObjectArray.initArray(7);
         avm_$VALUES.set(0, avm_DAYS);

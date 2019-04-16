@@ -1,8 +1,10 @@
 package org.aion.avm.shadow.java.lang;
 
+import org.aion.avm.internal.ConstantToken;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 import org.aion.avm.shadow.java.io.Serializable;
+import org.aion.avm.internal.ShadowClassConstantId;
 
 public final class Character extends Object implements Serializable, Comparable<Character> {
     static {
@@ -18,7 +20,7 @@ public final class Character extends Object implements Serializable, Comparable<
 
     public static final char avm_MAX_VALUE = '\uFFFF';
 
-    public static final Class<Character> avm_TYPE = new Class(java.lang.Character.TYPE);
+    public static final Class<Character> avm_TYPE = new Class(java.lang.Character.TYPE, new ConstantToken(ShadowClassConstantId.Character_avm_TYPE));
 
     // These are the constructors provided in the JDK but we mark them private since they are deprecated.
     // (in the future, we may change these to not exist - depends on the kind of error we want to give the user).

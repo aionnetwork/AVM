@@ -3,6 +3,7 @@ package org.aion.avm.shadow.java.lang;
 import org.aion.avm.ClassNameExtractor;
 import org.aion.avm.arraywrapper.ObjectArray;
 import org.aion.avm.internal.AvmThrowable;
+import org.aion.avm.internal.ConstantToken;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
 
@@ -122,6 +123,10 @@ public final class Class<T> extends Object implements Serializable {
         this.v = v;
     }
 
+    protected Class(java.lang.Class<T> v, ConstantToken constantToken) {
+        super(constantToken);
+        this.v = v;
+    }
     private final java.lang.Class<T> v;
 
     @Override
