@@ -51,7 +51,20 @@ public class AionBuffer {
         return this;
     }
 
+    /**
+     * Note that we store booleans as a 1-byte quantity (0x1 or 0x0).
+     * @return The underlying byte, interpreted as a boolean (0x1 is true).
+     */
+    public boolean getBoolean() {
+        byte value = internalGetByte();
+        return (0x1 == value);
+    }
+
     public byte getByte() {
+        return internalGetByte();
+    }
+
+    private byte internalGetByte() {
         int remaining = this.limit - this.position;
         if (remaining < Byte.BYTES) {
             throw new BufferUnderflowException();
@@ -131,7 +144,20 @@ public class AionBuffer {
         return this;
     }
 
+    /**
+     * Note that we store booleans as a 1-byte quantity (0x1 or 0x0).
+     * @param flag The boolean to store as a byte (0x1 for true, 0x0 for false).
+     */
+    public AionBuffer putBoolean(boolean flag) {
+        byte b = (byte)(flag ? 0x1 : 0x0);
+        return internalPutByte(b);
+    }
+
     public AionBuffer putByte(byte b) {
+        return internalPutByte(b);
+    }
+
+    private AionBuffer internalPutByte(byte b) {
         int remaining = this.limit - this.position;
         if (remaining < Byte.BYTES) {
             throw new BufferOverflowException();

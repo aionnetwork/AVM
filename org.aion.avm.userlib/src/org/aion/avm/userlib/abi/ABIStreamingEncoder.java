@@ -72,7 +72,7 @@ public final class ABIStreamingEncoder {
      */
     public ABIStreamingEncoder encodeOneBoolean(boolean data) {
         buffer.putByte(ABIToken.BOOLEAN);
-        buffer.putByte((byte) (data ? 1 : 0));
+        buffer.putBoolean(data);
         return this;
     }
 
@@ -189,7 +189,7 @@ public final class ABIStreamingEncoder {
             buffer.putByte(ABIToken.A_BOOLEAN);
             buffer.putShort((short) data.length);
             for (boolean bit : data) {
-                buffer.putByte((byte) (bit ? 1 : 0));
+                buffer.putBoolean(bit);
             }
         }
         return this;

@@ -93,6 +93,22 @@ public class AionBufferTest {
     }
 
     /**
+     * Tests that booleans can be put into a buffer and retrieved back from it.
+     */
+    @Test
+    public void testPutAndGetBooleans() {
+        AionBuffer buffer = AionBuffer.allocate(RANGE_1BYTE);
+        boolean[] bools = new boolean[] {true, false};
+        for (boolean bool : bools) {
+            buffer.putBoolean(bool);
+        }
+        buffer.flip();
+        for (boolean bool : bools) {
+            assertEquals(bool, buffer.getBoolean());
+        }
+    }
+
+    /**
      * Tests that bytes can be put into a buffer and retrieved back from it.
      */
     @Test
