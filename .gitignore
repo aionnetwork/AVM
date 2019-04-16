@@ -34,6 +34,7 @@ hs_err_pid*
 /mod*/build/
 examples/out/
 testreports/
+/embedding/
 
 # ant
 .ant-targets-build.xml

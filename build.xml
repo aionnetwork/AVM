@@ -67,6 +67,9 @@
             </zipfileset>
         </jar>
 
+        <!-- Scratch deps is now done -->
+        <delete file="${dir.global.build.scratch-deps-jar}"/>
+
         <copy file="${dir.global.build.main}/org-aion-avm-api.jar" todir="${dir.global.workspace}/dist/lib"></copy>
         <copy file="${dir.global.build.main}/org-aion-avm-userlib.jar" todir="${dir.global.workspace}/dist/lib"></copy>
 
@@ -143,5 +146,30 @@
             <arg value="avm.jar"/>
             <arg value="build/dapp.jar"/>
         </java>
+    </target>
+
+<!-- We will treat our "package" build as a distinct task which just puts together the JARs we need for embedding in the kernel.
+ -->
+    <target name="package">
+        <property name="jar.api" value="org-aion-avm-api"/>
+        <property name="jar.core" value="org-aion-avm-core"/>
+        <property name="jar.rt" value="org-aion-avm-rt"/>
+        <property name="jar.tooling" value="org-aion-avm-tooling"/>
+        <property name="jar.userlib" value="org-aion-avm-userlib"/>
+        <property name="dir.embedding" value="${dir.global.workspace}/embedding"/>
+        <exec executable="git" outputproperty="git.revision" failifexecutionfails="true">
+            <arg value="describe"/>
+            <arg value="--always"/>
+            <arg value="HEAD"/>
+        </exec>
+        <echo message="Packaging AVM ${git.revision} for kernel embedding in ${dir.embedding}"/>
+
+        <delete dir="${dir.embedding}"/>
+        <mkdir dir="${dir.embedding}"/>
+        <copy file="${dir.global.build.main}/${jar.api}.jar"     tofile="${dir.embedding}/${jar.api}-${git.revision}.jar"/>
+        <copy file="${dir.global.build.main}/${jar.core}.jar"    tofile="${dir.embedding}/${jar.core}-${git.revision}.jar"/>
+        <copy file="${dir.global.build.main}/${jar.rt}.jar"      tofile="${dir.embedding}/${jar.rt}-${git.revision}.jar"/>
+        <copy file="${dir.global.build.main}/${jar.tooling}.jar" tofile="${dir.embedding}/${jar.tooling}-${git.revision}.jar"/>
+        <copy file="${dir.global.build.main}/${jar.userlib}.jar" tofile="${dir.embedding}/${jar.userlib}-${git.revision}.jar"/>
     </target>
 </project>
