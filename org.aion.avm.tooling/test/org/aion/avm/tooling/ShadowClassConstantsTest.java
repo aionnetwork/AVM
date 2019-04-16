@@ -63,4 +63,11 @@ public class ShadowClassConstantsTest {
         assertTrue(result.getResultCode().isSuccess());
     }
 
+    @Test
+    public void checkTimeUnitConstants() {
+        byte[] data = ABIUtil.encodeMethodArguments("checkTimeUnitConstants");
+        TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
+        assertTrue(result.getResultCode().isSuccess());
+    }
+
 }

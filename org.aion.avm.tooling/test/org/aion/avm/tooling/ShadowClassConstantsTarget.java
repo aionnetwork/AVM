@@ -3,6 +3,8 @@ package org.aion.avm.tooling;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.concurrent.TimeUnit;
+
 import avm.Blockchain;
 import org.aion.avm.tooling.abi.Callable;
 
@@ -34,6 +36,15 @@ public class ShadowClassConstantsTarget {
     private static Class<Long> longClass = Long.TYPE;
     private static Class<Double> doubleClass = Double.TYPE;
     private static Class<Float> floatClass = Float.TYPE;
+    private static Class<Void> voidClass = Void.TYPE;
+
+    private static TimeUnit days = TimeUnit.DAYS;
+    private static TimeUnit hours = TimeUnit.HOURS;
+    private static TimeUnit minutes = TimeUnit.MINUTES;
+    private static TimeUnit seconds = TimeUnit.SECONDS;
+    private static TimeUnit milliseconds = TimeUnit.MILLISECONDS;
+    private static TimeUnit microseconds = TimeUnit.MICROSECONDS;
+    private static TimeUnit nanoseconds = TimeUnit.NANOSECONDS;
 
     @Callable
     public static void checkBigIntegerConstants() {
@@ -126,6 +137,41 @@ public class ShadowClassConstantsTarget {
 
         Blockchain.require(floatClass != Float.class);
         Blockchain.require(floatClass == float.class);
+
+        Blockchain.require(voidClass != Void.class);
+        Blockchain.require(voidClass == void.class);
+    }
+
+    @Callable
+    public static void checkTimeUnitConstants() {
+        Blockchain.require(days == TimeUnit.DAYS);
+        Blockchain.require(days.equals(TimeUnit.DAYS));
+        Blockchain.require(days.equals(TimeUnit.valueOf("DAYS")));
+
+        Blockchain.require(hours == TimeUnit.HOURS);
+        Blockchain.require(hours.equals(TimeUnit.HOURS));
+        Blockchain.require(hours.equals(TimeUnit.valueOf("HOURS")));
+
+        Blockchain.require(minutes == TimeUnit.MINUTES);
+        Blockchain.require(minutes.equals(TimeUnit.MINUTES));
+        Blockchain.require(minutes.equals(TimeUnit.valueOf("MINUTES")));
+
+        Blockchain.require(seconds == TimeUnit.SECONDS);
+        Blockchain.require(seconds.equals(TimeUnit.SECONDS));
+        Blockchain.require(seconds.equals(TimeUnit.valueOf("SECONDS")));
+
+        Blockchain.require(milliseconds == TimeUnit.MILLISECONDS);
+        Blockchain.require(milliseconds.equals(TimeUnit.MILLISECONDS));
+        Blockchain.require(milliseconds.equals(TimeUnit.valueOf("MILLISECONDS")));
+
+        Blockchain.require(microseconds == TimeUnit.MICROSECONDS);
+        Blockchain.require(microseconds.equals(TimeUnit.MICROSECONDS));
+        Blockchain.require(microseconds.equals(TimeUnit.valueOf("MICROSECONDS")));
+
+        Blockchain.require(nanoseconds == TimeUnit.NANOSECONDS);
+        Blockchain.require(nanoseconds.equals(TimeUnit.NANOSECONDS));
+        Blockchain.require(nanoseconds.equals(TimeUnit.valueOf("NANOSECONDS")));
+
     }
 
 }
