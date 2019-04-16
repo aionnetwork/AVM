@@ -26,12 +26,14 @@ public class HashCodeTest {
     private SimpleAvm avm;
     private Class<?> clazz;
 
+    private static boolean preserveDebuggability = false;
+
     @Before
     public void setup() throws Exception {
-        this.avm = new SimpleAvm(1000000L, false, HashCodeTestTarget.class);
+        this.avm = new SimpleAvm(1000000L, preserveDebuggability, HashCodeTestTarget.class);
         AvmClassLoader loader = avm.getClassLoader();
         
-        this.clazz = loader.loadUserClassByOriginalName(HashCodeTestTarget.class.getName(), false);
+        this.clazz = loader.loadUserClassByOriginalName(HashCodeTestTarget.class.getName(), preserveDebuggability);
         Assert.assertEquals(loader, this.clazz.getClassLoader());
     }
 
@@ -179,13 +181,13 @@ public class HashCodeTest {
         
         // Create 2 instances of the contract-specific loaders, each with the same class, and prove that we get 2 instances.
         AvmClassLoader loader1 = NodeEnvironment.singleton.createInvocationClassLoader(classes);
-        Class<?> clazz1 = loader1.loadUserClassByOriginalName(className, false);
+        Class<?> clazz1 = loader1.loadUserClassByOriginalName(className, preserveDebuggability);
         AvmClassLoader loader2 = NodeEnvironment.singleton.createInvocationClassLoader(classes);
-        Class<?> clazz2 = loader2.loadUserClassByOriginalName(className, false);
+        Class<?> clazz2 = loader2.loadUserClassByOriginalName(className, preserveDebuggability);
         // -not the same instances.
         Assert.assertFalse(clazz1 == clazz2);
         // -but reloading one of them gives us the same one back.
-        Assert.assertTrue(loader2.loadUserClassByOriginalName(className, false) == clazz2);
+        Assert.assertTrue(loader2.loadUserClassByOriginalName(className, preserveDebuggability) == clazz2);
         
         // Load a shared class, via each contract-specific loader, and ensure that we get the same instance.
         String classToLoad = PackageConstants.kShadowDotPrefix + "java.lang.Error";
@@ -219,7 +221,7 @@ public class HashCodeTest {
         // First, run some tests in helper1.
         IRuntimeSetup setup1 = Helpers.getSetupForLoader(loader1);
         InstrumentationHelpers.pushNewStackFrame(setup1, loader1, 1_000_000L, 1, null);
-        Class<?> clazz1 = loader1.loadUserClassByOriginalName(targetClassName, false);
+        Class<?> clazz1 = loader1.loadUserClassByOriginalName(targetClassName, preserveDebuggability);
         Method getOneHashCode1 = clazz1.getMethod(NamespaceMapper.mapMethodName("getOneHashCode"));
         Object result = getOneHashCode1.invoke(null);
         Assert.assertEquals(usedHashCount + 1, ((Integer)result).intValue());
@@ -231,7 +233,7 @@ public class HashCodeTest {
         // Now, create the helper2, show that it is independent, and run a test in that.
         IRuntimeSetup setup2 = Helpers.getSetupForLoader(loader2);
         InstrumentationHelpers.pushNewStackFrame(setup2, loader2, 1_000_000L, 1, null);
-        Class<?> clazz2 = loader2.loadUserClassByOriginalName(targetClassName, false);
+        Class<?> clazz2 = loader2.loadUserClassByOriginalName(targetClassName, preserveDebuggability);
         Method getOneHashCode2 = clazz2.getMethod(NamespaceMapper.mapMethodName("getOneHashCode"));
         Assert.assertEquals(1, instrumentation.peekNextHashCode());
         result = getOneHashCode2.invoke(null);
@@ -321,7 +323,7 @@ public class HashCodeTest {
                 .addClass(className, "java.lang.Object", false, raw)
                 .asMutableForest();
 
-        Map<String, byte[]> transformedClasses = DAppCreator.transformClasses(Collections.singletonMap(className, raw), classHierarchy, false);
+        Map<String, byte[]> transformedClasses = DAppCreator.transformClasses(Collections.singletonMap(className, raw), classHierarchy, preserveDebuggability);
         
         // Note that the class is renamed during this transformation.
         return transformedClasses.get(PackageConstants.kUserDotPrefix + className);

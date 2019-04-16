@@ -16,6 +16,8 @@ import org.junit.Test;
  * Note that this class is not directly unit-testable so we created a testing subclass, in order to get access to the relevant protected method.
  */
 public class TypeAwareClassWriterTest {
+    private static boolean preserveDebuggability = false;
+
     @Test
     public void testJdkOnly_basic() throws Exception {
         TestClass clazz = new TestClass();
@@ -68,10 +70,10 @@ public class TypeAwareClassWriterTest {
 
     private static class TestClass extends TypeAwareClassWriter {
         public TestClass(Set<String> userDefinedClassNames, Forest<String, ClassInfo> classHierarchy) {
-            super(0, new ParentPointers(userDefinedClassNames, classHierarchy, false));
+            super(0, new ParentPointers(userDefinedClassNames, classHierarchy, preserveDebuggability));
         }
         public TestClass() {
-            super(0, new ParentPointers(Collections.emptySet(), new HierarchyTreeBuilder().asMutableForest(), false));
+            super(0, new ParentPointers(Collections.emptySet(), new HierarchyTreeBuilder().asMutableForest(), preserveDebuggability));
         }
         public String testing_getCommonSuperClass(String type1, String type2) {
             return this.getCommonSuperClass(type1, type2);
