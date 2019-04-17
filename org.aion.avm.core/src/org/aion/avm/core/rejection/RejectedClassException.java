@@ -41,7 +41,9 @@ public class RejectedClassException extends AvmException {
     public static void nameTooLong(String className) {
         throw new RejectedClassException("Class name is too long: " + className);
     }
-
+    public static void unsupportedPackageName(String className) {
+        throw new RejectedClassException("avm package name is restricted: " + className);
+    }
 
     public RejectedClassException(String message) {
         super(message);

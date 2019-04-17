@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
+import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
@@ -52,6 +53,9 @@ public class RejectionClassVisitor extends ClassToolchain.ToolChainClassVisitor 
         }
         if (!this.preRenameClassAccessRules.canUserSubclass(superName)) {
             RejectedClassException.restrictedSuperclass(name, superName);
+        }
+        if(name.startsWith(PackageConstants.kPublicApiSlashPrefix)){
+            RejectedClassException.unsupportedPackageName(name);
         }
 
         // Null the signature, since we don't use it and don't want to make sure it is safe.
