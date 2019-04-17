@@ -3,30 +3,20 @@ package org.aion.avm.tooling.abi;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import org.aion.avm.core.dappreading.JarBuilder;
-import org.junit.Before;
 import org.junit.Test;
 
 
 public class ExtractAnnotationsTest {
-
-    private static ABICompiler compiler;
-
-    @Before
-    public void setup() {
-        compiler = new ABICompiler();
-    }
-
     @Test
     public void testOneClass() {
         List<String> callables = new ArrayList<>();
         try {
             byte[] jar = JarBuilder.buildJarForMainAndClasses(DAppWithMainNoFallbackTarget.class);
 
-            compiler.compile(new ByteArrayInputStream(jar));
+            ABICompiler compiler = ABICompiler.compileJarBytes(jar);
             callables = compiler.getCallables();
 
         } catch (Throwable e) {
@@ -43,7 +33,7 @@ public class ExtractAnnotationsTest {
     public void testNonPublicCallable() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(DAppProtectedCallableTarget.class);
         try {
-            compiler.compile(new ByteArrayInputStream(jar));
+            ABICompiler.compileJarBytes(jar);
         } catch(ABICompilerException e) {
             assertTrue(e.getMessage().contains("test4"));
             throw e;
@@ -54,7 +44,7 @@ public class ExtractAnnotationsTest {
         public void testNonStaticCallable() {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(DAppNonstaticCallableTarget.class);
         try {
-            compiler.compile(new ByteArrayInputStream(jar));
+            ABICompiler.compileJarBytes(jar);
         } catch(ABICompilerException e) {
             assertTrue(e.getMessage().contains("test2"));
             throw e;
@@ -67,7 +57,7 @@ public class ExtractAnnotationsTest {
         try {
             byte[] jar = JarBuilder.buildJarForMainAndClasses(DAppWithMainNoFallbackTarget.class, DAppNoMainWithFallbackTarget.class);
 
-            compiler.compile(new ByteArrayInputStream(jar));
+            ABICompiler compiler = ABICompiler.compileJarBytes(jar);
             callables = compiler.getCallables();
 
         } catch (Throwable e) {

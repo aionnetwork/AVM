@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -28,6 +29,10 @@ import org.junit.Test;
 
 
 public class ABICompilerTest {
+    private static final String CHATTY_CALCULATOR_ABI = ABICompiler.getVersionNumber()
+        + "\norg.aion.avm.tooling.abi.ChattyCalculatorTarget"
+        + "\nClinit: "
+        + "\npublic static String amIGreater(int, int)\n";
 
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     private final PrintStream originalOut = System.out;
@@ -91,15 +96,26 @@ public class ABICompilerTest {
         dout.close();
 
         ABICompiler.main(new String[]{tempDir.toString() + "/dapp.jar"});
-        Assert.assertEquals(
-            ABICompiler.getVersionNumber()
-                + "\norg.aion.avm.tooling.abi.ChattyCalculatorTarget"
-                + "\nClinit: "
-                + "\npublic static String amIGreater(int, int)\n",
+        Assert.assertEquals(CHATTY_CALCULATOR_ABI,
             outContent.toString());
         File outputJar = new File(System.getProperty("user.dir") + "/outputJar.jar");
         boolean didDelete = outputJar.delete();
         Assert.assertTrue(didDelete);
+    }
+
+    @Test
+    public void testEmbeddedUsesOfCalculator() {
+        byte[] jar =
+            JarBuilder
+                .buildJarForMainAndClasses(ChattyCalculatorTarget.class,
+                    SilentCalculatorTarget.class);
+        
+        ABICompiler embeddedCompiler = ABICompiler.compileJarBytes(jar);
+        // Write the ABI to a stream we can explore.
+        ByteArrayOutputStream abiStream = new ByteArrayOutputStream();
+        embeddedCompiler.writeAbi(abiStream);
+        String abiString = new String(abiStream.toByteArray(), StandardCharsets.UTF_8);
+        Assert.assertEquals(CHATTY_CALCULATOR_ABI, abiString);
     }
 
     @Test
@@ -131,7 +147,6 @@ public class ABICompilerTest {
 
     @Test
     public void testGetMissingUserlibClasses() {
-        ABICompiler compiler = new ABICompiler();
         byte[] jar =
             JarBuilder
                 .buildJarForMainAndClasses(ChattyCalculatorTarget.class,
@@ -139,7 +154,7 @@ public class ABICompilerTest {
 
         Class[] expectedMissingClasses = new Class[] {ABIDecoder.class, ABIEncoder.class, ABIException.class, ABIToken.class, AionMap.class, AionSet.class};
 
-        compiler.compile(jar);
+        ABICompiler compiler = ABICompiler.compileJarBytes(jar);
         Class[] actualMissingClasses = compiler.getMissingUserlibClasses();
         checkArrays(expectedMissingClasses, actualMissingClasses);
     }
@@ -147,13 +162,12 @@ public class ABICompilerTest {
     // Compilation should fail because of garbage AionList.class
     @Test(expected = ABICompilerException.class)
     public void testGetMissingUserlibClassesFail() {
-        ABICompiler compiler = new ABICompiler();
         Map<String, byte[]> classMap = new HashMap<>();
         classMap.put("org.aion.avm.userlib.AionList", new byte[10]);
         byte[] jar =
             JarBuilder
                 .buildJarForMainClassAndExplicitClassNamesAndBytecode(ChattyCalculatorTarget.class, classMap);
-        compiler.compile(jar);
+        ABICompiler.compileJarBytes(jar);
     }
 
     private void checkArrays(Class[] expectedArray, Class[] actualArray) {

@@ -19,7 +19,6 @@ public class EnumValuesTest {
     public AvmRule avmRule = new AvmRule(false);
 
     private Address from = avmRule.getPreminedAccount();
-    private ABICompiler compiler = new ABICompiler();
 
 
     @Test
@@ -39,7 +38,7 @@ public class EnumValuesTest {
         Map<String, byte[]> classMap = new HashMap<>();
         classMap.put(TestEnumForValues.class.getName(), clazz);
         byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(TestResourceForValues.class, classMap);
-        compiler.compile(jar);
+        ABICompiler compiler = ABICompiler.compileJarBytes(jar);
         byte[] txData = new CodeAndArguments(compiler.getJarFileBytes(), new byte[0]).encodeToBytes();
 
         Address dappAddr = avmRule.deploy(from, BigInteger.ZERO, txData).getDappAddress();

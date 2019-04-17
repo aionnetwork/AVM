@@ -27,7 +27,6 @@ import java.util.List;
 public final class AvmRule implements TestRule {
 
     private boolean debugMode;
-    private final ABICompiler compiler;
     private final JarOptimizer jarOptimizer;
     public TestingKernel kernel;
     public AvmImpl avm;
@@ -39,7 +38,6 @@ public final class AvmRule implements TestRule {
     public AvmRule(boolean debugMode) {
         this.debugMode = debugMode;
         this.kernel = new TestingKernel(block);
-        compiler = new ABICompiler();
         jarOptimizer = new JarOptimizer(debugMode);
     }
 
@@ -72,7 +70,7 @@ public final class AvmRule implements TestRule {
      */
     public byte[] getDappBytes(Class<?> mainClass, byte[] arguments, Class<?>... otherClasses) {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(mainClass, otherClasses);
-        compiler.compile(jar);
+        ABICompiler compiler = ABICompiler.compileJarBytes(jar);
         byte[] optimizedDappBytes = jarOptimizer.optimize(compiler.getJarFileBytes());
         return new CodeAndArguments(optimizedDappBytes, arguments).encodeToBytes();
     }

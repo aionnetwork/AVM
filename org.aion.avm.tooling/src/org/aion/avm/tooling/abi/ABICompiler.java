@@ -7,6 +7,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.Arrays;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
@@ -65,16 +67,7 @@ public class ABICompiler {
 
         compiler.compile(fileInputStream);
 
-        System.out.println(VERSION_NUMBER);
-        System.out.println(compiler.mainClassName);
-        System.out.print("Clinit: ");
-        for (Type t: compiler.initializables) {
-            System.out.print(ABIUtils.shortenClassName(t.getClassName()) + " ");
-        }
-        System.out.println();
-        for (String s : compiler.callables) {
-            System.out.println(s);
-        }
+        compiler.writeAbi(System.out);
 
         try {
             DataOutputStream dout =
@@ -90,11 +83,26 @@ public class ABICompiler {
         System.out.println("Usage: ABICompiler <DApp jar path>");
     }
 
-    public void compile(byte[] jarBytes) {
-        compile(new ByteArrayInputStream(jarBytes));
+    public static ABICompiler compileJar(InputStream byteReader) {
+        ABICompiler compiler = new ABICompiler();
+        compiler.compile(byteReader);
+        return compiler;
     }
 
-    public void compile(InputStream byteReader) {
+    public static ABICompiler compileJarBytes(byte[] rawBytes) {
+        ABICompiler compiler = new ABICompiler();
+        compiler.compile(new ByteArrayInputStream(rawBytes));
+        return compiler;
+    }
+
+    /**
+     * We only want to expose the ABICompiler object once it is fully populated (_has_ compiled something) so we hide the constructor.
+     * This can only be meaningfully called by our factory methods.
+     */
+    private ABICompiler() {
+    }
+
+    private void compile(InputStream byteReader) {
         try {
             safeLoadFromBytes(byteReader);
         } catch (Exception e) {
@@ -124,6 +132,21 @@ public class ABICompiler {
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
+    }
+
+    public void writeAbi(OutputStream rawStream) {
+        // We want this to know about new lines so use a PrintStream.
+        PrintStream abiStream = new PrintStream(rawStream);
+        abiStream.println(VERSION_NUMBER);
+        abiStream.println(this.mainClassName);
+        abiStream.print("Clinit: ");
+        for (Type t: this.initializables) {
+            abiStream.print(ABIUtils.shortenClassName(t.getClassName()) + " ");
+        }
+        abiStream.println();
+        for (String s : this.callables) {
+            abiStream.println(s);
+        }
     }
 
     private void safeLoadFromBytes(InputStream byteReader) throws Exception {

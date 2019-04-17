@@ -224,9 +224,8 @@ public class GraphReachabilityIntegrationTest {
         // The assertions in this method depends on the gas charged, which in turn depends on the exact size of the jar file.
         // The AvmRule invokes the ABICompiler on all input jars.
         // As a result, we have to run the ABICompiler on the input jar to get the correct expected gas values.
-        ABICompiler compiler = new ABICompiler();
         JarOptimizer optimizer = new JarOptimizer(false);
-        compiler.compile(JarBuilder.buildJarForMainAndClasses(GraphReachabilityIntegrationTestTarget.class));
+        ABICompiler compiler = ABICompiler.compileJarBytes(JarBuilder.buildJarForMainAndClasses(GraphReachabilityIntegrationTestTarget.class));
         byte[] optimizedJar = optimizer.optimize(compiler.getJarFileBytes());
         byte[] txData = new CodeAndArguments(optimizedJar, new byte[0]).encodeToBytes();
 
