@@ -17,6 +17,7 @@ import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.avm.userlib.abi.ABIException;
+import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.avm.userlib.abi.ABIToken;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -38,8 +39,8 @@ public class ABICompiler {
 
     private static final int MAX_CLASS_BYTES = 1024 * 1024;
     private static final float VERSION_NUMBER = 0.0F;
-    private static Class[] requiredUserlibClasses = new Class[] {ABIDecoder.class, ABIEncoder.class, ABIException.class, ABIToken.class,
-        AionBuffer.class, AionList.class, AionMap.class, AionSet.class};
+    private static Class[] requiredUserlibClasses = new Class[] {ABIDecoder.class, ABIEncoder.class,
+        ABIStreamingEncoder.class, ABIException.class, ABIToken.class, AionBuffer.class, AionList.class, AionMap.class, AionSet.class};
 
     private String mainClassName;
     private byte[] mainClassBytes;

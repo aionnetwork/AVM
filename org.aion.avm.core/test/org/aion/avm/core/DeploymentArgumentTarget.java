@@ -8,6 +8,7 @@ import avm.Result;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 
 
 public class DeploymentArgumentTarget {
@@ -46,12 +47,13 @@ public class DeploymentArgumentTarget {
 
     public static void correctDeployment() {
 
-        byte[] arg0Bytes = ABIEncoder.encodeOneString(arg0);
-        byte[] arg1Bytes = ABIEncoder.encodeOneAddressArray(arg1);
-        byte[] arg2Bytes = ABIEncoder.encodeOneInteger(arg2);
-        byte[] arg3Bytes = ABIEncoder.encodeOneDouble(arg3);
-        byte[] smallJarBytes = ABIEncoder.encodeOneByteArray(smallJar);
-        byte[] deploymentArgs = concatenateArrays(arg0Bytes, arg1Bytes, arg2Bytes, arg3Bytes, smallJarBytes);
+        ABIStreamingEncoder encoder = new ABIStreamingEncoder();
+        byte[] deploymentArgs = encoder.encodeOneString(arg0)
+            .encodeOneAddressArray(arg1)
+            .encodeOneInteger(arg2)
+            .encodeOneDouble(arg3)
+            .encodeOneByteArray(smallJar)
+            .toBytes();
 
         byte[] codeAndArguments = encodeCodeAndArguments(deploymentArgs);
         Result createResult = Blockchain.create(BigInteger.ZERO, codeAndArguments, Blockchain.getEnergyLimit());
@@ -61,11 +63,12 @@ public class DeploymentArgumentTarget {
     public static void incorrectDeployment() {
         // For this failed attempt, we will omit the final argument, which should cause a deployment failure.
 
-        byte[] arg0Bytes = ABIEncoder.encodeOneString(arg0);
-        byte[] arg1Bytes = ABIEncoder.encodeOneAddressArray(arg1);
-        byte[] arg2Bytes = ABIEncoder.encodeOneInteger(arg2);
-        byte[] arg3Bytes = ABIEncoder.encodeOneDouble(arg3);
-        byte[] deploymentArgs = concatenateArrays(arg0Bytes, arg1Bytes, arg2Bytes, arg3Bytes);
+        ABIStreamingEncoder encoder = new ABIStreamingEncoder();
+        byte[] deploymentArgs = encoder.encodeOneString(arg0)
+            .encodeOneAddressArray(arg1)
+            .encodeOneInteger(arg2)
+            .encodeOneDouble(arg3)
+            .toBytes();
 
         byte[] codeAndArguments = encodeCodeAndArguments(deploymentArgs);
         Result createResult = Blockchain.create(BigInteger.ZERO, codeAndArguments, Blockchain.getEnergyLimit());
@@ -84,19 +87,5 @@ public class DeploymentArgumentTarget {
         codeAndArgumentsBuffer.putInt(deploymentArgs.length);
         codeAndArgumentsBuffer.put(deploymentArgs);
         return codeAndArguments;
-    }
-
-    private static byte[] concatenateArrays(byte[]... arrays) {
-        int length = 0;
-        for(byte[] array : arrays) {
-            length += array.length;
-        }
-        byte[] result = new byte[length];
-        int writtenSoFar = 0;
-        for(byte[] array : arrays) {
-            System.arraycopy(array, 0, result, writtenSoFar, array.length);
-            writtenSoFar += array.length;
-        }
-        return result;
     }
 }

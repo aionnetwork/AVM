@@ -7,6 +7,7 @@ import org.aion.avm.userlib.abi.ABIEncoder;
 import avm.Address;
 import avm.Blockchain;
 import avm.Result;
+import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 
 public class FailedInternalCallClinitAddressesContract {
     private static final Address ORIGIN = Blockchain.getOrigin();
@@ -126,13 +127,14 @@ public class FailedInternalCallClinitAddressesContract {
 
             // Now call into the dapp. We assume its code is this same class, so this is 'recursive'.
 
-            byte[] methodNameBytes = ABIEncoder.encodeOneString("recurseAndTrackAddresses");
-            byte[] argBytes1 = ABIEncoder.encodeOneByteArray(dappBytesFirstHalf);
-            byte[] argBytes2 = ABIEncoder.encodeOneByteArray(dappBytesSecondHalf);
-            byte[] argBytes3 = ABIEncoder.encodeOneInteger(numOtherContracts);
-            byte[] argBytes4 = ABIEncoder.encodeOneInteger(currentDepth + 1);
-            byte[] argBytes5 = ABIEncoder.encodeOneBoolean(recurseFirst);
-            byte[] callData = concatenateArrays(methodNameBytes, argBytes1, argBytes2, argBytes3, argBytes4, argBytes5);
+            ABIStreamingEncoder encoder = new ABIStreamingEncoder();
+            byte[] callData = encoder.encodeOneString("recurseAndTrackAddresses")
+                .encodeOneByteArray(dappBytesFirstHalf)
+                .encodeOneByteArray(dappBytesSecondHalf)
+                .encodeOneInteger(numOtherContracts)
+                .encodeOneInteger(currentDepth + 1)
+                .encodeOneBoolean(recurseFirst)
+                .toBytes();
 
             Result callResult = Blockchain.call(newDappAddress, BigInteger.ZERO, callData, Blockchain.getRemainingEnergy());
 
@@ -195,19 +197,4 @@ public class FailedInternalCallClinitAddressesContract {
 
         return array;
     }
-
-    private static byte[] concatenateArrays(byte[]... arrays) {
-        int length = 0;
-        for(byte[] array : arrays) {
-            length += array.length;
-        }
-        byte[] result = new byte[length];
-        int writtenSoFar = 0;
-        for(byte[] array : arrays) {
-            System.arraycopy(array, 0, result, writtenSoFar, array.length);
-            writtenSoFar += array.length;
-        }
-        return result;
-    }
-
 }

@@ -21,6 +21,7 @@ import org.aion.avm.userlib.AionSet;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.userlib.abi.ABIException;
+import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.avm.userlib.abi.ABIToken;
 import org.junit.After;
 import org.junit.Assert;
@@ -152,7 +153,8 @@ public class ABICompilerTest {
                 .buildJarForMainAndClasses(ChattyCalculatorTarget.class,
                     SilentCalculatorTarget.class, AionList.class, AionBuffer.class);
 
-        Class[] expectedMissingClasses = new Class[] {ABIDecoder.class, ABIEncoder.class, ABIException.class, ABIToken.class, AionMap.class, AionSet.class};
+        Class[] expectedMissingClasses = new Class[] {ABIDecoder.class, ABIEncoder.class,
+            ABIStreamingEncoder.class, ABIException.class, ABIToken.class, AionMap.class, AionSet.class};
 
         ABICompiler compiler = ABICompiler.compileJarBytes(jar);
         Class[] actualMissingClasses = compiler.getMissingUserlibClasses();

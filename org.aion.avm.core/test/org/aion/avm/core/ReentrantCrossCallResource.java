@@ -5,6 +5,7 @@ import avm.Blockchain;
 import avm.Result;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 
 
 /**
@@ -89,9 +90,10 @@ public class ReentrantCrossCallResource {
             // Call this method via the runtime.
             BigInteger value = BigInteger.ZERO;
 
-            byte[] methodNameBytes = ABIEncoder.encodeOneString("getRecursiveHashCode");
-            byte[] argBytes = ABIEncoder.encodeOneInteger(iterationsRemaining - 1);
-            byte[] data = concatenateArrays(methodNameBytes, argBytes);
+            ABIStreamingEncoder encoder = new ABIStreamingEncoder();
+            byte[] data = encoder.encodeOneString("getRecursiveHashCode")
+                .encodeOneInteger(iterationsRemaining - 1)
+                .toBytes();
 
             long energyLimit = 500000;
             byte[] response = Blockchain.call(Blockchain.getAddress(), value, data, energyLimit).getReturnData();
@@ -177,9 +179,10 @@ public class ReentrantCrossCallResource {
         BigInteger value = BigInteger.ZERO;
         boolean calleeShouldFail = false;
 
-        byte[] methodNameBytes = ABIEncoder.encodeOneString("incFar");
-        byte[] argBytes = ABIEncoder.encodeOneBoolean(calleeShouldFail);
-        byte[] data = concatenateArrays(methodNameBytes, argBytes);
+        ABIStreamingEncoder encoder = new ABIStreamingEncoder();
+        byte[] data = encoder.encodeOneString("incFar")
+            .encodeOneBoolean(calleeShouldFail)
+            .toBytes();
 
         Blockchain.call(Blockchain.getAddress(), value, data, energyLimit);
         
@@ -243,10 +246,11 @@ public class ReentrantCrossCallResource {
             // Make the reentrant call.
             BigInteger value = BigInteger.ZERO;
 
-            byte[] methodNameBytes = ABIEncoder.encodeOneString("recursiveChangeNested");
-            byte[] argBytes1 = ABIEncoder.encodeOneInteger(ourState.hashCode());
-            byte[] argBytes2 = ABIEncoder.encodeOneInteger(iterationsToCall - 1);
-            byte[] data = concatenateArrays(methodNameBytes, argBytes1, argBytes2);
+            ABIStreamingEncoder encoder = new ABIStreamingEncoder();
+            byte[] data = encoder.encodeOneString("recursiveChangeNested")
+                .encodeOneInteger(ourState.hashCode())
+                .encodeOneInteger(iterationsToCall - 1)
+                .toBytes();
 
             long energyLimit = 5_000_000L;
             Result txResult = Blockchain.call(Blockchain.getAddress(), value, data, energyLimit);
@@ -282,9 +286,8 @@ public class ReentrantCrossCallResource {
     private static void reentrantCall(String methodName, boolean shouldFail) {
         BigInteger value = BigInteger.ZERO;
 
-        byte[] methodNameBytes = ABIEncoder.encodeOneString(methodName);
-        byte[] argBytes = ABIEncoder.encodeOneBoolean(shouldFail);
-        byte[] data = concatenateArrays(methodNameBytes, argBytes);
+        ABIStreamingEncoder encoder = new ABIStreamingEncoder();
+        byte[] data = encoder.encodeOneString(methodName).encodeOneBoolean(shouldFail).toBytes();
 
         // WARNING:  This number is finicky since some tests want to barely pass and others barely fail.
         long energyLimit = 1_000_000L;
@@ -305,19 +308,5 @@ public class ReentrantCrossCallResource {
         public Nested(Integer data) {
             this.data = data;
         }
-    }
-
-    private static byte[] concatenateArrays(byte[]... arrays) {
-        int length = 0;
-        for(byte[] array : arrays) {
-            length += array.length;
-        }
-        byte[] result = new byte[length];
-        int writtenSoFar = 0;
-        for(byte[] array : arrays) {
-            System.arraycopy(array, 0, result, writtenSoFar, array.length);
-            writtenSoFar += array.length;
-        }
-        return result;
     }
 }

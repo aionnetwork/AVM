@@ -7,6 +7,7 @@ import avm.Result;
 import org.aion.avm.tooling.abi.Callable;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 
 public class FailedInternalCallAddressesContract {
 
@@ -29,11 +30,12 @@ public class FailedInternalCallAddressesContract {
                 reportForThisContract = getAddresses();
             }
 
-            byte[] methodNameBytes = ABIEncoder.encodeOneString("recurseAndTrackAddresses");
-            byte[] argBytes1 = ABIEncoder.encodeOneAddressArray(otherContracts);
-            byte[] argBytes2 = ABIEncoder.encodeOneInteger(currentDepth + 1);
-            byte[] argBytes3 = ABIEncoder.encodeOneBoolean(recurseFirst);
-            byte[] data = concatenateArrays(methodNameBytes, argBytes1, argBytes2, argBytes3);
+            ABIStreamingEncoder encoder = new ABIStreamingEncoder();
+            byte[] data = encoder.encodeOneString("recurseAndTrackAddresses")
+                .encodeOneAddressArray(otherContracts)
+                .encodeOneInteger(currentDepth + 1)
+                .encodeOneBoolean(recurseFirst)
+                .toBytes();
 
             Result result = Blockchain.call(otherContracts[currentDepth], BigInteger.ZERO, data, Blockchain.getRemainingEnergy());
 
@@ -95,19 +97,5 @@ public class FailedInternalCallAddressesContract {
         }
 
         return array;
-    }
-
-    private static byte[] concatenateArrays(byte[]... arrays) {
-        int length = 0;
-        for(byte[] array : arrays) {
-            length += array.length;
-        }
-        byte[] result = new byte[length];
-        int writtenSoFar = 0;
-        for(byte[] array : arrays) {
-            System.arraycopy(array, 0, result, writtenSoFar, array.length);
-            writtenSoFar += array.length;
-        }
-        return result;
     }
 }

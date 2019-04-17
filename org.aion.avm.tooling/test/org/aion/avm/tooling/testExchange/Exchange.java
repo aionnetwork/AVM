@@ -6,6 +6,7 @@ import avm.Blockchain;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 
 public class Exchange {
 
@@ -53,10 +54,11 @@ public class Exchange {
 
         Address sender = Blockchain.getCaller();
 
-        byte[] methodNameBytes = ABIEncoder.encodeOneString("allowance");
-        byte[] argBytes1 = ABIEncoder.encodeOneAddress(sender);
-        byte[] argBytes2 = ABIEncoder.encodeOneAddress(Blockchain.getAddress());
-        byte[] args = concatenateArrays(methodNameBytes, argBytes1, argBytes2);
+        ABIStreamingEncoder encoder = new ABIStreamingEncoder();
+        byte[] args = encoder.encodeOneString("allowance")
+            .encodeOneAddress(sender)
+            .encodeOneAddress(Blockchain.getAddress())
+            .toBytes();
 
         byte[] result = Blockchain.call(coinContract, BigInteger.ZERO, args, 1000000L).getReturnData();
 
@@ -85,11 +87,12 @@ public class Exchange {
 
         Address coinContract = coinListing.get(String.valueOf(toProcess.getCoin()));
 
-        byte[] methodNameBytes = ABIEncoder.encodeOneString("transferFrom");
-        byte[] argBytes1 = ABIEncoder.encodeOneAddress(toProcess.getFrom());
-        byte[] argBytes2 = ABIEncoder.encodeOneAddress(toProcess.getTo());
-        byte[] argBytes3 = ABIEncoder.encodeOneLong(toProcess.getAmount());
-        byte[] args = concatenateArrays(methodNameBytes, argBytes1, argBytes2, argBytes3);
+        ABIStreamingEncoder encoder = new ABIStreamingEncoder();
+        byte[] args = encoder.encodeOneString("transferFrom")
+            .encodeOneAddress(toProcess.getFrom())
+            .encodeOneAddress(toProcess.getTo())
+            .encodeOneLong(toProcess.getAmount())
+            .toBytes();
 
         byte[] result = Blockchain.call(coinContract, BigInteger.ZERO, args, 1000000L).getReturnData();
 
@@ -101,20 +104,6 @@ public class Exchange {
         }
 
         return decodedBool;
-    }
-
-    private static byte[] concatenateArrays(byte[]... arrays) {
-        int length = 0;
-        for(byte[] array : arrays) {
-            length += array.length;
-        }
-        byte[] result = new byte[length];
-        int writtenSoFar = 0;
-        for(byte[] array : arrays) {
-            System.arraycopy(array, 0, result, writtenSoFar, array.length);
-            writtenSoFar += array.length;
-        }
-        return result;
     }
 
     public static class ExchangeTransaction {

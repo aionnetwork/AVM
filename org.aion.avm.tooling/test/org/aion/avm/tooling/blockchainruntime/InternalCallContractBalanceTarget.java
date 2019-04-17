@@ -6,6 +6,7 @@ import org.aion.avm.userlib.abi.ABIEncoder;
 import avm.Address;
 import avm.Blockchain;
 import avm.Result;
+import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 
 public class InternalCallContractBalanceTarget {
     private static BigInteger balanceDuringClinit;
@@ -77,11 +78,12 @@ public class InternalCallContractBalanceTarget {
             } else {
                 // I'm not the target, propagate whatever my child returned upwards to my caller.
 
-                byte[] arg0Bytes = ABIEncoder.encodeOneString("recurseAndGetBalance");
-                byte[] arg1Bytes = ABIEncoder.encodeOneAddressArray(otherContracts);
-                byte[] arg2Bytes = ABIEncoder.encodeOneInteger(currentDepth + 1);
-                byte[] arg3Bytes = ABIEncoder.encodeOneInteger(targetDappDepth);
-                byte[] data = concatenateArrays(arg0Bytes, arg1Bytes, arg2Bytes, arg3Bytes);
+                ABIStreamingEncoder encoder = new ABIStreamingEncoder();
+                byte[] data = encoder.encodeOneString("recurseAndGetBalance")
+                    .encodeOneAddressArray(otherContracts)
+                    .encodeOneInteger(currentDepth + 1)
+                    .encodeOneInteger(targetDappDepth)
+                    .toBytes();
 
                 ABIDecoder decoder = new ABIDecoder(Blockchain.call(otherContracts[currentDepth], BigInteger.ZERO, data, Blockchain.getRemainingEnergy()).getReturnData());
                 return decoder.decodeOneByteArray();
@@ -99,19 +101,5 @@ public class InternalCallContractBalanceTarget {
      */
     public static byte[] getBalanceOfThisContractDuringClinit() {
         return balanceDuringClinit.toByteArray();
-    }
-
-    private static byte[] concatenateArrays(byte[]... arrays) {
-        int length = 0;
-        for(byte[] array : arrays) {
-            length += array.length;
-        }
-        byte[] result = new byte[length];
-        int writtenSoFar = 0;
-        for(byte[] array : arrays) {
-            System.arraycopy(array, 0, result, writtenSoFar, array.length);
-            writtenSoFar += array.length;
-        }
-        return result;
     }
 }
