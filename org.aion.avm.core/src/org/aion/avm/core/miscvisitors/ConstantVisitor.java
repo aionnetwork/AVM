@@ -6,6 +6,7 @@ import java.util.Map;
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.internal.Helper;
 import org.aion.avm.internal.PackageConstants;
+import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -88,7 +89,7 @@ public class ConstantVisitor extends ClassToolchain.ToolChainClassVisitor {
             public void visitLdcInsn(Object value) {
                 if (value instanceof Type && ((Type) value).getSort() == Type.OBJECT) {
                     // class constants
-                    // TODO (AKI-103): verify that we are correctly handling all constant types.
+                    // This covers both Type.ARRAY and Type.OBJECT; since both cases were visited in UserClassMappingVisitor and renamed
                     super.visitLdcInsn(value);
                     super.visitMethodInsn(Opcodes.INVOKESTATIC, Helper.RUNTIME_HELPER_NAME, wrapClassMethodName, wrapClassMethodDescriptor, false);
                 } else if (value instanceof String) {
@@ -96,7 +97,9 @@ public class ConstantVisitor extends ClassToolchain.ToolChainClassVisitor {
                     String staticFieldForConstant = generateStaticFieldNameForConstant((String)value);
                     super.visitFieldInsn(Opcodes.GETSTATIC, thisClassName, staticFieldForConstant, postRenameStringDescriptor);
                 } else {
-                    // numbers?
+                    // Type of METHOD and Handle are for classes with version 49 and 51 respectively, and should not happen
+                    // https://asm.ow2.io/javadoc/org/objectweb/asm/MethodVisitor.html#visitLdcInsn-java.lang.Object-
+                    RuntimeAssertionError.assertTrue(value instanceof Integer || value instanceof Float || value instanceof Long || value instanceof Double);
                     super.visitLdcInsn(value);
                 }
             }
