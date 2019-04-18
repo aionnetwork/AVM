@@ -141,16 +141,11 @@ public class InternalCallClinitAddressesTest {
     private Address[] callInternalCallClinitAddressesContract(Address contract, int numInternalCalls, boolean recurseFirst) {
         byte[] dappBytes = getDappBytes();
 
-        byte[] dappBytesFirstHalf = new byte[dappBytes.length / 2];
-        byte[] dappBytesSecondHalf = new byte[dappBytes.length - dappBytesFirstHalf.length];
-        System.arraycopy(dappBytes, 0, dappBytesFirstHalf, 0, dappBytesFirstHalf.length);
-        System.arraycopy(dappBytes, dappBytesFirstHalf.length, dappBytesSecondHalf, 0, dappBytesSecondHalf.length);
-
         byte[] callData;
         if (recurseFirst) {
-            callData = ABIUtil.encodeMethodArguments("runInternalCallsAndTrackAddressRecurseThenGrabOwnAddress", dappBytesFirstHalf, dappBytesSecondHalf, numInternalCalls);
+            callData = ABIUtil.encodeMethodArguments("runInternalCallsAndTrackAddressRecurseThenGrabOwnAddress", dappBytes, numInternalCalls);
         } else {
-            callData = ABIUtil.encodeMethodArguments("runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse", dappBytesFirstHalf, dappBytesSecondHalf, numInternalCalls);
+            callData = ABIUtil.encodeMethodArguments("runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse", dappBytes, numInternalCalls);
         }
 
         TransactionResult result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice).getTransactionResult();
@@ -159,8 +154,7 @@ public class InternalCallClinitAddressesTest {
     }
 
     private static byte[] getDappBytes() {
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(InternalCallClinitAddressesContract.class);
-        return new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        return avmRule.getDappBytes(InternalCallClinitAddressesContract.class, new byte[0]);
     }
 
     private static Address[] joinArrays(Address[] array1, Address[] array2) {

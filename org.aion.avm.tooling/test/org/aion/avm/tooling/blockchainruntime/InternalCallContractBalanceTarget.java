@@ -24,7 +24,7 @@ public class InternalCallContractBalanceTarget {
             if (methodName.equals("getBalanceOfDappViaInternalCall")) {
                 return ABIEncoder.encodeOneByteArray(getBalanceOfDappViaInternalCall(decoder.decodeOneAddressArray(), decoder.decodeOneInteger()));
             } else if (methodName.equals("createNewContractWithValue")) {
-                return ABIEncoder.encodeOneByteArray(createNewContractWithValue(decoder.decodeOneByteArray(), decoder.decodeOneByteArray(), decoder.decodeOneLong()));
+                return ABIEncoder.encodeOneByteArray(createNewContractWithValue(decoder.decodeOneByteArray(), decoder.decodeOneLong()));
             } else if (methodName.equals("recurseAndGetBalance")) {
                 return ABIEncoder.encodeOneByteArray(recurseAndGetBalance(decoder.decodeOneAddressArray(), decoder.decodeOneInteger(), decoder.decodeOneInteger()));
             } else if (methodName.equals("getBalanceOfThisContractDuringClinit")) {
@@ -48,18 +48,10 @@ public class InternalCallContractBalanceTarget {
      *
      * Returns the address of the newly created contract.
      */
-    public static byte[] createNewContractWithValue(byte[] dappBytesFirstHalf, byte[] dappBytesSecondHalf, long amountToTransfer) {
+    public static byte[] createNewContractWithValue(byte[] dappBytes, long amountToTransfer) {
         // Create the child contract.
 
-        byte[] dappCode = new byte[dappBytesFirstHalf.length + dappBytesSecondHalf.length];
-        for(int i = 0; i < dappBytesFirstHalf.length; i++) {
-            dappCode[i] = dappBytesFirstHalf[i];
-        }
-        for(int i = 0, j = dappBytesFirstHalf.length; i < dappBytesSecondHalf.length; i++, j++) {
-            dappCode[j] = dappBytesSecondHalf[i];
-        }
-
-        Result result = Blockchain.create(BigInteger.valueOf(amountToTransfer), dappCode, Blockchain.getRemainingEnergy());
+        Result result = Blockchain.create(BigInteger.valueOf(amountToTransfer), dappBytes, Blockchain.getRemainingEnergy());
 
         // If the create failed then we revert to propagate this failure upwards.
         if (!result.isSuccess()) {

@@ -149,12 +149,7 @@ public class InternalCallContractBalanceTest {
     private Address callContractDoCreateAndTransferValueAtDeployTime(Address contract, long amountToTransfer) {
         byte[] dappBytes = getDappBytes();
 
-        byte[] dappBytesFirstHalf = new byte[dappBytes.length / 2];
-        byte[] dappBytesSecondHalf = new byte[dappBytes.length - dappBytesFirstHalf.length];
-        System.arraycopy(dappBytes, 0, dappBytesFirstHalf, 0, dappBytesFirstHalf.length);
-        System.arraycopy(dappBytes, dappBytesFirstHalf.length, dappBytesSecondHalf, 0, dappBytesSecondHalf.length);
-
-        byte[] callData = ABIUtil.encodeMethodArguments("createNewContractWithValue", dappBytesFirstHalf, dappBytesSecondHalf, amountToTransfer);
+        byte[] callData = ABIUtil.encodeMethodArguments("createNewContractWithValue", dappBytes, amountToTransfer);
 
         AvmRule.ResultWrapper result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice);
         assertTrue(result.getTransactionResult().getResultCode().isSuccess());
@@ -199,8 +194,7 @@ public class InternalCallContractBalanceTest {
     }
 
     private static byte[] getDappBytes() {
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(InternalCallContractBalanceTarget.class);
-        return new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        return avmRule.getDappBytes(InternalCallContractBalanceTarget.class, new byte[0]);
     }
 
 }

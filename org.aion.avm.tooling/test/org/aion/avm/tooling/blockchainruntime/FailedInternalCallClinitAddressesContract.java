@@ -21,11 +21,11 @@ public class FailedInternalCallClinitAddressesContract {
             return new byte[0];
         } else {
             if (methodName.equals("runInternalCallsAndTrackAddressRecurseThenGrabOwnAddress")) {
-                return ABIEncoder.encodeOneAddressArray(runInternalCallsAndTrackAddressRecurseThenGrabOwnAddress(decoder.decodeOneByteArray(), decoder.decodeOneByteArray(), decoder.decodeOneInteger()));
+                return ABIEncoder.encodeOneAddressArray(runInternalCallsAndTrackAddressRecurseThenGrabOwnAddress(decoder.decodeOneByteArray(), decoder.decodeOneInteger()));
             } else if (methodName.equals("runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse")) {
-                return ABIEncoder.encodeOneAddressArray(runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse(decoder.decodeOneByteArray(), decoder.decodeOneByteArray(), decoder.decodeOneInteger()));
+                return ABIEncoder.encodeOneAddressArray(runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse(decoder.decodeOneByteArray(), decoder.decodeOneInteger()));
             } else if (methodName.equals("recurseAndTrackAddresses")) {
-                return ABIEncoder.encodeOneAddressArray(recurseAndTrackAddresses(decoder.decodeOneByteArray(), decoder.decodeOneByteArray(), decoder.decodeOneInteger(), decoder.decodeOneInteger(), decoder.decodeOneBoolean()));
+                return ABIEncoder.encodeOneAddressArray(recurseAndTrackAddresses(decoder.decodeOneByteArray(), decoder.decodeOneInteger(), decoder.decodeOneInteger(), decoder.decodeOneBoolean()));
             } else {
                 return new byte[0];
             }
@@ -56,8 +56,8 @@ public class FailedInternalCallClinitAddressesContract {
      *   NOTE: the deepest call in this chain will do a REVERT.
      */
     @Callable
-    public static Address[] runInternalCallsAndTrackAddressRecurseThenGrabOwnAddress(byte[] dappBytesFirstHalf, byte[] dappBytesSecondHalf, int numOtherContracts) {
-        return recurseAndTrackAddressesByRecursingFirst(dappBytesFirstHalf, dappBytesSecondHalf, numOtherContracts, 0);
+    public static Address[] runInternalCallsAndTrackAddressRecurseThenGrabOwnAddress(byte[] dappBytes, int numOtherContracts) {
+        return recurseAndTrackAddressesByRecursingFirst(dappBytes, numOtherContracts, 0);
     }
 
     /**
@@ -79,25 +79,25 @@ public class FailedInternalCallClinitAddressesContract {
      *   index (N * 3) + 2: address for contract at depth N
      *
      *
-     *   ASSUMPTION: dappBytesFirstHalf and dappBytesSecondHalf when concatenated are the bytes of THIS dapp.
+     *   ASSUMPTION: dappBytes is the bytes of THIS dapp.
      *
      *   NOTE: the deepest call in this chain will do a REVERT.
      */
     @Callable
-    public static Address[] runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse(byte[] dappBytesFirstHalf, byte[] dappBytesSecondHalf, int numOtherContracts) {
-        return recurseAndTrackAddressesByRecursingLast(dappBytesFirstHalf, dappBytesSecondHalf, numOtherContracts, 0);
+    public static Address[] runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse(byte[] dappBytes, int numOtherContracts) {
+        return recurseAndTrackAddressesByRecursingLast(dappBytes, numOtherContracts, 0);
     }
 
-    public static Address[] recurseAndTrackAddressesByRecursingFirst(byte[] dappBytesFirstHalf, byte[] dappBytesSecondHalf, int numOtherContracts, int currentDepth) {
-        return recurseAndTrackAddresses(dappBytesFirstHalf, dappBytesSecondHalf, numOtherContracts, currentDepth, true);
+    public static Address[] recurseAndTrackAddressesByRecursingFirst(byte[] dappBytes, int numOtherContracts, int currentDepth) {
+        return recurseAndTrackAddresses(dappBytes, numOtherContracts, currentDepth, true);
     }
 
-    public static Address[] recurseAndTrackAddressesByRecursingLast(byte[] dappBytesFirstHalf, byte[] dappBytesSecondHalf, int numOtherContracts, int currentDepth) {
-        return recurseAndTrackAddresses(dappBytesFirstHalf, dappBytesSecondHalf, numOtherContracts, currentDepth, false);
+    public static Address[] recurseAndTrackAddressesByRecursingLast(byte[] dappBytes, int numOtherContracts, int currentDepth) {
+        return recurseAndTrackAddresses(dappBytes, numOtherContracts, currentDepth, false);
     }
 
     @Callable
-    public static Address[] recurseAndTrackAddresses(byte[] dappBytesFirstHalf, byte[] dappBytesSecondHalf, int numOtherContracts, int currentDepth, boolean recurseFirst) {
+    public static Address[] recurseAndTrackAddresses(byte[] dappBytes, int numOtherContracts, int currentDepth, boolean recurseFirst) {
         if (currentDepth < numOtherContracts) {
             Address[] reportForThisContract = null;
 
@@ -106,14 +106,6 @@ public class FailedInternalCallClinitAddressesContract {
             }
 
             // First, we create the dapp we are going to call into.
-
-            byte[] dappBytes = new byte[dappBytesFirstHalf.length + dappBytesSecondHalf.length];
-            for(int i = 0; i < dappBytesFirstHalf.length; i++) {
-                dappBytes[i] = dappBytesFirstHalf[i];
-            }
-            for(int i = 0, j = dappBytesFirstHalf.length; i < dappBytesSecondHalf.length; i++, j++) {
-                dappBytes[j] = dappBytesSecondHalf[i];
-            }
 
             Result createResult = Blockchain.create(BigInteger.ZERO, dappBytes, Blockchain.getRemainingEnergy());
 
@@ -129,8 +121,7 @@ public class FailedInternalCallClinitAddressesContract {
 
             ABIStreamingEncoder encoder = new ABIStreamingEncoder();
             byte[] callData = encoder.encodeOneString("recurseAndTrackAddresses")
-                .encodeOneByteArray(dappBytesFirstHalf)
-                .encodeOneByteArray(dappBytesSecondHalf)
+                .encodeOneByteArray(dappBytes)
                 .encodeOneInteger(numOtherContracts)
                 .encodeOneInteger(currentDepth + 1)
                 .encodeOneBoolean(recurseFirst)

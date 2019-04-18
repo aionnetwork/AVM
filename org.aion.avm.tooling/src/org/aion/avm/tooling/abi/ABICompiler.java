@@ -119,11 +119,8 @@ public class ABICompiler {
         initializables = classVisitor.getInitializableTypes();
         mainClassBytes = classWriter.toByteArray();
 
-        if(classVisitor.addedMainMethod()) {
-            outputJarFile = JarBuilder.buildJarForExplicitClassNamesAndBytecode(mainClassName, mainClassBytes, classMap, getMissingUserlibClasses());
-        } else {
-            outputJarFile = JarBuilder.buildJarForExplicitClassNamesAndBytecode(mainClassName, mainClassBytes, classMap);
-        }
+        outputJarFile = JarBuilder.buildJarForExplicitClassNamesAndBytecode(mainClassName, mainClassBytes, classMap, getMissingUserlibClasses());
+
 //        DataOutputStream dout = null;
 //        try {
 //            dout = new DataOutputStream(
