@@ -2,6 +2,7 @@ package org.aion.avm.core.arraywrapping;
 
 import org.aion.avm.arraywrapper.BooleanArray;
 import org.aion.avm.arraywrapper.ByteArray;
+import org.aion.avm.core.rejection.RejectedClassException;
 import org.aion.avm.core.types.ClassHierarchy;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.IObjectArray;
@@ -63,9 +64,11 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
                 analyzer.analyze(this.className, this);
                 frames = analyzer.getFrames();
             }catch (AnalyzerException e){
-                // If we fail to run the analyzer, that is a serious internal error.
-                // NOTE:  We can limit this failure to the contract deployment to avoid DDoS against the AVM in the network.
-                throw RuntimeAssertionError.unexpected(e);
+                // If we fail to run the analyzer, that is a serious internal error. It might be an actual bug
+                // in the AVM, or it might be the result of corrupt input.
+                // Since we're not sure, we "blame" the contract, and throw a Rejection Error.
+                System.err.println("Something went wrong when trying to analyze a wrapped array: " + e.getMessage());
+                throw new RejectedClassException(e.getMessage());
             }
         }
 

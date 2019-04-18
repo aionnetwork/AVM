@@ -390,15 +390,19 @@ public class DAppCreator {
             RuntimeAssertionError.assertTrue(-1 == name.indexOf("/"));
 
             int parsingOptions = preserveDebuggability ? 0: ClassReader.SKIP_DEBUG;
-            byte[] bytecode = new ClassToolchain.Builder(inputClasses.get(name), parsingOptions)
+            try {
+                byte[] bytecode = new ClassToolchain.Builder(inputClasses.get(name), parsingOptions)
                     .addNextVisitor(new RejectionClassVisitor(preRenameClassAccessRules, namespaceMapper, preserveDebuggability))
                     .addNextVisitor(new LoopingExceptionStrippingVisitor())
                     .addNextVisitor(new UserClassMappingVisitor(namespaceMapper, preserveDebuggability))
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, preserveDebuggability))
                     .build()
                     .runAndGetBytecode();
-            String mappedName = DebugNameResolver.getUserPackageDotPrefix(name, preserveDebuggability);
-            safeClasses.put(mappedName, bytecode);
+                String mappedName = DebugNameResolver.getUserPackageDotPrefix(name, preserveDebuggability);
+                safeClasses.put(mappedName, bytecode);
+            } catch (Exception e) {
+                throw new RejectedClassException(e.getMessage());
+            }
         }
         return safeClasses;
     }

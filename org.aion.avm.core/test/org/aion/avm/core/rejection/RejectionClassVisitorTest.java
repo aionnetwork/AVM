@@ -101,7 +101,7 @@ public class RejectionClassVisitorTest {
         // Load the bytes we saved (normal TestClassTemplate I over-wrote a random byte in the bytecode).
         // (interestingly, I over-wrote the goto offset in a path the test doesn't execute so this runs with -Xverify:none)
         // Verify that this fails by throwing.
-        commonFilterClass("TestClassTemplate","test/resources/TestClassTemplate_corrupt.class");
+        commonFilterClass("TestClassTemplate","test/resources/TestClassTemplate_corruptMainMethod.class");
     }
 
     @Test(expected=RejectedClassException.class)

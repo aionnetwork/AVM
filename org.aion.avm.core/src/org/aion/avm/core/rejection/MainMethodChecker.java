@@ -20,11 +20,15 @@ public class MainMethodChecker extends ClassToolchain.ToolChainClassVisitor {
     public static boolean checkForMain(byte[] bytecode) {
         MainMethodChecker methodChecker = new MainMethodChecker();
         // We don't actually want the output bytecode, in this case.
-        new ClassToolchain.Builder(bytecode, 0)
+        try {
+            new ClassToolchain.Builder(bytecode, 0)
                 .addNextVisitor(methodChecker)
                 .addWriter(new ClassWriter(0))
                 .build()
                 .runAndGetBytecode();
+        } catch (Exception e) {
+            throw new RejectedClassException("Error when reading main method of main class: " + e.getMessage());
+        }
         return methodChecker.didFindMain;
     }
 

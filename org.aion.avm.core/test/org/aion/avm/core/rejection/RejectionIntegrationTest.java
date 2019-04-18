@@ -1,7 +1,13 @@
 package org.aion.avm.core.rejection;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
+import org.aion.avm.core.AvmImplTestResource;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
@@ -50,6 +56,31 @@ public class RejectionIntegrationTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(RejectNonShadowJclSubclassError.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         
+        Transaction transaction = Transaction.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
+        TransactionResult createResult = avm.run(RejectionIntegrationTest.kernel, new Transaction[] {transaction})[0].get();
+        Assert.assertEquals(AvmTransactionResult.Code.FAILED_REJECTED, createResult.getResultCode());
+    }
+
+    @Test
+    public void rejectCorruptMainMethod() throws IOException {
+        byte[] classBytes = Files.readAllBytes(Paths.get("test/resources/TestClassTemplate_corruptMainMethod.class"));
+        byte[] jar = JarBuilder.buildJarForExplicitClassNameAndBytecode("TestClassTemplate", classBytes);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+
+        Transaction transaction = Transaction.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
+        TransactionResult createResult = avm.run(RejectionIntegrationTest.kernel, new Transaction[] {transaction})[0].get();
+        Assert.assertEquals(AvmTransactionResult.Code.FAILED_REJECTED, createResult.getResultCode());
+    }
+
+    @Test
+    public void rejectCorruptMethod() throws IOException {
+        byte[] classBytes = Files.readAllBytes(Paths.get("test/resources/TestClassTemplate_corruptMethod.class"));
+        Map<String, byte[]> classMap = new HashMap<>();
+        classMap.put("TestClassTemplate_corruptMethod", classBytes);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(
+            AvmImplTestResource.class, classMap);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+
         Transaction transaction = Transaction.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult createResult = avm.run(RejectionIntegrationTest.kernel, new Transaction[] {transaction})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_REJECTED, createResult.getResultCode());
