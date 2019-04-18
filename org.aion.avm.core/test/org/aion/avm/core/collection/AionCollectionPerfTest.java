@@ -9,8 +9,6 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.userlib.AionPlainMap;
-import org.aion.avm.userlib.AionPlainSet;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -30,15 +28,11 @@ public class AionCollectionPerfTest {
     }
 
     private byte[] buildSetPerfJar() {
-        return JarBuilder.buildJarForMainAndClassesAndUserlib(AionSetPerfContract.class,
-            AionPlainSet.class,
-            AionPlainMap.class);
+        return JarBuilder.buildJarForMainAndClassesAndUserlib(AionSetPerfContract.class);
     }
 
     private byte[] buildMapPerfJar() {
-        return JarBuilder.buildJarForMainAndClassesAndUserlib(AionMapPerfContract.class,
-            AionPlainSet.class,
-            AionPlainMap.class);
+        return JarBuilder.buildJarForMainAndClassesAndUserlib(AionMapPerfContract.class);
     }
 
     private TransactionResult deploy(KernelInterface kernel, AvmImpl avm, byte[] testJar){
