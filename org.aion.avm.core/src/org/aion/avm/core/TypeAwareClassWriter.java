@@ -1,7 +1,10 @@
 package org.aion.avm.core;
 
 import org.aion.avm.ArrayClassNameMapper;
+import org.aion.avm.ArrayRenamer;
+import org.aion.avm.ArrayUtil;
 import org.aion.avm.ClassNameExtractor;
+import org.aion.avm.NameStyle;
 import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapperNameMapper;
 import org.aion.avm.core.types.ClassHierarchy;
@@ -320,11 +323,11 @@ public class TypeAwareClassWriter extends ClassWriter {
         // Since we know both are either pre- or post-rename.
         boolean bothTypesArePreRename = type1isPreRenameJclException || type1isPreRenameNonJclExceptionOrWrapper;
 
-        boolean type1isMultiDimPrimitiveArray = !type1isExceptionWrapper && !bothTypesArePreRename && ArrayClassNameMapper.isMultiDimensionalPrimitiveArrayDotName(type1dotName);
-        boolean type2isMultiDimPrimitiveArray = !type2isExceptionWrapper && !bothTypesArePreRename && ArrayClassNameMapper.isMultiDimensionalPrimitiveArrayDotName(type2dotName);
+        boolean type1isMultiDimPrimitiveArray = !type1isExceptionWrapper && !bothTypesArePreRename && ArrayUtil.isMultiDimensionalPrimitiveArray(NameStyle.DOT_NAME, type1dotName);
+        boolean type2isMultiDimPrimitiveArray = !type2isExceptionWrapper && !bothTypesArePreRename && ArrayUtil.isMultiDimensionalPrimitiveArray(NameStyle.DOT_NAME, type2dotName);
 
-        boolean type1isObjectArray = !type1isExceptionWrapper && !bothTypesArePreRename && !type1isMultiDimPrimitiveArray && ArrayClassNameMapper.isObjectArrayWrapperDotName(type1dotName);
-        boolean type2isObjectArray = !type2isExceptionWrapper && !bothTypesArePreRename && !type2isMultiDimPrimitiveArray && ArrayClassNameMapper.isObjectArrayWrapperDotName(type2dotName);
+        boolean type1isObjectArray = !type1isExceptionWrapper && !bothTypesArePreRename && !type1isMultiDimPrimitiveArray && ArrayUtil.isPostRenameObjectArray(NameStyle.DOT_NAME, type1dotName);
+        boolean type2isObjectArray = !type2isExceptionWrapper && !bothTypesArePreRename && !type2isMultiDimPrimitiveArray && ArrayUtil.isPostRenameObjectArray(NameStyle.DOT_NAME, type2dotName);
 
         boolean type1isArray = type1isMultiDimPrimitiveArray || type1isObjectArray;
         boolean type2isArray = type2isMultiDimPrimitiveArray || type2isObjectArray;
@@ -332,8 +335,8 @@ public class TypeAwareClassWriter extends ClassWriter {
         // Handle the case where both types are object arrays.
         if (type1isObjectArray && type2isObjectArray) {
 
-            boolean type1isInterfaceObjectArray = ArrayClassNameMapper.isInterfaceObjectArrayDotName(type1dotName);
-            boolean type2isInterfaceObjectArray = ArrayClassNameMapper.isInterfaceObjectArrayDotName(type2dotName);
+            boolean type1isInterfaceObjectArray = ArrayUtil.isPostRenameUnifyingTypeObjectArray(NameStyle.DOT_NAME, type1dotName);
+            boolean type2isInterfaceObjectArray = ArrayUtil.isPostRenameUnifyingTypeObjectArray(NameStyle.DOT_NAME, type2dotName);
 
             // If one type is an interface object array and the other is not, then IObjectArray is their unifying type.
             if (type1isInterfaceObjectArray != type2isInterfaceObjectArray) {
@@ -341,16 +344,16 @@ public class TypeAwareClassWriter extends ClassWriter {
             }
 
             // If the two arrays differ in dimension, then we unify to IObjectArray.
-            int array1dimension = ArrayClassNameMapper.getObjectArrayDotNameDimension(type1dotName);
+            int array1dimension = ArrayUtil.dimensionOfPostRenameObjectArray(NameStyle.DOT_NAME, type1dotName);
 
-            if (array1dimension != ArrayClassNameMapper.getObjectArrayDotNameDimension(type2dotName)) {
+            if (array1dimension != ArrayUtil.dimensionOfPostRenameObjectArray(NameStyle.DOT_NAME, type2dotName)) {
                 return Helpers.fulllyQualifiedNameToInternalName(CommonType.I_OBJECT_ARRAY.dotName);
             }
 
             // Otherwise, we strip the arrays down to their base types and get the common super class of the base types
             // and then wrap them back up in the array wrappers and return.
-            String type1stripped = ArrayClassNameMapper.stripObjectArrayWrapperDotNameToBaseType(type1dotName);
-            String type2stripped = ArrayClassNameMapper.stripObjectArrayWrapperDotNameToBaseType(type2dotName);
+            String type1stripped = ArrayRenamer.getObjectArrayWrapperUnderlyingTypeName(NameStyle.DOT_NAME, type1dotName);
+            String type2stripped = ArrayRenamer.getObjectArrayWrapperUnderlyingTypeName(NameStyle.DOT_NAME, type2dotName);
 
             // We make a recursive call back into getCommonSuperClassViaNewClassHierarchy() -- this call can never
             // recurse any deeper than this, and it solves all our problems for us.
@@ -367,8 +370,8 @@ public class TypeAwareClassWriter extends ClassWriter {
             // Finally, we reconstruct our answer as an array wrapper and return. We only ask if type1 is
             // an interface object array because we know type2 has the same answer.
             return type1isInterfaceObjectArray
-                ? Helpers.fulllyQualifiedNameToInternalName(ArrayClassNameMapper.wrapTypeDotNameAsInterfaceObjectArray(array1dimension, strippedCommonSuper))
-                : Helpers.fulllyQualifiedNameToInternalName(ArrayClassNameMapper.wrapTypeDotNameAsNonInterfaceObjectArray(array1dimension, strippedCommonSuper));
+                ? Helpers.fulllyQualifiedNameToInternalName(ArrayRenamer.wrapAsUnifyingObjectArray(NameStyle.DOT_NAME, strippedCommonSuper, array1dimension))
+                : Helpers.fulllyQualifiedNameToInternalName(ArrayRenamer.wrapAsConcreteObjectArray(NameStyle.DOT_NAME, strippedCommonSuper, array1dimension));
         }
 
         boolean atLeastOneMultiDimPrimitiveArray = type1isMultiDimPrimitiveArray || type2isMultiDimPrimitiveArray;
