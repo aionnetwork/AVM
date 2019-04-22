@@ -45,7 +45,42 @@ public class Deserializer {
         return nextHashCode;
     }
 
+    public static void cleanClassStatics(SortedFieldCache cache, Class<?>[] sortedRoots) {
+        for (Class<?> clazz : sortedRoots) {
+            cleanOneClass(cache, clazz);
+        }
+    }
 
+    private static void cleanOneClass(SortedFieldCache cache, Class<?> clazz) {
+        Field[] constants = cache.getConstantFields(clazz);
+        cleanFieldsForClass(constants);
+
+        Field[] fields = cache.getUserStaticFields(clazz);
+        cleanFieldsForClass(fields);
+    }
+
+    private static void cleanFieldsForClass(Field[] fields) {
+        try {
+            for (Field field : fields) {
+                // We need to crack the type, here, since only object references are cleared.
+                Class<?> type = field.getType();
+                if (boolean.class == type) {
+                } else if (byte.class == type) {
+                } else if (short.class == type) {
+                } else if (char.class == type) {
+                } else if (int.class == type) {
+                } else if (float.class == type) {
+                } else if (long.class == type) {
+                } else if (double.class == type) {
+                } else {
+                    field.set(null, null);
+                }
+            }
+        } catch (IllegalAccessException e) {
+            // Reflection errors can't happen since we set this up so we could access it.
+            throw RuntimeAssertionError.unexpected(e);
+        }
+    }
 
     private static void deserializeClassStatics(ByteBufferObjectDeserializer objectDeserializer, SortedFieldCache cache, Class<?>[] sortedRoots) {
         for (Class<?> clazz : sortedRoots) {

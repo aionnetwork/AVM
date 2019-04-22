@@ -282,7 +282,7 @@ public class LoadedDApp {
      * Called before the DApp is about to be put into a cache.  This is so it can put itself into a "resumable" state.
      */
     public void cleanForCache() {
-        // TODO (AKI-104): Implement - we want to wipe the statics so it no longer keeps its graph alive.
+        Deserializer.cleanClassStatics(this.fieldCache, this.sortedClasses);
     }
 
 

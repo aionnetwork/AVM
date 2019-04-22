@@ -346,6 +346,26 @@ public class SerializerTest {
         System.out.println("Deserialized in " + deltaNanosPer + " ns");
     }
 
+    @Test
+    public void TestCleanClassStatics() throws Exception {
+        int nextHashCode = 1;
+        Class<?>[] sortedRoots = new Class<?>[] {TargetStatics.class};
+
+        ByteBuffer buffer = ByteBuffer.allocate(1_000);
+        TestGlobalResolver resolver = new TestGlobalResolver();
+        TestNameMapper classNameMapper = new TestNameMapper();
+
+        Serializer.serializeEntireGraph(buffer, null, null, resolver, this.cache, classNameMapper, nextHashCode, sortedRoots);
+
+        Assert.assertTrue(null != sortedRoots[0].getDeclaredField("left").get(null));
+        Assert.assertTrue(null != sortedRoots[0].getDeclaredField("right").get(null));
+
+        Deserializer.cleanClassStatics(this.cache, sortedRoots);
+
+        Assert.assertTrue(null == sortedRoots[0].getDeclaredField("left").get(null));
+        Assert.assertTrue(null == sortedRoots[0].getDeclaredField("right").get(null));
+    }
+
 
     private byte[] serializeDeserializeAsNew(int nextHashCode, Class<?>[] sortedRoots) {
         ByteBuffer buffer = ByteBuffer.allocate(5_000_000);
