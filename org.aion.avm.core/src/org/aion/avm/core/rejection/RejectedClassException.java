@@ -45,6 +45,10 @@ public class RejectedClassException extends AvmException {
         throw new RejectedClassException("avm package name is restricted: " + className);
     }
 
+    public static void arrayDimensionTooBig(String desc) {
+        throw new RejectedClassException("Array dimension should not be more than 3." + desc);
+    }
+
     public RejectedClassException(String message) {
         super(message);
     }

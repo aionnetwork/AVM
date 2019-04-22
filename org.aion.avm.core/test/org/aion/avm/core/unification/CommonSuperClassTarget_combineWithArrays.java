@@ -20,8 +20,8 @@ public class CommonSuperClassTarget_combineWithArrays {
         return (flag ? root : child)[0].getRootA();
     }
 
-    public static String combineOverlappingArrays(boolean flag, CommonSuperClassTypes.RootA[][][] root, CommonSuperClassTypes.ChildA[][][][] child) {
-        return (flag ? root[0][0][0] : child[0]).toString();
+    public static String combineOverlappingArrays(boolean flag, CommonSuperClassTypes.RootA[][] root, CommonSuperClassTypes.ChildA[][][] child) {
+        return (flag ? root[0][0] : child[0]).toString();
     }
 
     public static String combineArrayAndException(boolean flag, CommonSuperClassTypes.RootA[] root, RuntimeException exception) {

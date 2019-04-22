@@ -39,14 +39,14 @@ public class TestResource {
         Object[]    i = new Object[42];
         String[]    j = new String[42];
         String[][]          k = new String[42][1];
-        char[][][][][]    l = new char[42][1][1][1][1];
+        char[][][]    l = new char[42][1][1];
         return a == testMixedSignature(a, b, c, d, e, f, g, h, i, j, k, l);
     }
 
     public static boolean[] testMixedSignature(boolean[] in1, byte[] in2, char[] in3,
                                         double[] in4, float[] in5, int[] in6,
                                         long[] in7, short[] in8, Object[] in9,
-                                        String[] in10, String[][] in11, char[][][][][] in12)
+                                        String[] in10, String[][] in11, char[][][] in12)
     {
         return in1;
     }
@@ -566,21 +566,19 @@ public class TestResource {
 
     @Callable
     public static boolean testArrayEnergy(){
-        int[][][][] s = new int[10][10][10][10];
+        int[][][] s = new int[10][10][10];
         return true;
     }
 
     @Callable
     public static boolean testIncompleteArrayIni(){
-        int[][][][] s;
-        s = new int[10][10][10][];
-        s = new int[10][10][][];
-        s = new int[10][][][];
+        int[][][] s;
+        s = new int[10][10][];
+        s = new int[10][][];
 
-        String[][][][] ss;
-        ss = new String[10][10][10][];
-        ss = new String[10][10][][];
-        ss = new String[10][][][];
+        String[][][] ss;
+        ss = new String[10][10][];
+        ss = new String[10][][];
 
         return true;
     }

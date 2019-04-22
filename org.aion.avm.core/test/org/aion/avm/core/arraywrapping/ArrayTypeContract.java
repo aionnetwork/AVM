@@ -69,40 +69,40 @@ public class ArrayTypeContract {
     	return magic;
     }
     
-    public int test4DprimitiveArraysCastToObjectAndObjectArray() {
+    public int test3DprimitiveArraysCastToObjectAndObjectArray() {
     	int magic = 0;
     	
-    	Object object = new byte[][][][] {};
+    	Object object = new byte[][][] {};
     	invokeObjectOperations(object);
-    	Object[][] objectArray = new byte[][][][] {};
+    	Object[][] objectArray = new byte[][][] {};
     	invokeArrayOperations(objectArray);
-    	object = new boolean[][][][] {};
+    	object = new boolean[][][] {};
     	invokeObjectOperations(object);
-    	objectArray = new boolean[][][][] {};
+    	objectArray = new boolean[][][] {};
     	invokeArrayOperations(objectArray);
-    	object = new char[][][][] {};
+    	object = new char[][][] {};
     	invokeObjectOperations(object);
-    	objectArray = new char[][][][] {};
+    	objectArray = new char[][][] {};
     	invokeArrayOperations(objectArray);
-    	object = new short[][][][] {};
+    	object = new short[][][] {};
     	invokeObjectOperations(object);
-    	objectArray = new short[][][][] {};
+    	objectArray = new short[][][] {};
     	invokeArrayOperations(objectArray);
-    	object = new int[][][][] {};
+    	object = new int[][][] {};
     	invokeObjectOperations(object);
-    	objectArray = new int[][][][] {};
+    	objectArray = new int[][][] {};
     	invokeArrayOperations(objectArray);
-    	object = new float[][][][] {};
+    	object = new float[][][] {};
     	invokeObjectOperations(object);
-    	objectArray = new float[][][][] {};
+    	objectArray = new float[][][] {};
     	invokeArrayOperations(objectArray);
-    	object = new double[][][][] {};
+    	object = new double[][][] {};
     	invokeObjectOperations(object);
-    	objectArray = new double[][][][] {};
+    	objectArray = new double[][][] {};
     	invokeArrayOperations(objectArray);
-    	object = new long[][][][] {};
+    	object = new long[][][] {};
     	invokeObjectOperations(object);
-    	objectArray = new long[][][][] {};
+    	objectArray = new long[][][] {};
     	invokeArrayOperations(objectArray);
     	
     	return magic;
@@ -175,13 +175,13 @@ public class ArrayTypeContract {
         object = (Object) new Object[8][];
         invokeObjectOperations(object);
 
-        object = new Object[10][7][4][][];
+        object = new Object[10][][];
         invokeObjectOperations(object);
-        object = getObjectArray5D();
+        object = getObjectArray3D();
         invokeObjectOperations(object);
-        object = (Object[]) new Object[10][7][4][][];
+        object = (Object[]) new Object[10][][];
         invokeObjectOperations(object);
-        object = (Object) new Object[10][7][4][][];
+        object = (Object) new Object[10][][];
         invokeObjectOperations(object);
     }
 
@@ -202,11 +202,11 @@ public class ArrayTypeContract {
         object = (Object[]) new Object[8][];
         magic += invokeArrayOperations(object);
 
-        object = new Object[10][7][4][][];
+        object = new Object[10][][];
         magic += invokeArrayOperations(object);
-        object = getObjectArray5D();
+        object = getObjectArray3D();
         magic += invokeArrayOperations(object);
-        object = (Object[]) new Object[10][7][4][][];
+        object = (Object[]) new Object[10][][];
         magic += invokeArrayOperations(object);
 
         return magic;
@@ -532,69 +532,69 @@ public class ArrayTypeContract {
     public int testTypeRulesOnArraysWithSameDimensionality2() {
     	int magic = 0;
     	
-    	SuperestInterface[][][][][] superestInterfaces5D = new SuperInterface[][][][][] {};
-    	magic += invokeArrayOperations(superestInterfaces5D);
-    	superestInterfaces5D = self(superestInterfaces5D);
-    	magic += invokeArrayOperations(superestInterfaces5D);
-    	superestInterfaces5D = (SuperestInterface[][][][][]) new SuperInterface[][][][][] {};
-    	magic += invokeArrayOperations(superestInterfaces5D);
-    	superestInterfaces5D = new SuperAbstract[][][][][] {};
-    	magic += invokeArrayOperations(superestInterfaces5D);
-    	superestInterfaces5D = self(new SuperAbstract[][][][][] {});
-    	magic += invokeArrayOperations(superestInterfaces5D);
-    	superestInterfaces5D = (SuperestInterface[][][][][]) new SuperAbstract[][][][][] {};
-    	magic += invokeArrayOperations(superestInterfaces5D);
-    	superestInterfaces5D = new SuperClass[][][][][] {};
-    	magic += invokeArrayOperations(superestInterfaces5D);
-    	superestInterfaces5D = self(new SuperClass[][][][][] {});
-    	magic += invokeArrayOperations(superestInterfaces5D);
-    	superestInterfaces5D = (SuperestInterface[][][][][]) new SuperClass[][][][][] {};
-    	magic += invokeArrayOperations(superestInterfaces5D);
-    	superestInterfaces5D = new SubClass[][][][][] {};
-    	magic += invokeArrayOperations(superestInterfaces5D);
-    	superestInterfaces5D = self(new SubClass[][][][][] {});
-    	magic += invokeArrayOperations(superestInterfaces5D);
-    	superestInterfaces5D = (SuperestInterface[][][][][]) new SubClass[][][][][] {};
-    	magic += invokeArrayOperations(superestInterfaces5D);
+    	SuperestInterface[][][] superestInterfaces3D = new SuperInterface[][][] {};
+    	magic += invokeArrayOperations(superestInterfaces3D);
+    	superestInterfaces3D = self(superestInterfaces3D);
+    	magic += invokeArrayOperations(superestInterfaces3D);
+    	superestInterfaces3D = (SuperestInterface[][][]) new SuperInterface[][][] {};
+    	magic += invokeArrayOperations(superestInterfaces3D);
+    	superestInterfaces3D = new SuperAbstract[][][] {};
+    	magic += invokeArrayOperations(superestInterfaces3D);
+    	superestInterfaces3D = self(new SuperAbstract[][][] {});
+    	magic += invokeArrayOperations(superestInterfaces3D);
+    	superestInterfaces3D = (SuperestInterface[][][]) new SuperAbstract[][][] {};
+    	magic += invokeArrayOperations(superestInterfaces3D);
+    	superestInterfaces3D = new SuperClass[][][] {};
+    	magic += invokeArrayOperations(superestInterfaces3D);
+    	superestInterfaces3D = self(new SuperClass[][][] {});
+    	magic += invokeArrayOperations(superestInterfaces3D);
+    	superestInterfaces3D = (SuperestInterface[][][]) new SuperClass[][][] {};
+    	magic += invokeArrayOperations(superestInterfaces3D);
+    	superestInterfaces3D = new SubClass[][][] {};
+    	magic += invokeArrayOperations(superestInterfaces3D);
+    	superestInterfaces3D = self(new SubClass[][][] {});
+    	magic += invokeArrayOperations(superestInterfaces3D);
+    	superestInterfaces3D = (SuperestInterface[][][]) new SubClass[][][] {};
+    	magic += invokeArrayOperations(superestInterfaces3D);
     	
-    	SuperInterface[][][][][] superInterfaces5D = new SuperAbstract[][][][][] {};
-    	magic += invokeArrayOperations(superInterfaces5D);
-    	superInterfaces5D = self(new SuperAbstract[][][][][] {});
-    	magic += invokeArrayOperations(superInterfaces5D);
-    	superInterfaces5D = (SuperInterface[][][][][]) new SuperAbstract[][][][][] {};
-    	magic += invokeArrayOperations(superInterfaces5D);
-    	superInterfaces5D = new SuperClass[][][][][] {};
-    	magic += invokeArrayOperations(superInterfaces5D);
-    	superInterfaces5D = self(new SuperClass[][][][][] {});
-    	magic += invokeArrayOperations(superInterfaces5D);
-    	superInterfaces5D = (SuperInterface[][][][][]) new SuperClass[][][][][] {};
-    	magic += invokeArrayOperations(superInterfaces5D);
-    	superInterfaces5D = new SubClass[][][][][] {};
-    	magic += invokeArrayOperations(superInterfaces5D);
-    	superInterfaces5D = self(new SubClass[][][][][] {});
-    	magic += invokeArrayOperations(superInterfaces5D);
-    	superInterfaces5D = (SuperInterface[][][][][]) new SubClass[][][][][] {};
-    	magic += invokeArrayOperations(superInterfaces5D);
+    	SuperInterface[][][] superInterfaces3D = new SuperAbstract[][][] {};
+    	magic += invokeArrayOperations(superInterfaces3D);
+    	superInterfaces3D = self(new SuperAbstract[][][] {});
+    	magic += invokeArrayOperations(superInterfaces3D);
+    	superInterfaces3D = (SuperInterface[][][]) new SuperAbstract[][][] {};
+    	magic += invokeArrayOperations(superInterfaces3D);
+    	superInterfaces3D = new SuperClass[][][] {};
+    	magic += invokeArrayOperations(superInterfaces3D);
+    	superInterfaces3D = self(new SuperClass[][][] {});
+    	magic += invokeArrayOperations(superInterfaces3D);
+    	superInterfaces3D = (SuperInterface[][][]) new SuperClass[][][] {};
+    	magic += invokeArrayOperations(superInterfaces3D);
+    	superInterfaces3D = new SubClass[][][] {};
+    	magic += invokeArrayOperations(superInterfaces3D);
+    	superInterfaces3D = self(new SubClass[][][] {});
+    	magic += invokeArrayOperations(superInterfaces3D);
+    	superInterfaces3D = (SuperInterface[][][]) new SubClass[][][] {};
+    	magic += invokeArrayOperations(superInterfaces3D);
     	
-    	SuperAbstract[][][][][] superAbstract5D = new SuperClass[][][][][] {};
-    	magic += invokeArrayOperations(superAbstract5D);
-    	superAbstract5D = self(new SuperClass[][][][][] {});
-    	magic += invokeArrayOperations(superAbstract5D);
-    	superAbstract5D = (SuperAbstract[][][][][]) new SuperClass[][][][][] {};
-    	magic += invokeArrayOperations(superAbstract5D);
-    	superAbstract5D = new SubClass[][][][][] {};
-    	magic += invokeArrayOperations(superAbstract5D);
-    	superAbstract5D = self(new SubClass[][][][][] {});
-    	magic += invokeArrayOperations(superAbstract5D);
-    	superAbstract5D = (SuperAbstract[][][][][]) new SubClass[][][][][] {};
-    	magic += invokeArrayOperations(superAbstract5D);
+    	SuperAbstract[][][] superAbstract3D = new SuperClass[][][] {};
+    	magic += invokeArrayOperations(superAbstract3D);
+    	superAbstract3D = self(new SuperClass[][][] {});
+    	magic += invokeArrayOperations(superAbstract3D);
+    	superAbstract3D = (SuperAbstract[][][]) new SuperClass[][][] {};
+    	magic += invokeArrayOperations(superAbstract3D);
+    	superAbstract3D = new SubClass[][][] {};
+    	magic += invokeArrayOperations(superAbstract3D);
+    	superAbstract3D = self(new SubClass[][][] {});
+    	magic += invokeArrayOperations(superAbstract3D);
+    	superAbstract3D = (SuperAbstract[][][]) new SubClass[][][] {};
+    	magic += invokeArrayOperations(superAbstract3D);
     	
-    	SuperClass[][][][][] superClass5D = new SubClass[][][][][] {};
-    	magic += invokeArrayOperations(superClass5D);
-    	superClass5D = self(new SubClass[][][][][] {});
-    	magic += invokeArrayOperations(superClass5D);
-    	superClass5D = (SuperClass[][][][][]) new SubClass[][][][][] {};
-    	magic += invokeArrayOperations(superClass5D);
+    	SuperClass[][][] superClass3D = new SubClass[][][] {};
+    	magic += invokeArrayOperations(superClass3D);
+    	superClass3D = self(new SubClass[][][] {});
+    	magic += invokeArrayOperations(superClass3D);
+    	superClass3D = (SuperClass[][][]) new SubClass[][][] {};
+    	magic += invokeArrayOperations(superClass3D);
     	
     	return magic;
     }
@@ -672,68 +672,68 @@ public class ArrayTypeContract {
     public int testMultiDimensionalArraysCastToLowerDimensionalObjectArray2() {
     	int magic = 0;
     	
-    	Object[][] objectArray = new SuperInterface[][][][][] {};
+    	Object[][] objectArray = new SuperInterface[][][] {};
     	magic += invokeArrayOperations(objectArray);
-    	objectArray = self(new SuperestInterface[][][][][] {});
+    	objectArray = self(new SuperestInterface[][][] {});
     	magic += invokeArrayOperations(objectArray);
-    	objectArray = (Object[][]) new SuperInterface[][][][][] {};
+    	objectArray = (Object[][]) new SuperInterface[][][] {};
     	magic += invokeArrayOperations(objectArray);
-    	objectArray = new SuperAbstract[][][][][] {};
+    	objectArray = new SuperAbstract[][][] {};
     	magic += invokeArrayOperations(objectArray);
-    	objectArray = self(new SuperAbstract[][][][][] {});
+    	objectArray = self(new SuperAbstract[][][] {});
     	magic += invokeArrayOperations(objectArray);
-    	objectArray = (Object[][]) new SuperAbstract[][][][][] {};
+    	objectArray = (Object[][]) new SuperAbstract[][][] {};
     	magic += invokeArrayOperations(objectArray);
-    	objectArray = new SuperClass[][][][][] {};
+    	objectArray = new SuperClass[][][] {};
     	magic += invokeArrayOperations(objectArray);
-    	objectArray = self(new SuperClass[][][][][] {});
+    	objectArray = self(new SuperClass[][][] {});
     	magic += invokeArrayOperations(objectArray);
-    	objectArray = (Object[][]) new SuperClass[][][][][] {};
+    	objectArray = (Object[][]) new SuperClass[][][] {};
     	magic += invokeArrayOperations(objectArray);
-    	objectArray = new SubClass[][][][][] {};
+    	objectArray = new SubClass[][][] {};
     	magic += invokeArrayOperations(objectArray);
-    	objectArray = self(new SubClass[][][][][] {});
+    	objectArray = self(new SubClass[][][] {});
     	magic += invokeArrayOperations(objectArray);
-    	objectArray = (Object[][]) new SubClass[][][][][] {};
+    	objectArray = (Object[][]) new SubClass[][][] {};
     	magic += invokeArrayOperations(objectArray);
     	
-    	Object[][][][] objectArray2 = new SuperAbstract[][][][][] {};
+    	Object[][] objectArray2 = new SuperAbstract[][][] {};
     	magic += invokeArrayOperations(objectArray2);
-    	objectArray2 = self(new SuperAbstract[][][][][] {});
+    	objectArray2 = self(new SuperAbstract[][][] {});
     	magic += invokeArrayOperations(objectArray2);
-    	objectArray2 = (Object[][][][]) new SuperAbstract[][][][][] {};
+    	objectArray2 = (Object[][]) new SuperAbstract[][][] {};
     	magic += invokeArrayOperations(objectArray2);
-    	objectArray2 = new SuperClass[][][][][] {};
+    	objectArray2 = new SuperClass[][][] {};
     	magic += invokeArrayOperations(objectArray2);
-    	objectArray2 = self(new SuperClass[][][][][] {});
+    	objectArray2 = self(new SuperClass[][][] {});
     	magic += invokeArrayOperations(objectArray2);
-    	objectArray2 = (Object[][][][]) new SuperClass[][][][][] {};
+    	objectArray2 = (Object[][]) new SuperClass[][][] {};
     	magic += invokeArrayOperations(objectArray2);
-    	objectArray2 = new SubClass[][][][][] {};
+    	objectArray2 = new SubClass[][][] {};
     	magic += invokeArrayOperations(objectArray2);
-    	objectArray2 = self(new SubClass[][][][][] {});
+    	objectArray2 = self(new SubClass[][][] {});
     	magic += invokeArrayOperations(objectArray2);
-    	objectArray2 = (Object[][][][]) new SubClass[][][][][] {};
+    	objectArray2 = (Object[][]) new SubClass[][][] {};
     	magic += invokeArrayOperations(objectArray2);
     	
-    	Object[] objectArray3 = new SuperClass[][][][][] {};
+    	Object[] objectArray3 = new SuperClass[][][] {};
     	magic += invokeArrayOperations(objectArray3);
-    	objectArray3 = self(new SuperClass[][][][][] {});
+    	objectArray3 = self(new SuperClass[][][] {});
     	magic += invokeArrayOperations(objectArray3);
-    	objectArray3 = (Object[]) new SuperClass[][][][][] {};
+    	objectArray3 = (Object[]) new SuperClass[][][] {};
     	magic += invokeArrayOperations(objectArray3);
-    	objectArray3 = new SubClass[][][][][] {};
+    	objectArray3 = new SubClass[][][] {};
     	magic += invokeArrayOperations(objectArray3);
-    	objectArray3 = self(new SubClass[][][][][] {});
+    	objectArray3 = self(new SubClass[][][] {});
     	magic += invokeArrayOperations(objectArray3);
-    	objectArray3 = (Object[]) new SubClass[][][][][] {};
+    	objectArray3 = (Object[]) new SubClass[][][] {};
     	magic += invokeArrayOperations(objectArray3);
     	
-    	Object[][][] objectArray4 = new SubClass[][][][][] {};
+    	Object[][][] objectArray4 = new SubClass[][][] {};
     	magic += invokeArrayOperations(objectArray4);
-    	objectArray4 = self(new SubClass[][][][][] {});
+    	objectArray4 = self(new SubClass[][][] {});
     	magic += invokeArrayOperations(objectArray4);
-    	objectArray4 = (Object[][][]) new SubClass[][][][][] {};
+    	objectArray4 = (Object[][][]) new SubClass[][][] {};
     	magic += invokeArrayOperations(objectArray4);
     	
     	return magic;
@@ -744,24 +744,14 @@ public class ArrayTypeContract {
     	
     	Object object = new Object[] {};
     	invokeObjectOperations(object);
-    	object = new Object[][][][] {};
+    	object = new Object[][][] {};
     	invokeObjectOperations(object);
     	Object[] objectArray1D = new Object[][] {};
     	magic += invokeArrayOperations(objectArray1D);
     	objectArray1D = new Object[][][] {};
     	magic += invokeArrayOperations(objectArray1D);
-    	objectArray1D = new Object[][][][] {};
-    	magic += invokeArrayOperations(objectArray1D);
     	Object[][] objectArray2D = new Object[][][] {};
     	magic += invokeArrayOperations(objectArray2D);
-    	objectArray2D = new Object[][][][][] {};
-    	magic += invokeArrayOperations(objectArray2D);
-    	Object[][][] objectArray3D = new Object[][][][] {};
-    	magic += invokeArrayOperations(objectArray3D);
-    	objectArray3D = new Object[][][][][] {};
-    	magic += invokeArrayOperations(objectArray3D);
-    	Object[][][][] objectArray4D = new Object[][][][][] {};
-    	magic += invokeArrayOperations(objectArray4D);
     	
     	return magic;
     }
@@ -769,15 +759,15 @@ public class ArrayTypeContract {
     public void testAnyMultiDimensionalArrayCastsToObject() {
     	Object object = new Object[4][2][1];
     	invokeObjectOperations(object);
-    	object = new SuperestInterface[][][][][] {};
+    	object = new SuperestInterface[][][] {};
     	invokeObjectOperations(object);
     	object = new SuperInterface[][] {};
     	invokeObjectOperations(object);
     	object = new SuperAbstract[][][] {};
     	invokeObjectOperations(object);
-    	object = new SuperClass[][][][] {};
+    	object = new SuperClass[][][] {};
     	invokeObjectOperations(object);
-    	object = new SubClass[][][][][] {};
+    	object = new SubClass[][][] {};
     	invokeObjectOperations(object);
     }
     
@@ -815,8 +805,8 @@ public class ArrayTypeContract {
         return new Object[][]{};
     }
 
-    private Object[][][][][] getObjectArray5D() {
-        return new Object[][][][][]{};
+    private Object[][][] getObjectArray3D() {
+        return new Object[][][]{};
     }
     
     private SuperestInterface[] self(SuperestInterface[] superestInterface) {
@@ -855,19 +845,19 @@ public class ArrayTypeContract {
     	return subClass;
     }
     
-    private SuperestInterface[][][][][] self(SuperestInterface[][][][][] superestInterface) {
+    private SuperestInterface[][][] self(SuperestInterface[][][] superestInterface) {
     	return superestInterface;
     }
     
-    private SuperAbstract[][][][][] self(SuperAbstract[][][][][] superAbstract) {
+    private SuperAbstract[][][] self(SuperAbstract[][][] superAbstract) {
     	return superAbstract;
     }
     
-    private SuperClass[][][][][] self(SuperClass[][][][][] superClass) {
+    private SuperClass[][][] self(SuperClass[][][] superClass) {
     	return superClass;
     }
     
-    private SubClass[][][][][] self(SubClass[][][][][] subClass) {
+    private SubClass[][][] self(SubClass[][][] subClass) {
     	return subClass;
     }
     

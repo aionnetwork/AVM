@@ -54,8 +54,8 @@ public class ArrayTypeTest {
     
     @Test
     public void test4DprimitiveArraysCastToObjectAndObjectArray() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("test4DprimitiveArraysCastToObjectAndObjectArray"));
-        assertEquals(contract.test4DprimitiveArraysCastToObjectAndObjectArray(), method.invoke(clazz.getConstructor().newInstance()));
+        Method method = clazz.getMethod(NamespaceMapper.mapMethodName("test3DprimitiveArraysCastToObjectAndObjectArray"));
+        assertEquals(contract.test3DprimitiveArraysCastToObjectAndObjectArray(), method.invoke(clazz.getConstructor().newInstance()));
     }
     
     @Test

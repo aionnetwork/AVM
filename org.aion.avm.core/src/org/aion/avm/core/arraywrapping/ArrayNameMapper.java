@@ -1,6 +1,7 @@
 package org.aion.avm.core.arraywrapping;
 
 import org.aion.avm.ArrayClassNameMapper;
+import org.aion.avm.core.rejection.RejectedClassException;
 import org.aion.avm.core.util.DescriptorParser;
 import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.internal.RuntimeAssertionError;
@@ -38,6 +39,7 @@ public class ArrayNameMapper {
         if (desc.charAt(0) != '['){
             ret = desc;
         } else {
+            validateArrayDimension(desc);
             ret = ArrayClassNameMapper.getClassWrapper(desc);
             if (ret == null) {
                 ret = ArrayClassNameMapper.addClassWrapperDescriptor(desc, newClassWrapper(desc));
@@ -57,6 +59,7 @@ public class ArrayNameMapper {
         if (desc.charAt(0) != '[') {
             ret = desc;
         } else {
+            validateArrayDimension(desc);
             ret = ArrayClassNameMapper.getInterfaceWrapper(desc);
             if (ret == null) {
                 ret = ArrayClassNameMapper.addInterfaceWrapperDescriptor(desc, newInterfaceWrapper(desc));
@@ -516,4 +519,10 @@ public class ArrayNameMapper {
         return PRIMITIVES.contains(desc);
     }
 
+    private static void validateArrayDimension(String desc){
+        int dim = getPrefixSize(desc, '[');
+        if(dim > 3) {
+            RejectedClassException.arrayDimensionTooBig(desc);
+        }
+    }
 }

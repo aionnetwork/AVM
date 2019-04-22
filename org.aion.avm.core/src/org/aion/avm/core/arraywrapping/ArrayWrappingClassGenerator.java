@@ -178,7 +178,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         classWriter.visit(V10, ACC_PUBLIC | ACC_SUPER, wrapperClassSlashName, null, superClassSlashName, superInterfaceSlashNames);
         // Static factory for one dimensional array
-        // We always generate one D factory for corner case like int[][][][] a = new int[10][][][];
+        // We always generate one D factory for corner case like int[][][] a = new int[10][][];
         genSingleDimensionFactory(classWriter, wrapperClassSlashName, 1);
 
         if (dimensions > 1) {

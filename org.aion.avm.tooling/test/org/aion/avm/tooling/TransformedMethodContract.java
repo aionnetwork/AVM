@@ -149,19 +149,19 @@ public class TransformedMethodContract {
     public static int triggerMultiDimPrimitiveToObjectArray() {
         byte[][][] b = new byte[][][]{};
         tryAsMultiDimObjectArray(b);
-        boolean[][][][] b2 = new boolean[][][][]{};
+        boolean[][][] b2 = new boolean[][][]{};
         tryAsMultiDimObjectArray(b2);
         char[][][] c = new char[][][]{};
         tryAsMultiDimObjectArray(c);
-        short[][][][][] s = new short[][][][][]{};
+        short[][][] s = new short[][][]{};
         tryAsMultiDimObjectArray(s);
         int[][][] i = new int[][][]{};
         tryAsMultiDimObjectArray(i);
         float[][][] f = new float[][][]{};
         tryAsMultiDimObjectArray(f);
-        long[][][][][] l = new long[][][][][]{};
+        long[][][] l = new long[][][]{};
         tryAsMultiDimObjectArray(l);
-        double[][][][] d = new double[][][][]{};
+        double[][][] d = new double[][][]{};
         tryAsMultiDimObjectArray(d);
         return 0;
     }
