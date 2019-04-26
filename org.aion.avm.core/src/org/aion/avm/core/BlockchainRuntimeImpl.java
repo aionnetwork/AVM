@@ -301,6 +301,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         // (the current one and any callers, or any later transactions, assuming this commits) will be able
         // to invoke it (the code will be missing).
         this.kernel.deleteAccount(contractAddr);
+        task.addSelfDestructAddress(contractAddr);
     }
 
     @Override

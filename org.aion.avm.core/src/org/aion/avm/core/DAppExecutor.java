@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.avm.RuntimeMethodFeeSchedule;
 import org.aion.avm.StorageFees;
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.persistence.ReentrantGraph;
@@ -80,7 +81,16 @@ public class DAppExecutor {
 
             result.setResultCode(AvmTransactionResult.Code.SUCCESS);
             result.setReturnData(ret);
-            result.setEnergyUsed(tx.energyLimit - threadInstrumentation.energyLeft());
+            long refund = 0;
+            long energyUsed = tx.energyLimit - threadInstrumentation.energyLeft();
+            if(task.getTransactionStackDepth() == 0 && task.getSelfDestructAddressCount() > 0) {
+                // refund is calculated for the transaction if it included a selfdestruct operation
+                // it is capped at half the energy used for the whole transaction
+                long selfDestructRefund = task.getSelfDestructAddressCount() * RuntimeMethodFeeSchedule.BlockchainRuntime_avm_selfDestruct_refund;
+                refund = Math.min(energyUsed / 2, selfDestructRefund);
+            }
+
+            result.setEnergyUsed(energyUsed - refund);
         } catch (OutOfEnergyException e) {
             if (verboseErrors) {
                 System.err.println("DApp execution failed due to Out-of-Energy EXCEPTION: \"" + e.getMessage() + "\"");

@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.avm.RuntimeMethodFeeSchedule;
 import org.aion.avm.StorageFees;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef;
@@ -260,9 +261,18 @@ public class DAppCreator {
             threadInstrumentation.chargeEnergy(StorageFees.WRITE_PRICE_PER_BYTE * rawGraphData.length);
             kernel.putObjectGraph(dappAddress, rawGraphData);
 
+            long refund = 0;
+            long energyUsed = tx.energyLimit - threadInstrumentation.energyLeft();
+            if(task.getTransactionStackDepth() == 0 && task.getSelfDestructAddressCount() > 0) {
+                // refund is calculated for the transaction if it included a selfdestruct operation
+                // it is capped at half the energy used for the whole transaction
+                long selfDestructRefund = task.getSelfDestructAddressCount() * RuntimeMethodFeeSchedule.BlockchainRuntime_avm_selfDestruct_refund;
+                refund = Math.min(energyUsed / 2, selfDestructRefund);
+            }
+
             // Return data of a CREATE transaction is the new DApp address.
             result.setResultCode(AvmTransactionResult.Code.SUCCESS);
-            result.setEnergyUsed(tx.energyLimit - threadInstrumentation.energyLeft());
+            result.setEnergyUsed(energyUsed - refund);
             result.setReturnData(dappAddress.toBytes());
         } catch (OutOfEnergyException e) {
             if (verboseErrors) {

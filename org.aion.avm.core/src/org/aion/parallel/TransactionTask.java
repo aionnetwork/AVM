@@ -1,6 +1,9 @@
 package org.aion.parallel;
 
 import avm.Address;
+
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Stack;
 
 import org.aion.avm.core.AvmTransaction;
@@ -28,6 +31,7 @@ public class TransactionTask implements Comparable<TransactionTask>{
     private Stack<SideEffects> sideEffectsStack;
     private Address origin;
     private int depth;
+    private Set<org.aion.types.Address> selfDestructedAddresses;
 
     public TransactionTask(KernelInterface parentKernel, AvmTransaction tx, int index, org.aion.types.Address origin){
         this.parentKernel = parentKernel;
@@ -41,6 +45,7 @@ public class TransactionTask implements Comparable<TransactionTask>{
         this.depth = 0;
         this.sideEffectsStack = new Stack<>();
         this.sideEffectsStack.push(new SideEffects());
+        this.selfDestructedAddresses = new HashSet<>();
     }
 
     public void startNewTransaction() {
@@ -166,6 +171,10 @@ public class TransactionTask implements Comparable<TransactionTask>{
     public void decrementTransactionStackDepth() {
         depth--;
     }
+
+    public void addSelfDestructAddress(org.aion.types.Address address){ selfDestructedAddresses.add(address); }
+
+    public int getSelfDestructAddressCount(){ return selfDestructedAddresses.size(); }
 
     void outputFlush(){
         if (this.outBuffer.length() > 0) {
