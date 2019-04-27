@@ -23,6 +23,7 @@ public final class LambdaMetafactory extends org.aion.avm.shadow.java.lang.Objec
         InvokeDynamicChecks.checkOwner(owner);
         // We don't expect any uses of this to be able to exist without the "avm_" prefix.
         RuntimeAssertionError.assertTrue(invokedName.startsWith("avm_"));
+        InvokeDynamicChecks.checkBootstrapMethodType(invokedType);
         InvokeDynamicChecks.checkMethodHandle(implMethod);
         
         return java.lang.invoke.LambdaMetafactory.metafactory(owner,

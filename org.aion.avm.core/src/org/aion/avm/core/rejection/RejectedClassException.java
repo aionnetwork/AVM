@@ -49,6 +49,14 @@ public class RejectedClassException extends AvmException {
         throw new RejectedClassException("Array dimension should not be more than 3." + desc);
     }
 
+    public static RejectedClassException invokeDynamicBootstrapMethodArguments(String methodDescriptor) {
+        throw new RejectedClassException("Unsupported invokedymanic: bootstrap method cannot take additional arguments: \"" + methodDescriptor + "\"");
+    }
+
+    public static RejectedClassException invokeDynamicUnsupportedMethodOwner(String origMethodName, String methodOwner) {
+        throw new RejectedClassException("Unsupported invokedymanic: boostrap:" + origMethodName + " owner:" + methodOwner);
+    }
+
     public RejectedClassException(String message) {
         super(message);
     }

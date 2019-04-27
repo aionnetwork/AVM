@@ -2,6 +2,7 @@ package org.aion.avm.core.shadowing;
 
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
+import org.aion.avm.core.rejection.RejectedClassException;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
@@ -17,8 +18,6 @@ import java.util.ArrayList;
  * <p>
  * NOTE: this visitor requires the {@link IObjectReplacer} to deal with Object-IObject
  * replacement in method handle.
- *
- * @author Roman Katerinenko
  */
 public class InvokedynamicShadower extends ClassToolchain.ToolChainClassVisitor {
     private final IObjectReplacer replacer;
@@ -53,9 +52,13 @@ public class InvokedynamicShadower extends ClassToolchain.ToolChainClassVisitor 
             if (isStringConcatIndy(methodOwner, origMethodName)) {
                 handleStringConcatIndy(origMethodName, methodDescriptor, bootstrapMethodHandle, bootstrapMethodArguments);
             } else if (isLambdaIndy(methodOwner)) {
+                // AKI-130: The bootstrap methodDescriptor to this metafactory must NOT require additional arguments (since that would require dynamic class generation for each callsite - potential attack vector).
+                if (!methodDescriptor.startsWith("()")) {
+                    throw RejectedClassException.invokeDynamicBootstrapMethodArguments(methodDescriptor);
+                }
                 handleLambdaIndy(origMethodName, methodDescriptor, bootstrapMethodHandle, bootstrapMethodArguments);
             } else {
-                throw new IllegalStateException("Unsupported invokedymanic: boostrap:" + origMethodName + " owner:" + methodOwner);
+                throw RejectedClassException.invokeDynamicUnsupportedMethodOwner(origMethodName, methodOwner);
             }
         }
 

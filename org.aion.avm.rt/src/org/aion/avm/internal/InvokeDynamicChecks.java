@@ -38,4 +38,15 @@ public class InvokeDynamicChecks {
                 || type.isPrimitive()
         );
     }
+
+    /**
+     * AKI-130: the bootstrap method cannot take additional arguments, since that could be an attack vector as it would require we generated
+     * additional classes, dynamically.
+     * 
+     * @param invokedType The type description of the bootstrap method.
+     */
+    public static void checkBootstrapMethodType(MethodType invokedType) {
+        // We also should have stripped out any lambda which was taking parameters to the invokedType.
+        RuntimeAssertionError.assertTrue(0 == invokedType.parameterCount());
+    }
 }
