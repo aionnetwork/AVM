@@ -43,8 +43,9 @@ public final class ABIStreamingEncoder {
     }
 
     /**
-     * Returns the byte array representing everything that has been encoded so far.
+     * Creates and returns a byte array representing everything that has been encoded so far.
      * Resets the buffer and its underlying array to an empty state.
+     * @return The byte array representing everything encoded so far.
      */
     public byte[] toBytes() {
         int length = buffer.getPosition();

@@ -4,6 +4,9 @@ import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
 
 
+/**
+ * A buffer, much like an NIO ByteBuffer, which allows the easy encoding/decoding of primitive values.
+ */
 public class AionBuffer {
     private static final int BYTE_MASK = 0xff;
     private static final int BYTE_SIZE = Byte.SIZE;
@@ -17,6 +20,11 @@ public class AionBuffer {
         this.limit = array.length;
     }
 
+    /**
+     * Creates a new AionBuffer instance with the given capacity.
+     * @param capacity The size of the underlying buffer to create, in bytes.
+     * @return The new AionBuffer instance.
+     */
     public static AionBuffer allocate(int capacity) {
         if (capacity < 1) {
             throw new IllegalArgumentException("Illegal capacity: " + capacity);
@@ -24,6 +32,11 @@ public class AionBuffer {
         return new AionBuffer(new byte[capacity]);
     }
 
+    /**
+     * Creates a new AionBuffer instance wrapping the given byte array.
+     * @param array The array to wrap.
+     * @return The new AionBuffer instance.
+     */
     public static AionBuffer wrap(byte[] array) {
         if (array == null) {
             throw new NullPointerException();
@@ -38,6 +51,12 @@ public class AionBuffer {
     // relative get methods
     // ====================
 
+    /**
+     * Populates the given dst buffer with the next bytes in the buffer and advances the position.
+     * Note that dst MUST not be larger than the rest of the bytes in the receiver.
+     * @param dst The byte array to populate with the contents of the receiver.
+     * @return The receiver (for call chaining).
+     */
     public AionBuffer get(byte[] dst) {
         if (dst == null) {
             throw new NullPointerException();
@@ -52,6 +71,7 @@ public class AionBuffer {
     }
 
     /**
+     * Returns the next boolean in the buffer and advances the position.
      * Note that we store booleans as a 1-byte quantity (0x1 or 0x0).
      * @return The underlying byte, interpreted as a boolean (0x1 is true).
      */
@@ -60,6 +80,10 @@ public class AionBuffer {
         return (0x1 == value);
     }
 
+    /**
+     * Returns the next byte in the buffer and advances the position.
+     * @return The byte.
+     */
     public byte getByte() {
         return internalGetByte();
     }
@@ -74,18 +98,34 @@ public class AionBuffer {
         return b;
     }
 
+    /**
+     * Returns the next char in the buffer and advances the position.
+     * @return The char.
+     */
     public char getChar() {
         return (char) getShort();
     }
 
+    /**
+     * Returns the next double in the buffer and advances the position.
+     * @return The double.
+     */
     public double getDouble() {
         return Double.longBitsToDouble(getLong());
     }
 
+    /**
+     * Returns the next float in the buffer and advances the position.
+     * @return The float.
+     */
     public float getFloat() {
         return Float.intBitsToFloat(getInt());
     }
 
+    /**
+     * Returns the next int in the buffer and advances the position.
+     * @return The int.
+     */
     public int getInt() {
         int remaining = this.limit - this.position;
         if (remaining < Integer.BYTES) {
@@ -99,6 +139,10 @@ public class AionBuffer {
         return i;
     }
 
+    /**
+     * Returns the next long in the buffer and advances the position.
+     * @return The long.
+     */
     public long getLong() {
         int remaining = this.limit - this.position;
         if (remaining < Long.BYTES) {
@@ -116,6 +160,10 @@ public class AionBuffer {
         return l;
     }
 
+    /**
+     * Returns the next short in the buffer and advances the position.
+     * @return The short.
+     */
     public short getShort() {
         int remaining = this.limit - this.position;
         if (remaining < Short.BYTES) {
@@ -131,6 +179,12 @@ public class AionBuffer {
     // relative put methods
     // ====================
 
+    /**
+     * Copies the bytes from src into the buffer and advances the position.
+     * Note that src MUST not be larger than the rest of the bytes in the receiver.
+     * @param src The bytes to copy.
+     * @return The receiver (for call chaining).
+     */
     public AionBuffer put(byte[] src) {
         if (src == null) {
             throw new NullPointerException();
@@ -145,14 +199,21 @@ public class AionBuffer {
     }
 
     /**
+     * Stores a boolean into the buffer and advances the position.
      * Note that we store booleans as a 1-byte quantity (0x1 or 0x0).
      * @param flag The boolean to store as a byte (0x1 for true, 0x0 for false).
+     * @return The receiver (for call chaining).
      */
     public AionBuffer putBoolean(boolean flag) {
         byte b = (byte)(flag ? 0x1 : 0x0);
         return internalPutByte(b);
     }
 
+    /**
+     * Stores a byte into the buffer and advances the position.
+     * @param b The byte to write.
+     * @return The receiver (for call chaining).
+     */
     public AionBuffer putByte(byte b) {
         return internalPutByte(b);
     }
@@ -167,18 +228,38 @@ public class AionBuffer {
         return this;
     }
 
+    /**
+     * Stores a char into the buffer and advances the position.
+     * @param value The char to write.
+     * @return The receiver (for call chaining).
+     */
     public AionBuffer putChar(char value) {
         return putShort((short) value);
     }
 
+    /**
+     * Stores a double into the buffer and advances the position.
+     * @param value The double to write.
+     * @return The receiver (for call chaining).
+     */
     public AionBuffer putDouble(double value) {
         return putLong(Double.doubleToRawLongBits(value));
     }
 
+    /**
+     * Stores a float into the buffer and advances the position.
+     * @param value The float to write.
+     * @return The receiver (for call chaining).
+     */
     public AionBuffer putFloat(float value) {
         return putInt(Float.floatToRawIntBits(value));
     }
 
+    /**
+     * Stores a int into the buffer and advances the position.
+     * @param value The int to write.
+     * @return The receiver (for call chaining).
+     */
     public AionBuffer putInt(int value) {
         int remaining = this.limit - this.position;
         if (remaining < Integer.BYTES) {
@@ -192,6 +273,11 @@ public class AionBuffer {
         return this;
     }
 
+    /**
+     * Stores a long into the buffer and advances the position.
+     * @param value The long to write.
+     * @return The receiver (for call chaining).
+     */
     public AionBuffer putLong(long value) {
         int remaining = this.limit - this.position;
         if (remaining < Long.BYTES) {
@@ -209,6 +295,11 @@ public class AionBuffer {
         return this;
     }
 
+    /**
+     * Stores a short into the buffer and advances the position.
+     * @param value The short to write.
+     * @return The receiver (for call chaining).
+     */
     public AionBuffer putShort(short value) {
         int remaining = this.limit - this.position;
         if (remaining < Short.BYTES) {
@@ -224,18 +315,31 @@ public class AionBuffer {
     // query & misc. methods
     // =====================
 
+    /**
+     * Allows access to the byte array under the buffer.  Note that this will be a shared instance so changes to one will be observable in the other.
+     * @return The byte array underneath the receiver.
+     */
     public byte[] getArray() {
         return this.buffer;
     }
 
+    /**
+     * @return The total capacity of the receiver.
+     */
     public int getCapacity() {
         return this.buffer.length;
     }
 
+    /**
+     * @return The offset into the underlying byte array which the receiver will read/write its next byte.
+     */
     public int getPosition() {
         return this.position;
     }
 
+    /**
+     * @return The end of the buffer which will currently be used by a read/write operation.
+     */
     public int getLimit() {
         return this.limit;
     }
