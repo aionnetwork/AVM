@@ -18,6 +18,7 @@ import org.aion.avm.internal.IInstrumentationFactory;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.JvmError;
 import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.parallel.AddressResourceMonitor;
 import org.aion.parallel.TransactionTask;
 import org.aion.types.Address;
@@ -34,6 +35,7 @@ import static org.aion.avm.internal.RuntimeAssertionError.unexpected;
 public class AvmImpl implements AvmInternal {
 
     private static final Logger logger = LoggerFactory.getLogger(AvmImpl.class);
+    private InternalLogger internalLogger;
 
     private final IInstrumentationFactory instrumentationFactory;
     private final IExternalCapabilities capabilities;
@@ -65,6 +67,7 @@ public class AvmImpl implements AvmInternal {
         this.preserveDebuggability = configuration.preserveDebuggability;
         this.enableVerboseContractErrors = configuration.enableVerboseContractErrors;
         this.enableVerboseConcurrentExecutor = configuration.enableVerboseConcurrentExecutor;
+        this.internalLogger = new InternalLogger(System.err);
     }
 
     private class AvmExecutorThread extends Thread{
@@ -414,6 +417,8 @@ public class AvmImpl implements AvmInternal {
 
         if (result.getResultCode().isSuccess()) {
             thisTransactionKernel.commit();
+        } else if (result.getResultCode().equals(Code.FAILED_UNEXPECTED)) {
+            internalLogger.logFatal(result.getUncaughtException());
         }
 
         logger.debug("Result: {}", result);

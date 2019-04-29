@@ -86,7 +86,13 @@ public class AvmTransactionResult implements TransactionResult {
         /**
          * Transaction failed due to an early abort.
          */
-        FAILED_ABORT(213, CodeType.FAILED);
+        FAILED_ABORT(213, CodeType.FAILED),
+
+        /**
+         * Transaction failed for some unexpected, but serious, reason. This likely means that there's
+         * a bug in the AVM and we're pretending the failure is the sender's fault for now.
+         */
+        FAILED_UNEXPECTED(214, CodeType.FAILED);
 
         private CodeType type;
         private int value;

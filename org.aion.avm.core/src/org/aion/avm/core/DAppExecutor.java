@@ -187,20 +187,10 @@ public class DAppExecutor {
                 e.printStackTrace(System.err);
             }
             throw e;
-        } catch (RuntimeAssertionError e) {
-            // If one of these shows up here, we are wanting to pass it back up to the top, where we can shut down.
-            if (verboseErrors) {
-                System.err.println("FATAL internal error: \"" + e.getMessage() + "\"");
-                e.printStackTrace(System.err);
-            }
-            throw new AssertionError(e);
         } catch (Throwable e) {
-            // Anything else we couldn't handle more specifically needs to be passed further up to the top.
-            if (verboseErrors) {
-                System.err.println("FATAL unexpected Throwable: \"" + e.getMessage() + "\"");
-                e.printStackTrace(System.err);
-            }
-            throw new AssertionError(e);
+            // We don't know what went wrong in this case, but it is beyond our ability to handle it here.
+            // We ship it off to the ExceptionHandler, which kills the transaction as a failure for unknown reasons.
+            DAppExceptionHandler.handle(e, result, tx.energyLimit, verboseErrors);
         } finally {
             // Once we are done running this, no matter how it ended, we want to detach our thread from the DApp.
             InstrumentationHelpers.popExistingStackFrame(dapp.runtimeSetup);
