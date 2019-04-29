@@ -5,9 +5,9 @@ import java.lang.invoke.MethodHandleInfo;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 
+import org.aion.avm.internal.CodecIdioms;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.internal.RevertException;
 import org.aion.avm.internal.RuntimeAssertionError;
 
@@ -28,29 +28,55 @@ public final class InternalRunnable extends org.aion.avm.shadow.java.lang.Object
     }
 
 
+    // AKI-131: These are only used for serialization support so they are REAL objects, not shadow ones.
+    private Class<?> receiver;
+    private String methodName;
+
     private Method target;
 
     private InternalRunnable(Class<?> receiver, String methodName) {
         // We call the hidden super-class so this doesn't update our hash code.
         super(null, null, 0);
+        this.receiver = receiver;
+        this.methodName = methodName;
         this.target = createAccessibleMethod(receiver, methodName);
     }
 
     // Deserializer support.
-    // TODO(AKI-131): Implement serialization support for lambdas.
     public InternalRunnable(java.lang.Void ignore, int readIndex) {
         super(ignore, readIndex);
-        this.target = null;
     }
 
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
-        // TODO(AKI-131): Implement serialization support for lambdas.
-        throw new OutOfEnergyException();
+        super.deserializeSelf(InternalRunnable.class, deserializer);
+        
+        // We write the class as a direct class object reference but the method name, inline.
+        // Note that we can only store the class if it is a shadow class, so unwrap it.
+        Object original = deserializer.readObject();
+        String externalMethodName = CodecIdioms.deserializeString(deserializer);
+        // (remember that the pre-pass always returns null).
+        if (null != original) {
+            Class<?> clazz = ((org.aion.avm.shadow.java.lang.Class<?>)original).getRealClass();
+            // Note that the method name needs a prefix added.
+            String methodName = METHOD_PREFIX + externalMethodName;
+            
+            this.receiver = clazz;
+            this.methodName = methodName;
+            this.target = createAccessibleMethod(clazz, methodName);
+        }
     }
 
     public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
-        // TODO(AKI-131): Implement serialization support for lambdas.
-        throw new OutOfEnergyException();
+        super.serializeSelf(InternalRunnable.class, serializer);
+        
+        // We save the receiver class as an object reference and the method name, inline.
+        // Note that we can only store the class if it is a shadow class, so unwrap it.
+        org.aion.avm.shadow.java.lang.Class<?> clazz = new org.aion.avm.shadow.java.lang.Class<>(this.receiver);
+        // Note that we need to strip the prefix from the method.
+        String methodName = this.methodName.substring(METHOD_PREFIX.length());
+        
+        serializer.writeObject(clazz);
+        CodecIdioms.serializeString(serializer, methodName);
     }
 
     @Override

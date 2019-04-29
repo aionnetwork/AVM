@@ -99,10 +99,10 @@ public class FunctionShadowTest {
         org.aion.types.Address dappAddr = deployTest(testClass);
         
         // Call the setup routine (2)
-        Transaction tx = Transaction.call(FROM, dappAddr, this.kernel.getNonce(FROM), BigInteger.ZERO, new byte[] {2}, ENERGY_LIMIT, ERNGY_PRICE);
-        AvmTransactionResult result = (AvmTransactionResult) this.avm.run(this.kernel, new Transaction[] {tx})[0].get();
-        // TODO(AKI-131): This exception will be caused by the attempt to serialize, which will pass once the serialized form is introduced.
-        Assert.assertEquals(AvmTransactionResult.Code.FAILED_OUT_OF_ENERGY, result.getResultCode());
+        oneCall(dappAddr, 2);
+        
+        // Call the check routine (3)
+        oneCall(dappAddr, 3);
     }
 
     @Test
@@ -112,10 +112,10 @@ public class FunctionShadowTest {
         org.aion.types.Address dappAddr = deployTest(testClass);
         
         // Call the setup routine (4)
-        Transaction tx = Transaction.call(FROM, dappAddr, this.kernel.getNonce(FROM), BigInteger.ZERO, new byte[] {4}, ENERGY_LIMIT, ERNGY_PRICE);
-        AvmTransactionResult result = (AvmTransactionResult) this.avm.run(this.kernel, new Transaction[] {tx})[0].get();
-        // TODO(AKI-131): This exception will be caused by the attempt to serialize, which will pass once the serialized form is introduced.
-        Assert.assertEquals(AvmTransactionResult.Code.FAILED_OUT_OF_ENERGY, result.getResultCode());
+        oneCall(dappAddr, 4);
+        
+        // Call the check routine (5)
+        oneCall(dappAddr, 5);
     }
 
     @Test

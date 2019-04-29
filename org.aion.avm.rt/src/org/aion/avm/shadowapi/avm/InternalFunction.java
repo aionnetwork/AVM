@@ -6,9 +6,9 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 
+import org.aion.avm.internal.CodecIdioms;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.internal.RevertException;
 import org.aion.avm.internal.RuntimeAssertionError;
 
@@ -31,29 +31,62 @@ public final class InternalFunction extends org.aion.avm.shadow.java.lang.Object
     }
 
 
+    // AKI-131: These are only used for serialization support so they are REAL objects, not shadow ones.
+    private Class<?> receiver;
+    private String methodName;
+    private Class<?> parameterType;
+
     private Method target;
 
     private InternalFunction(Class<?> receiver, String methodName, Class<?> parameterType) {
         // We call the hidden super-class so this doesn't update our hash code.
         super(null, null, 0);
+        this.receiver = receiver;
+        this.methodName = methodName;
+        this.parameterType = parameterType;
         this.target = createAccessibleMethod(receiver, methodName, parameterType);
     }
 
     // Deserializer support.
-    // TODO(AKI-131): Implement serialization support for lambdas.
     public InternalFunction(java.lang.Void ignore, int readIndex) {
         super(ignore, readIndex);
-        this.target = null;
     }
 
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
-        // TODO(AKI-131): Implement serialization support for lambdas.
-        throw new OutOfEnergyException();
+        super.deserializeSelf(InternalFunction.class, deserializer);
+        
+        // We write the classes as direct class objects reference but the method name, inline.
+        // Note that we can only store the class if it is a shadow class, so unwrap it.
+        Object originalReceiver = deserializer.readObject();
+        String externalMethodName = CodecIdioms.deserializeString(deserializer);
+        Object originalParameter = deserializer.readObject();
+        // (remember that the pre-pass always returns null).
+        if (null != originalReceiver) {
+            Class<?> receiver = ((org.aion.avm.shadow.java.lang.Class<?>)originalReceiver).getRealClass();
+            // Note that the method name needs a prefix added.
+            String methodName = METHOD_PREFIX + externalMethodName;
+            Class<?> parameterType = ((org.aion.avm.shadow.java.lang.Class<?>)originalParameter).getRealClass();
+            
+            this.receiver = receiver;
+            this.methodName = methodName;
+            this.parameterType = parameterType;
+            this.target = createAccessibleMethod(receiver, methodName, parameterType);
+        }
     }
 
     public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
-        // TODO(AKI-131): Implement serialization support for lambdas.
-        throw new OutOfEnergyException();
+        super.serializeSelf(InternalFunction.class, serializer);
+        
+        // We save the classes as object references and the method name, inline.
+        // Note that we can only store the class if it is a shadow class, so unwrap it.
+        org.aion.avm.shadow.java.lang.Class<?> receiverClass = new org.aion.avm.shadow.java.lang.Class<>(this.receiver);
+        // Note that we need to strip the prefix from the method.
+        String methodName = this.methodName.substring(METHOD_PREFIX.length());
+        org.aion.avm.shadow.java.lang.Class<?> parameterClass = new org.aion.avm.shadow.java.lang.Class<>(this.parameterType);
+        
+        serializer.writeObject(receiverClass);
+        CodecIdioms.serializeString(serializer, methodName);
+        serializer.writeObject(parameterClass);
     }
 
     @Override
