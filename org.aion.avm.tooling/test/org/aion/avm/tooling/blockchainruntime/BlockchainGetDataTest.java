@@ -179,7 +179,7 @@ public class BlockchainGetDataTest {
     }
 
     private void testGetBlockCoinbaseThenModify(boolean isModify) {
-        org.aion.types.Address blockCoinbase = avmRule.getBlock().getCoinbase();
+        org.aion.types.Address blockCoinbase = avmRule.kernel.getMinerAddress();
         Address expected = new Address(blockCoinbase.toBytes().clone());
 
         ResultWrapper result = call("getBlockCoinbaseAndModify", isModify);

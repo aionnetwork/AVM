@@ -83,7 +83,6 @@ public class BlockchainTest {
     }
 
     private ByteBuffer getReturnData(Address dappAddress, byte[] txData) {
-        Block block = avmRule.getBlock();
         org.aion.types.Address dappAddressApi = new org.aion.types.Address(dappAddress.unwrap());
 
         ByteBuffer buffer = ByteBuffer.allocate(1024);
@@ -94,11 +93,11 @@ public class BlockchainTest {
         buffer.putLong(energyPrice);
         buffer.putLong(BigInteger.ONE.longValue());
         buffer.put(txData);
-        buffer.putLong(block.getTimestamp());
-        buffer.putLong(block.getNumber());
-        buffer.putLong(block.getEnergyLimit());
-        buffer.put(block.getCoinbase().toBytes());
-        buffer.put(block.getDifficulty().toByteArray());
+        buffer.putLong(avmRule.kernel.getBlockTimestamp());
+        buffer.putLong(avmRule.kernel.getBlockNumber());
+        buffer.putLong(avmRule.kernel.getBlockEnergyLimit());
+        buffer.put(avmRule.kernel.getMinerAddress().toBytes());
+        buffer.put(BigInteger.valueOf(avmRule.kernel.getBlockDifficulty()).toByteArray());
         buffer.put("value".getBytes());
         buffer.putLong(avmRule.kernel.getBalance(org.aion.types.Address.wrap(new byte[32])).longValue());
         buffer.putLong(avmRule.kernel.getCode(dappAddressApi).length);

@@ -25,6 +25,7 @@ public class TestingKernel implements KernelInterface {
     public static final Address BIG_PREMINED_ADDRESS = Address.wrap(Helpers.hexStringToBytes("a035f4fd54064e869f158c1b4eb0ed34820f67e60ee80a53b469f725efc06378"));
     public static final BigInteger PREMINED_AMOUNT = BigInteger.TEN.pow(20);
     public static final BigInteger PREMINED_BIG_AMOUNT = BigInteger.valueOf(465000000).multiply(PREMINED_AMOUNT);
+    public static long blockTimeMillis = 10_000L;
 
     private BigInteger blockDifficulty;
     private long blockNumber;
@@ -281,14 +282,10 @@ public class TestingKernel implements KernelInterface {
         internalAdjustBalance(address, fee);
     }
 
-    public void updateBlock(Block block) {
-        this.blockDifficulty = block.getDifficulty();
-        this.blockNumber = block.getNumber();
-        this.blockTimestamp = block.getTimestamp();
-        this.blockNrgLimit = block.getEnergyLimit();
-        this.blockCoinbase = block.getCoinbase();
+    public void generateBlock() {
+        this.blockNumber ++;
+        this.blockTimestamp += blockTimeMillis;
     }
-
 
     private void internalAdjustBalance(Address address, BigInteger delta) {
         IAccountStore account = lazyCreateAccount(address.toBytes());

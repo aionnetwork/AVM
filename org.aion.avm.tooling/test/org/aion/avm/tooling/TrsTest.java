@@ -108,13 +108,11 @@ public class TrsTest {
      * new block whose timestamp has been moved ahead in time so that it is now in the next period.
      */
     private void moveIntoNextPeriod() {
-        Block oldBlock = avmRule.getBlock();
-        long previousBlockTime = oldBlock.getTimestamp();
+        long previousBlockTime = avmRule.kernel.getBlockTimestamp();
         long secondsPerPeriod = TRS.intervalSecs;
-        long blocktimeForNextPeriod = previousBlockTime + secondsPerPeriod;
-
-        Block newBlock = new Block(oldBlock.getPrevHash(), oldBlock.getNumber(), oldBlock.getCoinbase(), blocktimeForNextPeriod, oldBlock.getData());
-        avmRule.updateBlock(newBlock);
+        while(avmRule.kernel.getBlockTimestamp() < previousBlockTime + secondsPerPeriod) {
+            avmRule.kernel.generateBlock();
+        }
     }
 
     private TransactionResult sendFundsToTrs(BigInteger amount) {
@@ -136,7 +134,7 @@ public class TrsTest {
     }
 
     private TransactionResult startTrs() {
-        return callContract("start", avmRule.getBlock().getTimestamp());
+        return callContract("start", avmRule.kernel.getBlockTimestamp());
     }
 
     private TransactionResult lockTrs() {

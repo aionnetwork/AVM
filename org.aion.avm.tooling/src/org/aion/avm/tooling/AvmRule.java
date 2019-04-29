@@ -30,14 +30,13 @@ public final class AvmRule implements TestRule {
     private final JarOptimizer jarOptimizer;
     public TestingKernel kernel;
     public AvmImpl avm;
-    private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
     /**
      * @param debugMode enable/disable the debugging features
      */
     public AvmRule(boolean debugMode) {
         this.debugMode = debugMode;
-        this.kernel = new TestingKernel(block);
+        this.kernel = new TestingKernel();
         jarOptimizer = new JarOptimizer(debugMode);
     }
 
@@ -163,13 +162,6 @@ public final class AvmRule implements TestRule {
         return new Address(TestingKernel.PREMINED_ADDRESS.toBytes());
     }
 
-    /**
-     * @return Address of the account with huge initial (pre-mined) balance in the kernel
-     */
-    public Address getBigPreminedAccount() {
-        return new Address(TestingKernel.BIG_PREMINED_ADDRESS.toBytes());
-    }
-
     private ResultWrapper callDapp(Address from, Address dappAddress, BigInteger value, byte[] transactionData, long energyLimit, long energyPrice) {
         Transaction tx = Transaction.call(org.aion.types.Address.wrap(from.unwrap()), org.aion.types.Address.wrap(dappAddress.unwrap()), kernel.getNonce(org.aion.types.Address.wrap(from.unwrap())), value, transactionData, energyLimit, energyPrice);
         return new ResultWrapper(avm.run(this.kernel, new Transaction[]{tx})[0].get());
@@ -178,15 +170,6 @@ public final class AvmRule implements TestRule {
     private ResultWrapper deployDapp(Address from, BigInteger value, byte[] dappBytes, long energyLimit, long energyPrice) {
         Transaction tx = Transaction.create(org.aion.types.Address.wrap(from.unwrap()), kernel.getNonce(org.aion.types.Address.wrap(from.unwrap())), value, dappBytes, energyLimit, energyPrice);
         return new ResultWrapper(avm.run(this.kernel, new Transaction[]{tx})[0].get());
-    }
-
-    public Block getBlock() {
-        return block;
-    }
-
-    public void updateBlock(Block b) {
-        this.block = b;
-        this.kernel.updateBlock(b);
     }
 
     public static class ResultWrapper {
