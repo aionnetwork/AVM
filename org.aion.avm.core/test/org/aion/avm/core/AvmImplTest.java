@@ -282,7 +282,7 @@ public class AvmImplTest {
         long basicCost = BillingRules.getBasicTransactionCost(txData);
         long codeInstantiationOfDeploymentFee = BillingRules.getDeploymentFee(1, jar.length);
         long clinitCost = 91l;
-        long initialStorageCost = 342;
+        long initialStorageCost = 222;
         long transactionCost = basicCost + codeInstantiationOfDeploymentFee + clinitCost + initialStorageCost;
         assertEquals(transactionCost, ((AvmTransactionResult) result1).getEnergyUsed());
         assertEquals(energyLimit - transactionCost, result1.getEnergyRemaining());
@@ -298,8 +298,8 @@ public class AvmImplTest {
         long costOfBlocks = 51l + 31l + 326l;
         //reentrant call cost including code block cost
         long costOfRuntimeCall = 51l + 31l + 66l + (100 + 630);
-        // All persistence load/store cost (note that this is a reentrant call): (2 reads at 114, 2 writes at 342)
-        long runStorageCost = 114 + 114 + 342 + 342;
+        // All persistence load/store cost (note that this is a reentrant call): (2 reads at 74, 2 writes at 222)
+        long runStorageCost = 74 + 74 + 222 + 222;
         // runtime cost of the initial call
         long runtimeCost = 100 + 100 + 600 + 100 + 100 + 100 + 620;
         transactionCost = runtimeCost + tx2.getTransactionCost() + costOfBlocks + costOfRuntimeCall + runStorageCost;

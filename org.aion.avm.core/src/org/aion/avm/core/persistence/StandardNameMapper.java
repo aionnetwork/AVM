@@ -1,17 +1,22 @@
 package org.aion.avm.core.persistence;
 
+import org.aion.avm.core.ClassRenamer;
+import org.aion.avm.core.ClassRenamer.ArrayType;
 
 public class StandardNameMapper implements IPersistenceNameMapper {
-    // TODO (AKI-95):  THIS NEEDS TO MAP INTO CANONICAL TYPES!
+    private final ClassRenamer classRenamer;
+
+    public StandardNameMapper(ClassRenamer classRenamer) {
+        this.classRenamer = classRenamer;
+    }
+
     @Override
     public String getStorageClassName(String ourName) {
-        // TODO (AKI-95): Build a real mapping.
-        return ourName;
+        return this.classRenamer.toPreRename(ourName);
     }
 
     @Override
     public String getInternalClassName(String storageClassName) {
-        // TODO (AKI-95): Build a real mapping.
-        return storageClassName;
+        return this.classRenamer.toPostRename(storageClassName, ArrayType.PRECISE_TYPE);
     }
 }

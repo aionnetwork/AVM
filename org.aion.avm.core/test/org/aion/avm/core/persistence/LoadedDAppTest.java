@@ -25,7 +25,10 @@ public class LoadedDAppTest {
     private IInstrumentation instrumentation;
     private AvmClassLoader loader;
     private IRuntimeSetup runtimeSetup;
-    private boolean preserveDebuggability = false;
+
+    // Debug mode MUST be enabled for these tests, otherwise the storage layer will transform the
+    // user-defined names, which we do not want!
+    private boolean preserveDebuggability = true;
 
     @Before
     public void setup() {
@@ -428,7 +431,7 @@ public class LoadedDAppTest {
     @Test
     public void serializeDeserializeReferenceToClass() {
         InternedClasses internedClasses = new InternedClasses();
-        org.aion.avm.shadow.java.lang.Class<?> originalClassRef = internedClasses.get(String.class);
+        org.aion.avm.shadow.java.lang.Class<?> originalClassRef = internedClasses.get(org.aion.avm.shadow.java.lang.String.class);
         LoadedDAppTarget.s_nine = originalClassRef;
         
         LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName(), this.preserveDebuggability);

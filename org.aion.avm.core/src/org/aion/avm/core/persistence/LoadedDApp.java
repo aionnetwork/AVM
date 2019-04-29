@@ -5,13 +5,20 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
+import java.util.HashSet;
 import java.util.List;
 
+import java.util.Set;
+import org.aion.avm.NameStyle;
+import org.aion.avm.core.ClassRenamer;
+import org.aion.avm.core.ClassRenamerBuilder;
+import org.aion.avm.core.types.CommonType;
 import org.aion.avm.core.util.DebugNameResolver;
 import org.aion.avm.internal.AvmThrowable;
 import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
+import org.aion.avm.internal.PackageConstants;
 import org.aion.avm.shadowapi.avm.Blockchain;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.classloading.AvmClassLoader;
@@ -72,6 +79,7 @@ public class LoadedDApp {
     private Field runtimeBlockchainRuntimeField;
     private Method mainMethod;
     private long loadedBlockNum;
+    private final ClassRenamer classRenamer;
     private final boolean preserveDebuggability;
 
     /**
@@ -89,6 +97,24 @@ public class LoadedDApp {
         this.originalMainClassName = originalMainClassName;
         this.fieldCache = new SortedFieldCache(this.loader, SERIALIZE_SELF, DESERIALIZE_SELF, FIELD_READ_INDEX);
         this.preserveDebuggability = preserveDebuggability;
+
+        // Collect all of the user-defined classes, discarding any generated exception wrappers for them.
+        // This information is to be handed off to the persistance layer.
+        Set<String> postRenameUserClasses = new HashSet<>();
+        for (Class<?> userClasses : this.sortedClasses) {
+            String className = userClasses.getName();
+            if (!className.startsWith(PackageConstants.kExceptionWrapperDotPrefix)) {
+                postRenameUserClasses.add(className);
+            }
+        }
+
+        this.classRenamer = new ClassRenamerBuilder(NameStyle.DOT_NAME, this.preserveDebuggability)
+            .loadPostRenameUserDefinedClasses(postRenameUserClasses)
+            .loadPreRenameJclExceptionClasses(fetchPreRenameSlashStyleJclExceptions())
+            .prohibitExceptionWrappers()
+            .prohibitUnifyingArrayTypes()
+            .build();
+        
         // We also know that we need the runtimeSetup, meaning we also need the helperClass.
         try {
             String helperClassName = Helper.RUNTIME_HELPER_NAME;
@@ -113,7 +139,7 @@ public class LoadedDApp {
         ByteBuffer inputBuffer = ByteBuffer.wrap(rawGraphData);
         List<Object> existingObjectIndex = null;
         StandardGlobalResolver resolver = new StandardGlobalResolver(internedClassMap, this.loader);
-        StandardNameMapper classNameMapper = new StandardNameMapper();
+        StandardNameMapper classNameMapper = new StandardNameMapper(this.classRenamer);
         int nextHashCode = Deserializer.deserializeEntireGraphAndNextHashCode(inputBuffer, existingObjectIndex, resolver, this.fieldCache, classNameMapper, this.sortedClasses);
         return nextHashCode;
     }
@@ -131,7 +157,7 @@ public class LoadedDApp {
         List<Object> out_instanceIndex = null;
         List<Integer> out_calleeToCallerIndexMap = null;
         StandardGlobalResolver resolver = new StandardGlobalResolver(null, this.loader);
-        StandardNameMapper classNameMapper = new StandardNameMapper();
+        StandardNameMapper classNameMapper = new StandardNameMapper(this.classRenamer);
         Serializer.serializeEntireGraph(outputBuffer, out_instanceIndex, out_calleeToCallerIndexMap, resolver, this.fieldCache, classNameMapper, nextHashCode, this.sortedClasses);
         
         byte[] finalBytes = new byte[outputBuffer.position()];
@@ -141,25 +167,25 @@ public class LoadedDApp {
 
     public ReentrantGraph captureStateAsCaller(int nextHashCode, int maxGraphSize) {
         StandardGlobalResolver resolver = new StandardGlobalResolver(null, this.loader);
-        StandardNameMapper classNameMapper = new StandardNameMapper();
+        StandardNameMapper classNameMapper = new StandardNameMapper(this.classRenamer);
         return ReentrantGraph.captureCallerState(resolver, this.fieldCache, classNameMapper, maxGraphSize, nextHashCode, this.sortedClasses);
     }
 
     public ReentrantGraph captureStateAsCallee(int updatedNextHashCode, int maxGraphSize) {
         StandardGlobalResolver resolver = new StandardGlobalResolver(null, this.loader);
-        StandardNameMapper classNameMapper = new StandardNameMapper();
+        StandardNameMapper classNameMapper = new StandardNameMapper(this.classRenamer);
         return ReentrantGraph.captureCalleeState(resolver, this.fieldCache, classNameMapper, maxGraphSize, updatedNextHashCode, this.sortedClasses);
     }
 
     public void commitReentrantChanges(InternedClasses internedClassMap, ReentrantGraph callerState, ReentrantGraph calleeState) {
         StandardGlobalResolver resolver = new StandardGlobalResolver(internedClassMap, this.loader);
-        StandardNameMapper classNameMapper = new StandardNameMapper();
+        StandardNameMapper classNameMapper = new StandardNameMapper(this.classRenamer);
         callerState.commitChangesToState(resolver, this.fieldCache, classNameMapper, this.sortedClasses, calleeState);
     }
 
     public void revertToCallerState(InternedClasses internedClassMap, ReentrantGraph callerState) {
         StandardGlobalResolver resolver = new StandardGlobalResolver(internedClassMap, this.loader);
-        StandardNameMapper classNameMapper = new StandardNameMapper();
+        StandardNameMapper classNameMapper = new StandardNameMapper(this.classRenamer);
         callerState.revertChangesToState(resolver, this.fieldCache, classNameMapper, this.sortedClasses);
     }
 
@@ -349,5 +375,17 @@ public class LoadedDApp {
 
     public long getLoadedBlockNum() {
         return loadedBlockNum;
+    }
+
+    private Set<String> fetchPreRenameSlashStyleJclExceptions() {
+        Set<String> jclExceptions = new HashSet<>();
+
+        for (CommonType type : CommonType.values()) {
+            if (type.isShadowException) {
+                jclExceptions.add(type.dotName.substring(PackageConstants.kShadowDotPrefix.length()).replaceAll("\\.", "/"));
+            }
+        }
+
+        return jclExceptions;
     }
 }

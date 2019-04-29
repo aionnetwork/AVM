@@ -44,8 +44,8 @@ public class GraphReachabilityIntegrationTest {
         // Run test.
         long modify_basicCost = adjustBasicCost(21708L);
         long modify_miscCharges = 95L + 300L + 100L + 37234L + 65L + 29L + 85L;
-        int graphSizeBefore = 6260;
-        int graphSizeAfter = 6256;
+        int graphSizeBefore = 4950;
+        int graphSizeAfter = 4946;
         int readCost = StorageFees.READ_PRICE_PER_BYTE * graphSizeBefore;
         int writeCost = StorageFees.WRITE_PRICE_PER_BYTE * graphSizeAfter;
         long modify_storageCharges = readCost + writeCost;
@@ -79,8 +79,8 @@ public class GraphReachabilityIntegrationTest {
                 + 95L + 100L + 37234L + 65L + 29L + 85L
                 + 100L + 60L + 100L + 23L + 29L + 23L
                 ;
-        int graphSizeBefore = 6260;
-        int graphSizeAfter = 6256;
+        int graphSizeBefore = 4950;
+        int graphSizeAfter = 4946;
         int readCost = StorageFees.READ_PRICE_PER_BYTE * graphSizeBefore;
         int writeCost = StorageFees.WRITE_PRICE_PER_BYTE * graphSizeAfter;
         // 2 reads/writes of the same cost.
@@ -116,8 +116,8 @@ public class GraphReachabilityIntegrationTest {
             + 95L + 100L + 37234L + 65L + 29L + 85L
             + 100L + 60L + 100L + 23L + 29L + 23L
             ;
-        int graphSizeBefore = 6260;
-        int graphSizeAfter = 6256;
+        int graphSizeBefore = 4950;
+        int graphSizeAfter = 4946;
         int readCost = StorageFees.READ_PRICE_PER_BYTE * graphSizeBefore;
         int writeCost = StorageFees.WRITE_PRICE_PER_BYTE * graphSizeAfter;
         // 2 reads/writes of the same cost.
@@ -149,8 +149,8 @@ public class GraphReachabilityIntegrationTest {
                 + 95L + 100L + 37234L + 194L + 63L
                 + 100L + 60L + 100L + 23L
                 ;
-        int graphSizeBefore = 6260;
-        int graphSizeAfter = 6256;
+        int graphSizeBefore = 4950;
+        int graphSizeAfter = 4946;
         int readCost = StorageFees.READ_PRICE_PER_BYTE * graphSizeBefore;
         int writeCost = StorageFees.WRITE_PRICE_PER_BYTE * graphSizeAfter;
         // 2 reads/writes of the same cost.
@@ -192,8 +192,8 @@ public class GraphReachabilityIntegrationTest {
                 + 100L + 60L + 100L + 23L
                 + 100L + 60L + 100L + 23L
                 ;
-        int graphSizeBefore = 6260;
-        int graphSizeAfter = 6256;
+        int graphSizeBefore = 4950;
+        int graphSizeAfter = 4946;
         int readCost = StorageFees.READ_PRICE_PER_BYTE * graphSizeBefore;
         int writeCost = StorageFees.WRITE_PRICE_PER_BYTE * graphSizeAfter;
         // 3 reads/writes of the same cost.
@@ -242,8 +242,8 @@ public class GraphReachabilityIntegrationTest {
         long basicCost = BillingRules.getBasicTransactionCost(txData);
         long codeInstantiationOfDeploymentFee = BillingRules.getDeploymentFee(11, optimizedJar.length);
         long miscCharges = basicCost + codeInstantiationOfDeploymentFee + 185L + 300L + 1500L + 3L + 31L;
-        // One write of 17223.
-        long storageCharges = 17223L;
+        // One write of 13563L.
+        long storageCharges = 13563L;
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
@@ -278,8 +278,8 @@ public class GraphReachabilityIntegrationTest {
         } else {
             miscCharges += 23L;
         }
-        int graphSizeBefore = 6260;
-        int graphSizeAfter = 6256;
+        int graphSizeBefore = 4950;
+        int graphSizeAfter = 4946;
         long storageCharges = before
                 ? (StorageFees.READ_PRICE_PER_BYTE * graphSizeBefore) + (StorageFees.WRITE_PRICE_PER_BYTE * graphSizeBefore)
                 : (StorageFees.READ_PRICE_PER_BYTE * graphSizeAfter) + (StorageFees.WRITE_PRICE_PER_BYTE * graphSizeAfter);
@@ -294,8 +294,8 @@ public class GraphReachabilityIntegrationTest {
 
         long basicCost = adjustBasicCost(21644L);
         long miscCharges = 95L + 300L + 100L + 37234L + 716L + 63L + 63L + 63L + 63L + 63L;
-        int graphSizeBefore = 5741;
-        int graphSizeAfter = 6260;
+        int graphSizeBefore = 4521;
+        int graphSizeAfter = 4950;
         int readCost = StorageFees.READ_PRICE_PER_BYTE * graphSizeBefore;
         int writeCost = StorageFees.WRITE_PRICE_PER_BYTE * graphSizeAfter;
         long storageCharges = readCost + writeCost;
