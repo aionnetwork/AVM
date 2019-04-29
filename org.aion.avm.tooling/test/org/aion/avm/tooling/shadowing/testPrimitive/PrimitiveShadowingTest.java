@@ -1,18 +1,18 @@
 package org.aion.avm.tooling.shadowing.testPrimitive;
 
-import org.aion.avm.core.util.ABIUtil;
 import avm.Address;
+import java.math.BigInteger;
+import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
+import org.aion.avm.tooling.AvmRule.ResultWrapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.math.BigInteger;
-
 public class PrimitiveShadowingTest {
     @Rule
-    public AvmRule avmRule = new AvmRule(false);
+    public AvmRule avmRule = new AvmRule(true);
 
     private Address from = avmRule.getPreminedAccount();
     private Address dappAddr;
@@ -80,6 +80,17 @@ public class PrimitiveShadowingTest {
         Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
 
         Assert.assertEquals(true, result);
+    }
+
+    @Test
+    public void testCharacter() {
+        byte[] txData = ABIUtil.encodeMethodArguments("testCharacter");
+        ResultWrapper result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData,
+            energyLimit, energyPrice);
+
+        Assert.assertTrue(result.getTransactionResult().getResultCode().isSuccess());
+        Assert.assertEquals(true, result.getDecodedReturnData());
+
     }
 
     @Test

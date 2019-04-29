@@ -120,9 +120,182 @@ public class TestResource {
     // Test for java.lang.Character
     //========================================================
 
-    //TODO (AKI-121)
-    public boolean testCharacter(){
+    @Callable
+    public static boolean testCharacter() throws Exception {
+        CharacterTest.upperAndLowerCase();
+        CharacterTest.spaces();
+        CharacterTest.letterDigit();
+        CharacterTest.numerics();
+        CharacterTest.comparisons();
+        CharacterTest.constants();
         return true;
+    }
+
+    static class CharacterTest {
+        private static void fail(char c, String problem) {
+            throw new AssertionError(c + "': " + problem);
+        }
+
+        private static void fail(String problem) {
+            throw new AssertionError(problem);
+        }
+
+        public static void upperAndLowerCase() throws Exception {
+            char lc = 'c'; // lowercase
+            char uc = 'C'; // uppercase
+            char space = ' ';
+            char diacritic = '\u00D9'; // Ù character
+            char ideogram = '\u5317'; // 北 character
+
+            if (Character.isUpperCase(lc)) fail(lc, "should not be upper case");
+            if (! Character.isLowerCase(lc)) fail(lc, "should be lowercase");
+            if (Character.toUpperCase(lc) != 'C') fail(lc, "toUpperCase should be 'C'");
+            if (Character.toLowerCase(lc) != 'c') fail(lc, "toLowerCase should be 'c'");
+
+            if (! Character.isUpperCase(uc)) fail(uc, "should be upper case");
+            if (Character.isLowerCase(uc)) fail(uc, "should not be lowercase");
+            if (Character.toUpperCase(uc) != 'C') fail(uc, "toUpperCase should be 'C'");
+            if (Character.toLowerCase(uc) != 'c') fail(uc, "toLowerCase should be 'c'");
+
+            if (Character.isUpperCase(space)) fail(space, "should not be upper case");
+            if (Character.isLowerCase(space)) fail(space, "should not be lowercase");
+            if (Character.toUpperCase(space) != ' ') fail(space, "toUpperCase should be ' '");
+            if (Character.toLowerCase(space) != ' ') fail(space, "toLowerCase should be ' '");
+
+            if (! Character.isUpperCase(diacritic)) fail(diacritic, "should be upper case");
+            if (Character.isLowerCase(diacritic)) fail(diacritic, "should not be lowercase");
+            if (Character.toUpperCase(diacritic) != 'Ù') fail(diacritic, "toUpperCase should be 'Ù'");
+            if (Character.toLowerCase(diacritic) != 'ù') fail(diacritic, "toLowerCase should be 'ù'");
+
+            if (Character.isUpperCase(ideogram)) fail(ideogram, "should not be upper case");
+            if (Character.isLowerCase(ideogram)) fail(ideogram, "should not be lowercase");
+            if (Character.toUpperCase(ideogram) != '北') fail(ideogram, "toUpperCase should be '北'");
+            if (Character.toLowerCase(ideogram) != '北') fail(ideogram, "toLowerCase should be '北'");
+        }
+
+        public static void spaces() {
+            char[] spaceAndWhitespace  = {' ', '\u2001' };
+            char[] onlyWhitespace = { '\u0009', '\u000B', '\n', '\r', '\t', '\u001f' };
+            char[] onlySpace = {'\u00a0', '\u2007' };
+            char[] notAnySpace = {'a', '\u00D9', '\u5317', '1', '-', };
+
+            for(char c: spaceAndWhitespace) {
+                if(! Character.isWhitespace(c)) fail(c, "should be whitespace");
+                if(! Character.isSpaceChar(c)) fail(c, "should be space char");
+            }
+            for(char c: onlyWhitespace) {
+                if(! Character.isWhitespace(c)) fail(c, "should be whitespace");
+                if(Character.isSpaceChar(c)) fail(c, "should not be space char");
+            }
+            for(char c: onlySpace) {
+                if(Character.isWhitespace(c)) fail(c, "should not be whitespace");
+                if(! Character.isSpaceChar(c)) fail(c, "should be space char");
+            }
+            for(char c: notAnySpace) {
+                if(Character.isWhitespace(c)) fail(c, "should not be whitespace");
+                if(Character.isSpaceChar(c)) fail(c, "should not be space char");
+            }
+        }
+
+        public static void letterDigit() {
+            char letter = 'c';
+            char diacritic = '\u00D9'; // Ù character
+            char dot = '.';
+            char ideogram = '\u5317'; // 北 character
+            char kana = 'カ';
+            char digit = '0';
+
+            if(Character.isDigit(letter)) fail(letter, "should not be digit");
+            if(Character.isDigit(diacritic)) fail(diacritic, "should not be digit");
+            if(Character.isDigit(dot)) fail(dot, "should not be digit");
+            if(Character.isDigit(ideogram)) fail(ideogram, "should not be digit");
+            if(Character.isDigit(kana)) fail(kana, "should not be digit");
+            if(! Character.isDigit(digit)) fail(digit, "should be digit");
+
+            if(! Character.isLetter(letter)) fail(letter, "should be letter");
+            if(! Character.isLetter(diacritic)) fail(diacritic, "should be letter");
+            if(Character.isLetter(dot)) fail(dot, "should not be letter");
+            if(! Character.isLetter(ideogram)) fail(ideogram, "should be letter");
+            if(! Character.isLetter(kana)) fail(kana, "should be letter");
+            if(Character.isLetter(digit)) fail(digit, "should not be letter");
+
+            if(! Character.isLetterOrDigit(letter)) fail(letter, "should be LetterOrDigit");
+            if(! Character.isLetterOrDigit(diacritic)) fail(diacritic, "should be LetterOrDigit");
+            if(Character.isLetterOrDigit(dot)) fail(dot, "should not be LetterOrDigit");
+            if(! Character.isLetterOrDigit(ideogram)) fail(ideogram, "should be LetterOrDigit");
+            if(! Character.isLetterOrDigit(kana)) fail(kana, "should be LetterOrDigit");
+            if(! Character.isLetterOrDigit(digit)) fail(digit, "should not be LetterOrDigit");
+        }
+
+        public static void numerics() {
+            // valid values
+            char base36 = Character.forDigit(35, 36);
+            char base2 = Character.forDigit(0, 2);
+            // invalid values
+            char base37 = Character.forDigit(36, 37);
+            char base0 = Character.forDigit(0, 0);
+            char tooBig = Character.forDigit(3, 2);
+            char negative = Character.forDigit(-3, 10);
+
+            if(base36 != 'z') fail("35_36 should be z");
+            if(base2 != '0') fail("0_2 should be 0");
+            if(base37 != '\u0000') fail("radix too large should be null char");
+            if(base0 != '\u0000') fail("radix too small should be null char");
+            if(tooBig != '\u0000') fail("number bigger than radix should be null char");
+            if(negative != '\u0000') fail("negative number should be null char");
+
+            int thirtyFive = Character.getNumericValue('z');
+            int fraction = Character.getNumericValue('½');
+            int notNumber = Character.getNumericValue('{');
+
+            if(thirtyFive != 35) fail('z', "should have numeric value 36");
+            if(fraction != -2) fail('½', "should have numeric value -2");
+            if(notNumber != -1) fail('{', "should have numeric value -1");
+        }
+
+        public static void comparisons() {
+            char small = 'a';
+            char medium = 'z';
+            char huge = '\u5317'; // 北 character
+
+            if(Character.valueOf(small).compareTo(Character.valueOf(medium)) >= 0)
+                fail(small, "should be smaller than " + medium);
+            if(Character.valueOf(medium).compareTo(Character.valueOf(small)) <= 0)
+                fail(medium, "should be larger than " + small);
+            if(Character.valueOf(medium).compareTo(Character.valueOf(medium)) != 0)
+                fail(medium, "should be equal to " + medium);
+
+            if(Character.compare(small, medium) >= 0)
+                fail(small, "should be smaller than " + medium);
+            if(Character.compare(medium, small) <= 0)
+                fail(medium, "should be larger than " + small);
+            if(Character.compare(medium, medium) != 0)
+                fail(medium, "should be equal to " + medium);
+
+            if(Character.valueOf(medium).compareTo(Character.valueOf(huge)) >= 0)
+                fail(medium, "should be smaller than " + huge);
+            if(Character.valueOf(huge).compareTo(Character.valueOf(medium)) <= 0)
+                fail(huge, "should be larger than " + medium);
+            if(Character.valueOf(huge).compareTo(Character.valueOf(huge)) != 0)
+                fail(huge, "should be equal to " + huge);
+
+            if(Character.compare(small, huge) >= 0)
+                fail(medium, "should be smaller than " + huge);
+            if(Character.compare(huge, medium) <= 0)
+                fail(huge, "should be larger than " + medium);
+            if(Character.compare(huge, huge) != 0)
+                fail(huge, "should be equal to " + huge);
+        }
+
+        public static void constants() {
+            if(Character.SIZE != 16) fail("unexpected value for Character.SIZE");
+            if(Character.BYTES != 2) fail("unexpected value for Character.BYTES");
+            if(Character.MIN_RADIX != 2) fail("unexpected value for Character.MIN_RADIX");
+            if(Character.MAX_RADIX != 36) fail("unexpected value for Character.MAX_RADIX");
+            if(Character.MIN_VALUE != '\u0000') fail("unexpected value for Character.MIN_VALUE");
+            if(Character.MAX_VALUE != '\uffff') fail("unexpected value for Character.MAX_VALUE");
+
+        }
     }
 
     //========================================================
