@@ -26,12 +26,28 @@ public final class LambdaMetafactory extends org.aion.avm.shadow.java.lang.Objec
         InvokeDynamicChecks.checkBootstrapMethodType(invokedType);
         InvokeDynamicChecks.checkMethodHandle(implMethod);
         
-        return java.lang.invoke.LambdaMetafactory.metafactory(owner,
+        // We directly interpret the Runnable and Function, but everything else is invalid and should have been rejected, earlier.
+        Class<?> returnType = invokedType.returnType();
+        java.lang.invoke.CallSite callSite = null;
+        if (org.aion.avm.shadow.java.lang.Runnable.class == returnType) {
+            callSite = java.lang.invoke.LambdaMetafactory.metafactory(owner,
                 invokedName,
                 invokedType,
                 samMethodType,
                 implMethod,
                 instantiatedMethodType);
+        } else if (org.aion.avm.shadow.java.util.function.Function.class == returnType) {
+            callSite = java.lang.invoke.LambdaMetafactory.metafactory(owner,
+                    invokedName,
+                    invokedType,
+                    samMethodType,
+                    implMethod,
+                    instantiatedMethodType);
+        } else {
+            throw RuntimeAssertionError.unreachable("Invalid invokeType in LambdaMetaFactory (return type: " + returnType + ")");
+        }
+        
+        return callSite;
     }
 
     // Cannot be instantiated.

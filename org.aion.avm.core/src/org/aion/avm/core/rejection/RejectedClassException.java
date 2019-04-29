@@ -57,6 +57,10 @@ public class RejectedClassException extends AvmException {
         throw new RejectedClassException("Unsupported invokedymanic: boostrap:" + origMethodName + " owner:" + methodOwner);
     }
 
+    public static RejectedClassException invokeDynamicLambdaType(String methodDescriptor) {
+        throw new RejectedClassException("Unsupported invokedymanic lambda type: \"" + methodDescriptor + "\"");
+    }
+
     public RejectedClassException(String message) {
         super(message);
     }

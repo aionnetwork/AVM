@@ -64,6 +64,14 @@ public class FunctionShadowTest {
         Assert.assertNotNull(dappAddr);
     }
 
+    @Test
+    public void testNoComparableFunction() {
+        Class<?> testClass = FunctionShadowFailComparableResource.class;
+        org.aion.types.Address dappAddr = deployTest(testClass);
+        // We expect a deployment failure.
+        Assert.assertNull(dappAddr);
+    }
+
 
     private org.aion.types.Address deployTest(Class<?> testClass) {
         byte[] testJar = JarBuilder.buildJarForMainAndClassesAndUserlib(testClass);

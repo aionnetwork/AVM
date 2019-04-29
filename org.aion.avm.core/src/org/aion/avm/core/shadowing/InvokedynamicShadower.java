@@ -3,6 +3,7 @@ package org.aion.avm.core.shadowing;
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.rejection.RejectedClassException;
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.RuntimeAssertionError;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.MethodVisitor;
@@ -23,6 +24,10 @@ public class InvokedynamicShadower extends ClassToolchain.ToolChainClassVisitor 
     private final IObjectReplacer replacer;
     private final String postRenameStringConcatFactory;
     private final String postRenameLambdaFactory;
+
+    // AKI-130: We currently only support metafactory calls which construct Runnable and Function (these are post-rename).
+    private static final String RUNNABLE_DESCRIPTOR = "()L" + Helpers.fulllyQualifiedNameToInternalName(org.aion.avm.shadow.java.lang.Runnable.class.getName()) + ";";
+    private static final String FUNCTION_DESCRIPTOR = "()L" + Helpers.fulllyQualifiedNameToInternalName(org.aion.avm.shadow.java.util.function.Function.class.getName()) + ";";
 
     public InvokedynamicShadower(String shadowPackage) {
         super(Opcodes.ASM6);
@@ -55,6 +60,10 @@ public class InvokedynamicShadower extends ClassToolchain.ToolChainClassVisitor 
                 // AKI-130: The bootstrap methodDescriptor to this metafactory must NOT require additional arguments (since that would require dynamic class generation for each callsite - potential attack vector).
                 if (!methodDescriptor.startsWith("()")) {
                     throw RejectedClassException.invokeDynamicBootstrapMethodArguments(methodDescriptor);
+                }
+                // This is really just a specialization of the above call to check the return type (this would need to be changed if we accepted arguments).
+                if (!RUNNABLE_DESCRIPTOR.equals(methodDescriptor) && !FUNCTION_DESCRIPTOR.equals(methodDescriptor)) {
+                    throw RejectedClassException.invokeDynamicLambdaType(methodDescriptor);
                 }
                 handleLambdaIndy(origMethodName, methodDescriptor, bootstrapMethodHandle, bootstrapMethodArguments);
             } else {

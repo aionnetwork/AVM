@@ -762,7 +762,12 @@ public class TestResource {
         }
 
         public static void comparableTest() {
-            Comparable<Object> c = o -> 0;
+            Comparable<Object> c = new Comparable<Object>() {
+                @Override
+                public int compareTo(Object o) {
+                    return 0;
+                }
+            };
             int result = c.compareTo(1);
             if (result != 0) {
                 throw new RuntimeException("Expected " + 0 + ", but got " + result);
