@@ -4,12 +4,12 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandleInfo;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.aion.avm.internal.CodecIdioms;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.RevertException;
 import org.aion.avm.internal.RuntimeAssertionError;
 
 
@@ -93,10 +93,18 @@ public final class InternalFunction extends org.aion.avm.shadow.java.lang.Object
     public org.aion.avm.internal.IObject avm_apply(org.aion.avm.internal.IObject input) {
         try {
             return (org.aion.avm.internal.IObject) target.invoke(null, input);
-        } catch (Throwable e) {
-            // We will treat a failure here as something fatal.
-            e.printStackTrace();
-            throw new RevertException();
+        } catch (IllegalAccessException | IllegalArgumentException e) {
+            // This would be a problem in our setup - an internal error.
+            throw RuntimeAssertionError.unexpected(e);
+        } catch (InvocationTargetException e) {
+            // We need to unwrap this and re-throw it.
+            Throwable cause = e.getCause();
+            if (cause instanceof RuntimeException) {
+                throw (RuntimeException) cause;
+            } else {
+                // Any failure below us shouldn't be anything other than RuntimeException.
+                throw RuntimeAssertionError.unexpected(cause);
+            }
         }
     }
 

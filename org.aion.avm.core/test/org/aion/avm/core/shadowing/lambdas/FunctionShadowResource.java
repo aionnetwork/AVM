@@ -53,6 +53,9 @@ public class FunctionShadowResource {
                 Function<String, String> function2 = createFunction();
                 Blockchain.require(function1 != function2);
                 break;
+            case 8:
+                testExceptions();
+                break;
             default:
                 // Unknown.
                 Blockchain.revert();
@@ -97,6 +100,28 @@ public class FunctionShadowResource {
         // Make sure the function is correctly executed.
         String output = function.apply("INPUT");
         Blockchain.require("PREFIX: INPUT".equals(output));
+    }
+
+    private static void testExceptions() {
+        // Test the Runnable.
+        Runnable runnable = () -> ((Object)null).hashCode();
+        boolean found = false;
+        try {
+            runnable.run();
+        } catch (NullPointerException e) {
+            found = true;
+        }
+        Blockchain.require(found);
+        
+        // Test the Function.
+        Function<Void, String> function = (v) -> v.toString();
+        found = false;
+        try {
+            function.apply(null);
+        } catch (NullPointerException e) {
+            found = true;
+        }
+        Blockchain.require(found);
     }
 }
 

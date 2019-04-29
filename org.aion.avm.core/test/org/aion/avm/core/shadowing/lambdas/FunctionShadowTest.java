@@ -138,6 +138,16 @@ public class FunctionShadowTest {
         oneCall(dappAddr, 7);
     }
 
+    @Test
+    public void testExceptionInLambdas() {
+        // deploy it
+        Class<?> testClass = FunctionShadowResource.class;
+        org.aion.types.Address dappAddr = deployTest(testClass);
+        
+        // call transactions and validate the results
+        oneCall(dappAddr, 8);
+    }
+
 
     private org.aion.types.Address deployTest(Class<?> testClass) {
         byte[] testJar = JarBuilder.buildJarForMainAndClassesAndUserlib(testClass);
