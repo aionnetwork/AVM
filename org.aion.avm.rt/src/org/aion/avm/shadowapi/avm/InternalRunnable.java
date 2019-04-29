@@ -90,10 +90,6 @@ public final class InternalRunnable extends org.aion.avm.shadow.java.lang.Object
         }
     }
 
-    public org.aion.avm.shadow.java.lang.Runnable self() {
-        return this;
-    }
-
 
     private static Method createAccessibleMethod(Class<?> receiver, String methodName) {
         Method method = null;

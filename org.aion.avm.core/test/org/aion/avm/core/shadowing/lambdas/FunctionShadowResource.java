@@ -44,6 +44,15 @@ public class FunctionShadowResource {
                 checkFunction(reference);
                 runFunction(reference);
                 break;
+            case 7:
+                // Verify that multiple attempts to create the Runnable and Function each return a unique instance.
+                Runnable runnable1 = createRunnable();
+                Runnable runnable2 = createRunnable();
+                Blockchain.require(runnable1 != runnable2);
+                Function<String, String> function1 = createFunction();
+                Function<String, String> function2 = createFunction();
+                Blockchain.require(function1 != function2);
+                break;
             default:
                 // Unknown.
                 Blockchain.revert();

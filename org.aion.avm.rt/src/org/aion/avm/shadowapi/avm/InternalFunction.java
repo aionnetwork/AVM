@@ -100,10 +100,6 @@ public final class InternalFunction extends org.aion.avm.shadow.java.lang.Object
         }
     }
 
-    public org.aion.avm.shadow.java.util.function.Function self() {
-        return this;
-    }
-
 
     private static Method createAccessibleMethod(Class<?> receiver, String methodName, Class<?> parameterType) {
         Method method = null;

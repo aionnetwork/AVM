@@ -3,11 +3,11 @@ package org.aion.avm.shadow.java.lang.invoke;
 import java.lang.invoke.ConstantCallSite;
 import java.lang.invoke.LambdaConversionException;
 
+import org.aion.avm.internal.FunctionFactory;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.InvokeDynamicChecks;
+import org.aion.avm.internal.RunnableFactory;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.avm.shadowapi.avm.InternalFunction;
-import org.aion.avm.shadowapi.avm.InternalRunnable;
 
 
 public final class LambdaMetafactory extends org.aion.avm.shadow.java.lang.Object {
@@ -33,28 +33,28 @@ public final class LambdaMetafactory extends org.aion.avm.shadow.java.lang.Objec
         Class<?> returnType = invokedType.returnType();
         java.lang.invoke.CallSite callSite = null;
         if (org.aion.avm.shadow.java.lang.Runnable.class == returnType) {
-            // Create the instance of the Runnable.
-            InternalRunnable runnable = InternalRunnable.createRunnable(owner, implMethod);
-            // Since this instance knows about the target, we just need to return a CallSite which knows how to return this instance as a Runnable.
+            // Create the Runnable factory.
+            RunnableFactory factory = new RunnableFactory(owner, implMethod);
+            // Create a callsite for the factory's instantiate method so each evaluation of the invokedynamic will get a unique instance.
             java.lang.invoke.MethodHandle target = null;
             try {
                 target = java.lang.invoke.MethodHandles.lookup()
-                        .findVirtual(InternalRunnable.class, "self", invokedType)
-                        .bindTo(runnable);
+                        .findVirtual(RunnableFactory.class, "instantiate", invokedType)
+                        .bindTo(factory);
             } catch (NoSuchMethodException | IllegalAccessException e) {
                 // This would be a static error, internally.
                 throw RuntimeAssertionError.unexpected(e);
             }
             callSite = new ConstantCallSite(target);
         } else if (org.aion.avm.shadow.java.util.function.Function.class == returnType) {
-            // Create the instance of the Function.
-            InternalFunction function = InternalFunction.createFunction(owner, implMethod);
-            // Since this instance knows about the target, we just need to return a CallSite which knows how to return this instance as a Function.
+            // Create the Function factory.
+            FunctionFactory factory = new FunctionFactory(owner, implMethod);
+            // Create a callsite for the factory's instantiate method so each evaluation of the invokedynamic will get a unique instance.
             java.lang.invoke.MethodHandle target = null;
             try {
                 target = java.lang.invoke.MethodHandles.lookup()
-                        .findVirtual(InternalFunction.class, "self", invokedType)
-                        .bindTo(function);
+                        .findVirtual(FunctionFactory.class, "instantiate", invokedType)
+                        .bindTo(factory);
             } catch (NoSuchMethodException | IllegalAccessException e) {
                 // This would be a static error, internally.
                 throw RuntimeAssertionError.unexpected(e);
