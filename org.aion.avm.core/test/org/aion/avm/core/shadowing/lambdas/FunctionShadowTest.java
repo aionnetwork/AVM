@@ -72,6 +72,62 @@ public class FunctionShadowTest {
         Assert.assertNull(dappAddr);
     }
 
+    @Test
+    public void testLambdaRunnable() {
+        // deploy it
+        Class<?> testClass = FunctionShadowResource.class;
+        org.aion.types.Address dappAddr = deployTest(testClass);
+        
+        // call transactions and validate the results
+        oneCall(dappAddr, 0);
+    }
+
+    @Test
+    public void testLambdaFunction() {
+        // deploy it
+        Class<?> testClass = FunctionShadowResource.class;
+        org.aion.types.Address dappAddr = deployTest(testClass);
+        
+        // call transactions and validate the results
+        oneCall(dappAddr, 1);
+    }
+
+    @Test
+    public void testSerializedLambdaRunnable() {
+        // deploy it
+        Class<?> testClass = FunctionShadowResource.class;
+        org.aion.types.Address dappAddr = deployTest(testClass);
+        
+        // Call the setup routine (2)
+        Transaction tx = Transaction.call(FROM, dappAddr, this.kernel.getNonce(FROM), BigInteger.ZERO, new byte[] {2}, ENERGY_LIMIT, ERNGY_PRICE);
+        AvmTransactionResult result = (AvmTransactionResult) this.avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        // TODO(AKI-131): This exception will be caused by the attempt to serialize, which will pass once the serialized form is introduced.
+        Assert.assertEquals(AvmTransactionResult.Code.FAILED_OUT_OF_ENERGY, result.getResultCode());
+    }
+
+    @Test
+    public void testSerializedLambdaFunction() {
+        // deploy it
+        Class<?> testClass = FunctionShadowResource.class;
+        org.aion.types.Address dappAddr = deployTest(testClass);
+        
+        // Call the setup routine (4)
+        Transaction tx = Transaction.call(FROM, dappAddr, this.kernel.getNonce(FROM), BigInteger.ZERO, new byte[] {4}, ENERGY_LIMIT, ERNGY_PRICE);
+        AvmTransactionResult result = (AvmTransactionResult) this.avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        // TODO(AKI-131): This exception will be caused by the attempt to serialize, which will pass once the serialized form is introduced.
+        Assert.assertEquals(AvmTransactionResult.Code.FAILED_OUT_OF_ENERGY, result.getResultCode());
+    }
+
+    @Test
+    public void testReferenceFunction() {
+        // deploy it
+        Class<?> testClass = FunctionShadowResource.class;
+        org.aion.types.Address dappAddr = deployTest(testClass);
+        
+        // call transactions and validate the results
+        oneCall(dappAddr, 6);
+    }
+
 
     private org.aion.types.Address deployTest(Class<?> testClass) {
         byte[] testJar = JarBuilder.buildJarForMainAndClassesAndUserlib(testClass);
@@ -81,5 +137,11 @@ public class FunctionShadowTest {
         return (null != returnData)
                 ? org.aion.types.Address.wrap(returnData)
                 : null;
+    }
+
+    private void oneCall(org.aion.types.Address dappAddr, int transactionNumber) {
+        Transaction tx = Transaction.call(FROM, dappAddr, this.kernel.getNonce(FROM), BigInteger.ZERO, new byte[] {(byte)transactionNumber}, ENERGY_LIMIT, ERNGY_PRICE);
+        AvmTransactionResult result = (AvmTransactionResult) this.avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
     }
 }

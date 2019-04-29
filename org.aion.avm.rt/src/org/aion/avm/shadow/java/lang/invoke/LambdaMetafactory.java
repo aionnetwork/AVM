@@ -1,10 +1,13 @@
 package org.aion.avm.shadow.java.lang.invoke;
 
+import java.lang.invoke.ConstantCallSite;
 import java.lang.invoke.LambdaConversionException;
 
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.InvokeDynamicChecks;
 import org.aion.avm.internal.RuntimeAssertionError;
+import org.aion.avm.shadowapi.avm.InternalFunction;
+import org.aion.avm.shadowapi.avm.InternalRunnable;
 
 
 public final class LambdaMetafactory extends org.aion.avm.shadow.java.lang.Object {
@@ -30,19 +33,33 @@ public final class LambdaMetafactory extends org.aion.avm.shadow.java.lang.Objec
         Class<?> returnType = invokedType.returnType();
         java.lang.invoke.CallSite callSite = null;
         if (org.aion.avm.shadow.java.lang.Runnable.class == returnType) {
-            callSite = java.lang.invoke.LambdaMetafactory.metafactory(owner,
-                invokedName,
-                invokedType,
-                samMethodType,
-                implMethod,
-                instantiatedMethodType);
+            // Create the instance of the Runnable.
+            InternalRunnable runnable = InternalRunnable.createRunnable(implMethod);
+            // Since this instance knows about the target, we just need to return a CallSite which knows how to return this instance as a Runnable.
+            java.lang.invoke.MethodHandle target = null;
+            try {
+                target = java.lang.invoke.MethodHandles.lookup()
+                        .findVirtual(InternalRunnable.class, "self", invokedType)
+                        .bindTo(runnable);
+            } catch (NoSuchMethodException | IllegalAccessException e) {
+                // This would be a static error, internally.
+                throw RuntimeAssertionError.unexpected(e);
+            }
+            callSite = new ConstantCallSite(target);
         } else if (org.aion.avm.shadow.java.util.function.Function.class == returnType) {
-            callSite = java.lang.invoke.LambdaMetafactory.metafactory(owner,
-                    invokedName,
-                    invokedType,
-                    samMethodType,
-                    implMethod,
-                    instantiatedMethodType);
+            // Create the instance of the Function.
+            InternalFunction function = InternalFunction.createFunction(implMethod);
+            // Since this instance knows about the target, we just need to return a CallSite which knows how to return this instance as a Function.
+            java.lang.invoke.MethodHandle target = null;
+            try {
+                target = java.lang.invoke.MethodHandles.lookup()
+                        .findVirtual(InternalFunction.class, "self", invokedType)
+                        .bindTo(function);
+            } catch (NoSuchMethodException | IllegalAccessException e) {
+                // This would be a static error, internally.
+                throw RuntimeAssertionError.unexpected(e);
+            }
+            callSite = new ConstantCallSite(target);
         } else {
             throw RuntimeAssertionError.unreachable("Invalid invokeType in LambdaMetaFactory (return type: " + returnType + ")");
         }
