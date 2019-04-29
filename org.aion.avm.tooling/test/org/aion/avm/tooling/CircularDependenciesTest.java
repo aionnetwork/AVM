@@ -1,6 +1,6 @@
  package org.aion.avm.tooling;
 
-import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 
 import java.io.IOException;
@@ -12,12 +12,12 @@ import java.util.Map;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingKernel;
 import org.aion.types.Address;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class CircularDependenciesTest {
@@ -53,6 +53,10 @@ public class CircularDependenciesTest {
 
     }
 
+    /**
+     * Note: this does not test a circularity in the type relationships themselves, rather circular
+     * object referencing, which is OK.
+     */
     @Test
     public void testCircularDependency() {
         byte[] jarBytes = avmRule.getDappBytes(CircularDependencyATarget.class, null, CircularDependencyBTarget.class);
@@ -63,9 +67,10 @@ public class CircularDependenciesTest {
         callContract("getValue");
     }
 
-    //TODO (AKI-133): Fix the issue with circular interface types, and remove the @Ignore on this
+    /**
+     * Tests a circularity in the type relationships themselves: A is child of & parent of B.
+     */
     @Test
-    @Ignore
     public void testCircularTypesInterfacesDependency() throws IOException {
         byte[] interfaceA = Files.readAllBytes(Paths.get("test/org/aion/avm/tooling/CircularInterfaceTypesATarget.class"));
         byte[] interfaceB = Files.readAllBytes(Paths.get("test/org/aion/avm/tooling/CircularInterfaceTypesBTarget.class"));
@@ -76,9 +81,12 @@ public class CircularDependenciesTest {
             SelfDestructSmallResource.class, classMap);
         CodeAndArguments codeAndArguments = new CodeAndArguments(jar, null);
         AvmRule.ResultWrapper result = avmRule.deploy(DEPLOYER_API, BigInteger.ZERO, codeAndArguments.encodeToBytes(), ENERGY_LIMIT, ENERGY_PRICE);
-        assertFalse(result.getReceiptStatus().isSuccess());
+        assertEquals(AvmTransactionResult.Code.FAILED_REJECTED, result.getReceiptStatus());
     }
 
+    /**
+     * Tests a circularity in the type relationships themselves: A is child of & parent of B.
+     */
     @Test
     public void testCircularTypesClassesDependency() throws IOException {
         byte[] classA = Files.readAllBytes(Paths.get("test/org/aion/avm/tooling/CircularClassTypesATarget.class"));
@@ -90,6 +98,6 @@ public class CircularDependenciesTest {
             SelfDestructSmallResource.class, classMap);
         CodeAndArguments codeAndArguments = new CodeAndArguments(jar, null);
         AvmRule.ResultWrapper result = avmRule.deploy(DEPLOYER_API, BigInteger.ZERO, codeAndArguments.encodeToBytes(), ENERGY_LIMIT, ENERGY_PRICE);
-        assertFalse(result.getReceiptStatus().isSuccess());
+        assertEquals(AvmTransactionResult.Code.FAILED_REJECTED, result.getReceiptStatus());
     }
 }
