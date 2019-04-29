@@ -51,14 +51,15 @@ public class SelfDestructTest {
         ABIStreamingEncoder encoder = new ABIStreamingEncoder();
         byte[] txData = encoder.encodeOneString("selfDestruct").encodeOneAddress(beneficiary).toBytes();
         long energyUsed = call("reentrantSelfDestruct", txData);
-        Assert.assertEquals(82123 - refundPerContract, energyUsed);
+
+        Assert.assertEquals(87023 - refundPerContract, energyUsed);
         Assert.assertEquals(BigInteger.ZERO, avmRule.kernel.getBalance(new org.aion.types.Address(dappAddr.unwrap())));
         Assert.assertEquals(initialBalance, avmRule.kernel.getBalance(new org.aion.types.Address(beneficiary.unwrap())));
     }
 
     @Test
     public void killOtherContracts() {
-        Address[] contracts = new Address[8];
+        Address[] contracts = new Address[7];
         for(int i =0 ; i < contracts.length; i++){
             contracts[i] = deploy();
         }
@@ -67,7 +68,8 @@ public class SelfDestructTest {
 
         long energyUsed = call("killOtherContracts", contracts, txData);
         // capped off at half of the total energy used
-        Assert.assertEquals(334727 - (334727 / 2), energyUsed);
+        Assert.assertEquals(333720 - (333720 / 2), energyUsed);
+
         Assert.assertEquals(initialBalance.multiply(BigInteger.valueOf(contracts.length)).add(BigInteger.valueOf(contracts.length)),
                 avmRule.kernel.getBalance(new org.aion.types.Address(beneficiary.unwrap())));
     }

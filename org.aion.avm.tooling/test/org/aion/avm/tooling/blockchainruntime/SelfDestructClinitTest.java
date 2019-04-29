@@ -42,7 +42,7 @@ public class SelfDestructClinitTest {
         AvmRule.ResultWrapper result = deploy(args);
         byte[] code = avmRule.kernel.getCode(org.aion.types.Address.wrap(toBeDestroyed.unwrap()));
         Assert.assertNull(code);
-        Assert.assertEquals(568302 - refundPerContract, energyLimit - result.getTransactionResult().getEnergyRemaining());
+        Assert.assertEquals(573202 - refundPerContract, energyLimit - result.getTransactionResult().getEnergyRemaining());
     }
 
     private AvmRule.ResultWrapper deploy(byte[] args) {

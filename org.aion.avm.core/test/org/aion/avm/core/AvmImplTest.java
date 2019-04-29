@@ -301,7 +301,7 @@ public class AvmImplTest {
         // All persistence load/store cost (note that this is a reentrant call): (2 reads at 74, 2 writes at 222)
         long runStorageCost = 74 + 74 + 222 + 222;
         // runtime cost of the initial call
-        long runtimeCost = 100 + 100 + 600 + 100 + 100 + 100 + 620;
+        long runtimeCost = 100 + 100 + 600 + 100 + 100 + 5000 + 620;
         transactionCost = runtimeCost + tx2.getTransactionCost() + costOfBlocks + costOfRuntimeCall + runStorageCost;
         assertEquals(transactionCost, ((AvmTransactionResult) result2).getEnergyUsed()); // NOTE: the numbers are not calculated, but for fee schedule change detection.
         assertEquals(energyLimit - transactionCost, result2.getEnergyRemaining());

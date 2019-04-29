@@ -75,7 +75,7 @@ public class GraphReachabilityIntegrationTest {
         // Run test.
         long run_basicCost = adjustBasicCost(22796L);
         long run_miscCharges = 0L
-                + 95L + 300L + 100L + 37234L + 88L + 187L + 100L + 17372L + 600L + 100L + 100L
+                + 95L + 300L + 100L + 37234L + 88L + 187L + 100L + 17372L + 600L + 5000L + 100L
                 + 95L + 100L + 37234L + 65L + 29L + 85L
                 + 100L + 60L + 100L + 23L + 29L + 23L
                 ;
@@ -112,7 +112,7 @@ public class GraphReachabilityIntegrationTest {
         // Run test.
         long run_basicCost = adjustBasicCost(22604L);
         long run_miscCharges = 0L
-            + 95L + 300L + 100L + 37234L + 65L + 29L + 88L + 187L + 100L + 17372L + 600L + 100L + 100L
+            + 95L + 300L + 100L + 37234L + 65L + 29L + 88L + 187L + 100L + 17372L + 600L + 5000L + 100L
             + 95L + 100L + 37234L + 65L + 29L + 85L
             + 100L + 60L + 100L + 23L + 29L + 23L
             ;
@@ -145,7 +145,7 @@ public class GraphReachabilityIntegrationTest {
         // Run test.
         long run_basicCost = adjustBasicCost(22668L);
         long run_miscCharges = 0L
-                + 95L + 300L + 100L + 37234L + 187L + 100L + 17372L + 600L + 100L + 100L
+                + 95L + 300L + 100L + 37234L + 187L + 100L + 17372L + 600L + 5000L + 100L
                 + 95L + 100L + 37234L + 194L + 63L
                 + 100L + 60L + 100L + 23L
                 ;
@@ -186,8 +186,8 @@ public class GraphReachabilityIntegrationTest {
         // Run test.
         long run_basicCost = adjustBasicCost(22732L);
         long run_miscCharges = 0L
-                + 95L + 300L + 100L + 37234L + 187L + 100L + 17372L + 600L + 100L + 100L
-                + 95L + 100L + 37234L + 187L + 100L + 17372L + 600L + 100L + 100L
+                + 95L + 300L + 100L + 37234L + 187L + 100L + 17372L + 600L + 5000L + 100L
+                + 95L + 100L + 37234L + 187L + 100L + 17372L + 600L + 5000L + 100L
                 + 95L + 100L + 37234L + 194L + 63L
                 + 100L + 60L + 100L + 23L
                 + 100L + 60L + 100L + 23L
