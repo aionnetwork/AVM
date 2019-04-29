@@ -34,7 +34,7 @@ public final class LambdaMetafactory extends org.aion.avm.shadow.java.lang.Objec
         java.lang.invoke.CallSite callSite = null;
         if (org.aion.avm.shadow.java.lang.Runnable.class == returnType) {
             // Create the instance of the Runnable.
-            InternalRunnable runnable = InternalRunnable.createRunnable(implMethod);
+            InternalRunnable runnable = InternalRunnable.createRunnable(owner, implMethod);
             // Since this instance knows about the target, we just need to return a CallSite which knows how to return this instance as a Runnable.
             java.lang.invoke.MethodHandle target = null;
             try {
@@ -48,7 +48,7 @@ public final class LambdaMetafactory extends org.aion.avm.shadow.java.lang.Objec
             callSite = new ConstantCallSite(target);
         } else if (org.aion.avm.shadow.java.util.function.Function.class == returnType) {
             // Create the instance of the Function.
-            InternalFunction function = InternalFunction.createFunction(implMethod);
+            InternalFunction function = InternalFunction.createFunction(owner, implMethod);
             // Since this instance knows about the target, we just need to return a CallSite which knows how to return this instance as a Function.
             java.lang.invoke.MethodHandle target = null;
             try {
