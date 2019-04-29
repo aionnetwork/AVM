@@ -320,8 +320,11 @@ public class RuntimeMethodFeeSchedule {
     public static final long BlockchainRuntime_avm_getBlockCoinbase = RT_METHOD_FEE_LEVEL_1; // totalCost - 116;
     public static final long BlockchainRuntime_avm_getBlockPreviousHash = RT_METHOD_FEE_LEVEL_1; // totalCost - 116;
     public static final long BlockchainRuntime_avm_getBlockDifficulty = RT_METHOD_FEE_LEVEL_1; // totalCost - 116;
-    public static final long BlockchainRuntime_avm_getStorage = RT_METHOD_FEE_LEVEL_1; // totalCost - 122;
-    public static final long BlockchainRuntime_avm_putStorage = RT_METHOD_FEE_LEVEL_1; // totalCost - 128;
+    // These are based on Ethereum storage operation costs.
+    public static final long BlockchainRuntime_avm_getStorage = 200;
+    public static final long BlockchainRuntime_avm_setStorage = 20000; // Paid for a putStorage operation when the storage value is set to non-zero from zero;
+    public static final long BlockchainRuntime_avm_resetStorage = 5000; // Paid for a putStorage operation when the storage value's zeroness is unchanged or is set to 0;
+    public static final long BlockchainRuntime_avm_deleteStorage_refund = 15000; // Refund given when the storage value is set to zero from non-zero.
     public static final long BlockchainRuntime_avm_getBalance = RT_METHOD_FEE_LEVEL_2; // totalCost - 122;
     public static final long BlockchainRuntime_avm_getBalanceOfThisContract = RT_METHOD_FEE_LEVEL_2;
     public static final long BlockchainRuntime_avm_getCodeSize = RT_METHOD_FEE_LEVEL_1; // totalCost - 122;
