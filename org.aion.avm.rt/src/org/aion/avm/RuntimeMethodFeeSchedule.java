@@ -396,6 +396,7 @@ public class RuntimeMethodFeeSchedule {
     public static final long Character_avm_charValue = RT_METHOD_FEE_LEVEL_1; // totalCost - 128;
     public static final long Character_avm_hashCode = RT_METHOD_FEE_LEVEL_1; // totalCost - 188;
     public static final long Character_avm_hashCode_1 = RT_METHOD_FEE_LEVEL_1; // totalCost - 56;
+    public static final long Character_avm_equals = RT_METHOD_FEE_LEVEL_2;
     public static final long Character_avm_toString = RT_METHOD_FEE_LEVEL_3; // totalCost - 452;
     public static final long Character_avm_toString_1 = RT_METHOD_FEE_LEVEL_2; // totalCost - 376; // byte code cost - 276; invoked methods cost - 100;
     public static final long Character_avm_isLowerCase = RT_METHOD_FEE_LEVEL_2; // totalCost - 216; // byte code cost - 116; invoked methods cost - 100;

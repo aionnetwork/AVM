@@ -3,6 +3,7 @@ package org.aion.avm.shadow.java.lang;
 import org.aion.avm.internal.ConstantToken;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.RuntimeMethodFeeSchedule;
+import org.aion.avm.internal.IObject;
 import org.aion.avm.shadow.java.io.Serializable;
 import org.aion.avm.internal.ShadowClassConstantId;
 
@@ -49,6 +50,18 @@ public final class Character extends Object implements Serializable, Comparable<
     public static int avm_hashCode(char value) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Character_avm_hashCode_1);
         return internalHashCode(value);
+    }
+
+    public boolean avm_equals(IObject obj) {
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Character_avm_equals);
+        boolean isEqual = false;
+        if (obj instanceof Character) {
+            Character other = (Character) obj;
+            lazyLoad();
+            other.lazyLoad();
+            isEqual = this.v == other.v;
+        }
+        return isEqual;
     }
 
     private static int internalHashCode(char value) {

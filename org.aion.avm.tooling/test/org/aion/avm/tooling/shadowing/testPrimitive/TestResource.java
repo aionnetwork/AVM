@@ -128,6 +128,8 @@ public class TestResource {
         CharacterTest.numerics();
         CharacterTest.comparisons();
         CharacterTest.constants();
+        CharacterTest.string();
+        CharacterTest.hashcodeEquals();
         return true;
     }
 
@@ -294,6 +296,67 @@ public class TestResource {
             if(Character.MAX_RADIX != 36) fail("unexpected value for Character.MAX_RADIX");
             if(Character.MIN_VALUE != '\u0000') fail("unexpected value for Character.MIN_VALUE");
             if(Character.MAX_VALUE != '\uffff') fail("unexpected value for Character.MAX_VALUE");
+        }
+
+        public static void string() {
+            // test 'a'
+            if(! Character.toString('a').equals("a")) fail("Character.toString('a') should equal \"a\"");
+            if(! Character.valueOf('a').toString().equals("a")) fail("'a'.toString should equal \"a\"");
+
+            // test '北'
+            if(! Character.valueOf('\u5317' ).toString().equals("北")) fail("'\\u5317'.toString should equal \"北\"");
+            if(! Character.toString('\u5317').equals("北")) fail("Character.toString('\\u5317') should equal \"北\"");
+        }
+
+        public static void hashcodeEquals() {
+            Character trivial = 'a';
+            if(! trivial.equals(trivial)) fail("a Character object should equals itself");
+            if(trivial.hashCode() != trivial.hashCode()) fail("a Character object should always return same hashCode");
+            if(Character.hashCode(trivial.charValue()) != Character.hashCode(trivial.charValue())) {
+                fail("a Character object should always return same hashCode");
+            }
+
+            Character lhs, rhs;
+
+            lhs = Character.valueOf('c');
+            rhs = Character.valueOf('C');
+            if(lhs.equals(rhs)) fail("'c' should not equal 'C'");
+            if(rhs.equals(lhs)) fail("'c' should not equal 'C'");
+            if(lhs.equals('C')) fail("'c' should not equal 'C'");
+            if(lhs.hashCode() == rhs.hashCode()) fail("'c' should not have same hashCode as 'C'");
+            if(Character.hashCode(lhs.charValue()) == Character.hashCode(rhs.charValue())) {
+                fail("'c' should not have same hashCode as 'C'");
+            }
+
+            lhs = Character.valueOf('c');
+            rhs = Character.valueOf('c');
+            if(! lhs.equals(rhs)) fail("'c' should equal 'c'");
+            if(! rhs.equals(lhs)) fail("'c' should equal 'c'");
+            if(! lhs.equals('c')) fail("'c' should equal 'c'");
+            if(lhs.hashCode() != rhs.hashCode()) fail("'c' should have same hashCode as 'c'");
+            if(Character.hashCode(lhs.charValue()) != Character.hashCode(rhs.charValue())) {
+                fail("'c' should have same hashCode as 'c'");
+            }
+
+            lhs = Character.valueOf('c');
+            rhs = Character.valueOf('\u5317');
+            if(lhs.equals(rhs)) fail("'c' should not equal '北'");
+            if(rhs.equals(lhs)) fail("'c' should not equal '北'");
+            if(lhs.equals('北')) fail("'c' should not equal '北'");
+            if(lhs.hashCode() == rhs.hashCode()) fail("'c' should not have same hashCode as '北'");
+            if(Character.hashCode(lhs.charValue()) == Character.hashCode(rhs.charValue())) {
+                fail("'c' should not have same hashCode as '北'");
+            }
+
+            lhs = Character.valueOf('\u5317');
+            rhs = Character.valueOf('\u5317');
+            if(! lhs.equals(rhs)) fail("'北' should equal '北'");
+            if(! rhs.equals(lhs)) fail("'北' should equal '北'");
+            if(! lhs.equals('北')) fail("'北' should equal '北'");
+            if(lhs.hashCode() != rhs.hashCode()) fail("'北' should have same hashCode as '北'");
+            if(Character.hashCode(lhs.charValue()) != Character.hashCode(rhs.charValue())) {
+                fail("'北' should have same hashCode as '北'");
+            }
 
         }
     }
