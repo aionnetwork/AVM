@@ -1,8 +1,12 @@
 package org.aion.avm.core.testWallet;
 
 import avm.Address;
+import java.util.HashSet;
 import java.util.Set;
+import org.aion.avm.NameStyle;
 import org.aion.avm.core.ClassHierarchyForest;
+import org.aion.avm.core.ClassRenamer;
+import org.aion.avm.core.ClassRenamerBuilder;
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.DAppCreator;
 import org.aion.avm.core.IExternalCapabilities;
@@ -18,6 +22,7 @@ import org.aion.avm.core.types.ClassInformation;
 import org.aion.avm.core.types.ClassHierarchy;
 import org.aion.avm.core.types.ClassInformationFactory;
 import org.aion.avm.core.types.ClassHierarchyBuilder;
+import org.aion.avm.core.types.CommonType;
 import org.aion.avm.core.util.BlockchainRuntime;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.TestingHelper;
@@ -233,7 +238,19 @@ public class Deployer {
 
         ClassHierarchy classHierarchy = buildNewHierarchy(jar);
 
-        Map<String, byte[]> transformedClasses = Helpers.mapIncludingHelperBytecode(DAppCreator.transformClasses(jar.classBytesByQualifiedNames, ClassHierarchyForest.createForestFrom(jar), classHierarchy,
+        Set<String> jclExceptions = new HashSet<>();
+        for (CommonType type : CommonType.values()) {
+            if (type.isShadowException) {
+                jclExceptions.add(type.dotName);
+            }
+        }
+
+        ClassRenamer classRenamer = new ClassRenamerBuilder(NameStyle.DOT_NAME, preserveDebuggability)
+            .loadPreRenameUserDefinedClasses(classHierarchy.getPreRenameUserDefinedClassesAndInterfaces())
+            .loadPostRenameJclExceptionClasses(jclExceptions)
+            .build();
+
+        Map<String, byte[]> transformedClasses = Helpers.mapIncludingHelperBytecode(DAppCreator.transformClasses(jar.classBytesByQualifiedNames, ClassHierarchyForest.createForestFrom(jar), classHierarchy, classRenamer,
             preserveDebuggability), Helpers.loadDefaultHelperBytecode());
 
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(transformedClasses);

@@ -3,12 +3,12 @@ package org.aion.avm.core;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.aion.avm.NameStyle;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapperNameMapper;
 import org.aion.avm.core.types.ClassHierarchy;
 import org.aion.avm.core.types.ClassInformation;
 import org.aion.avm.core.types.ClassHierarchyBuilder;
 import org.aion.avm.core.types.CommonType;
-import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.PackageConstants;
 import org.junit.Assert;
 import org.junit.Test;
@@ -18,9 +18,10 @@ import org.junit.Test;
  * Tests the internal logic of TypeAwareClassWriter.
  * Note that this class is not directly unit-testable so we created a testing subclass, in order to get access to the relevant protected method.
  *
- * Note that the {@link org.aion.avm.core.unification.CommonSuperClassTest} test suite is really
- * testing out the class writer but in an integration-style manner, not a unit test. However, it
- * does cover the class writer fairly exhaustively.
+ * These are legacy tests on the type writer class. Integ tests on this are exploited in the
+ * {@link org.aion.avm.core.unification.CommonSuperClassTest} test and unit tests are done in:
+ * {@link ArraySuperResolverTest}, {@link ExceptionWrapperSuperResolverTest}, and
+ * {@link PlainTypeSuperResolverTest}.
  */
 public class TypeAwareClassWriterTest {
     private static boolean preserveDebuggability = false;
@@ -43,10 +44,7 @@ public class TypeAwareClassWriterTest {
     public void testWrappers_generated() throws Exception {
         TestClass clazz = new TestClass();
         String common = clazz.testing_getCommonSuperClass(ExceptionWrapperNameMapper.slashWrapperNameForClassName(PackageConstants.kShadowSlashPrefix + "java/lang/AssertionError"), ExceptionWrapperNameMapper.slashWrapperNameForClassName(PackageConstants.kShadowSlashPrefix + "java/lang/Error"));
-
-        // We expect unification under java.lang.Throwable because as a simplifying heuristic we return
-        // java.lang.Throwable as the super class of two exception wrappers.
-        Assert.assertEquals(Helpers.fulllyQualifiedNameToInternalName(CommonType.JAVA_LANG_THROWABLE.dotName), common);
+        Assert.assertEquals("org/aion/avm/exceptionwrapper/org/aion/avm/shadow/java/lang/Error", common);
     }
 
     @Test
@@ -82,7 +80,19 @@ public class TypeAwareClassWriterTest {
             .addPreRenameUserDefinedClasses(classesToAdd, preserveDebuggability)
             .build();
 
-        TestClass clazz = new TestClass(classHierarchy);
+        Set<String> jclExceptions = new HashSet<>();
+        for (CommonType type : CommonType.values()) {
+            if (type.isShadowException) {
+                jclExceptions.add(type.dotName);
+            }
+        }
+
+        ClassRenamer classRenamer = new ClassRenamerBuilder(NameStyle.DOT_NAME, preserveDebuggability)
+            .loadPreRenameUserDefinedClasses(classHierarchy.getPreRenameUserDefinedClassesAndInterfaces())
+            .loadPostRenameJclExceptionClasses(jclExceptions)
+            .build();
+
+        TestClass clazz = new TestClass(classHierarchy, classRenamer);
 
         // Don't rename if debug mode.
         String prefix = (preserveDebuggability) ? "" : PackageConstants.kUserSlashPrefix;
@@ -96,12 +106,12 @@ public class TypeAwareClassWriterTest {
 
     private static class TestClass extends TypeAwareClassWriter {
 
-        public TestClass(ClassHierarchy classHierarchy) {
-            super(0, classHierarchy, preserveDebuggability);
+        public TestClass(ClassHierarchy classHierarchy, ClassRenamer classRenamer) {
+            super(0, classHierarchy, classRenamer);
         }
 
         public TestClass() {
-            super(0, getPreLoadedClassHierarchy(), preserveDebuggability);
+            super(0, getPreLoadedClassHierarchy(), getPreLoadedClassRenamer());
         }
 
         public String testing_getCommonSuperClass(String type1, String type2) {
@@ -113,6 +123,20 @@ public class TypeAwareClassWriterTest {
                 .addShadowJcl()
                 .addPostRenameJclExceptions()
                 .addHandwrittenArrayWrappers()
+                .build();
+        }
+
+        private static ClassRenamer getPreLoadedClassRenamer() {
+            Set<String> jclExceptions = new HashSet<>();
+            for (CommonType type : CommonType.values()) {
+                if (type.isShadowException) {
+                    jclExceptions.add(type.dotName);
+                }
+            }
+
+            return new ClassRenamerBuilder(NameStyle.DOT_NAME, preserveDebuggability)
+                .loadPreRenameUserDefinedClasses(getPreLoadedClassHierarchy().getPreRenameUserDefinedClassesAndInterfaces())
+                .loadPostRenameJclExceptionClasses(jclExceptions)
                 .build();
         }
     }

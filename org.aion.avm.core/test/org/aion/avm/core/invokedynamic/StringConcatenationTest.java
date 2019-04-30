@@ -2,6 +2,7 @@ package org.aion.avm.core.invokedynamic;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.aion.avm.NameStyle;
 import org.aion.avm.core.*;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.ConstantVisitor;
@@ -147,13 +148,25 @@ public class StringConcatenationTest {
     private static byte[] transformForStringConcatTest(byte[] origBytecode, String className, String constantClassName, Map<String, String> constantToFieldMap) {
         ClassHierarchy classHierarchy = buildNewHierarchy(className, preserveDebuggability);
 
+        Set<String> jclExceptions = new HashSet<>();
+        for (CommonType type : CommonType.values()) {
+            if (type.isShadowException) {
+                jclExceptions.add(type.dotName);
+            }
+        }
+
+        ClassRenamer classRenamer = new ClassRenamerBuilder(NameStyle.DOT_NAME, preserveDebuggability)
+            .loadPreRenameUserDefinedClasses(classHierarchy.getPreRenameUserDefinedClassesAndInterfaces())
+            .loadPostRenameJclExceptionClasses(jclExceptions)
+            .build();
+
         final String shadowPackage = PackageConstants.kShadowSlashPrefix;
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
                 .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(buildSingletonAccessRules(classHierarchy, preserveDebuggability)), StringConcatenationTest.preserveDebuggability))
                 .addNextVisitor(new ConstantVisitor(constantClassName, constantToFieldMap))
                 .addNextVisitor(new ClassShadowing(shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
-                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, preserveDebuggability))
+                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, classRenamer))
                 .build()
                 .runAndGetBytecode();
     }

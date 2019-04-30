@@ -1,7 +1,10 @@
 package org.aion.avm.core;
 
+import java.util.HashSet;
+import org.aion.avm.NameStyle;
 import org.aion.avm.core.types.ClassHierarchy;
 import org.aion.avm.core.types.ClassInfo;
+import org.aion.avm.core.types.CommonType;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.types.ClassInformation;
 import org.aion.avm.core.types.ClassInformationFactory;
@@ -27,6 +30,7 @@ public class SimpleAvm {
     private final IInstrumentation instrumentation;
 
     private ClassHierarchy classHierarchy;
+    private ClassRenamer classRenamer;
     private ClassInformationFactory classInfoFactory = new ClassInformationFactory();
 
     public SimpleAvm(long energyLimit, boolean preserveDebuggability, Class<?>... classes) {
@@ -40,8 +44,20 @@ public class SimpleAvm {
 
         this.classHierarchy = buildNewClassHierarchy(preTransformedClassBytecode, preserveDebuggability);
 
+        Set<String> jclExceptions = new HashSet<>();
+        for (CommonType type : CommonType.values()) {
+            if (type.isShadowException) {
+                jclExceptions.add(type.dotName);
+            }
+        }
+
+        this.classRenamer = new ClassRenamerBuilder(NameStyle.DOT_NAME, preserveDebuggability)
+            .loadPreRenameUserDefinedClasses(this.classHierarchy.getPreRenameUserDefinedClassesAndInterfaces())
+            .loadPostRenameJclExceptionClasses(jclExceptions)
+            .build();
+
         // transform classes
-        Map<String, byte[]> transformedClasses = DAppCreator.transformClasses(preTransformedClassBytecode, classHierarchy, this.classHierarchy, preserveDebuggability);
+        Map<String, byte[]> transformedClasses = DAppCreator.transformClasses(preTransformedClassBytecode, classHierarchy, this.classHierarchy, this.classRenamer, preserveDebuggability);
         Map<String, byte[]> finalContractClasses = Helpers.mapIncludingHelperBytecode(transformedClasses, Helpers.loadDefaultHelperBytecode());
         this.loader = NodeEnvironment.singleton.createInvocationClassLoader(finalContractClasses);
 
@@ -89,6 +105,10 @@ public class SimpleAvm {
 
     public ClassHierarchy deepCopyOfClassHierarchy() {
         return this.classHierarchy.deepCopy();
+    }
+
+    public ClassRenamer getClassRenamer() {
+        return this.classRenamer;
     }
 
     public void attachBlockchainRuntime(IBlockchainRuntime rt) {

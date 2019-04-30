@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.avm.NameStyle;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 import org.aion.avm.StorageFees;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
@@ -25,6 +26,7 @@ import org.aion.avm.core.shadowing.InvokedynamicShadower;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.types.ClassHierarchy;
 import org.aion.avm.core.types.ClassInfo;
+import org.aion.avm.core.types.CommonType;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.types.GeneratedClassConsumer;
 import org.aion.avm.core.types.ImmortalDappModule;
@@ -88,12 +90,12 @@ public class DAppCreator {
      * @param preserveDebuggability Whether or not debug mode is enabled.
      * @return the transformed classes and any generated classes (names specified in .-style)
      */
-    public static Map<String, byte[]> transformClasses(Map<String, byte[]> inputClasses, Forest<String, ClassInfo> oldPreRenameForest, ClassHierarchy classHierarchy, boolean preserveDebuggability) {
+    public static Map<String, byte[]> transformClasses(Map<String, byte[]> inputClasses, Forest<String, ClassInfo> oldPreRenameForest, ClassHierarchy classHierarchy, ClassRenamer classRenamer, boolean preserveDebuggability) {
         // Before anything, pass the list of classes through the verifier.
         // (this will throw UncaughtException, on verification failure).
         Verifier.verifyUntrustedClasses(inputClasses);
         // We need to run our rejection filter and static rename pass.
-        Map<String, byte[]> safeClasses = rejectionAndRenameInputClasses(inputClasses, classHierarchy, preserveDebuggability);
+        Map<String, byte[]> safeClasses = rejectionAndRenameInputClasses(inputClasses, classHierarchy, classRenamer, preserveDebuggability);
         
         ConstantClassBuilder.ConstantClassInfo constantClass = ConstantClassBuilder.buildConstantClassBytecodeForClasses(PackageConstants.kConstantClassName, safeClasses.values());
         
@@ -133,13 +135,13 @@ public class DAppCreator {
                     .addNextVisitor(new ExceptionWrapping(generatedClassesSink, classHierarchy))
                     .addNextVisitor(new AutomaticGraphVisitor())
                     .addNextVisitor(new StrictFPVisitor())
-                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, preserveDebuggability))
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, classRenamer))
                     .build()
                     .runAndGetBytecode();
             bytecode = new ClassToolchain.Builder(bytecode, parsingOptions)
                     .addNextVisitor(new ArrayWrappingClassAdapterRef(classHierarchy))
                     .addNextVisitor(new ArrayWrappingClassAdapter())
-                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, preserveDebuggability))
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, classRenamer))
                     .build()
                     .runAndGetBytecode();
             transformedClasses.put(name, bytecode);
@@ -171,7 +173,7 @@ public class DAppCreator {
         for (String name : transformedClasses.keySet()) {
             byte[] bytecode = new ClassToolchain.Builder(transformedClasses.get(name), parsingOptions)
                     .addNextVisitor(new InterfaceFieldMappingVisitor(generatedClassesSink, userInterfaceSlashNames, javaLangObjectSlashName))
-                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, preserveDebuggability))
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, classRenamer))
                     .build()
                     .runAndGetBytecode();
 
@@ -219,8 +221,20 @@ public class DAppCreator {
             }
             ClassHierarchyForest dappClassesForest = rawDapp.classHierarchyForest;
 
+            Set<String> jclExceptions = new HashSet<>();
+            for (CommonType type : CommonType.values()) {
+                if (type.isShadowException) {
+                    jclExceptions.add(type.dotName);
+                }
+            }
+
+            ClassRenamer classRenamer = new ClassRenamerBuilder(NameStyle.DOT_NAME, preserveDebuggability)
+                .loadPreRenameUserDefinedClasses(rawDapp.classHierarchy.getPreRenameUserDefinedClassesAndInterfaces())
+                .loadPostRenameJclExceptionClasses(jclExceptions)
+                .build();
+
             // transform
-            Map<String, byte[]> transformedClasses = transformClasses(rawDapp.classes, dappClassesForest, rawDapp.classHierarchy, preserveDebuggability);
+            Map<String, byte[]> transformedClasses = transformClasses(rawDapp.classes, dappClassesForest, rawDapp.classHierarchy, classRenamer, preserveDebuggability);
             TransformedDappModule transformedDapp = TransformedDappModule.fromTransformedClasses(transformedClasses, rawDapp.mainClass);
 
             dapp = DAppLoader.fromTransformed(transformedDapp, preserveDebuggability);
@@ -371,7 +385,7 @@ public class DAppCreator {
         }
     }
 
-    private static Map<String, byte[]> rejectionAndRenameInputClasses(Map<String, byte[]> inputClasses, ClassHierarchy classHierarchy, boolean preserveDebuggability) {
+    private static Map<String, byte[]> rejectionAndRenameInputClasses(Map<String, byte[]> inputClasses, ClassHierarchy classHierarchy, ClassRenamer classRenamer, boolean preserveDebuggability) {
         Map<String, byte[]> safeClasses = new HashMap<>();
 
         Set<String> preRenameUserClassAndInterfaceSet = classHierarchy.getPreRenameUserDefinedClassesAndInterfaces();
@@ -390,7 +404,7 @@ public class DAppCreator {
                     .addNextVisitor(new RejectionClassVisitor(preRenameClassAccessRules, namespaceMapper, preserveDebuggability))
                     .addNextVisitor(new LoopingExceptionStrippingVisitor())
                     .addNextVisitor(new UserClassMappingVisitor(namespaceMapper, preserveDebuggability))
-                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, preserveDebuggability))
+                    .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, classRenamer))
                     .build()
                     .runAndGetBytecode();
                 String mappedName = DebugNameResolver.getUserPackageDotPrefix(name, preserveDebuggability);

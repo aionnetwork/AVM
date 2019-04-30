@@ -328,7 +328,7 @@ public class HashCodeTest {
                 .addClass(className, "java.lang.Object", false, raw)
                 .asMutableForest();
 
-        return DAppCreator.transformClasses(Collections.singletonMap(className, raw), classHierarchy, this.avm.deepCopyOfClassHierarchy(), preserveDebuggability);
+        return DAppCreator.transformClasses(Collections.singletonMap(className, raw), classHierarchy, this.avm.deepCopyOfClassHierarchy(), this.avm.getClassRenamer(), preserveDebuggability);
     }
 
     private int callIntReturnMethod(String preTransformMethodName) throws Exception {
