@@ -169,6 +169,23 @@ public final class ClassRenamer {
         return this.exceptionWrapperPrefix + exception;
     }
 
+    /**
+     * Returns {@code true} only if name is a pre-rename class name. Otherwise false.
+     *
+     * @param name The name whose pre- or post-ness is to be determined.
+     * @return whether or not the name is pre-rename.
+     */
+    public boolean isPreRename(String name) {
+        RuntimeAssertionError.assertTrue(!name.contains((this.style == NameStyle.DOT_NAME) ? "/" : "."));
+
+        // In debug mode pre- and post-rename user classes are the same, this preliminary check catches this case.
+        if (isPostRenameUserClass(name)) {
+            return false;
+        }
+
+        return isPreRenameArray(name) || isPreRenameApiClass(name) || isPreRenameJclClass(name) || isPreRenameUserClass(name);
+    }
+
     //<--------------------------------RENAMING METHODS-------------------------------------------->
 
     private String getJavaLangObject() {

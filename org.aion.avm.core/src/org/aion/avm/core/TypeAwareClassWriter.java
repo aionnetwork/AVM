@@ -352,8 +352,8 @@ public class TypeAwareClassWriter extends ClassWriter {
 
             // Otherwise, we strip the arrays down to their base types and get the common super class of the base types
             // and then wrap them back up in the array wrappers and return.
-            String type1stripped = ArrayRenamer.getObjectArrayWrapperUnderlyingTypeName(NameStyle.DOT_NAME, type1dotName);
-            String type2stripped = ArrayRenamer.getObjectArrayWrapperUnderlyingTypeName(NameStyle.DOT_NAME, type2dotName);
+            String type1stripped = ArrayRenamer.getPostRenameObjectArrayWrapperUnderlyingTypeName(NameStyle.DOT_NAME, type1dotName);
+            String type2stripped = ArrayRenamer.getPostRenameObjectArrayWrapperUnderlyingTypeName(NameStyle.DOT_NAME, type2dotName);
 
             // We make a recursive call back into getCommonSuperClassViaNewClassHierarchy() -- this call can never
             // recurse any deeper than this, and it solves all our problems for us.

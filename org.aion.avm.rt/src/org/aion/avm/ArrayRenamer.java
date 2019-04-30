@@ -126,7 +126,7 @@ public final class ArrayRenamer {
      * @param array The array whose underlying type's name is to be returned.
      * @return the underlying array type's name.
      */
-    public static String getObjectArrayWrapperUnderlyingTypeName(NameStyle style, String array) {
+    public static String getPostRenameObjectArrayWrapperUnderlyingTypeName(NameStyle style, String array) {
         RuntimeAssertionError.assertTrue(ArrayUtil.isPostRenameObjectArray(style, array));
 
         int dimension = ArrayUtil.dimensionOfPostRenameObjectArray(style, array);
@@ -134,6 +134,35 @@ public final class ArrayRenamer {
 
         // Remove the leading dimension-characters and the 'L' character that follows them.
         return strippedName.substring(dimension + 1);
+    }
+
+    /**
+     * Returns the name of the object that the given array is an array of. That is, if array is an
+     * array of some type T then this method returns T (more precisely, the name of T).
+     *
+     * @param array The pre-rename object array.
+     * @return the underlying type.
+     */
+    public static String getPreRenameObjectArrayWrapperUnderlyingTypeName(String array) {
+        RuntimeAssertionError.assertTrue(ArrayUtil.isPreRenameObjectArray(array));
+
+        int dimension = ArrayUtil.dimensionOfPreRenameObjectArray(array);
+
+        // The +1 is to account for the 'L' preceding the type name.
+        return array.substring(dimension + 1);
+    }
+
+    /**
+     * Returns a pre-rename object array that is an array of the given base type, with the given
+     * dimensionality.
+     *
+     * @param baseType The base type to make an array of.
+     * @param dimension The dimension of the array.
+     * @return the pre-rename object array.
+     */
+    public static String prependPreRenameObjectArrayPrefix(String baseType, int dimension) {
+        String leadingDimensionChars = stringOfSameCharacter('[', dimension);
+        return leadingDimensionChars + "L" + baseType;
     }
 
     /**
