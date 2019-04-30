@@ -1,8 +1,6 @@
 package org.aion.avm.userlib;
 
-import java.util.Iterator;
-import java.util.ListIterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -318,5 +316,50 @@ public class AionListTest {
         for (int i = 0; i < 9; ++i) {
             Assert.assertEquals("int_ " + (i + 1), list.get(i));
         }
+    }
+
+    @Test
+    public void checkGetSubList() {
+        AionList<Integer> aionList = new AionList<>();
+
+        for (int i = 0; i < 10; i++) {
+            aionList.add(i);
+        }
+
+        int fromIndex = 2;
+        int toIndex = 5;
+        List<Integer> aionSublist = aionList.subList(fromIndex, toIndex);
+
+        Assert.assertEquals(toIndex - fromIndex, aionSublist.size());
+
+        for (int i = 0; i < toIndex - fromIndex; i++) {
+            Assert.assertEquals(aionList.get(i + fromIndex), aionSublist.get(i));
+        }
+    }
+
+    @Test (expected = IndexOutOfBoundsException.class)
+    public void checkCreateSublistWithInvalidStartingIndex() {
+        AionList<Integer> aionList = new AionList<>();
+
+        for (int i = 0; i < 10; i++) {
+            aionList.add(i);
+        }
+
+        int fromIndex = -1;
+        int toIndex = 5;
+        aionList.subList(fromIndex, toIndex);
+    }
+
+    @Test (expected = IndexOutOfBoundsException.class)
+    public void checkCreateSublistWithInvalidEndingIndex() {
+        AionList<Integer> aionList = new AionList<>();
+
+        for (int i = 0; i < 10; i++) {
+            aionList.add(i);
+        }
+
+        int fromIndex = 2;
+        int toIndex = 11;
+        aionList.subList(fromIndex, toIndex);
     }
 }

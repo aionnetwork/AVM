@@ -13,7 +13,6 @@ import java.util.*;
  * That is, these classes are transformed and accessible to contract code, without any special support from our VM.
  * We may expand, change, or remove this idea in favour of something else, as we proceed.  This solution isn't set in stone.
  *
- * TODO (AKI-122):  This is a VERY basic implementation which must be replace if we expect to proceed this way.
  * We might also want to make the class into a constructor argument, so we can add more aggressive type safety to the internals.
  */
 public class AionList<E> implements List<E> {
@@ -23,9 +22,18 @@ public class AionList<E> implements List<E> {
 
     private int size;
 
+    private int modCount;
+
     public AionList() {
         this.storage = new Object[DEFAULT_CAPACITY];
         this.size = 0;
+        this.modCount = 0;
+    }
+
+    private AionList(int storageCapacity, int size) {
+        this.storage = new Object[storageCapacity];
+        this.size = size;
+        this.modCount = 0;
     }
 
     public void trimToSize() {
@@ -90,6 +98,7 @@ public class AionList<E> implements List<E> {
             this.storage = grow();
         this.storage[size] = newElement;
         size = size + 1;
+        modCount++;
 
         return true;
     }
@@ -103,6 +112,7 @@ public class AionList<E> implements List<E> {
         System.arraycopy(this.storage, index, this.storage, index + 1,size - index);
         this.storage[index] = element;
         size = size + 1;
+        modCount++;
     }
 
     private void rangeCheckForAdd(int index) {
@@ -124,7 +134,6 @@ public class AionList<E> implements List<E> {
 
     @Override
     public E remove(int index) {
-
         rangeCheckForRemove(index);
 
         E oldValue = (E) this.storage[index];
@@ -132,6 +141,7 @@ public class AionList<E> implements List<E> {
             System.arraycopy(this.storage, index + 1, this.storage, index, size - 1 - index);
         this.storage[size - 1] = null;
         size = size - 1;
+        modCount++;
 
         return oldValue;
     }
@@ -142,6 +152,7 @@ public class AionList<E> implements List<E> {
         int index = indexOf(toRemove);
         if (index >= 0){
             this.remove(index);
+            modCount++;
             ret = true;
         }
         return ret;
@@ -151,6 +162,7 @@ public class AionList<E> implements List<E> {
     public void clear() {
         this.storage = new Object[DEFAULT_CAPACITY];
         this.size = 0;
+        modCount++;
     }
 
     @Override
@@ -158,6 +170,7 @@ public class AionList<E> implements List<E> {
         boolean ret = false;
         for (E obj: c){
             this.add(obj);
+            modCount++;
             ret = true;
         }
         return ret;
@@ -168,6 +181,7 @@ public class AionList<E> implements List<E> {
         boolean ret = false;
         for (E obj: c){
             this.add(index, obj);
+            modCount++;
             ret = true;
         }
         return ret;
@@ -188,6 +202,7 @@ public class AionList<E> implements List<E> {
         while(it.hasNext()){
             if (!c.contains(it.next())){
                 it.remove();
+                modCount++;
                 ret = true;
             }
         }
@@ -201,6 +216,7 @@ public class AionList<E> implements List<E> {
         while(it.hasNext()){
             if (c.contains(it.next())){
                 it.remove();
+                modCount++;
                 ret = true;
             }
         }
@@ -250,8 +266,21 @@ public class AionList<E> implements List<E> {
 
     @Override
     public List<E> subList(int fromIndex, int toIndex) {
-        // TODO (AKI-122):  Add sublist handling if we want to continue using this implementation (not included for alpha release).
-        return null;
+        subListRangeCheck(fromIndex, toIndex, size);
+
+        return new AionSubList<>(this, fromIndex, toIndex);
+    }
+
+    private static void subListRangeCheck(int fromIndex, int toIndex, int size) {
+        if (fromIndex < 0) {
+            throw new IndexOutOfBoundsException("fromIndex = " + fromIndex);
+        }
+        if (toIndex > size) {
+            throw new IndexOutOfBoundsException("toIndex = " + toIndex);
+        }
+        if (fromIndex > toIndex) {
+            throw new IllegalArgumentException("fromIndex(" + fromIndex + ") > toIndex(" + toIndex + ")");
+        }
     }
 
     @Override
@@ -327,6 +356,348 @@ public class AionList<E> implements List<E> {
         @Override
         public void add(E e) {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    private static class AionSubList<E> implements List<E> {
+
+        private final AionList<E> root;
+        private final AionSubList<E> parent;
+        private final int offset;
+        private int size;
+        private int modCount;
+
+        /**
+         * Constructs a sublist from given root AionList
+         */
+        public AionSubList(AionList<E> root, int fromIndex, int toIndex) {
+            this.root = root;
+            this.parent = null;
+            this.offset = fromIndex;
+            this.size = toIndex - fromIndex;
+            this.modCount = root.modCount;
+        }
+
+        /**
+         * Constructs a sublist of another SubList.
+         */
+        private AionSubList(AionSubList<E> parent, int fromIndex, int toIndex) {
+            this.root = parent.root;
+            this.parent = parent;
+            this.offset = parent.offset + fromIndex;
+            this.size = toIndex - fromIndex;
+            this.modCount = root.modCount;
+        }
+
+        @Override
+        public int size() {
+            return this.size;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return 0 == this.size;
+        }
+
+        @Override
+        public boolean contains(Object toFind) {
+            return indexOf(toFind) >= 0;
+        }
+
+        @Override
+        public Iterator<E> iterator() {
+            return new AionSubListIterator(0);
+        }
+
+        @Override
+        public Object[] toArray() {
+            checkForComodification();
+            Object[] ret = new Object[this.size];
+            System.arraycopy(root.storage, offset, ret, 0, this.size);
+            return ret;
+        }
+
+        @Override
+        public <T> T[] toArray(T[] a) {
+            return null;
+        }
+
+        @Override
+        public boolean add(E newElement) {
+            rangeCheckForAdd(this.size);
+            checkForComodification();
+            root.add(offset + this.size, newElement);
+            updateSizeAndModCount(1);
+            return true;
+        }
+
+        @Override
+        public boolean remove(Object element) {
+            checkForComodification();
+            int indexToRemove = indexOf(element);
+            if (indexToRemove < 0) {
+                return false;
+            }
+
+            rangeCheckForRemove(indexToRemove - offset);
+            root.remove(Integer.valueOf(indexToRemove));
+            updateSizeAndModCount(-1);
+            return true;
+        }
+
+        @Override
+        public boolean containsAll(Collection<?> c) {
+            for (Object obj: c){
+                if (!this.contains(obj)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends E> c) {
+            return addAll(this.size, c);
+        }
+
+        @Override
+        public boolean addAll(int index, Collection<? extends E> c) {
+            rangeCheckForAdd(index);
+            checkForComodification();
+            this.root.addAll(index + offset, c);
+            updateSizeAndModCount(c.size());
+            return true;
+        }
+
+        @Override
+        public boolean removeAll(Collection<?> c) {
+            checkForComodification();
+            boolean changed = false;
+            for (int i = offset; i < offset + size; i++) {
+                if (c.contains(root.storage[i])) {
+                    rangeCheckForRemove(i - offset);
+                    root.remove(i);
+                    this.size --;
+                    changed = true;
+                }
+            }
+            return changed;
+        }
+
+        @Override
+        public boolean retainAll(Collection<?> c) {
+            checkForComodification();
+            Iterator<E> it = this.listIterator(offset);
+            int counter = 0;
+            while(it.hasNext()){
+                if (!c.contains(it.next())){
+                    rangeCheckForRemove(counter);
+                    it.remove();
+                    modCount++;
+                }
+                counter++;
+            }
+            return true;
+        }
+
+        @Override
+        public void clear() {
+            checkForComodification();
+            Object[] newStorage = new Object[this.root.storage.length - this.size];
+            System.arraycopy(root.storage, 0, newStorage, 0, this.offset); // copy section before sublist
+            System.arraycopy(root.storage, this.offset + this.size, newStorage, this.offset, this.root.size - this.size - offset); // copy section after sublist
+
+            this.root.storage = newStorage;
+            this.size = 0;
+        }
+
+        @Override
+        public E get(int index) {
+            checkForComodification();
+            return root.get(index + offset);
+        }
+
+        @Override
+        public E set(int index, E element) {
+            checkForComodification();
+            return root.set(offset + index, element);
+        }
+
+        @Override
+        public void add(int index, E element) {
+            rangeCheckForAdd(index);
+            checkForComodification();
+            root.add(index + offset, element); 
+            updateSizeAndModCount(1);
+        }
+
+        @Override
+        public E remove(int index) {
+            rangeCheckForRemove(index);
+            checkForComodification();
+            E result = root.remove(index + offset);
+            updateSizeAndModCount(-1);
+            return result;
+        }
+
+        @Override
+        public int indexOf(Object o) {
+            if (o == null) {
+                for (int i = this.offset; i < this.size + this.offset; i++) {
+                    if (root.storage[i] == null) {
+                        return i;
+                    }
+                }
+            } else {
+                for (int i = this.offset; i < this.size + this.offset; i++) {
+                    if (o.equals(root.storage[i])) {
+                        return i;
+                    }
+                }
+            }
+            return -1;
+        }
+
+        @Override
+        public int lastIndexOf(Object o) {
+            if (o == null) {
+                for (int i = this.size + this.offset -1; i >= this.offset; i--) {
+                    if (root.storage[i] == null) {
+                        return i;
+                    }
+                }
+            } else {
+                for (int i = this.size + this.offset -1; i >= this.offset; i--) {
+                    if (o.equals(root.storage[i])) {
+                        return i;
+                    }
+                }
+            }
+            return -1;
+        }
+
+        @Override
+        public ListIterator<E> listIterator() {
+            return new AionSubListIterator(0);
+        }
+
+        @Override
+        public ListIterator<E> listIterator(int index) {
+            return new AionSubListIterator(index);
+        }
+
+        @Override
+        public List<E> subList(int fromIndex, int toIndex) {
+            return new AionSubList<>(this, fromIndex, toIndex);
+        }
+
+        /**
+         * Helpers
+         */
+
+        private static void subListRangeCheck(int fromIndex, int toIndex, int size) {
+            if (fromIndex < 0) {
+                throw new IndexOutOfBoundsException("fromIndex = " + fromIndex);
+            }
+            if (toIndex > size) {
+                throw new IndexOutOfBoundsException("toIndex = " + toIndex);
+            }
+            if (fromIndex > toIndex) {
+                throw new IllegalArgumentException("fromIndex(" + fromIndex + ") > toIndex(" + toIndex + ")");
+            }
+        }
+
+        private void checkForComodification() {
+            if (root.modCount != modCount) {
+                throw new RuntimeException();
+            }
+        }
+
+        private void updateSizeAndModCount(int sizeChange) {
+            AionSubList<E> slist = this;
+            do {
+                slist.size += sizeChange;
+                slist.modCount = root.modCount;
+                slist = slist.parent;
+            } while (slist != null);
+        }
+
+        private void rangeCheckForAdd(int index) {
+            if (index > size || index < 0) {
+                throw new IndexOutOfBoundsException();
+            }
+        }
+
+        private void rangeCheckForRemove(int index) {
+            if (index >= size || index < 0) {
+                throw new IndexOutOfBoundsException();
+            }
+        }
+
+        public class AionSubListIterator implements ListIterator<E> {
+            private int lastReturnedIndex = -1;
+            private int nextIndex;
+            public AionSubListIterator(int nextIndex) {
+                this.nextIndex = nextIndex;
+            }
+            @Override
+            public boolean hasNext() {
+                return this.nextIndex < AionSubList.this.size;
+            }
+            @Override
+            public E next() {
+                E elt = null;
+                if (this.nextIndex < AionSubList.this.size) {
+                    elt = (E) AionSubList.this.root.storage[this.nextIndex];
+                    this.nextIndex += 1;
+                    lastReturnedIndex = this.nextIndex - 1;
+                } else {
+                    throw new NoSuchElementException();
+                }
+                return elt;
+            }
+            @Override
+            public boolean hasPrevious() {
+                return this.nextIndex > 0;
+            }
+            @Override
+            public E previous() {
+                E elt = null;
+                if (this.nextIndex > 0) {
+                    this.nextIndex -= 1;
+                    elt = (E) AionSubList.this.root.storage[this.nextIndex];
+                    lastReturnedIndex = this.nextIndex;
+                } else {
+                    throw new NoSuchElementException();
+                }
+                return elt;
+            }
+            @Override
+            public int nextIndex() {
+                return this.nextIndex;
+            }
+            @Override
+            public int previousIndex() {
+                return this.nextIndex - 1;
+            }
+            @Override
+            public void remove() {
+                if (this.lastReturnedIndex < 0) {
+                    throw new IllegalStateException();
+                } else {
+                    AionSubList.this.remove(this.lastReturnedIndex);
+                    this.nextIndex = this.lastReturnedIndex;
+                    this.lastReturnedIndex = -1;
+                }
+            }
+            @Override
+            public void set(E e) {
+                throw new UnsupportedOperationException();
+            }
+            @Override
+            public void add(E e) {
+                throw new UnsupportedOperationException();
+            }
         }
     }
 }
