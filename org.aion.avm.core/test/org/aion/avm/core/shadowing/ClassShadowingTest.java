@@ -39,24 +39,7 @@ public class ClassShadowingTest {
     @Test
     public void testReplaceJavaLang() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         String className = TestResource.class.getName();
-        byte[] bytecode = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-
-        Function<byte[], byte[]> transformer = (inputBytes) ->
-                new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
-                        .addNextVisitor(new UserClassMappingVisitor(createTestingMapper(className), preserveDebuggability))
-                        .addNextVisitor(new ConstantVisitor())
-                        .addNextVisitor(new ClassShadowing(PackageConstants.kShadowSlashPrefix))
-                        .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
-                        .build()
-                        .runAndGetBytecode();
-        Map<String, byte[]> classes = new HashMap<>();
-
-        String prefix = (preserveDebuggability) ? "" : PackageConstants.kUserDotPrefix;
-
-        classes.put(prefix + className, transformer.apply(bytecode));
-
-        Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, Helpers.loadDefaultHelperBytecode());
-        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
+        AvmClassLoader loader = transformAndLoadClass(className);
 
         TestingInstrumentation instrumentation = new TestingInstrumentation(new CommonInstrumentation());
         InstrumentationHelpers.attachThread(instrumentation);
@@ -90,32 +73,15 @@ public class ClassShadowingTest {
     @Test
     public void testField() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         String className = TestResource2.class.getName();
-        String prefix = (preserveDebuggability) ? "" : PackageConstants.kUserDotPrefix;
-        String mappedClassName = prefix + className;
-
-        byte[] bytecode = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-
-        Function<byte[], byte[]> transformer = (inputBytes) ->
-                new ClassToolchain.Builder(inputBytes, 0) /* DO NOT SKIP ANYTHING */
-                        .addNextVisitor(new UserClassMappingVisitor(createTestingMapper(className), preserveDebuggability))
-                        .addNextVisitor(new ConstantVisitor())
-                        .addNextVisitor(new ClassShadowing(PackageConstants.kShadowSlashPrefix))
-                        .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
-                        .build()
-                        .runAndGetBytecode();
-
-        Map<String, byte[]> classes = new HashMap<>();
-        classes.put(mappedClassName, transformer.apply(bytecode));
-
-        Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, Helpers.loadDefaultHelperBytecode());
-        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
+        AvmClassLoader loader = transformAndLoadClass(className);
 
         CommonInstrumentation instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
         IRuntimeSetup runtime = Helpers.getSetupForLoader(loader);
         InstrumentationHelpers.pushNewStackFrame(runtime, loader, 1_000_000L, 1, new InternedClasses());
 
-        Class<?> clazz = loader.loadClass(mappedClassName);
+        String prefix = (preserveDebuggability) ? "" : PackageConstants.kUserDotPrefix;
+        Class<?> clazz = loader.loadClass(prefix + className);
         Object obj = clazz.getConstructor().newInstance();
 
         Method method2 = clazz.getMethod(NamespaceMapper.mapMethodName("localVariable"));
@@ -129,29 +95,8 @@ public class ClassShadowingTest {
     @Test
     public void testInterfaceHandling() throws Exception {
         String className = TestResourceInterface.class.getName();
-        byte[] bytecode = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
-
         String innerClassName = className + "$1";
-        byte[] innerBytecode = Helpers.loadRequiredResourceAsBytes(innerClassName.replaceAll("\\.", "/") + ".class");
-
-        Function<byte[], byte[]> transformer = (inputBytes) ->
-                new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
-                        .addNextVisitor(new UserClassMappingVisitor(createTestingMapper(className, innerClassName), preserveDebuggability))
-                        .addNextVisitor(new ConstantVisitor())
-                        .addNextVisitor(new ClassShadowing(PackageConstants.kShadowSlashPrefix))
-                        .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
-                        .build()
-                        .runAndGetBytecode();
-        Map<String, byte[]> classes = new HashMap<>();
-        byte[] transformed = transformer.apply(bytecode);
-
-        String prefix = (preserveDebuggability) ? "" : PackageConstants.kUserDotPrefix;
-
-        classes.put(prefix + className, transformed);
-        classes.put(prefix + innerClassName, transformer.apply(innerBytecode));
-
-        Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, Helpers.loadDefaultHelperBytecode());
-        AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
+        AvmClassLoader loader = transformAndLoadClass(className, innerClassName);
 
         CommonInstrumentation instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
@@ -246,6 +191,32 @@ public class ClassShadowingTest {
         // This works for this test but, in general, is not correct.
         Set<String> userClassDotNameSet = Set.of(userDotNameClasses);
         return new NamespaceMapper(new PreRenameClassAccessRules(userClassDotNameSet, userClassDotNameSet));
+    }
+
+    private AvmClassLoader transformAndLoadClass(String... classNames) {
+        byte[][] bytecode = new byte[classNames.length][];
+        for (int i = 0; i < classNames.length; ++i) {
+            bytecode[i] = Helpers.loadRequiredResourceAsBytes(classNames[i].replaceAll("\\.", "/") + ".class");
+        }
+
+        Function<byte[], byte[]> transformer = (inputBytes) ->
+                new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
+                        .addNextVisitor(new UserClassMappingVisitor(createTestingMapper(classNames), preserveDebuggability))
+                        .addNextVisitor(new ConstantVisitor())
+                        .addNextVisitor(new ClassShadowing(PackageConstants.kShadowSlashPrefix))
+                        .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
+                        .build()
+                        .runAndGetBytecode();
+        Map<String, byte[]> classes = new HashMap<>();
+
+        String prefix = (preserveDebuggability) ? "" : PackageConstants.kUserDotPrefix;
+
+        for (int i = 0; i < classNames.length; ++i) {
+            classes.put(prefix + classNames[i], transformer.apply(bytecode[i]));
+        }
+
+        Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, Helpers.loadDefaultHelperBytecode());
+        return NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
     }
 
 
