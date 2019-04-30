@@ -31,21 +31,22 @@ public class ConstantVisitor extends ClassToolchain.ToolChainClassVisitor {
     private static final String kClinitDescriptor = "()V";
 
     private static final String postRenameStringDescriptor = "L" + PackageConstants.kShadowSlashPrefix + "java/lang/String;";
-    private static final String wrapStringMethodName = "wrapAsString";
-    private static final String wrapStringMethodDescriptor = "(Ljava/lang/String;)L" + PackageConstants.kShadowSlashPrefix + "java/lang/String;";
 
     private static final String wrapClassMethodName = "wrapAsClass";
     private static final String wrapClassMethodDescriptor = "(Ljava/lang/Class;)L" + PackageConstants.kShadowSlashPrefix + "java/lang/Class;";
 
+    private final String constantClassName;
+    private final Map<String, String> constantToFieldMap;
     private final Map<String, String> staticFieldNamesToConstantValues;
-    private final Map<String, String> synthesizedStaticFieldNamesByValue;
     private String thisClassName;
     private MethodNode cachedClinit;
 
-    public ConstantVisitor() {
+    public ConstantVisitor(String constantClassName, Map<String, String> constantToFieldMap) {
         super(Opcodes.ASM6);
+        this.constantClassName = constantClassName;
+        this.constantToFieldMap = constantToFieldMap;
+        
         this.staticFieldNamesToConstantValues = new HashMap<>();
-        this.synthesizedStaticFieldNamesByValue = new HashMap<>();
     }
 
     @Override
@@ -93,9 +94,11 @@ public class ConstantVisitor extends ClassToolchain.ToolChainClassVisitor {
                     super.visitLdcInsn(value);
                     super.visitMethodInsn(Opcodes.INVOKESTATIC, Helper.RUNTIME_HELPER_NAME, wrapClassMethodName, wrapClassMethodDescriptor, false);
                 } else if (value instanceof String) {
-                    // Note that String constants are now synthesized as static fields.
-                    String staticFieldForConstant = generateStaticFieldNameForConstant((String)value);
-                    super.visitFieldInsn(Opcodes.GETSTATIC, thisClassName, staticFieldForConstant, postRenameStringDescriptor);
+                    // Note that we are moving all strings to the constantClassName, so look up the constant which has this value.
+                    String staticFieldForConstant = ConstantVisitor.this.constantToFieldMap.get(value);
+                    // (we just created this map in StringConstantCollectionVisitor so nothing can be missing).
+                    RuntimeAssertionError.assertTrue(null != staticFieldForConstant);
+                    super.visitFieldInsn(Opcodes.GETSTATIC, ConstantVisitor.this.constantClassName, staticFieldForConstant, postRenameStringDescriptor);
                 } else {
                     // Type of METHOD and Handle are for classes with version 49 and 51 respectively, and should not happen
                     // https://asm.ow2.io/javadoc/org/objectweb/asm/MethodVisitor.html#visitLdcInsn-java.lang.Object-
@@ -109,39 +112,21 @@ public class ConstantVisitor extends ClassToolchain.ToolChainClassVisitor {
     @Override
     public void visitEnd() {
         // Note that visitEnd happens immediately after visitMethod, so we can synthesize the <clinit> here, if it is needed.
-        // We want to write the <clinit> if either there was one (which we cached), we have constant values to dump into it, or we need to synthesize constants as statics.
-        if ((null != this.cachedClinit) || !this.staticFieldNamesToConstantValues.isEmpty() || !this.synthesizedStaticFieldNamesByValue.isEmpty()) {
-            // Define the synthesized String constants.
-            for (Map.Entry<String, String> elt : this.synthesizedStaticFieldNamesByValue.entrySet()) {
-                super.visitField(Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC, elt.getValue(), postRenameStringDescriptor, null, null);
-            }
-            
+        // We want to write the <clinit> if either there was one (which we cached) or we have constant values load into our statics.
+        if ((null != this.cachedClinit) || !this.staticFieldNamesToConstantValues.isEmpty()) {
             // Create the actual visitor for the clinit.
             MethodVisitor clinitVisitor = super.visitMethod(kClinitAccess, kClinitName, kClinitDescriptor, null, null);
             
-            // NOTE:  There is almost definitely going to be overlap between the synthesizedStaticFieldNamesByValue and staticFieldNamesToConstantValues since they can appear in any
-            // order (and we _need_ to support staticFieldNamesToConstantValues) but replacing this with a 2-pass algorithm would let us eliminate that duplication.
-            
-            // Prepend the ldc+invokestatic+putstatic setup of the synthesized constants.
-            for (Map.Entry<String, String> elt : this.synthesizedStaticFieldNamesByValue.entrySet()) {
-                // load constant
-                clinitVisitor.visitLdcInsn(elt.getKey());
-
-                // wrap as shadow string
-                clinitVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Helper.RUNTIME_HELPER_NAME, wrapStringMethodName, wrapStringMethodDescriptor, false);
-
-                // set the field
-                clinitVisitor.visitFieldInsn(Opcodes.PUTSTATIC, this.thisClassName, elt.getValue(), postRenameStringDescriptor);
-            }
-            
-            // Prepend the ldc+putstatic pairs.
+            // Prepend the getstatic+putstatic pairs.
             for (Map.Entry<String, String> elt : this.staticFieldNamesToConstantValues.entrySet()) {
+                // Note that we are moving all strings to the constantClassName, so look up the constant which has this value.
+                String staticFieldForConstant = this.constantToFieldMap.get(elt.getValue());
+                // (we just created this map in StringConstantCollectionVisitor so nothing can be missing).
+                RuntimeAssertionError.assertTrue(null != staticFieldForConstant);
+                
                 // load constant
-                clinitVisitor.visitLdcInsn(elt.getValue());
-
-                // wrap as shadow string
-                clinitVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Helper.RUNTIME_HELPER_NAME, wrapStringMethodName, wrapStringMethodDescriptor, false);
-
+                clinitVisitor.visitFieldInsn(Opcodes.GETSTATIC, this.constantClassName, staticFieldForConstant, postRenameStringDescriptor);
+                
                 // set the field
                 clinitVisitor.visitFieldInsn(Opcodes.PUTSTATIC, this.thisClassName, elt.getKey(), postRenameStringDescriptor);
             }
@@ -157,15 +142,5 @@ public class ConstantVisitor extends ClassToolchain.ToolChainClassVisitor {
             }
         }
         super.visitEnd();
-    }
-
-
-    private String generateStaticFieldNameForConstant(String constantValue) {
-        String name = this.synthesizedStaticFieldNamesByValue.get(constantValue);
-        if (null == name) {
-            name = "const_" + this.synthesizedStaticFieldNamesByValue.size();
-            this.synthesizedStaticFieldNamesByValue.put(constantValue, name);
-        }
-        return name;
     }
 }

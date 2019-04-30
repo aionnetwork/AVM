@@ -10,19 +10,19 @@ import java.util.List;
  * In the future, this logic and data may be split, since they don't need to be together.  This just makes the connection more obvious, for now.
  */
 public class ReentrantGraph {
-    public static ReentrantGraph captureCallerState(IGlobalResolver resolver, SortedFieldCache cache, IPersistenceNameMapper classNameMapper, int maximumSizeInBytes, int nextHashCode, Class<?>[] sortedRoots) {
+    public static ReentrantGraph captureCallerState(IGlobalResolver resolver, SortedFieldCache cache, IPersistenceNameMapper classNameMapper, int maximumSizeInBytes, int nextHashCode, Class<?>[] sortedRoots, Class<?> constantClass) {
         ByteBuffer buffer = ByteBuffer.allocate(maximumSizeInBytes);
         List<Object> existingObjectIndex = new ArrayList<>();
-        Serializer.serializeEntireGraph(buffer, existingObjectIndex, null, resolver, cache, classNameMapper, nextHashCode, sortedRoots);
+        Serializer.serializeEntireGraph(buffer, existingObjectIndex, null, resolver, cache, classNameMapper, nextHashCode, sortedRoots, constantClass);
         byte[] finalBytes = new byte[buffer.position()];
         System.arraycopy(buffer.array(), 0, finalBytes, 0, finalBytes.length);
         return new ReentrantGraph(finalBytes, existingObjectIndex, null);
     }
 
-    public static ReentrantGraph captureCalleeState(IGlobalResolver resolver, SortedFieldCache cache, IPersistenceNameMapper classNameMapper, int maximumSizeInBytes, int nextHashCode, Class<?>[] sortedRoots) {
+    public static ReentrantGraph captureCalleeState(IGlobalResolver resolver, SortedFieldCache cache, IPersistenceNameMapper classNameMapper, int maximumSizeInBytes, int nextHashCode, Class<?>[] sortedRoots, Class<?> constantClass) {
         ByteBuffer calleeBuffer = ByteBuffer.allocate(maximumSizeInBytes);
         List<Integer> calleeToCallerMapping = new ArrayList<>();
-        Serializer.serializeEntireGraph(calleeBuffer, null, calleeToCallerMapping, resolver, cache, classNameMapper, nextHashCode, sortedRoots);
+        Serializer.serializeEntireGraph(calleeBuffer, null, calleeToCallerMapping, resolver, cache, classNameMapper, nextHashCode, sortedRoots, constantClass);
         byte[] calleeBytes = new byte[calleeBuffer.position()];
         System.arraycopy(calleeBuffer.array(), 0, calleeBytes, 0, calleeBytes.length);
         return new ReentrantGraph(calleeBytes, null, calleeToCallerMapping);
@@ -39,7 +39,7 @@ public class ReentrantGraph {
         this.calleeToCallerMapping = calleeToCallerMapping;
     }
 
-    public int commitChangesToState(IGlobalResolver resolver, SortedFieldCache cache, IPersistenceNameMapper classNameMapper, Class<?>[] sortedRoots, ReentrantGraph calleeState) {
+    public int commitChangesToState(IGlobalResolver resolver, SortedFieldCache cache, IPersistenceNameMapper classNameMapper, Class<?>[] sortedRoots, Class<?> constantClass, ReentrantGraph calleeState) {
         // Now for the interesting logic (which needs to be moved out of this test-case since it is real functionality): remapping the caller index.
         List<Object> updatedIndex = new ArrayList<>();
         for (int callerIndex : calleeState.calleeToCallerMapping) {
@@ -50,17 +50,17 @@ public class ReentrantGraph {
         }
         
         ByteBuffer readingBuffer = ByteBuffer.wrap(calleeState.rawState);
-        return Deserializer.deserializeEntireGraphAndNextHashCode(readingBuffer, updatedIndex, resolver, cache, classNameMapper, sortedRoots);
+        return Deserializer.deserializeEntireGraphAndNextHashCode(readingBuffer, updatedIndex, resolver, cache, classNameMapper, sortedRoots, constantClass);
     }
 
-    public int revertChangesToState(IGlobalResolver resolver, SortedFieldCache cache, IPersistenceNameMapper classNameMapper, Class<?>[] sortedRoots) {
+    public int revertChangesToState(IGlobalResolver resolver, SortedFieldCache cache, IPersistenceNameMapper classNameMapper, Class<?>[] sortedRoots, Class<?> constantClass) {
         // We just re-apply what we already captured from last time.
         ByteBuffer readingBuffer = ByteBuffer.wrap(this.rawState);
-        return Deserializer.deserializeEntireGraphAndNextHashCode(readingBuffer, this.existingObjectIndex, resolver, cache, classNameMapper, sortedRoots);
+        return Deserializer.deserializeEntireGraphAndNextHashCode(readingBuffer, this.existingObjectIndex, resolver, cache, classNameMapper, sortedRoots, constantClass);
     }
 
-    public int applyToRootsForNewFrame(IGlobalResolver resolver, SortedFieldCache cache, IPersistenceNameMapper classNameMapper, Class<?>[] sortedRoots) {
+    public int applyToRootsForNewFrame(IGlobalResolver resolver, SortedFieldCache cache, IPersistenceNameMapper classNameMapper, Class<?>[] sortedRoots, Class<?> constantClass) {
         ByteBuffer fakeBuffer = ByteBuffer.wrap(this.rawState);
-        return Deserializer.deserializeEntireGraphAndNextHashCode(fakeBuffer, null, resolver, cache, classNameMapper, sortedRoots);
+        return Deserializer.deserializeEntireGraphAndNextHashCode(fakeBuffer, null, resolver, cache, classNameMapper, sortedRoots, constantClass);
     }
 }

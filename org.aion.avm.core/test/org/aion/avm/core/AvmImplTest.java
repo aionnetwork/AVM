@@ -281,7 +281,8 @@ public class AvmImplTest {
         // Account for the cost:  deployment, clinit, init call.
         long basicCost = BillingRules.getBasicTransactionCost(txData);
         long codeInstantiationOfDeploymentFee = BillingRules.getDeploymentFee(1, jar.length);
-        long clinitCost = 91l;
+        // Note that the only <clinit> is in the generated constants class, which is free.
+        long clinitCost = 0L;
         long initialStorageCost = 222;
         long transactionCost = basicCost + codeInstantiationOfDeploymentFee + clinitCost + initialStorageCost;
         assertEquals(transactionCost, ((AvmTransactionResult) result1).getEnergyUsed());

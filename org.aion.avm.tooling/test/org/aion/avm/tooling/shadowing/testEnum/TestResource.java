@@ -96,8 +96,8 @@ public class TestResource {
         MathContext mc = new MathContext(1, RoundingMode.UP);
         ret = ret && (mc.hashCode() == 414);
 
-        ret = ret && (Type1.NORMAL.hashCode() == 28);
-        ret = ret && (Type2.SPECIALIZED.hashCode() == 31);
+        ret = ret && (Type1.NORMAL.hashCode() == 81);
+        ret = ret && (Type2.SPECIALIZED.hashCode() == 83);
 
         return ret;
     }

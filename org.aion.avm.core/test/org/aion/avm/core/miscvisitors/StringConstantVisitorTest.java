@@ -1,6 +1,7 @@
 package org.aion.avm.core.miscvisitors;
 
 import org.aion.avm.core.ClassToolchain;
+import org.aion.avm.core.ConstantClassBuilder;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.DebugNameResolver;
@@ -10,11 +11,13 @@ import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IRuntimeSetup;
 import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.InternedClasses;
+import org.aion.avm.internal.PackageConstants;
 import org.junit.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -39,16 +42,21 @@ public class StringConstantVisitorTest {
         Set<String> userClassDotNameSet = Set.of(targetTestName, targetNoStaticName);
         PreRenameClassAccessRules classAccessRules = new PreRenameClassAccessRules(userClassDotNameSet, userClassDotNameSet);
         
+        // We will need to produce the constant class.
+        Collection<byte[]> inputClasses = Set.of(targetTestBytes, targetNoStaticBytes);
+        ConstantClassBuilder.ConstantClassInfo constantClass = ConstantClassBuilder.buildConstantClassBytecodeForClasses(PackageConstants.kConstantClassName, inputClasses);
+        
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
                         .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(classAccessRules), false))
-                        .addNextVisitor(new ConstantVisitor())
+                        .addNextVisitor(new ConstantVisitor(PackageConstants.kConstantClassName, constantClass.constantToFieldMap))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
                         .runAndGetBytecode();
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(DebugNameResolver.getUserPackageDotPrefix(targetTestName, false), transformer.apply(targetTestBytes));
         classes.put(DebugNameResolver.getUserPackageDotPrefix(targetNoStaticName, false), transformer.apply(targetNoStaticBytes));
+        classes.put(PackageConstants.kConstantClassName, constantClass.bytecode);
 
         Map<String, byte[]> classAndHelper = Helpers.mapIncludingHelperBytecode(classes, Helpers.loadDefaultHelperBytecode());
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classAndHelper);

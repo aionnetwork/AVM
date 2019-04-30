@@ -95,8 +95,14 @@ public class DAppCreator {
         // We need to run our rejection filter and static rename pass.
         Map<String, byte[]> safeClasses = rejectionAndRenameInputClasses(inputClasses, classHierarchy, preserveDebuggability);
         
+        ConstantClassBuilder.ConstantClassInfo constantClass = ConstantClassBuilder.buildConstantClassBytecodeForClasses(PackageConstants.kConstantClassName, safeClasses.values());
+        
         // merge the generated classes and processed classes, assuming the package spaces do not conflict.
         Map<String, byte[]> processedClasses = new HashMap<>();
+        
+        // Start by adding the constant class.
+        processedClasses.put(PackageConstants.kConstantClassName, constantClass.bytecode);
+        
         // merge the generated classes and processed classes, assuming the package spaces do not conflict.
         // We also want to expose this type to the class writer so it can compute common superclasses.
         GeneratedClassConsumer generatedClassesSink = (superClassSlashName, classSlashName, bytecode) -> {
@@ -119,7 +125,7 @@ public class DAppCreator {
             // cause the BlockBuildingMethodVisitor to build lots of small blocks instead of a few big ones (each block incurs a Helper
             // static call, which is somewhat expensive - this is how we bill for energy).
             byte[] bytecode = new ClassToolchain.Builder(safeClasses.get(name), parsingOptions)
-                    .addNextVisitor(new ConstantVisitor())
+                    .addNextVisitor(new ConstantVisitor(PackageConstants.kConstantClassName, constantClass.constantToFieldMap))
                     .addNextVisitor(new ClassMetering(postRenameObjectSizes))
                     .addNextVisitor(new InvokedynamicShadower(PackageConstants.kShadowSlashPrefix))
                     .addNextVisitor(new ClassShadowing(PackageConstants.kShadowSlashPrefix))

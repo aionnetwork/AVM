@@ -1,6 +1,7 @@
 package org.aion.avm.core.shadowing;
 
 import org.aion.avm.core.ClassToolchain;
+import org.aion.avm.core.ConstantClassBuilder;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.classloading.AvmClassLoader;
@@ -47,6 +48,8 @@ public class ClassShadowingTest {
         InstrumentationHelpers.pushNewStackFrame(runtime, loader, 1_000_000L, 1, new InternedClasses());
         Class<?> clazz = loader.loadUserClassByOriginalName(className, preserveDebuggability);
         Object obj = clazz.getConstructor().newInstance();
+        // Call the method to get the string, in order to force the constant <clinit> to run (since it is a different class).
+        clazz.getDeclaredMethod("avm_returnString").invoke(obj);
 
         Method method = clazz.getMethod(NamespaceMapper.mapMethodName("abs"), int.class);
         Object ret = method.invoke(obj, -10);
@@ -179,7 +182,7 @@ public class ClassShadowingTest {
         // debug should only ever be enabled, locally.
         new ClassToolchain.Builder(inputBytes, 0)
                 .addNextVisitor(new UserClassMappingVisitor(createTestingMapper(className), true))
-                .addNextVisitor(new ConstantVisitor())
+                .addNextVisitor(new ConstantVisitor("NOCONSTANTS", Collections.emptyMap()))
                 .addNextVisitor(new ClassShadowing(PackageConstants.kShadowSlashPrefix))
                 .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                 .build()
@@ -199,10 +202,14 @@ public class ClassShadowingTest {
             bytecode[i] = Helpers.loadRequiredResourceAsBytes(classNames[i].replaceAll("\\.", "/") + ".class");
         }
 
+        // We will need to produce the constant class.
+        Collection<byte[]> inputClasses = Set.of(bytecode);
+        ConstantClassBuilder.ConstantClassInfo constantClass = ConstantClassBuilder.buildConstantClassBytecodeForClasses(PackageConstants.kConstantClassName, inputClasses);
+
         Function<byte[], byte[]> transformer = (inputBytes) ->
                 new ClassToolchain.Builder(inputBytes, ClassReader.SKIP_DEBUG)
                         .addNextVisitor(new UserClassMappingVisitor(createTestingMapper(classNames), preserveDebuggability))
-                        .addNextVisitor(new ConstantVisitor())
+                        .addNextVisitor(new ConstantVisitor(PackageConstants.kConstantClassName, constantClass.constantToFieldMap))
                         .addNextVisitor(new ClassShadowing(PackageConstants.kShadowSlashPrefix))
                         .addWriter(new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS))
                         .build()
@@ -214,6 +221,7 @@ public class ClassShadowingTest {
         for (int i = 0; i < classNames.length; ++i) {
             classes.put(prefix + classNames[i], transformer.apply(bytecode[i]));
         }
+        classes.put(PackageConstants.kConstantClassName, constantClass.bytecode);
 
         Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, Helpers.loadDefaultHelperBytecode());
         return NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);

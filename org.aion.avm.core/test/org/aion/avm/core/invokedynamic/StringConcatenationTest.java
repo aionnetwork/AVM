@@ -28,6 +28,8 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -124,10 +126,17 @@ public class StringConcatenationTest {
     private Class<?> transformClass(Class<?> clazz) throws Exception {
         final var className = clazz.getName();
         final byte[] origBytecode = loadRequiredResourceAsBytes(InvokedynamicUtils.getSlashClassNameFrom(className));
-        final byte[] transformedBytecode = transformForStringConcatTest(origBytecode, className);
+        
+        Collection<byte[]> inputClasses = Collections.singleton(origBytecode);
+        ConstantClassBuilder.ConstantClassInfo constantClass = ConstantClassBuilder.buildConstantClassBytecodeForClasses(PackageConstants.kConstantClassName, inputClasses);
+        
+        final byte[] transformedBytecode = transformForStringConcatTest(origBytecode, className, PackageConstants.kConstantClassName, constantClass.constantToFieldMap);
         assertFalse(Arrays.equals(origBytecode, transformedBytecode));
         java.lang.String mappedClassName = DebugNameResolver.getUserPackageDotPrefix(className, StringConcatenationTest.preserveDebuggability);
-        Map<String, byte[]> classAndHelper = Helpers.mapIncludingHelperBytecode(Map.of(mappedClassName, transformedBytecode), Helpers.loadDefaultHelperBytecode());
+        Map<String, byte[]> allClasses = Map.of(mappedClassName, transformedBytecode
+                , PackageConstants.kConstantClassName, constantClass.bytecode
+        );
+        Map<String, byte[]> classAndHelper = Helpers.mapIncludingHelperBytecode(allClasses, Helpers.loadDefaultHelperBytecode());
         AvmClassLoader dappLoader = NodeEnvironment.singleton.createInvocationClassLoader(classAndHelper);
         
         this.runtimeSetup = Helpers.getSetupForLoader(dappLoader);
@@ -135,13 +144,13 @@ public class StringConcatenationTest {
         return dappLoader.loadClass(mappedClassName);
     }
 
-    private static byte[] transformForStringConcatTest(byte[] origBytecode, String className) {
+    private static byte[] transformForStringConcatTest(byte[] origBytecode, String className, String constantClassName, Map<String, String> constantToFieldMap) {
         ClassHierarchy classHierarchy = buildNewHierarchy(className, preserveDebuggability);
 
         final String shadowPackage = PackageConstants.kShadowSlashPrefix;
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
                 .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(buildSingletonAccessRules(classHierarchy, preserveDebuggability)), StringConcatenationTest.preserveDebuggability))
-                .addNextVisitor(new ConstantVisitor())
+                .addNextVisitor(new ConstantVisitor(constantClassName, constantToFieldMap))
                 .addNextVisitor(new ClassShadowing(shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
                 .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, preserveDebuggability))

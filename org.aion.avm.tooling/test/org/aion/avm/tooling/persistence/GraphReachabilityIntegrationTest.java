@@ -241,13 +241,16 @@ public class GraphReachabilityIntegrationTest {
         // The first three numbers here are: basic cost of tx, processing cost and storage cost
         long basicCost = BillingRules.getBasicTransactionCost(txData);
         long codeInstantiationOfDeploymentFee = BillingRules.getDeploymentFee(11, optimizedJar.length);
-        long miscCharges = basicCost + codeInstantiationOfDeploymentFee + 185L + 300L + 1500L + 3L + 31L;
+        long clinit = 83L;
+        long assertionStatus = 1500L;
+        long clinit2 = 3L + 31L;
+        long miscCharges = basicCost + codeInstantiationOfDeploymentFee + clinit + assertionStatus + clinit2;
         // One write of 13563L.
         long storageCharges = 13563L;
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -5282L;
+        long userlibCost = -7000L;
 
         long totalExpectedCost = miscCharges + storageCharges + userlibCost;
 

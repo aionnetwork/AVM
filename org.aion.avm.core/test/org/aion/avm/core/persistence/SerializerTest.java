@@ -49,7 +49,7 @@ public class SerializerTest {
         int nextHashCode = 1;
         Class<?>[] sortedRoots = new Class<?>[] {TargetRoot.class, TargetLeaf.class};
         byte[] finalBytes = serializeDeserializeAsNew(nextHashCode, sortedRoots);
-        Serializer.serializeEntireGraph(buffer, null, null, resolver, this.cache, classNameMapper, nextHashCode, sortedRoots);
+        Serializer.serializeEntireGraph(buffer, null, null, resolver, this.cache, classNameMapper, nextHashCode, sortedRoots, EmptyConstantClass.class);
         System.out.println(Helpers.bytesToHexString(finalBytes));
         Assert.assertArrayEquals(Helpers.hexStringToBytes("00000001030000000000000000000000000a546172676574526f6f740000000103000000010a5461726765744c656166000000020003000000000300000001"), finalBytes);
         
@@ -172,12 +172,12 @@ public class SerializerTest {
         // We want to capture this state as the caller.
         int nextHashCode = 1;
         Class<?>[] sortedRoots = new Class<?>[] {TargetRoot.class, TargetLeaf.class};
-        ReentrantGraph callerState = ReentrantGraph.captureCallerState(resolver, this.cache, classNameMapper, 1000, nextHashCode, sortedRoots);
+        ReentrantGraph callerState = ReentrantGraph.captureCallerState(resolver, this.cache, classNameMapper, 1000, nextHashCode, sortedRoots, EmptyConstantClass.class);
         
         // We need to fake up a callee context, which means that shared instances will have a readIndex, so we need to create our new instances.
         TargetRoot.root = null;
         TargetLeaf.D = 0.0;
-        int calleeHashCode = callerState.applyToRootsForNewFrame(resolver, this.cache, classNameMapper, sortedRoots);
+        int calleeHashCode = callerState.applyToRootsForNewFrame(resolver, this.cache, classNameMapper, sortedRoots, EmptyConstantClass.class);
         Assert.assertEquals(nextHashCode, calleeHashCode);
         
         // We want to now put these objects out of order, but keep as many as possible.  This means we add 1 single instance near the beginning.
@@ -187,13 +187,13 @@ public class SerializerTest {
         newRoot.next = TargetRoot.root;
         TargetRoot.root = newRoot;
         TargetLeaf.D = 5.0;
-        ReentrantGraph calleeState = ReentrantGraph.captureCalleeState(resolver, this.cache, classNameMapper, 1000, nextHashCode, sortedRoots);
+        ReentrantGraph calleeState = ReentrantGraph.captureCalleeState(resolver, this.cache, classNameMapper, 1000, nextHashCode, sortedRoots, EmptyConstantClass.class);
         System.out.println(Helpers.bytesToHexString(calleeState.rawState));
         
         TargetRoot.root = null;
         TargetLeaf.D = 0.0;
         
-        int hashCode = callerState.commitChangesToState(resolver, this.cache, classNameMapper, sortedRoots, calleeState);
+        int hashCode = callerState.commitChangesToState(resolver, this.cache, classNameMapper, sortedRoots, EmptyConstantClass.class, calleeState);
         
         Assert.assertEquals(1, hashCode);
         Assert.assertEquals(3, TargetRoot.root.counter);
@@ -223,12 +223,12 @@ public class SerializerTest {
         // We want to capture this state as the caller.
         int nextHashCode = 1;
         Class<?>[] sortedRoots = new Class<?>[] {TargetRoot.class, TargetLeaf.class};
-        ReentrantGraph callerState = ReentrantGraph.captureCallerState(resolver, this.cache, classNameMapper, 1000, nextHashCode, sortedRoots);
+        ReentrantGraph callerState = ReentrantGraph.captureCallerState(resolver, this.cache, classNameMapper, 1000, nextHashCode, sortedRoots, EmptyConstantClass.class);
         
         // We need to fake up a callee context, which means that shared instances will have a readIndex, so we need to create our new instances.
         TargetRoot.root = null;
         TargetLeaf.D = 0.0;
-        int calleeHashCode = callerState.applyToRootsForNewFrame(resolver, this.cache, classNameMapper, sortedRoots);
+        int calleeHashCode = callerState.applyToRootsForNewFrame(resolver, this.cache, classNameMapper, sortedRoots, EmptyConstantClass.class);
         Assert.assertEquals(nextHashCode, calleeHashCode);
         
         // We want to now put these objects out of order, but keep as many as possible.  This means we add 1 single instance near the beginning.
@@ -240,7 +240,7 @@ public class SerializerTest {
         TargetLeaf.D = 5.0;
         
         // Assume that, at this point, we decide to revert the changes.
-        int hashCode = callerState.revertChangesToState(resolver, this.cache, classNameMapper, sortedRoots);
+        int hashCode = callerState.revertChangesToState(resolver, this.cache, classNameMapper, sortedRoots, EmptyConstantClass.class);
         
         Assert.assertEquals(1, hashCode);
         Assert.assertEquals(1, TargetRoot.root.counter);
@@ -281,7 +281,7 @@ public class SerializerTest {
         long start = System.nanoTime();
         for (int i = 0; i < samples; ++i) {
             serializationBuffer.clear();
-            Serializer.serializeEntireGraph(serializationBuffer, null, null, resolver, this.cache, classNameMapper, nextHashCode, sortedRoots);
+            Serializer.serializeEntireGraph(serializationBuffer, null, null, resolver, this.cache, classNameMapper, nextHashCode, sortedRoots, EmptyConstantClass.class);
         }
         long end = System.nanoTime();
         long deltaNanosPer = (end - start) / samples;
@@ -292,7 +292,7 @@ public class SerializerTest {
         start = System.nanoTime();
         for (int i = 0; i < samples; ++i) {
             deserializationBuffer.clear();
-            Deserializer.deserializeEntireGraphAndNextHashCode(deserializationBuffer, null, resolver, this.cache, classNameMapper, sortedRoots);
+            Deserializer.deserializeEntireGraphAndNextHashCode(deserializationBuffer, null, resolver, this.cache, classNameMapper, sortedRoots, EmptyConstantClass.class);
         }
         end = System.nanoTime();
         deltaNanosPer = (end - start) / samples;
@@ -328,7 +328,7 @@ public class SerializerTest {
         long start = System.nanoTime();
         for (int i = 0; i < samples; ++i) {
             serializationBuffer.clear();
-            Serializer.serializeEntireGraph(serializationBuffer, null, null, resolver, this.cache, classNameMapper, nextHashCode, sortedRoots);
+            Serializer.serializeEntireGraph(serializationBuffer, null, null, resolver, this.cache, classNameMapper, nextHashCode, sortedRoots, EmptyConstantClass.class);
         }
         long end = System.nanoTime();
         long deltaNanosPer = (end - start) / samples;
@@ -339,7 +339,7 @@ public class SerializerTest {
         start = System.nanoTime();
         for (int i = 0; i < samples; ++i) {
             deserializationBuffer.clear();
-            Deserializer.deserializeEntireGraphAndNextHashCode(deserializationBuffer, null, resolver, this.cache, classNameMapper, sortedRoots);
+            Deserializer.deserializeEntireGraphAndNextHashCode(deserializationBuffer, null, resolver, this.cache, classNameMapper, sortedRoots, EmptyConstantClass.class);
         }
         end = System.nanoTime();
         deltaNanosPer = (end - start) / samples;
@@ -355,12 +355,12 @@ public class SerializerTest {
         TestGlobalResolver resolver = new TestGlobalResolver();
         TestNameMapper classNameMapper = new TestNameMapper();
 
-        Serializer.serializeEntireGraph(buffer, null, null, resolver, this.cache, classNameMapper, nextHashCode, sortedRoots);
+        Serializer.serializeEntireGraph(buffer, null, null, resolver, this.cache, classNameMapper, nextHashCode, sortedRoots, EmptyConstantClass.class);
 
         Assert.assertTrue(null != sortedRoots[0].getDeclaredField("left").get(null));
         Assert.assertTrue(null != sortedRoots[0].getDeclaredField("right").get(null));
 
-        Deserializer.cleanClassStatics(this.cache, sortedRoots);
+        Deserializer.cleanClassStatics(this.cache, sortedRoots, EmptyConstantClass.class);
 
         Assert.assertTrue(null == sortedRoots[0].getDeclaredField("left").get(null));
         Assert.assertTrue(null == sortedRoots[0].getDeclaredField("right").get(null));
@@ -372,12 +372,12 @@ public class SerializerTest {
         TestGlobalResolver resolver = new TestGlobalResolver();
         TestNameMapper classNameMapper = new TestNameMapper();
         
-        Serializer.serializeEntireGraph(buffer, null, null, resolver, this.cache, classNameMapper, nextHashCode, sortedRoots);
+        Serializer.serializeEntireGraph(buffer, null, null, resolver, this.cache, classNameMapper, nextHashCode, sortedRoots, EmptyConstantClass.class);
         byte[] finalBytes = new byte[buffer.position()];
         System.arraycopy(buffer.array(), 0, finalBytes, 0, finalBytes.length);
         
         ByteBuffer readingBuffer = ByteBuffer.wrap(finalBytes);
-        int hashCode = Deserializer.deserializeEntireGraphAndNextHashCode(readingBuffer, null, resolver, this.cache, classNameMapper, sortedRoots);
+        int hashCode = Deserializer.deserializeEntireGraphAndNextHashCode(readingBuffer, null, resolver, this.cache, classNameMapper, sortedRoots, EmptyConstantClass.class);
         Assert.assertEquals(nextHashCode, hashCode);
         return finalBytes;
     }
@@ -423,5 +423,8 @@ public class SerializerTest {
         public String getInternalClassName(String storageClassName) {
             return "org.aion.avm.core.persistence." + storageClassName;
         }
+    }
+
+    private static final class EmptyConstantClass {
     }
 }

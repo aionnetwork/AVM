@@ -25,4 +25,5 @@ public class PackageConstants {
     public static final String kUserSlashPrefix = "org/aion/avm/user/";
     public static final String kPublicApiSlashPrefix = "avm/";
 
+    public static final String kConstantClassName = "C";
 }

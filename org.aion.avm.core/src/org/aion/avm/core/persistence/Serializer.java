@@ -16,7 +16,7 @@ import org.aion.avm.internal.RuntimeAssertionError;
 
 public class Serializer {
     // (Should make this Map a list since the graph is probably dense?)
-    public static void serializeEntireGraph(ByteBuffer outputBuffer, List<Object> out_instanceIndex, List<Integer> out_calleeToCallerIndexMap, IGlobalResolver resolver, SortedFieldCache cache, IPersistenceNameMapper classNameMapper, int nextHashCode, Class<?>[] sortedRoots) {
+    public static void serializeEntireGraph(ByteBuffer outputBuffer, List<Object> out_instanceIndex, List<Integer> out_calleeToCallerIndexMap, IGlobalResolver resolver, SortedFieldCache cache, IPersistenceNameMapper classNameMapper, int nextHashCode, Class<?>[] sortedRoots, Class<?> constantClass) {
         // We define the storage as big-endian.
         RuntimeAssertionError.assertTrue(ByteOrder.BIG_ENDIAN == outputBuffer.order());
         // We cannot be both serializing to build an index (that is done when serializing caller state before entering a callee frame)
@@ -33,7 +33,7 @@ public class Serializer {
         ByteBufferObjectSerializer objectSerializer = new ByteBufferObjectSerializer(outputBuffer, toProcessQueue, cache, resolver, classNameMapper);
         
         // Next, we serialize all the class statics from the user's classes.
-        serializeClassStatics(objectSerializer, cache, sortedRoots);
+        serializeClassStatics(objectSerializer, cache, sortedRoots, constantClass);
         
         // Finally, we serialize the rest of the graph.
         serializeGraphFromWorkQueue(out_instanceIndex, out_calleeToCallerIndexMap, objectSerializer, cache, toProcessQueue);
@@ -41,10 +41,13 @@ public class Serializer {
 
 
 
-    private static void serializeClassStatics(ByteBufferObjectSerializer objectSerializer, SortedFieldCache cache, Class<?>[] sortedRoots) {
+    private static void serializeClassStatics(ByteBufferObjectSerializer objectSerializer, SortedFieldCache cache, Class<?>[] sortedRoots, Class<?> constantClass) {
         try {
+            // First, we serialize the constants.
+            serializeConstantClass(objectSerializer, cache, constantClass);
+            // Then, we serialize the user-defined static fields.
             for (Class<?> clazz : sortedRoots) {
-                serializeOneClass(objectSerializer, cache, clazz);
+                serializeOneUserClass(objectSerializer, cache, clazz);
             }
         } catch (BufferOverflowException e) {
             // This is if we run off the end of the buffer, which is an example of out of energy.
@@ -52,13 +55,14 @@ public class Serializer {
         }
     }
 
-    private static void serializeOneClass(ByteBufferObjectSerializer objectSerializer, SortedFieldCache cache, Class<?> clazz) {
+    private static void serializeConstantClass(ByteBufferObjectSerializer objectSerializer, SortedFieldCache cache, Class<?> clazz) {
         // Note that we don't serialize the class name - the roots are in the same sorted order for reading and writing.
-        // First, we serialize the constants.
         Field[] constants = cache.getConstantFields(clazz);
         serializeFieldsForClass(objectSerializer, constants);
-        
-        // Then, we serialize the user-defined static fields.
+    }
+
+    private static void serializeOneUserClass(ByteBufferObjectSerializer objectSerializer, SortedFieldCache cache, Class<?> clazz) {
+        // Note that we don't serialize the class name - the roots are in the same sorted order for reading and writing.
         Field[] fields = cache.getUserStaticFields(clazz);
         serializeFieldsForClass(objectSerializer, fields);
     }

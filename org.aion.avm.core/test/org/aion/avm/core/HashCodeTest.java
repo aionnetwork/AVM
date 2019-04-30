@@ -13,6 +13,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -35,6 +36,8 @@ public class HashCodeTest {
         
         this.clazz = loader.loadUserClassByOriginalName(HashCodeTestTarget.class.getName(), preserveDebuggability);
         Assert.assertEquals(loader, this.clazz.getClassLoader());
+        
+        forceConstantsToLoad(loader);
     }
 
     @After
@@ -223,6 +226,7 @@ public class HashCodeTest {
         InstrumentationHelpers.pushNewStackFrame(setup1, loader1, 1_000_000L, 1, null);
         Class<?> clazz1 = loader1.loadUserClassByOriginalName(targetClassName, preserveDebuggability);
         Method getOneHashCode1 = clazz1.getMethod(NamespaceMapper.mapMethodName("getOneHashCode"));
+        forceConstantsToLoad(loader1);
         Object result = getOneHashCode1.invoke(null);
         Assert.assertEquals(usedHashCount + 1, ((Integer)result).intValue());
         result = getOneHashCode1.invoke(null);
@@ -236,6 +240,7 @@ public class HashCodeTest {
         Class<?> clazz2 = loader2.loadUserClassByOriginalName(targetClassName, preserveDebuggability);
         Method getOneHashCode2 = clazz2.getMethod(NamespaceMapper.mapMethodName("getOneHashCode"));
         Assert.assertEquals(1, instrumentation.peekNextHashCode());
+        forceConstantsToLoad(loader2);
         result = getOneHashCode2.invoke(null);
         Assert.assertEquals(usedHashCount + 1, ((Integer)result).intValue());
         InstrumentationHelpers.popExistingStackFrame(setup2);
@@ -329,5 +334,13 @@ public class HashCodeTest {
     private int callIntReturnMethod(String preTransformMethodName) throws Exception {
         Method lengthOfClonedByteArray = this.clazz.getMethod(NamespaceMapper.mapMethodName(preTransformMethodName));
         return (Integer)lengthOfClonedByteArray.invoke(null);
+    }
+
+    private void forceConstantsToLoad(AvmClassLoader loader) throws ClassNotFoundException, IllegalAccessException {
+        Class<?> c =loader.loadClass(PackageConstants.kConstantClassName, true);
+        // For some reason, in this case we need to aggressively force this load.
+        Field f = c.getFields()[0];
+        f.setAccessible(true);
+        f.get(null);
     }
 }

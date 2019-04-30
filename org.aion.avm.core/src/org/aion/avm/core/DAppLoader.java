@@ -9,6 +9,7 @@ import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.types.ImmortalDappModule;
 import org.aion.avm.core.types.TransformedDappModule;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.internal.PackageConstants;
 
 
 /**
@@ -44,7 +45,8 @@ public class DAppLoader {
         List<Class<?>> aphabeticalContractClasses = Helpers.getAlphabeticalUserTransformedDappClasses(classLoader, app.classes.keySet());
 
         // We now have all the information to describe the LoadedDApp.
-        return new LoadedDApp(classLoader, aphabeticalContractClasses, app.mainClass, preserveDebuggability);
+        SplitClasses splitClasses = SplitClasses.splitAllSavedClasses(aphabeticalContractClasses);
+        return new LoadedDApp(classLoader, splitClasses.sortedUserClasses, splitClasses.constantClass, app.mainClass, preserveDebuggability);
     }
 
     /**
@@ -65,6 +67,28 @@ public class DAppLoader {
         List<Class<?>> aphabeticalContractClasses = Helpers.getAlphabeticalUserTransformedDappClasses(classLoader, app.classes.keySet());
 
         // We now have all the information to describe the LoadedDApp.
-        return new LoadedDApp(classLoader, aphabeticalContractClasses, app.mainClass, preserveDebuggability);
+        SplitClasses splitClasses = SplitClasses.splitAllSavedClasses(aphabeticalContractClasses);
+        return new LoadedDApp(classLoader, splitClasses.sortedUserClasses, splitClasses.constantClass, app.mainClass, preserveDebuggability);
+    }
+
+
+    private static class SplitClasses {
+        public static SplitClasses splitAllSavedClasses(List<Class<?>> classes) {
+            Class<?>[] sortedUserClasses = classes.stream()
+                    .filter((c) -> !PackageConstants.kConstantClassName.equals(c.getName()))
+                    .sorted((f1, f2) -> f1.getName().compareTo(f2.getName()))
+                    .toArray(Class[]::new);
+            Class<?> constantClass = classes.stream()
+                    .filter((c) -> PackageConstants.kConstantClassName.equals(c.getName()))
+                    .toArray(Class[]::new)[0];
+            return new SplitClasses(sortedUserClasses, constantClass);
+        }
+        
+        public final Class<?>[] sortedUserClasses;
+        public final Class<?> constantClass;
+        private SplitClasses(Class<?>[] sortedUserClasses, Class<?> constantClass) {
+            this.sortedUserClasses = sortedUserClasses;
+            this.constantClass = constantClass;
+        }
     }
 }

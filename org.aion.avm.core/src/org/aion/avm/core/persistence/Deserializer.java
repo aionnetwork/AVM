@@ -13,7 +13,7 @@ import org.aion.avm.internal.RuntimeAssertionError;
 
 
 public class Deserializer {
-    public static int deserializeEntireGraphAndNextHashCode(ByteBuffer inputBuffer, List<Object> existingObjectIndex, IGlobalResolver resolver, SortedFieldCache cache, IPersistenceNameMapper classNameMapper, Class<?>[] sortedRoots) {
+    public static int deserializeEntireGraphAndNextHashCode(ByteBuffer inputBuffer, List<Object> existingObjectIndex, IGlobalResolver resolver, SortedFieldCache cache, IPersistenceNameMapper classNameMapper, Class<?>[] sortedRoots, Class<?> constantClass) {
         // We define the storage as big-endian.
         RuntimeAssertionError.assertTrue(ByteOrder.BIG_ENDIAN == inputBuffer.order());
         
@@ -23,7 +23,7 @@ public class Deserializer {
         // Create the pre-pass deserializer, just to walk consistently.
         ByteBufferObjectDeserializer prePassDeserializer = new ByteBufferObjectDeserializer(inputBuffer, null, cache, resolver, classNameMapper);
         // Now, we need walk the statics, but only to advance the cursor through the buffer (since we will read the same data, but just won't be able to find the instances).
-        deserializeClassStatics(prePassDeserializer, cache, sortedRoots);
+        deserializeClassStatics(prePassDeserializer, cache, sortedRoots, constantClass);
         
         // Now, walk the rest of the data, deserializing each object, but this is just to find out the instance types and advance through the buffer, consistently.
         List<Object> instanceList = createAllInstancesFromBuffer(prePassDeserializer, existingObjectIndex, cache, classNameMapper);
@@ -37,7 +37,7 @@ public class Deserializer {
         ByteBufferObjectDeserializer objectDeserializer = new ByteBufferObjectDeserializer(inputBuffer, instanceList, cache, resolver, classNameMapper);
         
         // Next, we deserialize all the class statics for the user's classes.
-        deserializeClassStatics(objectDeserializer, cache, sortedRoots);
+        deserializeClassStatics(objectDeserializer, cache, sortedRoots, constantClass);
         
         // We can now use the real deserializer to populate all instance fields and connections.
         populateAllInstancesFromBuffer(objectDeserializer, instanceList, cache);
@@ -45,7 +45,8 @@ public class Deserializer {
         return nextHashCode;
     }
 
-    public static void cleanClassStatics(SortedFieldCache cache, Class<?>[] sortedRoots) {
+    public static void cleanClassStatics(SortedFieldCache cache, Class<?>[] sortedRoots, Class<?> constantClass) {
+        cleanOneClass(cache, constantClass);
         for (Class<?> clazz : sortedRoots) {
             cleanOneClass(cache, clazz);
         }
@@ -82,19 +83,23 @@ public class Deserializer {
         }
     }
 
-    private static void deserializeClassStatics(ByteBufferObjectDeserializer objectDeserializer, SortedFieldCache cache, Class<?>[] sortedRoots) {
+    private static void deserializeClassStatics(ByteBufferObjectDeserializer objectDeserializer, SortedFieldCache cache, Class<?>[] sortedRoots, Class<?> constantClass) {
+        // First, we serialize the constants.
+        deserializeConstantClass(objectDeserializer, cache, constantClass);
+        // Then, we serialize the user-defined static fields.
         for (Class<?> clazz : sortedRoots) {
-            deserializeOneClass(objectDeserializer, cache, clazz);
+            deserializeOneUserClass(objectDeserializer, cache, clazz);
         }
     }
 
-    private static void deserializeOneClass(ByteBufferObjectDeserializer objectDeserializer, SortedFieldCache cache, Class<?> clazz) {
+    private static void deserializeConstantClass(ByteBufferObjectDeserializer objectDeserializer, SortedFieldCache cache, Class<?> constantClass) {
         // Note that we don't serialize the class name - the roots are in the same sorted order for reading and writing.
-        // First, we serialize the constants.
-        Field[] constants = cache.getConstantFields(clazz);
+        Field[] constants = cache.getConstantFields(constantClass);
         deserializeFieldsForClass(objectDeserializer, constants);
-        
-        // Then, we serialize the user-defined static fields.
+    }
+
+    private static void deserializeOneUserClass(ByteBufferObjectDeserializer objectDeserializer, SortedFieldCache cache, Class<?> clazz) {
+        // Note that we don't serialize the class name - the roots are in the same sorted order for reading and writing.
         Field[] fields = cache.getUserStaticFields(clazz);
         deserializeFieldsForClass(objectDeserializer, fields);
     }

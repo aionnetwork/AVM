@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -67,7 +68,9 @@ public class LoadedDApp {
     }
 
     public final ClassLoader loader;
-    private final Class<?>[] sortedClasses;
+    // Note that the sortedUserClasses array does NOT include the constant class.
+    private final Class<?>[] sortedUserClasses;
+    private final Class<?> constantClass;
     private final String originalMainClassName;
     private final SortedFieldCache fieldCache;
 
@@ -86,14 +89,18 @@ public class LoadedDApp {
      * Creates the LoadedDApp to represent the classes related to DApp at address.
      * 
      * @param loader The class loader to look up shape.
-     * @param classes The list of classes to populate.
+     * @param userClasses The classes provided by the user.
+     * @param constantClass The class we generated to contain all constants.
+     * @param originalMainClassName The pre-translation name of the user's main class.
+     * @param preserveDebuggability True if we should preserve debuggability by not renaming classes.
      */
-    public LoadedDApp(ClassLoader loader, List<Class<?>> classes, String originalMainClassName, boolean preserveDebuggability) {
+    public LoadedDApp(ClassLoader loader, Class<?>[] userClasses, Class<?> constantClass, String originalMainClassName, boolean preserveDebuggability) {
         this.loader = loader;
         // Note that the storage system defines the classes as being sorted alphabetically.
-        this.sortedClasses = classes.stream()
+        this.sortedUserClasses = Arrays.stream(userClasses)
                 .sorted((f1, f2) -> f1.getName().compareTo(f2.getName()))
                 .toArray(Class[]::new);
+        this.constantClass = constantClass;
         this.originalMainClassName = originalMainClassName;
         this.fieldCache = new SortedFieldCache(this.loader, SERIALIZE_SELF, DESERIALIZE_SELF, FIELD_READ_INDEX);
         this.preserveDebuggability = preserveDebuggability;
@@ -101,8 +108,8 @@ public class LoadedDApp {
         // Collect all of the user-defined classes, discarding any generated exception wrappers for them.
         // This information is to be handed off to the persistance layer.
         Set<String> postRenameUserClasses = new HashSet<>();
-        for (Class<?> userClasses : this.sortedClasses) {
-            String className = userClasses.getName();
+        for (Class<?> userClass : this.sortedUserClasses) {
+            String className = userClass.getName();
             if (!className.startsWith(PackageConstants.kExceptionWrapperDotPrefix)) {
                 postRenameUserClasses.add(className);
             }
@@ -140,7 +147,7 @@ public class LoadedDApp {
         List<Object> existingObjectIndex = null;
         StandardGlobalResolver resolver = new StandardGlobalResolver(internedClassMap, this.loader);
         StandardNameMapper classNameMapper = new StandardNameMapper(this.classRenamer);
-        int nextHashCode = Deserializer.deserializeEntireGraphAndNextHashCode(inputBuffer, existingObjectIndex, resolver, this.fieldCache, classNameMapper, this.sortedClasses);
+        int nextHashCode = Deserializer.deserializeEntireGraphAndNextHashCode(inputBuffer, existingObjectIndex, resolver, this.fieldCache, classNameMapper, this.sortedUserClasses, this.constantClass);
         return nextHashCode;
     }
 
@@ -158,7 +165,7 @@ public class LoadedDApp {
         List<Integer> out_calleeToCallerIndexMap = null;
         StandardGlobalResolver resolver = new StandardGlobalResolver(null, this.loader);
         StandardNameMapper classNameMapper = new StandardNameMapper(this.classRenamer);
-        Serializer.serializeEntireGraph(outputBuffer, out_instanceIndex, out_calleeToCallerIndexMap, resolver, this.fieldCache, classNameMapper, nextHashCode, this.sortedClasses);
+        Serializer.serializeEntireGraph(outputBuffer, out_instanceIndex, out_calleeToCallerIndexMap, resolver, this.fieldCache, classNameMapper, nextHashCode, this.sortedUserClasses, this.constantClass);
         
         byte[] finalBytes = new byte[outputBuffer.position()];
         System.arraycopy(outputBuffer.array(), 0, finalBytes, 0, finalBytes.length);
@@ -168,25 +175,25 @@ public class LoadedDApp {
     public ReentrantGraph captureStateAsCaller(int nextHashCode, int maxGraphSize) {
         StandardGlobalResolver resolver = new StandardGlobalResolver(null, this.loader);
         StandardNameMapper classNameMapper = new StandardNameMapper(this.classRenamer);
-        return ReentrantGraph.captureCallerState(resolver, this.fieldCache, classNameMapper, maxGraphSize, nextHashCode, this.sortedClasses);
+        return ReentrantGraph.captureCallerState(resolver, this.fieldCache, classNameMapper, maxGraphSize, nextHashCode, this.sortedUserClasses, this.constantClass);
     }
 
     public ReentrantGraph captureStateAsCallee(int updatedNextHashCode, int maxGraphSize) {
         StandardGlobalResolver resolver = new StandardGlobalResolver(null, this.loader);
         StandardNameMapper classNameMapper = new StandardNameMapper(this.classRenamer);
-        return ReentrantGraph.captureCalleeState(resolver, this.fieldCache, classNameMapper, maxGraphSize, updatedNextHashCode, this.sortedClasses);
+        return ReentrantGraph.captureCalleeState(resolver, this.fieldCache, classNameMapper, maxGraphSize, updatedNextHashCode, this.sortedUserClasses, this.constantClass);
     }
 
     public void commitReentrantChanges(InternedClasses internedClassMap, ReentrantGraph callerState, ReentrantGraph calleeState) {
         StandardGlobalResolver resolver = new StandardGlobalResolver(internedClassMap, this.loader);
         StandardNameMapper classNameMapper = new StandardNameMapper(this.classRenamer);
-        callerState.commitChangesToState(resolver, this.fieldCache, classNameMapper, this.sortedClasses, calleeState);
+        callerState.commitChangesToState(resolver, this.fieldCache, classNameMapper, this.sortedUserClasses, this.constantClass, calleeState);
     }
 
     public void revertToCallerState(InternedClasses internedClassMap, ReentrantGraph callerState) {
         StandardGlobalResolver resolver = new StandardGlobalResolver(internedClassMap, this.loader);
         StandardNameMapper classNameMapper = new StandardNameMapper(this.classRenamer);
-        callerState.revertChangesToState(resolver, this.fieldCache, classNameMapper, this.sortedClasses);
+        callerState.revertChangesToState(resolver, this.fieldCache, classNameMapper, this.sortedUserClasses, this.constantClass);
     }
 
     /**
@@ -256,7 +263,8 @@ public class LoadedDApp {
      * long-term storage.
      */
     public void forceInitializeAllClasses() throws Throwable {
-        for (Class<?> clazz : this.sortedClasses) {
+        forceInitializeOneClass(this.constantClass);
+        for (Class<?> clazz : this.sortedUserClasses) {
             forceInitializeOneClass(clazz);
         }
     }
@@ -312,7 +320,7 @@ public class LoadedDApp {
      * Called before the DApp is about to be put into a cache.  This is so it can put itself into a "resumable" state.
      */
     public void cleanForCache() {
-        Deserializer.cleanClassStatics(this.fieldCache, this.sortedClasses);
+        Deserializer.cleanClassStatics(this.fieldCache, this.sortedUserClasses, this.constantClass);
     }
 
 
@@ -366,7 +374,8 @@ public class LoadedDApp {
      */
     public void dumpTransformedByteCode(String path){
         AvmClassLoader appLoader = (AvmClassLoader) loader;
-        for (Class<?> clazz : this.sortedClasses){
+        dumpOneTransformedClass(path, appLoader, this.constantClass);
+        for (Class<?> clazz : this.sortedUserClasses){
             dumpOneTransformedClass(path, appLoader, clazz);
         }
     }

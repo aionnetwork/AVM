@@ -73,7 +73,7 @@ public class ArrayTypeTest {
     @Test
     public void testObjectToString() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testObjectToString"));
-        org.aion.avm.shadow.java.lang.String expectedShadowString = new org.aion.avm.shadow.java.lang.String("java.lang.Object@4java.lang.Object@5SubClassSuperClass");
+        org.aion.avm.shadow.java.lang.String expectedShadowString = new org.aion.avm.shadow.java.lang.String("java.lang.Object@3java.lang.Object@4SubClassSuperClass");
         assertEquals(expectedShadowString, method.invoke(clazz.getConstructor().newInstance()));
     }
 

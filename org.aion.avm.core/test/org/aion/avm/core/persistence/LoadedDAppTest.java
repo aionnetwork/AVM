@@ -1,7 +1,6 @@
 package org.aion.avm.core.persistence;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
@@ -75,7 +74,7 @@ public class LoadedDAppTest {
         LoadedDAppTarget.s_seven = 5;
         LoadedDAppTarget.s_eight = 5.0d;
 
-        LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName(), this.preserveDebuggability);
+        LoadedDApp dapp = new LoadedDApp(this.loader, new Class<?>[] {ReflectionStructureCodecTarget.class, LoadedDAppTarget.class}, EmptyConstantClass.class, ReflectionStructureCodecTarget.class.getName(), this.preserveDebuggability);
         byte[] result = dapp.saveEntireGraph(1, MAX_GRAPH_SIZE);
         String expectedHex = ""
                 // hashcode
@@ -177,7 +176,7 @@ public class LoadedDAppTest {
         byte[] expected = Helpers.hexStringToBytes(expectedHex);
         
         // Populate the classes.
-        new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class, LoadedDAppTarget.class), ReflectionStructureCodecTarget.class.getName(), this.preserveDebuggability)
+        new LoadedDApp(this.loader, new Class<?>[] {ReflectionStructureCodecTarget.class, LoadedDAppTarget.class}, EmptyConstantClass.class, ReflectionStructureCodecTarget.class.getName(), this.preserveDebuggability)
             .loadEntireGraph(new InternedClasses(), expected);
         
         // Verify that their static are as we expect.
@@ -214,7 +213,7 @@ public class LoadedDAppTest {
         ReflectionStructureCodecTarget.s_eight = 5.0d;
         ReflectionStructureCodecTarget.s_nine = new ReflectionStructureCodecTarget();
         
-        LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class), ReflectionStructureCodecTarget.class.getName(), this.preserveDebuggability);
+        LoadedDApp dapp = new LoadedDApp(this.loader, new Class<?>[] {ReflectionStructureCodecTarget.class}, EmptyConstantClass.class, ReflectionStructureCodecTarget.class.getName(), this.preserveDebuggability);
         byte[] result = dapp.saveEntireGraph(1, MAX_GRAPH_SIZE);
         String expectedHex = ""
                 // hashcode
@@ -313,7 +312,7 @@ public class LoadedDAppTest {
         ((ReflectionStructureCodecTarget)ReflectionStructureCodecTargetSub.s_nine).i_five = 42;
         ((ReflectionStructureCodecTarget)ReflectionStructureCodecTargetSub.s_nine).i_nine = ReflectionStructureCodecTarget.s_nine;
         
-        LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class), ReflectionStructureCodecTarget.class.getName(), this.preserveDebuggability);
+        LoadedDApp dapp = new LoadedDApp(this.loader, new Class<?>[] {ReflectionStructureCodecTarget.class, ReflectionStructureCodecTargetSub.class}, EmptyConstantClass.class, ReflectionStructureCodecTarget.class.getName(), this.preserveDebuggability);
         int hashCode = 1;
         byte[] result = dapp.saveEntireGraph(hashCode, MAX_GRAPH_SIZE);
         
@@ -388,7 +387,7 @@ public class LoadedDAppTest {
     public void serializeDeserializeReferenceToJdkConstant() {
         LoadedDAppTarget.s_nine = org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_EVEN;
         
-        LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName(), this.preserveDebuggability);
+        LoadedDApp dapp = new LoadedDApp(this.loader, new Class<?>[] {LoadedDAppTarget.class}, EmptyConstantClass.class, LoadedDAppTarget.class.getName(), this.preserveDebuggability);
         int hashcode = 1;
         byte[] result = dapp.saveEntireGraph(hashcode, MAX_GRAPH_SIZE);
         String expectedHex = ""
@@ -434,7 +433,7 @@ public class LoadedDAppTest {
         org.aion.avm.shadow.java.lang.Class<?> originalClassRef = internedClasses.get(org.aion.avm.shadow.java.lang.String.class);
         LoadedDAppTarget.s_nine = originalClassRef;
         
-        LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName(), this.preserveDebuggability);
+        LoadedDApp dapp = new LoadedDApp(this.loader, new Class<?>[] {LoadedDAppTarget.class}, EmptyConstantClass.class, LoadedDAppTarget.class.getName(), this.preserveDebuggability);
         byte[] result = dapp.saveEntireGraph(1, MAX_GRAPH_SIZE);
         String expectedHex = ""
                 // hashcode
@@ -477,7 +476,7 @@ public class LoadedDAppTest {
     public void serializeDeserializeReferenceToConstantClass() {
         LoadedDAppTarget.s_nine = org.aion.avm.shadow.java.lang.Byte.avm_TYPE;
         
-        LoadedDApp dapp = new LoadedDApp(this.loader, Arrays.asList(LoadedDAppTarget.class), LoadedDAppTarget.class.getName(), this.preserveDebuggability);
+        LoadedDApp dapp = new LoadedDApp(this.loader, new Class<?>[] {LoadedDAppTarget.class}, EmptyConstantClass.class, LoadedDAppTarget.class.getName(), this.preserveDebuggability);
         byte[] result = dapp.saveEntireGraph(1, MAX_GRAPH_SIZE);
         String expectedHex = ""
                 // hashcode
@@ -543,5 +542,9 @@ public class LoadedDAppTest {
         LoadedDAppTarget.s_six = 0.0f;
         LoadedDAppTarget.s_seven = 0;
         LoadedDAppTarget.s_eight = 0.0d;
+    }
+
+
+    private static final class EmptyConstantClass {
     }
 }

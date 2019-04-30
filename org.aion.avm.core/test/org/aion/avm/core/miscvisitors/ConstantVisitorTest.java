@@ -1,7 +1,9 @@
 package org.aion.avm.core.miscvisitors;
 
+import java.util.Collections;
 import java.util.Map;
 
+import org.aion.avm.core.ConstantClassBuilder;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.Helpers;
@@ -19,9 +21,16 @@ import org.objectweb.asm.Opcodes;
 public class ConstantVisitorTest {
     @Test
     public void testLoadStringConstant() throws Exception {
+        // We will need the constant class.
+        String constantTestValue = "value";
+        String constantClassName = "ConstantClass";
+        ConstantClassBuilder.ConstantClassInfo constantClass = ConstantClassBuilder.generateConstantClassForTest(constantClassName, Collections.singletonList(constantTestValue));
+        Assert.assertEquals(1, constantClass.constantToFieldMap.size());
+        Assert.assertEquals("const_0", constantClass.constantToFieldMap.get(constantTestValue));
+        
         String testClassName = "TestClass";
         ClassWriter writer = new ClassWriter(0);
-        ConstantVisitor visitor = new ConstantVisitor();
+        ConstantVisitor visitor = new ConstantVisitor(constantClassName, constantClass.constantToFieldMap);
         visitor.setDelegate(writer);
         visitor.visit(Opcodes.V10, Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER, testClassName, null, "java/lang/Object", null);
         
@@ -33,7 +42,7 @@ public class ConstantVisitorTest {
         methodVisitor.visitEnd();
         
         // Now, the field.
-        visitor.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "publicString", "L" + PackageConstants.kShadowSlashPrefix + "java/lang/String;", null, "value").visitEnd();
+        visitor.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "publicString", "L" + PackageConstants.kShadowSlashPrefix + "java/lang/String;", null, constantTestValue).visitEnd();
         
         // Finally, finish.
         visitor.visitEnd();
@@ -41,7 +50,10 @@ public class ConstantVisitorTest {
         byte[] bytecode = writer.toByteArray();
         // Get the class and make sure there are no issues.  Note that this would fail in our old implementation (duplicate <clinit>).
         byte[] stubBytecode = Helpers.loadRequiredResourceAsBytes(HelperStub.CLASS_NAME + ".class");
-        Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(Map.of(testClassName, bytecode), stubBytecode);
+        Map<String, byte[]> classes = Map.of(testClassName, bytecode
+                , constantClassName, constantClass.bytecode
+        );
+        Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, stubBytecode);
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
         Assert.assertEquals(0, TestHelpers.wrapAsStringCounter);
         Class<?> clazz = Class.forName(testClassName, true, loader);
