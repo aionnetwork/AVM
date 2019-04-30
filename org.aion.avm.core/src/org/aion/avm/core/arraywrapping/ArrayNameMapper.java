@@ -56,25 +56,11 @@ public class ArrayNameMapper {
     }
 
     private static String getOriginalNameOfPrimitiveArray1D(String primitiveArray1D) {
-        if (primitiveArray1D.equals(PackageConstants.kArrayWrapperSlashPrefix + "IntArray")) {
-            return "[I";
-        } else if (primitiveArray1D.equals(PackageConstants.kArrayWrapperSlashPrefix + "ByteArray")) {
-            return "[B";
-        } else if (primitiveArray1D.equals(PackageConstants.kArrayWrapperSlashPrefix + "BooleanArray")) {
-            return "[Z";
-        } else if (primitiveArray1D.equals(PackageConstants.kArrayWrapperSlashPrefix + "CharArray")) {
-            return "[C";
-        } else if (primitiveArray1D.equals(PackageConstants.kArrayWrapperSlashPrefix + "FloatArray")) {
-            return "[F";
-        } else if (primitiveArray1D.equals(PackageConstants.kArrayWrapperSlashPrefix + "ShortArray")) {
-            return "[S";
-        } else if (primitiveArray1D.equals(PackageConstants.kArrayWrapperSlashPrefix + "LongArray")) {
-            return "[J";
-        } else if (primitiveArray1D.equals(PackageConstants.kArrayWrapperSlashPrefix + "DoubleArray")) {
-            return "[D";
-        } else {
+        String name = ArrayClassNameMapper.getOriginalNameFromWrapper(primitiveArray1D);
+        if(name == null){
             throw RuntimeAssertionError.unreachable("Expected post-rename slash-style 1-dimension primitive array: " + primitiveArray1D);
         }
+        return name;
     }
 
     private static String getOriginalNameOfPrimitiveArrayMD(String primitiveArrayMD) {
@@ -122,7 +108,7 @@ public class ArrayNameMapper {
             validateArrayDimension(desc);
             ret = ArrayClassNameMapper.getClassWrapper(desc);
             if (ret == null) {
-                ret = ArrayClassNameMapper.addClassWrapperDescriptor(desc, newClassWrapper(desc));
+                ret = newClassWrapper(desc);
             }
         }
         return ret;
@@ -142,7 +128,7 @@ public class ArrayNameMapper {
             validateArrayDimension(desc);
             ret = ArrayClassNameMapper.getInterfaceWrapper(desc);
             if (ret == null) {
-                ret = ArrayClassNameMapper.addInterfaceWrapperDescriptor(desc, newInterfaceWrapper(desc));
+                ret = newInterfaceWrapper(desc);
             }
         }
         return ret;
@@ -314,11 +300,6 @@ public class ArrayNameMapper {
         }
 
         return ret;
-    }
-
-    public static int getDimension(java.lang.String desc){
-        // In this case, we are using the '[' as a prefix.
-        return getPrefixSize(desc, '[');
     }
 
     public static int getPrefixSize(String input, char prefixChar) {

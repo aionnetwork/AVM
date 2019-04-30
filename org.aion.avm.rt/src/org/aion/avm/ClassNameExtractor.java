@@ -34,7 +34,7 @@ public class ClassNameExtractor {
     }
 
     private static String getArrayClassFromWrapper(String className) {
-        String arrayName = ArrayClassNameMapper.getElementNameFromWrapper(className.replaceAll("\\.", "/"));
+        String arrayName = ArrayClassNameMapper.getOriginalNameFromWrapper(className.replaceAll("\\.", "/"));
         String name;
         int dimension = 0;
         if (arrayName != null) {
