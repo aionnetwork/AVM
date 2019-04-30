@@ -69,7 +69,7 @@ public class RejectionClassVisitor extends ClassToolchain.ToolChainClassVisitor 
 
     @Override
     public ModuleVisitor visitModule(String name, int access, String version) {
-        throw RuntimeAssertionError.unimplemented("TODO (AKI-106):  Determine if/how to handle module definitions");
+        throw RuntimeAssertionError.unimplemented("AKI-106: This is never called");
     }
 
     @Override

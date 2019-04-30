@@ -120,6 +120,25 @@ public class JarBuilder {
         return builder.toBytes();
     }
 
+    public static byte[] buildJarForExplicitClassNamesAndBytecodeAndUserlib(Class<?> mainClass, Map<String, byte[]> classMap, Class<?> ...otherClasses) {
+        JarBuilder builder = new JarBuilder(mainClass, null);
+        try {
+            for (Map.Entry<String, byte[]> entry : classMap.entrySet()) {
+                builder.saveClassToStream(entry.getKey(), entry.getValue());
+            }
+            for (Class<?> clazz : otherClasses) {
+                builder.addClassAndInners(clazz);
+            }
+            for (Class<?> clazz : userlibClasses) {
+                builder.addClassAndInners(clazz);
+            }
+        } catch (IOException e) {
+            // Can't happen - in-memory.
+            RuntimeAssertionError.unexpected(e);
+        }
+        return builder.toBytes();
+    }
+
     /**
      * Creates the in-memory representation of a JAR with the given class names and direct bytes, but a fixed main class.
      * @return The bytes representing this JAR.
