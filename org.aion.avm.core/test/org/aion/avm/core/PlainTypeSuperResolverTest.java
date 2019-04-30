@@ -16,7 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Tests {@link PlainTypeSuperResolver}.
+ * Tests {@link PlainTypeSuperResolver} and {@link TypeAwareClassWriter}!
  *
  * These two classes should give identical responses to each query, and so this is checked for each
  * test case.
@@ -25,6 +25,7 @@ public final class PlainTypeSuperResolverTest {
     private static boolean preserveDebuggability = false;
     private ClassRenamer classRenamer;
     private PlainTypeSuperResolver resolver;
+    private TypeAwareClassWriter typeAwareClassWriter;
 
     private String preRenameArray = byte[].class.getName();
     private String preRenamePlainType = java.lang.System.class.getName();
@@ -47,6 +48,8 @@ public final class PlainTypeSuperResolverTest {
             .build();
         this.resolver = new PlainTypeSuperResolver(hierarchy, this.classRenamer);
 
+        this.typeAwareClassWriter = new ClassWriter(hierarchy, this.classRenamer);
+
         String exception = this.classRenamer.toPostRename(java.lang.NullPointerException.class.getName(), ArrayType.PRECISE_TYPE);
         this.exceptionWrapper = this.classRenamer.toExceptionWrapper(exception);
         this.postRenamePlainType = this.classRenamer.toPostRename(this.preRenamePlainType, ArrayType.PRECISE_TYPE);
@@ -68,42 +71,77 @@ public final class PlainTypeSuperResolverTest {
     public void testSuperOfPreRenamePlainTypeAndPostRenameOther() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenPlainType(this.preRenamePlainType, this.exceptionWrapper);
         assertEquals(CommonType.JAVA_LANG_OBJECT.dotName, commonSuper);
+
+        // --------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.preRenamePlainType, this.exceptionWrapper);
+        assertEquals(CommonType.JAVA_LANG_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfPostRenamePlainTypeAndPreRenameOther() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenPlainType(this.postRenamePlainType, this.preRenameArray);
         assertEquals(CommonType.JAVA_LANG_OBJECT.dotName, commonSuper);
+
+        // --------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.postRenamePlainType, this.preRenameArray);
+        assertEquals(CommonType.JAVA_LANG_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfPreRenamePlainTypeAndPreRenameOther() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenPlainType(this.preRenamePlainType, this.preRenameArray);
         assertEquals(CommonType.JAVA_LANG_OBJECT.dotName, commonSuper);
+
+        // --------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.preRenamePlainType, this.preRenameArray);
+        assertEquals(CommonType.JAVA_LANG_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfPostRenamePlainTypeAndExceptionWrapper() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenPlainType(this.postRenamePlainType, this.exceptionWrapper);
         assertEquals(CommonType.JAVA_LANG_OBJECT.dotName, commonSuper);
+
+        // --------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.postRenamePlainType, this.exceptionWrapper);
+        assertEquals(CommonType.JAVA_LANG_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfPostRenamePlainTypeAndPostRenamePrimitiveArray() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenPlainType(this.postRenamePlainType, this.postRenamePrimitiveArray);
         assertEquals(CommonType.SHADOW_OBJECT.dotName, commonSuper);
+
+        // --------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.postRenamePlainType, this.postRenamePrimitiveArray);
+        assertEquals(CommonType.SHADOW_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfPostRenamePlainTypeAndPostRenameConcreteArrayType() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenPlainType(this.postRenamePlainType, this.postRenameConcreteTypeArray);
         assertEquals(CommonType.SHADOW_OBJECT.dotName, commonSuper);
+
+        // --------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.postRenamePlainType, this.postRenameConcreteTypeArray);
+        assertEquals(CommonType.SHADOW_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfPostRenamePlainTypeAndPostRenameUnifyingArrayType() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenPlainType(this.postRenamePlainType, this.postRenameUnifyingTypeArray);
         assertEquals(CommonType.I_OBJECT.dotName, commonSuper);
+
+        // --------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.postRenamePlainType, this.postRenameUnifyingTypeArray);
+        assertEquals(CommonType.I_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
@@ -124,6 +162,18 @@ public final class PlainTypeSuperResolverTest {
         // The tightest super is ambiguous in this case, so java.lang.Object is returned.
         commonSuper = this.resolver.getTightestSuperClassIfGivenPlainType(plain4, plain5);
         assertEquals(CommonType.JAVA_LANG_OBJECT.dotName, commonSuper);
+
+        // ---------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(plain1, plain2);
+        assertEquals(plain1.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(plain2, plain3);
+        assertEquals(exceptionSuper.replaceAll("\\.", "/"), commonSuper);
+
+        // The tightest super is ambiguous in this case, so java.lang.Object is returned.
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(plain4, plain5);
+        assertEquals(CommonType.JAVA_LANG_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
@@ -151,18 +201,39 @@ public final class PlainTypeSuperResolverTest {
 
         commonSuper = this.resolver.getTightestSuperClassIfGivenPlainType(interface1, interface2);
         assertEquals(CommonType.I_OBJECT.dotName, commonSuper);
+
+        // --------------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(concreteClass1, concreteClass2);
+        assertEquals(concreteSuperRenamed.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(concreteClass1, interface1);
+        assertEquals(interface1.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(interface1, interface2);
+        assertEquals(CommonType.I_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfPreRenamePlainTypeAndJavaLangObject() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenPlainType(java.lang.Byte.class.getName(), java.lang.Object.class.getName());
         assertEquals(java.lang.Object.class.getName(), commonSuper);
+
+        // --------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(java.lang.Byte.class.getName(), java.lang.Object.class.getName());
+        assertEquals(java.lang.Object.class.getName().replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfPostRenamePlainTypeAndJavaLangObject() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenPlainType(org.aion.avm.shadow.java.lang.Byte.class.getName(), java.lang.Object.class.getName());
         assertEquals(java.lang.Object.class.getName(), commonSuper);
+
+        // --------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(org.aion.avm.shadow.java.lang.Byte.class.getName(), java.lang.Object.class.getName());
+        assertEquals(java.lang.Object.class.getName().replaceAll("\\.", "/"), commonSuper);
     }
 
     private Set<String> fetchPreRenameSlashStyleJclExceptions() {
@@ -173,5 +244,11 @@ public final class PlainTypeSuperResolverTest {
             }
         }
         return jclExceptions;
+    }
+
+    private static class ClassWriter extends TypeAwareClassWriter {
+        public ClassWriter(ClassHierarchy classHierarchy, ClassRenamer classRenamer) {
+            super(0, classHierarchy, classRenamer);
+        }
     }
 }

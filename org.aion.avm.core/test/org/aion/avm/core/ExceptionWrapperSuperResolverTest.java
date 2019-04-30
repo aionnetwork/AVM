@@ -16,7 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Tests {@link ExceptionWrapperSuperResolver}.
+ * Tests {@link ExceptionWrapperSuperResolver} and {@link TypeAwareClassWriter}!
  *
  * These two classes should give identical responses to each query, and so this is checked for each
  * test case.
@@ -25,6 +25,7 @@ public class ExceptionWrapperSuperResolverTest {
     private static boolean preserveDebuggability = false;
     private ClassRenamer classRenamer;
     private ExceptionWrapperSuperResolver resolver;
+    private TypeAwareClassWriter typeAwareClassWriter;
 
     private String exceptionWrapper;
 
@@ -40,6 +41,8 @@ public class ExceptionWrapperSuperResolverTest {
             .build();
         this.resolver = new ExceptionWrapperSuperResolver(hierarchy, this.classRenamer);
 
+        this.typeAwareClassWriter = new ClassWriter(hierarchy, this.classRenamer);
+
         String exception = org.aion.avm.shadow.java.lang.EnumConstantNotPresentException.class.getName();
         this.exceptionWrapper = this.classRenamer.toExceptionWrapper(exception);
     }
@@ -53,6 +56,11 @@ public class ExceptionWrapperSuperResolverTest {
     public void testSuperOfExceptionWrapperAndPreRenameArray() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenPlainType(int[].class.getName(), this.exceptionWrapper);
         assertEquals(CommonType.JAVA_LANG_OBJECT.dotName, commonSuper);
+
+        // -------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(int[].class.getName(), this.exceptionWrapper);
+        assertEquals(CommonType.JAVA_LANG_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
@@ -64,30 +72,55 @@ public class ExceptionWrapperSuperResolverTest {
 
         String commonSuper = this.resolver.getTightestSuperClassIfGivenPlainType(renamedArray, this.exceptionWrapper);
         assertEquals(CommonType.JAVA_LANG_OBJECT.dotName, commonSuper);
+
+        // -------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(renamedArray, this.exceptionWrapper);
+        assertEquals(CommonType.JAVA_LANG_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfExceptionWrapperAndPreRenamePlainType() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenPlainType(java.math.BigInteger.class.getName(), this.exceptionWrapper);
         assertEquals(CommonType.JAVA_LANG_OBJECT.dotName, commonSuper);
+
+        // -------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(java.math.BigInteger.class.getName(), this.exceptionWrapper);
+        assertEquals(CommonType.JAVA_LANG_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfExceptionWrapperAndPostRenamePlainType() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenPlainType(org.aion.avm.shadow.java.lang.Throwable.class.getName(), this.exceptionWrapper);
         assertEquals(CommonType.JAVA_LANG_OBJECT.dotName, commonSuper);
+
+        // -------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(org.aion.avm.shadow.java.lang.Throwable.class.getName(), this.exceptionWrapper);
+        assertEquals(CommonType.JAVA_LANG_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfExceptionWrapperAndJavaLangThrowable() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenPlainType(CommonType.JAVA_LANG_THROWABLE.dotName, this.exceptionWrapper);
         assertEquals(CommonType.JAVA_LANG_THROWABLE.dotName, commonSuper);
+
+        // -------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(CommonType.JAVA_LANG_THROWABLE.dotName, this.exceptionWrapper);
+        assertEquals(CommonType.JAVA_LANG_THROWABLE.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfExceptionWrapperAndPreRenameException() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenPlainType(java.lang.IllegalStateException.class.getName(), this.exceptionWrapper);
         assertEquals(CommonType.JAVA_LANG_THROWABLE.dotName, commonSuper);
+
+        // -------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(java.lang.IllegalStateException.class.getName(), this.exceptionWrapper);
+        assertEquals(CommonType.JAVA_LANG_THROWABLE.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
@@ -105,12 +138,21 @@ public class ExceptionWrapperSuperResolverTest {
         String superWrapper = this.classRenamer.toExceptionWrapper(renamedSuper);
 
         assertEquals(superWrapper, this.resolver.getTightestSuperClassIfGivenPlainType(wrapper1, wrapper2));
+
+        // -------------------------
+
+        assertEquals(superWrapper.replaceAll("\\.", "/"), this.typeAwareClassWriter.getCommonSuperClass(wrapper1, wrapper2));
     }
 
     @Test
     public void testSuperOfExceptionWrapperAndJavaLangObject() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenPlainType(CommonType.JAVA_LANG_OBJECT.dotName, this.exceptionWrapper);
         assertEquals(CommonType.JAVA_LANG_OBJECT.dotName, commonSuper);
+
+        // -------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(CommonType.JAVA_LANG_OBJECT.dotName, this.exceptionWrapper);
+        assertEquals(CommonType.JAVA_LANG_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     private Set<String> fetchPreRenameSlashStyleJclExceptions() {
@@ -121,5 +163,11 @@ public class ExceptionWrapperSuperResolverTest {
             }
         }
         return jclExceptions;
+    }
+
+    private static class ClassWriter extends TypeAwareClassWriter {
+        public ClassWriter(ClassHierarchy classHierarchy, ClassRenamer classRenamer) {
+            super(0, classHierarchy, classRenamer);
+        }
     }
 }

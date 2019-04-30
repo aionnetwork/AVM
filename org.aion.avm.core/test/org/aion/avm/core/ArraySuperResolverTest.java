@@ -15,7 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Tests {@link ArraySuperResolver}.
+ * Tests {@link ArraySuperResolver} and {@link TypeAwareClassWriter}!
  *
  * These two classes should give identical responses to each query, and so this is checked for each
  * test case.
@@ -24,6 +24,7 @@ public class ArraySuperResolverTest {
     private static boolean preserveDebuggability = false;
     private ClassRenamer classRenamer;
     private ArraySuperResolver resolver;
+    private TypeAwareClassWriter typeAwareClassWriter;
 
     private String specialArray = org.aion.avm.arraywrapper.Array.class.getName();
     private String specialIArray = org.aion.avm.arraywrapper.IArray.class.getName();
@@ -62,6 +63,8 @@ public class ArraySuperResolverTest {
             .build();
         this.resolver = new ArraySuperResolver(hierarchy, this.classRenamer);
 
+        this.typeAwareClassWriter = new ClassWriter(hierarchy, this.classRenamer);
+
         this.postRenamePrimitiveArray1D = this.classRenamer.toPostRename(this.preRenamePrimitiveArray1D, ArrayType.PRECISE_TYPE);
         this.postRenamePrimitiveArrayMD = this.classRenamer.toPostRename(this.preRenamePrimitiveArrayMD, ArrayType.PRECISE_TYPE);
         this.postRenameObjectArrayConcreteType = this.classRenamer.toPostRename(this.preRenameObjectArray, ArrayType.PRECISE_TYPE);
@@ -80,18 +83,33 @@ public class ArraySuperResolverTest {
     public void testSuperOfPreRenameArrayAndPostRenameNonArray() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(this.preRenamePrimitiveArray1D, this.postRenameConcreteClass);
         assertEquals(CommonType.JAVA_LANG_OBJECT.dotName, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.preRenamePrimitiveArray1D, this.postRenameConcreteClass);
+        assertEquals(CommonType.JAVA_LANG_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfPostRenameArrayAndPreRenameNonArray() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(this.postRenameObjectArrayUnifyingType, this.preRenameNonArray);
         assertEquals(CommonType.JAVA_LANG_OBJECT.dotName, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.postRenameObjectArrayUnifyingType, this.preRenameNonArray);
+        assertEquals(CommonType.JAVA_LANG_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfPostRenameArrayAndExceptionWrapper() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(this.postRenamePrimitiveArrayMD, this.exceptionWrapper);
         assertEquals(CommonType.JAVA_LANG_OBJECT.dotName, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.postRenamePrimitiveArrayMD, this.exceptionWrapper);
+        assertEquals(CommonType.JAVA_LANG_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
@@ -101,18 +119,36 @@ public class ArraySuperResolverTest {
 
         commonSuper = this.resolver.getTightestSuperClassIfGivenArray(this.postRenamePrimitiveArrayMD, this.postRenameConcreteClass);
         assertEquals(CommonType.SHADOW_OBJECT.dotName, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.postRenamePrimitiveArray1D, this.postRenameConcreteClass);
+        assertEquals(CommonType.SHADOW_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.postRenamePrimitiveArrayMD, this.postRenameConcreteClass);
+        assertEquals(CommonType.SHADOW_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfConcreteTypeObjectArrayAndConcreteClass() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(this.postRenameObjectArrayConcreteType, this.postRenameConcreteClass);
         assertEquals(CommonType.SHADOW_OBJECT.dotName, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.postRenameObjectArrayConcreteType, this.postRenameConcreteClass);
+        assertEquals(CommonType.SHADOW_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfUnifyingTypeObjectArrayAndConcreteClass() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(this.postRenameObjectArrayUnifyingType, this.postRenameConcreteClass);
         assertEquals(CommonType.I_OBJECT.dotName, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.postRenameObjectArrayUnifyingType, this.postRenameConcreteClass);
+        assertEquals(CommonType.I_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
@@ -122,18 +158,36 @@ public class ArraySuperResolverTest {
 
         commonSuper = this.resolver.getTightestSuperClassIfGivenArray(this.postRenamePrimitiveArrayMD, this.postRenameInterface);
         assertEquals(CommonType.I_OBJECT.dotName, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.postRenamePrimitiveArray1D, this.postRenameInterface);
+        assertEquals(CommonType.I_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.postRenamePrimitiveArrayMD, this.postRenameInterface);
+        assertEquals(CommonType.I_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfConcreteTypeObjectArrayAndInterface() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(this.postRenameObjectArrayConcreteType, this.postRenameInterface);
         assertEquals(CommonType.I_OBJECT.dotName, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.postRenameObjectArrayConcreteType, this.postRenameInterface);
+        assertEquals(CommonType.I_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfUnifyingTypeObjectArrayAndInterface() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(this.postRenameObjectArrayUnifyingType, this.postRenameInterface);
         assertEquals(CommonType.I_OBJECT.dotName, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.postRenameObjectArrayUnifyingType, this.postRenameInterface);
+        assertEquals(CommonType.I_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
@@ -143,18 +197,36 @@ public class ArraySuperResolverTest {
 
         commonSuper = this.resolver.getTightestSuperClassIfGivenArray(this.preRenamePrimitiveArray1D, this.preRenamePrimitiveArray1Dother);
         assertEquals(CommonType.JAVA_LANG_OBJECT.dotName, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.preRenamePrimitiveArray1D, this.preRenamePrimitiveArray1D);
+        assertEquals(preRenamePrimitiveArray1D.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.preRenamePrimitiveArray1D, this.preRenamePrimitiveArray1Dother);
+        assertEquals(CommonType.JAVA_LANG_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfTwoPreRenamePrimitiveArraysDiffDimension() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(this.preRenamePrimitiveArray1D, this.preRenamePrimitiveArrayMD);
         assertEquals(CommonType.JAVA_LANG_OBJECT.dotName, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.preRenamePrimitiveArray1D, this.preRenamePrimitiveArrayMD);
+        assertEquals(CommonType.JAVA_LANG_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfPreRenamePrimitiveAndObjectArrays() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(this.preRenamePrimitiveArrayMD, this.preRenameObjectArray);
         assertEquals(ArrayRenamer.prependPreRenameObjectArrayPrefix(CommonType.JAVA_LANG_OBJECT.dotName, 1), commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.preRenamePrimitiveArrayMD, this.preRenameObjectArray);
+        assertEquals(ArrayRenamer.prependPreRenameObjectArrayPrefix(CommonType.JAVA_LANG_OBJECT.dotName, 1).replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
@@ -170,6 +242,11 @@ public class ArraySuperResolverTest {
 
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(array1, array2);
         assertEquals(superArray, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(array1, array2);
+        assertEquals(superArray.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
@@ -183,6 +260,11 @@ public class ArraySuperResolverTest {
 
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(array1, array2);
         assertEquals(ArrayRenamer.prependPreRenameObjectArrayPrefix(CommonType.JAVA_LANG_OBJECT.dotName, 1), commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(array1, array2);
+        assertEquals(ArrayRenamer.prependPreRenameObjectArrayPrefix(CommonType.JAVA_LANG_OBJECT.dotName, 1).replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
@@ -198,24 +280,53 @@ public class ArraySuperResolverTest {
 
         commonSuper = this.resolver.getTightestSuperClassIfGivenArray(this.postRenamePrimitiveArrayMD, this.postRenamePrimitiveArrayMDother);
         assertEquals(CommonType.SHADOW_OBJECT.dotName, commonSuper);
+
+        //--------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.postRenamePrimitiveArray1D, this.postRenamePrimitiveArray1D);
+        assertEquals(this.postRenamePrimitiveArray1D.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.postRenamePrimitiveArray1D, this.postRenamePrimitiveArray1Dother);
+        assertEquals(CommonType.SHADOW_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.postRenamePrimitiveArrayMD, this.postRenamePrimitiveArrayMD);
+        assertEquals(this.postRenamePrimitiveArrayMD.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.postRenamePrimitiveArrayMD, this.postRenamePrimitiveArrayMDother);
+        assertEquals(CommonType.SHADOW_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfTwoPostRenamePrimitiveArraysDiffDimension() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(this.postRenamePrimitiveArray1D, this.postRenamePrimitiveArrayMD);
         assertEquals(CommonType.SHADOW_OBJECT.dotName, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.postRenamePrimitiveArray1D, this.postRenamePrimitiveArrayMD);
+        assertEquals(CommonType.SHADOW_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfPostRenamePrimitiveAndConcreteTypeObjectArrays() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(this.postRenamePrimitiveArray1D, this.postRenameObjectArrayConcreteType);
         assertEquals(CommonType.SHADOW_OBJECT.dotName, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.postRenamePrimitiveArray1D, this.postRenameObjectArrayConcreteType);
+        assertEquals(CommonType.SHADOW_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfPostRenamePrimitiveAndUnifyingTypeObjectArrays() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(this.postRenamePrimitiveArrayMD, this.postRenameObjectArrayUnifyingType);
         assertEquals(CommonType.I_OBJECT.dotName, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.postRenamePrimitiveArrayMD, this.postRenameObjectArrayUnifyingType);
+        assertEquals(CommonType.I_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
@@ -234,6 +345,11 @@ public class ArraySuperResolverTest {
 
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(array1, array2);
         assertEquals(superArray, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(array1, array2);
+        assertEquals(superArray.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
@@ -249,6 +365,11 @@ public class ArraySuperResolverTest {
 
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(array1, array2);
         assertEquals(CommonType.SHADOW_OBJECT.dotName, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(array1, array2);
+        assertEquals(CommonType.SHADOW_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
@@ -267,6 +388,11 @@ public class ArraySuperResolverTest {
 
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(array1, array2);
         assertEquals(superArray, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(array1, array2);
+        assertEquals(superArray.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
@@ -282,6 +408,11 @@ public class ArraySuperResolverTest {
 
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(array1, array2);
         assertEquals(CommonType.I_OBJECT.dotName, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(array1, array2);
+        assertEquals(CommonType.I_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
@@ -294,6 +425,11 @@ public class ArraySuperResolverTest {
 
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(concreteArray, unifyingArray);
         assertEquals(unifyingArray, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(concreteArray, unifyingArray);
+        assertEquals(unifyingArray.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
@@ -306,6 +442,11 @@ public class ArraySuperResolverTest {
 
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(concreteArray, unifyingArray);
         assertEquals(CommonType.I_OBJECT.dotName, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(concreteArray, unifyingArray);
+        assertEquals(CommonType.I_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
@@ -324,6 +465,11 @@ public class ArraySuperResolverTest {
 
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(concreteArray, unifyingArray);
         assertEquals(superArray, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(concreteArray, unifyingArray);
+        assertEquals(superArray.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
@@ -339,6 +485,11 @@ public class ArraySuperResolverTest {
 
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(concreteArray, unifyingArray);
         assertEquals(CommonType.I_OBJECT.dotName, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(concreteArray, unifyingArray);
+        assertEquals(CommonType.I_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
@@ -357,6 +508,11 @@ public class ArraySuperResolverTest {
         // IObject is given when the tightest super is ambiguous.
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(array1, array2);
         assertEquals(expectedSuper, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(array1, array2);
+        assertEquals(expectedSuper.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
@@ -373,18 +529,33 @@ public class ArraySuperResolverTest {
         // java.lang.Object is given when the tightest super is ambiguous.
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(array1, array2);
         assertEquals(superArray, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(array1, array2);
+        assertEquals(superArray.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfPreRenameArrayAndJavaLangObject() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(this.preRenameObjectArray, CommonType.JAVA_LANG_OBJECT.dotName);
         assertEquals(CommonType.JAVA_LANG_OBJECT.dotName, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.preRenameObjectArray, CommonType.JAVA_LANG_OBJECT.dotName);
+        assertEquals(CommonType.JAVA_LANG_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
     public void testSuperOfPostRenameArrayAndJavaLangObject() {
         String commonSuper = this.resolver.getTightestSuperClassIfGivenArray(this.postRenamePrimitiveArray1D, CommonType.JAVA_LANG_OBJECT.dotName);
         assertEquals(CommonType.JAVA_LANG_OBJECT.dotName, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.postRenamePrimitiveArray1D, CommonType.JAVA_LANG_OBJECT.dotName);
+        assertEquals(CommonType.JAVA_LANG_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 
     // Below tests test out the 'special' arrays. These types are hidden, so that any special type trying
@@ -415,6 +586,32 @@ public class ArraySuperResolverTest {
 
         commonSuper = this.resolver.getTightestSuperClassIfGivenArray(this.specialArray, this.specialIObjectArray);
         assertEquals(this.specialIArray, commonSuper);
+
+        // --------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialArray, this.postRenamePrimitiveArray1D);
+        assertEquals(this.specialArray.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialArray, this.postRenamePrimitiveArrayMD);
+        assertEquals(CommonType.SHADOW_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialArray, this.postRenameObjectArrayConcreteType);
+        assertEquals(CommonType.SHADOW_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialArray, this.postRenameObjectArrayUnifyingType);
+        assertEquals(CommonType.I_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialArray, this.specialArray);
+        assertEquals(this.specialArray.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialArray, this.specialIArray);
+        assertEquals(this.specialIArray.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialArray, this.specialObjectArray);
+        assertEquals(this.specialArray.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialArray, this.specialIObjectArray);
+        assertEquals(this.specialIArray.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
@@ -442,6 +639,32 @@ public class ArraySuperResolverTest {
 
         commonSuper = this.resolver.getTightestSuperClassIfGivenArray(this.specialIArray, this.specialIObjectArray);
         assertEquals(this.specialIArray, commonSuper);
+
+        // ------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialIArray, this.postRenamePrimitiveArray1D);
+        assertEquals(this.specialIArray.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialIArray, this.postRenamePrimitiveArrayMD);
+        assertEquals(CommonType.I_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialIArray, this.postRenameObjectArrayConcreteType);
+        assertEquals(CommonType.I_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialIArray, this.postRenameObjectArrayUnifyingType);
+        assertEquals(CommonType.I_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialIArray, this.specialArray);
+        assertEquals(this.specialIArray.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialIArray, this.specialIArray);
+        assertEquals(this.specialIArray.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialIArray, this.specialObjectArray);
+        assertEquals(this.specialIArray.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialIArray, this.specialIObjectArray);
+        assertEquals(this.specialIArray.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
@@ -469,6 +692,32 @@ public class ArraySuperResolverTest {
 
         commonSuper = this.resolver.getTightestSuperClassIfGivenArray(this.specialObjectArray, this.specialIObjectArray);
         assertEquals(this.specialIObjectArray, commonSuper);
+
+        // ---------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialObjectArray, this.postRenamePrimitiveArray1D);
+        assertEquals(CommonType.SHADOW_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialObjectArray, this.postRenamePrimitiveArrayMD);
+        assertEquals(CommonType.SHADOW_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialObjectArray, this.postRenameObjectArrayConcreteType);
+        assertEquals(this.specialObjectArray.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialObjectArray, this.postRenameObjectArrayUnifyingType);
+        assertEquals(CommonType.I_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialObjectArray, this.specialArray);
+        assertEquals(this.specialArray.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialObjectArray, this.specialIArray);
+        assertEquals(this.specialIArray.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialObjectArray, this.specialObjectArray);
+        assertEquals(this.specialObjectArray.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialObjectArray, this.specialIObjectArray);
+        assertEquals(this.specialIObjectArray.replaceAll("\\.", "/"), commonSuper);
     }
 
     @Test
@@ -496,6 +745,32 @@ public class ArraySuperResolverTest {
 
         commonSuper = this.resolver.getTightestSuperClassIfGivenArray(this.specialIObjectArray, this.specialIObjectArray);
         assertEquals(this.specialIObjectArray, commonSuper);
+
+        // -------------------------------
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialIObjectArray, this.postRenamePrimitiveArray1D);
+        assertEquals(CommonType.I_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialIObjectArray, this.postRenamePrimitiveArrayMD);
+        assertEquals(CommonType.I_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialIObjectArray, this.postRenameObjectArrayConcreteType);
+        assertEquals(this.specialIObjectArray.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialIObjectArray, this.postRenameObjectArrayUnifyingType);
+        assertEquals(this.specialIObjectArray.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialIObjectArray, this.specialArray);
+        assertEquals(this.specialIArray.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialIObjectArray, this.specialIArray);
+        assertEquals(this.specialIArray.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialIObjectArray, this.specialObjectArray);
+        assertEquals(this.specialIObjectArray.replaceAll("\\.", "/"), commonSuper);
+
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(this.specialIObjectArray, this.specialIObjectArray);
+        assertEquals(this.specialIObjectArray.replaceAll("\\.", "/"), commonSuper);
     }
 
     private Set<String> fetchPostRenameSlashStyleJclExceptions() {
@@ -506,5 +781,11 @@ public class ArraySuperResolverTest {
             }
         }
         return jclExceptions;
+    }
+
+    private static class ClassWriter extends TypeAwareClassWriter {
+        public ClassWriter(ClassHierarchy classHierarchy, ClassRenamer classRenamer) {
+            super(0, classHierarchy, classRenamer);
+        }
     }
 }
