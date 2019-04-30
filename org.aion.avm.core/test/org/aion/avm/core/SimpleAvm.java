@@ -87,7 +87,7 @@ public class SimpleAvm {
         return builder.asMutableForest();
     }
 
-    public ClassHierarchy getClassHierarchy() {
+    public ClassHierarchy deepCopyOfClassHierarchy() {
         return this.classHierarchy.deepCopy();
     }
 
