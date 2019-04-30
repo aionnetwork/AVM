@@ -191,6 +191,36 @@ public final class ClassHierarchy {
     }
 
     /**
+     * Returns {@code true} only if {@code descendant} is a descendant of {@code superClass}.
+     * Returns {@code false} otherwise.
+     *
+     * @param descendant The descendant class.
+     * @param superClass The super class.
+     * @return whether or not descendant is a descendant of superClass.
+     */
+    public boolean isDescendantOfClass(String descendant, String superClass) {
+        RuntimeAssertionError.assertTrue(this.nameToNodeMapping.containsKey(descendant));
+        RuntimeAssertionError.assertTrue(this.nameToNodeMapping.containsKey(superClass));
+
+        Queue<String> nodesToVisit = new LinkedList<>();
+        nodesToVisit.add(superClass);
+
+        while (!nodesToVisit.isEmpty()) {
+            DecoratedHierarchyNode nextNode = this.nameToNodeMapping.get(nodesToVisit.poll());
+
+            for (IHierarchyNode child : nextNode.getChildren()) {
+                nodesToVisit.add(child.getDotName());
+            }
+
+            if (nextNode.getDotName().equals(descendant)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Returns {@code true} only if this hierarchy contains a class with the provided .-style name.
      * False otherwise.
      */

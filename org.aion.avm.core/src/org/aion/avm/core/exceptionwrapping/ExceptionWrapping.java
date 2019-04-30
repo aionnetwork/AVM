@@ -33,36 +33,6 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
         this.classHierarchy = classHierarchy;
     }
 
-    private boolean isExceptionType(String dotNameClass) {
-
-        boolean isDescendantOfThrowable = false;
-        boolean isDescendantOfShadowObject = false;
-
-        String currentDotNameClass = dotNameClass;
-        while (!isDescendantOfThrowable && !isDescendantOfShadowObject) {
-
-            String superClass = this.classHierarchy.getConcreteSuperClassDotName(currentDotNameClass);
-
-            if (superClass == null) {
-                // If we have no super class then we must have a super interface. But an interface cannot
-                // subclass a concrete class and therefore can never be part of the exception hierarchy
-                // since all exceptions are concrete classes.
-                isDescendantOfShadowObject = true;
-            } else {
-                if (superClass.equals(CommonType.SHADOW_OBJECT.dotName)) {
-                    isDescendantOfShadowObject = true;
-                } else if (superClass.equals(CommonType.SHADOW_THROWABLE.dotName)) {
-                    isDescendantOfThrowable = true;
-                }
-            }
-
-            // If the above while condition is true then this value will always be non-null.
-            currentDotNameClass = superClass;
-        }
-
-        return isDescendantOfThrowable;
-    }
-
     @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         super.visit(version, access, name, signature, superName, interfaces);
@@ -72,7 +42,7 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
         // "java.lang.Object".
         String classDotName = name.replaceAll("/", ".");
 
-        if (isExceptionType(classDotName)) {
+        if (this.classHierarchy.isDescendantOfClass(classDotName, CommonType.SHADOW_THROWABLE.dotName)) {
             // Generate our handler for this.
             String reparentedName = ExceptionWrapperNameMapper.slashWrapperNameForClassName(name);
             String reparentedSuperName = ExceptionWrapperNameMapper.slashWrapperNameForClassName(superName);
