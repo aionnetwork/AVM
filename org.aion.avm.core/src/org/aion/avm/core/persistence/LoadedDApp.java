@@ -257,26 +257,30 @@ public class LoadedDApp {
      */
     public void forceInitializeAllClasses() throws Throwable {
         for (Class<?> clazz : this.sortedClasses) {
-            try {
-                Class<?> initialized = Class.forName(clazz.getName(), true, this.loader);
-                // These must be the same instances we started with and they must have been loaded by this loader.
-                RuntimeAssertionError.assertTrue(clazz == initialized);
-                RuntimeAssertionError.assertTrue(initialized.getClassLoader() == this.loader);
-            } catch (ClassNotFoundException e) {
-                // This error would mean that this is assembled completely incorrectly, which is a static error in our implementation.
-                RuntimeAssertionError.unexpected(e);
+            forceInitializeOneClass(clazz);
+        }
+    }
 
-            } catch (SecurityException e) {
-                // This would mean that the shadowing is not working properly.
-                RuntimeAssertionError.unexpected(e);
+    private void forceInitializeOneClass(Class<?> clazz) throws Throwable {
+        try {
+            Class<?> initialized = Class.forName(clazz.getName(), true, this.loader);
+            // These must be the same instances we started with and they must have been loaded by this loader.
+            RuntimeAssertionError.assertTrue(clazz == initialized);
+            RuntimeAssertionError.assertTrue(initialized.getClassLoader() == this.loader);
+        } catch (ClassNotFoundException e) {
+            // This error would mean that this is assembled completely incorrectly, which is a static error in our implementation.
+            RuntimeAssertionError.unexpected(e);
 
-            } catch (ExceptionInInitializerError e) {
-                // handle the real exception
-                handleUncaughtException(e.getException());
-            } catch (Throwable t) {
-                // Some other exceptions can float out from the user clinit, not always wrapped in ExceptionInInitializerError.
-                handleUncaughtException(t);
-            }
+        } catch (SecurityException e) {
+            // This would mean that the shadowing is not working properly.
+            RuntimeAssertionError.unexpected(e);
+
+        } catch (ExceptionInInitializerError e) {
+            // handle the real exception
+            handleUncaughtException(e.getException());
+        } catch (Throwable t) {
+            // Some other exceptions can float out from the user clinit, not always wrapped in ExceptionInInitializerError.
+            handleUncaughtException(t);
         }
     }
 
@@ -363,10 +367,14 @@ public class LoadedDApp {
     public void dumpTransformedByteCode(String path){
         AvmClassLoader appLoader = (AvmClassLoader) loader;
         for (Class<?> clazz : this.sortedClasses){
-            byte[] bytecode = appLoader.getUserClassBytecode(clazz.getName());
-            String output = path + "/" + clazz.getName() + ".class";
-            Helpers.writeBytesToFile(bytecode, output);
+            dumpOneTransformedClass(path, appLoader, clazz);
         }
+    }
+
+    private void dumpOneTransformedClass(String path, AvmClassLoader appLoader, Class<?> clazz) {
+        byte[] bytecode = appLoader.getUserClassBytecode(clazz.getName());
+        String output = path + "/" + clazz.getName() + ".class";
+        Helpers.writeBytesToFile(bytecode, output);
     }
 
     public void setLoadedBlockNum(long loadedBlockNum) {
