@@ -31,30 +31,4 @@ public class InternalTransaction extends Transaction implements InternalTransact
         return rejected;
     }
 
-    @Override
-    public byte[] getParentTransactionHash() {
-        throw new AssertionError("No corresponding Avm concept exists for this yet.");
-    }
-
-    //TODO (AKI-115): This is currently implemented in TransactionContextImpl and needs to be refactored into this class instead.
-    @Override
-    public int getStackDepth() {
-        throw new AssertionError("No corresponding Avm concept exists for this yet.");
-    }
-
-    @Override
-    public int getIndexOfInternalTransaction() {
-        throw new AssertionError("No corresponding Avm concept exists for this yet.");
-    }
-
-    @Override
-    public String getNote() {
-        throw new AssertionError("No corresponding Avm concept exists for this yet.");
-    }
-
-    @Override
-    public byte[] getEncoded() {
-        throw new AssertionError("No corresponding Avm concept exists for this yet.");
-    }
-
 }
