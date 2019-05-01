@@ -38,13 +38,16 @@ public class EmptyCapabilities implements IExternalCapabilities {
     public Address generateContractAddress(TransactionInterface tx) {
         // NOTE:  This address generation isn't anything particular.  It is just meant to be deterministic and derived from the tx.
         // It is NOT meant to be equivalent/similar to the implementation used by an actual kernel.
-        byte[] hash = tx.getTransactionHash();
-        byte[] nonce = tx.getNonce();
+        byte[] senderAddressBytes = tx.getSenderAddress().toBytes();
+        byte[] senderAddressNonce = tx.getNonce();
         byte[] raw = new byte[Address.SIZE];
-        for (int i = 0; i < Address.SIZE; ++i) {
-            byte one = (i < hash.length) ? hash[i] : (byte)i;
-            byte two = (i < nonce.length) ? nonce[i] : (byte)i;
-            raw[i] = (byte) (one + two);
+        for (int i = 0; i < Address.SIZE - 1; ++i) {
+            byte one = (i < senderAddressBytes.length) ? senderAddressBytes[i] : (byte)i;
+            byte two = (i < senderAddressNonce.length) ? senderAddressNonce[i] : (byte)i;
+            // We write into the (i+1)th byte because the 0th byte is for the prefix.
+            // This means we will have a collision if an address reaches nonces that agree on the first 31 bytes,
+            // but that number is huge, so it's fine for testing purposes.
+            raw[i+1] = (byte) (one + two);
         }
         raw[0] = TestingKernel.AVM_CONTRACT_PREFIX;
         return Address.wrap(raw);
