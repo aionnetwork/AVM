@@ -13,7 +13,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -337,10 +336,8 @@ public class HashCodeTest {
     }
 
     private void forceConstantsToLoad(AvmClassLoader loader) throws ClassNotFoundException, IllegalAccessException {
-        Class<?> c =loader.loadClass(PackageConstants.kConstantClassName, true);
-        // For some reason, in this case we need to aggressively force this load.
-        Field f = c.getFields()[0];
-        f.setAccessible(true);
-        f.get(null);
+        // We can force the <clinit> to run if we use Class.forName().
+        boolean initialize = true;
+        Class.forName(PackageConstants.kConstantClassName, initialize, loader);
     }
 }
