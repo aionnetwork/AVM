@@ -135,7 +135,9 @@ public final class ClassRenamer {
     public String toPreRename(String postRename) {
         RuntimeAssertionError.assertTrue(!postRename.contains((this.style == NameStyle.DOT_NAME) ? "/" : "."));
 
-        if (isExceptionWrapper(postRename)) {
+        if (isIObject(postRename)) {
+            return getJavaLangObject();
+        } else if (isExceptionWrapper(postRename)) {
             return toPreRenameExceptionWrapper(postRename);
         } else if (isPostRenameArray(postRename)) {
             return toPreRenameArray(postRename);
@@ -168,6 +170,10 @@ public final class ClassRenamer {
     }
 
     //<--------------------------------RENAMING METHODS-------------------------------------------->
+
+    private String getJavaLangObject() {
+        return (this.style == NameStyle.DOT_NAME) ? CommonType.JAVA_LANG_OBJECT.dotName : CommonType.JAVA_LANG_OBJECT.dotName.replaceAll("\\.", "/");
+    }
 
     /**
      * Assumes the class is a user class!
@@ -350,6 +356,11 @@ public final class ClassRenamer {
     }
 
     //<-----------------------------POST-RENAME CLASS DETECTION METHODS---------------------------->
+
+    private boolean isIObject(String className) {
+        String iObject = (this.style == NameStyle.DOT_NAME) ? CommonType.I_OBJECT.dotName : CommonType.I_OBJECT.dotName.replaceAll("\\.", "/");
+        return iObject.equals(className);
+    }
 
     private boolean isPostRenameUserClass(String className) {
         int prefixLength = Math.min(className.length(), this.userPrefix.length());

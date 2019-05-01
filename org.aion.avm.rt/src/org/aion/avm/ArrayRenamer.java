@@ -141,6 +141,12 @@ public final class ArrayRenamer {
      * character is {@code character}.
      */
     private static String stringOfSameCharacter(char character, int length) {
-        return new String(new char[length]).replaceAll("\0", String.valueOf(character));
+        if (character == '$') {
+            return new String(new char[length]).replaceAll("\0", "\\$");
+        } else if (character == '[') {
+            return new String(new char[length]).replaceAll("\0", "\\[");
+        } else {
+            return new String(new char[length]).replaceAll("\0", String.valueOf(character));
+        }
     }
 }
