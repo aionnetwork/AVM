@@ -114,8 +114,9 @@ public final class ArrayUtil {
 
     public static boolean isSpecialPostRenameArray(NameStyle style, String array) {
         String prefix = (style == NameStyle.DOT_NAME) ? PackageConstants.kArrayWrapperDotPrefix : PackageConstants.kArrayWrapperSlashPrefix;
+        String internalPrefix = (style == NameStyle.DOT_NAME) ? PackageConstants.kInternalDotPrefix : PackageConstants.kInternalSlashPrefix;
 
-        if (array.equals(prefix + "ObjectArray") || array.equals(prefix + "IObjectArray") || array.equals(prefix + "Array") || array.equals(prefix + "IArray")) {
+        if (array.equals(prefix + "ObjectArray") || array.equals(internalPrefix + "IObjectArray") || array.equals(prefix + "Array") || array.equals(prefix + "IArray")) {
             return true;
         } else {
             return false;
