@@ -252,13 +252,13 @@ public class ClassHierarchyTest {
     /**
      * NOTE: the tightest super class is ambiguous when there are multiple such candidates.
      *
-     * Our current heuristic to handle this case is to return IObject, since this is always a safe
-     * super class to choose in such a condition.
+     * In this case, the hierarchy returns null. This is the only case in which the hierarchy will
+     * not produce an answer.
      */
     @Test
     public void testTightestSuperWhenAmbiguous() {
         ClassHierarchy hierarchy = produceHierarchyForTightestSuperTests();
-        assertEquals(CommonType.I_OBJECT.dotName, hierarchy.getTightestCommonSuperClass("G", "H"));
+        assertNull(hierarchy.getTightestCommonSuperClass("G", "H"));
     }
 
     @Test

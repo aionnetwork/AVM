@@ -177,8 +177,13 @@ public class ArrayWrappingInterpreter extends BasicInterpreter{
             // Find the common super class.
             String commonSuper = this.hierarchy.getTightestCommonSuperClass(cleanDescriptor1, cleanDescriptor2);
 
-            // Convert back to slash-style and re-add the characters we stripped.
-            commonSuper = Helpers.fulllyQualifiedNameToInternalName(commonSuper);
+            // If the super class is ambiguous return IObject, otherwise return it.
+            if (commonSuper == null) {
+                commonSuper = Helpers.fulllyQualifiedNameToInternalName(CommonType.I_OBJECT.dotName);
+            } else {
+                // Convert back to slash-style and re-add the characters we stripped.
+                commonSuper = Helpers.fulllyQualifiedNameToInternalName(commonSuper);
+            }
 
             // Re-construct the descriptor that we took apart and return it.
             return new BasicValue(Type.getType(getArrayDimensionPrefix(dimension1) + "L" + commonSuper + ";"));

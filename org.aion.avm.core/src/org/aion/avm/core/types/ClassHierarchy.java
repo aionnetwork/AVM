@@ -261,14 +261,14 @@ public final class ClassHierarchy {
      * A tightest common super class is a class that is a super class of both the specified classes
      * and does not have any child class that is a common super class of the two specified classes.
      *
-     * It is possible that multiple classes fulfill this definition. If this is the case, the current
-     * heuristic being applied is to return {@link CommonType#I_OBJECT}.
+     * It is possible that multiple classes fulfill this definition. In this case, we consider the
+     * tightest common super class ambiguous and return {@code null}.
      *
      * Otherwise, if there is exactly one such class, it is returned.
      *
      * @param class1 The first of the two classes to query.
      * @param class2 The second of the two classes to query.
-     * @return The tightest common super class if one exists or else IObject if multiple exist.
+     * @return The tightest common super class if one exists or else null if ambiguous.
      */
     public String getTightestCommonSuperClass(String class1, String class2) {
         if ((class1 == null) || (class2 == null)) {
@@ -295,11 +295,8 @@ public final class ClassHierarchy {
         // If these nodes have no super class in common something is very wrong.
         RuntimeAssertionError.assertTrue(!leafNodes.isEmpty());
 
-        // See issue #362 - originally we thought we would throw an exception in this case, but we
-        // are now returning IObject, which gives the dApps a lot more flexibility in what kinds
-        // of syntax they can write.
         if (leafNodes.size() > 1) {
-            return CommonType.I_OBJECT.dotName;
+            return null;
         }
 
         RuntimeAssertionError.assertTrue(leafNodes.size() == 1);

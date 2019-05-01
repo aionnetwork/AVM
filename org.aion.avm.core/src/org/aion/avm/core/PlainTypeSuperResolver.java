@@ -76,10 +76,24 @@ public final class PlainTypeSuperResolver {
             String plain2renamed = this.classRenamer.toPostRename(plain2dotName, ArrayType.PRECISE_TYPE);
 
             String postRenameSuper = this.classHierarchy.getTightestCommonSuperClass(plain1renamed, plain2renamed);
-            return this.classRenamer.toPreRename(postRenameSuper);
+
+            // If the super class is ambiguous return java.lang.Object, otherwise convert the super class to pre-rename and return it.
+            if (postRenameSuper == null) {
+                return CommonType.JAVA_LANG_OBJECT.dotName;
+            } else {
+                return this.classRenamer.toPreRename(postRenameSuper);
+            }
 
         } else if (!plain1isPreRename && !plain2isPreRename) {
-            return this.classHierarchy.getTightestCommonSuperClass(plain1dotName, plain2dotName);
+            String commonSuper = this.classHierarchy.getTightestCommonSuperClass(plain1dotName, plain2dotName);
+
+            // If the super class is ambiguous return IObject, otherwise return the super class.
+            if (commonSuper == null) {
+                return CommonType.I_OBJECT.dotName;
+            } else {
+                return commonSuper;
+            }
+
         } else {
             // Then we have a pre- and post- rename plain type, they can only unify to java.lang.Object
             return CommonType.JAVA_LANG_OBJECT.dotName;

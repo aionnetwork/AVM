@@ -51,7 +51,13 @@ public final class ExceptionWrapperSuperResolver {
         String unwrapped2 = this.classRenamer.toPreRename(wrapper2);
 
         String unwrappedSuper = this.classHierarchy.getTightestCommonSuperClass(unwrapped1, unwrapped2);
-        return this.classRenamer.toExceptionWrapper(unwrappedSuper);
+
+        // If the super class is ambiguous return java.lang.Throwable, otherwise wrap the super class and return it.
+        if (unwrappedSuper == null) {
+            return CommonType.JAVA_LANG_THROWABLE.dotName;
+        } else {
+            return this.classRenamer.toExceptionWrapper(unwrappedSuper);
+        }
     }
 
     private String findSuperOfOneExceptionWrapperOneNonExceptionWrapper(String type1dotName, String type2dotName) {

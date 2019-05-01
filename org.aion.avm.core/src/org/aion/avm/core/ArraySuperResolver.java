@@ -75,7 +75,14 @@ public final class ArraySuperResolver {
             return findSuperOfSpecialArrayAndOther(array1, array2);
         } else {
             // Special arrays are in the hierarchy, we can query it directly.
-            return this.classHierarchy.getTightestCommonSuperClass(array1, array2);
+            String commonSuper = this.classHierarchy.getTightestCommonSuperClass(array1, array2);
+
+            // If the super class is ambiguous return IObject, otherwise return the super class.
+            if (commonSuper == null) {
+                return CommonType.I_OBJECT.dotName;
+            } else {
+                return commonSuper;
+            }
         }
     }
 
