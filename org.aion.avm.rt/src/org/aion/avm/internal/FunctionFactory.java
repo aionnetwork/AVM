@@ -3,7 +3,7 @@ package org.aion.avm.internal;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 
-import org.aion.avm.shadowapi.avm.InternalFunction;
+import p.avm.InternalFunction;
 
 
 public final class FunctionFactory {

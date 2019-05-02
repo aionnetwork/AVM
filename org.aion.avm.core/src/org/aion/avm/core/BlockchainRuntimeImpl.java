@@ -1,8 +1,8 @@
 package org.aion.avm.core;
 
 import s.java.math.BigInteger;
-import org.aion.avm.shadowapi.avm.Address;
-import org.aion.avm.shadowapi.avm.Result;
+import p.avm.Address;
+import p.avm.Result;
 import org.aion.avm.internal.*;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.types.InternalTransaction;

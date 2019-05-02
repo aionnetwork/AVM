@@ -1,7 +1,7 @@
 package org.aion.avm.core.testCall;
 
-import org.aion.avm.shadowapi.avm.Address;
-import org.aion.avm.shadowapi.avm.Result;
+import p.avm.Address;
+import p.avm.Result;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;

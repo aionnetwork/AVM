@@ -1,7 +1,7 @@
 package org.aion.avm.tooling.blockchainruntime;
 
-import org.aion.avm.shadowapi.avm.Address;
-import org.aion.avm.shadowapi.avm.Result;
+import p.avm.Address;
+import p.avm.Result;
 import org.aion.avm.tooling.AddressUtil;
 import org.aion.avm.tooling.crypto.CryptoUtil;
 import org.aion.avm.tooling.hash.HashUtils;

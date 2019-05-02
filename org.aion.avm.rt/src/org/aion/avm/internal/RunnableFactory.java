@@ -3,7 +3,7 @@ package org.aion.avm.internal;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 
-import org.aion.avm.shadowapi.avm.InternalRunnable;
+import p.avm.InternalRunnable;
 
 
 public final class RunnableFactory {

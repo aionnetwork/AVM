@@ -20,7 +20,7 @@ import org.aion.avm.internal.IBlockchainRuntime;
 import org.aion.avm.internal.IObjectDeserializer;
 import org.aion.avm.internal.IObjectSerializer;
 import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.shadowapi.avm.Blockchain;
+import p.avm.Blockchain;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.Helpers;

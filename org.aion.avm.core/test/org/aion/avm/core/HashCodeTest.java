@@ -290,18 +290,18 @@ public class HashCodeTest {
         Address outside = new Address(data);
         // Just to make this interesting, we will see what happens if we create the Address objects from different environments.
         ByteArray wrapper = new ByteArray(data);
-        org.aion.avm.shadowapi.avm.Address inside = (org.aion.avm.shadowapi.avm.Address) this.clazz.getMethod(NamespaceMapper.mapMethodName("createAddress"), ByteArray.class)
+        p.avm.Address inside = (p.avm.Address) this.clazz.getMethod(NamespaceMapper.mapMethodName("createAddress"), ByteArray.class)
                 .invoke(null, wrapper);
         
         // Compare these outside.
         Assert.assertEquals(outside.hashCode(), inside.hashCode());
 
         Assert.assertEquals(outside, new Address(inside.unwrap()));
-        Assert.assertEquals(new org.aion.avm.shadowapi.avm.Address(outside.unwrap()), inside);
+        Assert.assertEquals(new p.avm.Address(outside.unwrap()), inside);
 
         // Compare them insider.
-        boolean didBothMatch = (Boolean) this.clazz.getMethod(NamespaceMapper.mapMethodName("compareAddresses"), org.aion.avm.shadowapi.avm.Address.class, org.aion.avm.shadowapi.avm.Address.class)
-                .invoke(null, new org.aion.avm.shadowapi.avm.Address(outside.unwrap()), inside);
+        boolean didBothMatch = (Boolean) this.clazz.getMethod(NamespaceMapper.mapMethodName("compareAddresses"), p.avm.Address.class, p.avm.Address.class)
+                .invoke(null, new p.avm.Address(outside.unwrap()), inside);
         Assert.assertTrue(didBothMatch);
     }
 

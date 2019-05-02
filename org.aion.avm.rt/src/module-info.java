@@ -8,7 +8,7 @@ module org.aion.avm.rt {
     exports s.java.util;
     exports s.java.util.concurrent;
     exports s.java.util.function;
-    exports org.aion.avm.shadowapi.avm;
+    exports p.avm;
     exports org.aion.avm;
 
     requires org.aion.avm.api;
@@ -20,7 +20,7 @@ module org.aion.avm.rt {
 
     // When running unit tests in Eclipse, these are required (our Ant build process avoids this but it is probably more correct with them).
     opens s.java.lang;
-    opens org.aion.avm.shadowapi.avm;
+    opens p.avm;
     opens org.aion.avm.internal;
     exports s.java.io;
 }

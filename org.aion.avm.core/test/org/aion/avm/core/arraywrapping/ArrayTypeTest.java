@@ -8,7 +8,6 @@ import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**

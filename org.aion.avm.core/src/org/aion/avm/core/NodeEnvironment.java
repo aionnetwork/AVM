@@ -18,9 +18,9 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.aion.avm.shadowapi.avm.Address;
-import org.aion.avm.shadowapi.avm.Blockchain;
-import org.aion.avm.shadowapi.avm.Result;
+import p.avm.Address;
+import p.avm.Blockchain;
+import p.avm.Result;
 
 /**
  * Represents the long-lived global state of a specific "node" instance.

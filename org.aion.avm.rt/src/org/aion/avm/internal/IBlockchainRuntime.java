@@ -1,7 +1,7 @@
 package org.aion.avm.internal;
 
-import org.aion.avm.shadowapi.avm.Address;
-import org.aion.avm.shadowapi.avm.Result;
+import p.avm.Address;
+import p.avm.Result;
 import org.aion.avm.arraywrapper.ByteArray;
 import s.java.math.BigInteger;
 import s.java.lang.String;
