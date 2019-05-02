@@ -370,7 +370,7 @@ public class Deployer {
 
     private static ClassHierarchy buildNewHierarchy(LoadedJar jar) {
         ClassInformationFactory classInfoFactory = new ClassInformationFactory();
-        Set<ClassInformation> classInfos = classInfoFactory.fromUserDefinedPreRenameJar(jar, preserveDebuggability);
+        Set<ClassInformation> classInfos = classInfoFactory.fromUserDefinedPreRenameJar(jar);
 
         return new ClassHierarchyBuilder()
             .addShadowJcl()

@@ -35,38 +35,6 @@ public class ClassInformationTest {
         assertEquals(CommonType.I_OBJECT.dotName, renamedInfo.getInterfaces()[0]);
     }
 
-    /**
-     * A mix of pre- and post-rename super classes. The post-rename supers should not get renamed.
-     */
-    @Test
-    public void testRenamingPreRenameClassInfoWithPreAndPostRenameNames() {
-        String self = "self";
-        String postRenameSuper1 = CommonType.SHADOW_ENUM.dotName;
-        String postRenameSuper2 = PackageConstants.kArrayWrapperDotPrefix + "array";
-        String postRenameSuper3 = PackageConstants.kUserDotPrefix + "user";
-        String postRenameSuper4 = PackageConstants.kInternalDotPrefix + "internal";
-        String postRenameSuper5 = PackageConstants.kShadowApiDotPrefix + "api";
-        String preRename1 = "preRename";
-        String preRename2 = "java.lang.Number";
-        String preRename3 = PackageConstants.kPublicApiDotPrefix + "user";
-
-        String[] interfaces = new String[]{ postRenameSuper2, postRenameSuper3, postRenameSuper4, postRenameSuper5, preRename1, preRename2, preRename3 };
-        ClassInformation info = ClassInformation.preRenameInfoFor(false, self, postRenameSuper1, interfaces);
-        ClassInformation renamedInfo = info.toPostRenameClassInfo();
-
-        assertEquals(PackageConstants.kUserDotPrefix + self, renamedInfo.dotName);
-        assertEquals(postRenameSuper1, renamedInfo.superClassDotName);
-        assertEquals(interfaces.length, renamedInfo.getInterfaces().length);
-
-        // We expect the pre-rename names to be renamed as follows.
-        String preRename1renamed = PackageConstants.kUserDotPrefix + preRename1;
-        String preRename2renamed = PackageConstants.kShadowDotPrefix + preRename2;
-        String preRename3renamed = PackageConstants.kShadowApiDotPrefix + preRename3;
-
-        String[] expectedInterfaces = new String[]{ postRenameSuper2, postRenameSuper3, postRenameSuper4, postRenameSuper5, preRename1renamed, preRename2renamed, preRename3renamed };
-        assertArrayEquals(expectedInterfaces, renamedInfo.getInterfaces());
-    }
-
     @Test
     public void testRenamingPreRenameClassWithJavaLangObjectSuper() {
         ClassInformation info = ClassInformation.preRenameInfoFor(false, "self", CommonType.JAVA_LANG_OBJECT.dotName, null);

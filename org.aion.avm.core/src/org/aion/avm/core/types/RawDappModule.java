@@ -30,8 +30,7 @@ public class RawDappModule {
 
             // Construct the complete class hierarchy.
             ClassInformationFactory classInfoFactory = new ClassInformationFactory();
-            Set<ClassInformation> classInfos = classInfoFactory
-                .fromUserDefinedPreRenameJar(loadedJar, preserveDebuggability);
+            Set<ClassInformation> classInfos = classInfoFactory.fromUserDefinedPreRenameJar(loadedJar);
 
             ClassHierarchy fullHierarchy = new ClassHierarchyBuilder()
                 .addShadowJcl()

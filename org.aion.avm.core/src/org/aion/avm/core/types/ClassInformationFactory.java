@@ -18,16 +18,11 @@ public final class ClassInformationFactory {
      * Returns a set of all the class infos derived from the classes in the specified jar.
      *
      * Note that the returned classes are pre-rename classes since we are reading a pre-rename jar.
-     * However, in debug mode, since none of these classes ever get renamed, we can already mark
-     * them as post-rename classes.
-     *
-     * Therefore this method returns class infos marked pre-rename when not in debug mode and marked
-     * post-rename otherwise. This distinction helps simplify some renaming logic later on.
      *
      * @param jar The jar from which the classes are to be found.
      * @return The class info of each class defined in the jar.
      */
-    public Set<ClassInformation> fromUserDefinedPreRenameJar(LoadedJar jar, boolean preserveDebuggability) {
+    public Set<ClassInformation> fromUserDefinedPreRenameJar(LoadedJar jar) {
         if (jar == null) {
             throw new NullPointerException("Cannot derive class information from a null jar.");
         }
@@ -36,13 +31,7 @@ public final class ClassInformationFactory {
 
         Map<String, byte[]> classNameToBytes = jar.classBytesByQualifiedNames;
         for (Entry<String, byte[]> classNameToBytesEntry : classNameToBytes.entrySet()) {
-
-            if (preserveDebuggability) {
-                classInfos.add(fromClassBytes(classNameToBytesEntry.getValue(), true));
-
-            } else {
-                classInfos.add(fromClassBytes(classNameToBytesEntry.getValue(), false));
-            }
+            classInfos.add(fromClassBytes(classNameToBytesEntry.getValue(), false));
         }
 
         return classInfos;

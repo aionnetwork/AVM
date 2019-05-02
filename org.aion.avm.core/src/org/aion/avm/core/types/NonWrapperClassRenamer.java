@@ -49,11 +49,6 @@ public final class NonWrapperClassRenamer {
 
         RuntimeAssertionError.assertTrue(!preRenameDotName.contains("/"));
 
-        // If we are actually given a post-rename name then we do not perform any re-naming.
-        if (ClassNameExtractor.isPostRenameClassDotStyle(preRenameDotName)) {
-            return preRenameDotName;
-        }
-
         // Handle java.lang.Object
         if (preRenameDotName.equals(CommonType.JAVA_LANG_OBJECT.dotName)) {
             return CommonType.SHADOW_OBJECT.dotName;
