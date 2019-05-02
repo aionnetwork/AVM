@@ -13,7 +13,7 @@ public class PackageConstants {
     public static final String kArrayWrapperDotPrefix = "org.aion.avm.arraywrapper.";
     public static final String kArrayWrapperUnifyingDotPrefix = "org.aion.avm.arraywrapper.interface.";
     public static final String kInternalDotPrefix = "i.";
-    public static final String kUserDotPrefix = "org.aion.avm.user.";
+    public static final String kUserDotPrefix = "u.";
     public static final String kPublicApiDotPrefix = "avm.";
 
     public static final String kShadowSlashPrefix = "s/";
@@ -22,7 +22,7 @@ public class PackageConstants {
     public static final String kArrayWrapperSlashPrefix = "org/aion/avm/arraywrapper/";
     public static final String kArrayWrapperUnifyingSlashPrefix = "org/aion/avm/arraywrapper/interface/";
     public static final String kInternalSlashPrefix = "i/";
-    public static final String kUserSlashPrefix = "org/aion/avm/user/";
+    public static final String kUserSlashPrefix = "u/";
     public static final String kPublicApiSlashPrefix = "avm/";
 
     public static final String kConstantClassName = "C";
