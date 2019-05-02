@@ -1,5 +1,6 @@
 package org.aion.avm.core.exceptionwrapping;
 
+import i.RuntimeAssertionError;
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.classgeneration.StubGenerator;
 import org.aion.avm.core.types.ClassHierarchy;
@@ -16,21 +17,17 @@ import java.util.Set;
 
 
 public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
-    /**
-     * We need to handle the case of how to unify exceptions originating directly from the JVM, so we check the "java/lang/" prefix.
-     * NOTE: This prefix handles all the cases which are thrown asynchronously from the JVM.
-     * TODO (AKI-101): Replace this explicit prefix check with a more general name mapper.
-     */
-    private static final String SYSTEM_EXCEPTION_DETECTION_PREFIX = "java/lang/";
-
     private final GeneratedClassConsumer generatedClassesSink;
 
     private final ClassHierarchy classHierarchy;
+    private final Set<String> jclExceptionsSlashStyle;
 
     public ExceptionWrapping(GeneratedClassConsumer generatedClassesSink, ClassHierarchy classHierarchy) {
         super(Opcodes.ASM6);
         this.generatedClassesSink = generatedClassesSink;
         this.classHierarchy = classHierarchy;
+        this.jclExceptionsSlashStyle = fetchAllJavaLangExceptionsSlashStyle();
+
     }
 
     @Override
@@ -100,7 +97,15 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
                     // (without this, the verifier will complain about the operand stack containing the wrong type when used).
                     // Note that this type also needs to be translated into our namespace, since we won't be giving the user direct access to
                     // real exceptions.
-                    String mappedCastType = castType.startsWith(SYSTEM_EXCEPTION_DETECTION_PREFIX)
+                    boolean isPreRenameJavaException = jclExceptionsSlashStyle.contains(castType);
+
+                    // We only expect to find java.lang.Throwable by this point when it is synthesized in finally blocks.
+                    // Everything else should have already been renamed.
+                    if (isPreRenameJavaException) {
+                        RuntimeAssertionError.assertTrue(castType.equals("java/lang/Throwable"));
+                    }
+
+                    String mappedCastType = isPreRenameJavaException
                             ? PackageConstants.kShadowSlashPrefix + castType
                             : castType;
                     super.visitTypeInsn(Opcodes.CHECKCAST, mappedCastType);
@@ -151,5 +156,15 @@ public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
                 super.visitInsn(opcode);
             }
         };
+    }
+
+    private Set<String> fetchAllJavaLangExceptionsSlashStyle() {
+        Set<String> javaLangExceptions = new HashSet<>();
+        for (CommonType type : CommonType.values()) {
+            if (type.isShadowException) {
+                javaLangExceptions.add(type.dotName.substring(PackageConstants.kShadowDotPrefix.length()).replaceAll("\\.", "/"));
+            }
+        }
+        return javaLangExceptions;
     }
 }
