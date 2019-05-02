@@ -144,12 +144,14 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
 
     public BigInteger avm_shiftLeft(int n) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_shiftLeft);
+        verifyBitLength(n);
         lazyLoad();
         return new BigInteger(v.shiftLeft(n));
     }
 
     public BigInteger avm_shiftRight(int n) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_shiftRight);
+        verifyBitLength(n);
         lazyLoad();
         return new BigInteger(v.shiftRight(n));
     }
@@ -190,24 +192,28 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
 
     public boolean avm_testBit(int n) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_testBit);
+        verifyBitLength(n);
         lazyLoad();
         return v.testBit(n);
     }
 
     public BigInteger avm_setBit(int n) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_setBit);
+        verifyBitLength(n);
         lazyLoad();
         return new BigInteger(v.setBit(n));
     }
 
     public BigInteger avm_clearBit(int n) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_clearBit);
+        verifyBitLength(n);
         lazyLoad();
         return new BigInteger(v.clearBit(n));
     }
 
     public BigInteger avm_flipBit(int n) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigInteger_avm_flipBit);
+        verifyBitLength(n);
         lazyLoad();
         return new BigInteger(v.flipBit(n));
     }
@@ -390,6 +396,12 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
         return true;
     }
 
+    private void verifyBitLength(int length) {
+        if (length > 256) {
+            // since the maximum length is 32 bytes, the designated bit position cannot be bigger than 256
+            throw new ArithmeticException();
+        }
+    }
     //========================================================
     // Methods below are excluded from shadowing
     //========================================================

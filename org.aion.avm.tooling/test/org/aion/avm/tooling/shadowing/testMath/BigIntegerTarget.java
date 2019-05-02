@@ -79,6 +79,38 @@ public class BigIntegerTarget {
     }
 
     @Callable
+    public static byte[] setBit(byte[] val, int num) {
+        BigInteger testValue = new BigInteger(val);
+        BigInteger result = testValue.setBit(num);
+        return result.toByteArray();
+    }
+
+    @Callable
+    public static byte[] min(byte[] val) {
+        BigInteger testValue = new BigInteger(val);
+        BigInteger result = testValue.min(testValue);
+        return result.toByteArray();
+    }
+
+    @Callable
+    public static byte[] and(byte[] val) {
+        BigInteger testValue = new BigInteger(val);
+        BigInteger result = testValue.and(testValue);
+        return result.toByteArray();
+    }
+
+    @Callable
+    public static boolean shiftLeftException(int count) {
+        boolean isThrown = false;
+        try {
+            BigInteger.ONE.shiftLeft(count);
+        } catch (ArithmeticException e){
+            isThrown = true;
+        }
+        return isThrown;
+    }
+
+    @Callable
     public static int bitCount(byte[] val) {
         BigInteger testValue = new BigInteger(val);
         return testValue.bitCount();

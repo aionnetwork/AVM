@@ -33,13 +33,11 @@ public class BigIntegerTest {
         assertTrue(deployResult.getTransactionResult().getResultCode().isSuccess());
         contract = deployResult.getDappAddress();
 
-        byte[] arr = new byte[16];
-        Arrays.fill(arr, Byte.MAX_VALUE);
-        testValue16Bytes = new BigInteger(arr);
-
         byte[] arr2 = new byte[32];
         Arrays.fill(arr2, Byte.MAX_VALUE);
         testValue32Bytes = new BigInteger(arr2);
+
+        testValue16Bytes = new BigDecimal(Math.sqrt(testValue32Bytes.doubleValue())).toBigInteger();
     }
 
     @Test
@@ -86,8 +84,8 @@ public class BigIntegerTest {
 
     @Test
     public void modInverse() {
-        Assert.assertArrayEquals(testValue16Bytes.modInverse(BigInteger.TWO).toByteArray(),
-                (byte[]) callStatic("modInverse", testValue16Bytes.toByteArray()).getDecodedReturnData());
+        Assert.assertArrayEquals(testValue32Bytes.modInverse(BigInteger.TWO).toByteArray(),
+                (byte[]) callStatic("modInverse", testValue32Bytes.toByteArray()).getDecodedReturnData());
     }
 
     @Test
@@ -114,6 +112,17 @@ public class BigIntegerTest {
                 (byte[]) callStatic("newBigInteger", 0, 32, testValue32Bytes.toByteArray()).getDecodedReturnData());
     }
 
+    @Test
+    public void min() {
+        Assert.assertArrayEquals(testValue32Bytes.min(testValue32Bytes).toByteArray(),
+                (byte[]) callStatic("min", testValue32Bytes.toByteArray()).getDecodedReturnData());
+    }
+
+    @Test
+    public void and() {
+        Assert.assertArrayEquals(testValue32Bytes.and(testValue32Bytes).toByteArray(),
+                (byte[]) callStatic("and", testValue32Bytes.toByteArray()).getDecodedReturnData());
+    }
     //Exception cases
 
     @Test
@@ -144,6 +153,18 @@ public class BigIntegerTest {
     @Test
     public void multiplyWithTryCatch() {
         Assert.assertTrue((boolean) callStatic("catchExceptionOfOperation", testValue16Bytes.toByteArray(), testValue32Bytes.toByteArray()).getDecodedReturnData());
+    }
+
+    @Test
+    public void setBit() {
+        Assert.assertTrue(callStatic("setBit", testValue32Bytes.toByteArray(), 270).getTransactionResult().getResultCode().isFailed());
+    }
+
+    @Test
+    public void shiftLeftException() {
+        AvmRule.ResultWrapper wrapper = callStatic("shiftLeftException", 270);
+        Assert.assertTrue(wrapper.getTransactionResult().getResultCode().isSuccess());
+        Assert.assertTrue((boolean) wrapper.getDecodedReturnData());
     }
 
     private AvmRule.ResultWrapper callStatic(String methodName, Object... args) {
