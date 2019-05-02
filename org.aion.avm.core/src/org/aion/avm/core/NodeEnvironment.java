@@ -36,7 +36,7 @@ public class NodeEnvironment {
     private final AvmSharedClassLoader sharedClassLoader;
     // Note that the constant map is a map of constant hashcodes to constant instances.  This is just provided so that reference deserialization
     // mechanisms can map from this primitive identity into the actual instances.
-    private final Map<Integer, org.aion.avm.shadow.java.lang.Object> constantMap;
+    private final Map<Integer, s.java.lang.Object> constantMap;
 
     private Class<?>[] shadowApiClasses;
     private Class<?>[] shadowClasses;
@@ -78,65 +78,65 @@ public class NodeEnvironment {
             };
 
             this.exceptionwrapperClasses = new Class<?>[] {
-                org.aion.avm.exceptionwrapper.org.aion.avm.shadow.java.lang.Throwable.class
+                org.aion.avm.exceptionwrapper.s.java.lang.Throwable.class
             };
 
             this.shadowClasses = new Class<?>[] {
-                    org.aion.avm.shadow.java.lang.AssertionError.class
-                    , org.aion.avm.shadow.java.lang.Boolean.class
-                    , org.aion.avm.shadow.java.lang.Byte.class
-                    , org.aion.avm.shadow.java.lang.Character.class
-                    , org.aion.avm.shadow.java.lang.CharSequence.class
-                    , org.aion.avm.shadow.java.lang.Class.class
-                    , org.aion.avm.shadow.java.lang.Comparable.class
-                    , org.aion.avm.shadow.java.lang.Double.class
-                    , org.aion.avm.shadow.java.lang.Enum.class
-                    , org.aion.avm.shadow.java.lang.EnumConstantNotPresentException.class
-                    , org.aion.avm.shadow.java.lang.Error.class
-                    , org.aion.avm.shadow.java.lang.Exception.class
-                    , org.aion.avm.shadow.java.lang.Float.class
-                    , org.aion.avm.shadow.java.lang.Integer.class
-                    , org.aion.avm.shadow.java.lang.Iterable.class
-                    , org.aion.avm.shadow.java.lang.Long.class
-                    , org.aion.avm.shadow.java.lang.Number.class
-                    , org.aion.avm.shadow.java.lang.Object.class
-                    , org.aion.avm.shadow.java.lang.Runnable.class
-                    , org.aion.avm.shadow.java.lang.RuntimeException.class
-                    , org.aion.avm.shadow.java.lang.Short.class
-                    , org.aion.avm.shadow.java.lang.StrictMath.class
-                    , org.aion.avm.shadow.java.lang.String.class
-                    , org.aion.avm.shadow.java.lang.StringBuffer.class
-                    , org.aion.avm.shadow.java.lang.StringBuilder.class
-                    , org.aion.avm.shadow.java.lang.System.class
-                    , org.aion.avm.shadow.java.lang.Throwable.class
-                    , org.aion.avm.shadow.java.lang.TypeNotPresentException.class
-                    , org.aion.avm.shadow.java.lang.Appendable.class
-                    , org.aion.avm.shadow.java.lang.Cloneable.class
+                    s.java.lang.AssertionError.class
+                    , s.java.lang.Boolean.class
+                    , s.java.lang.Byte.class
+                    , s.java.lang.Character.class
+                    , s.java.lang.CharSequence.class
+                    , s.java.lang.Class.class
+                    , s.java.lang.Comparable.class
+                    , s.java.lang.Double.class
+                    , s.java.lang.Enum.class
+                    , s.java.lang.EnumConstantNotPresentException.class
+                    , s.java.lang.Error.class
+                    , s.java.lang.Exception.class
+                    , s.java.lang.Float.class
+                    , s.java.lang.Integer.class
+                    , s.java.lang.Iterable.class
+                    , s.java.lang.Long.class
+                    , s.java.lang.Number.class
+                    , s.java.lang.Object.class
+                    , s.java.lang.Runnable.class
+                    , s.java.lang.RuntimeException.class
+                    , s.java.lang.Short.class
+                    , s.java.lang.StrictMath.class
+                    , s.java.lang.String.class
+                    , s.java.lang.StringBuffer.class
+                    , s.java.lang.StringBuilder.class
+                    , s.java.lang.System.class
+                    , s.java.lang.Throwable.class
+                    , s.java.lang.TypeNotPresentException.class
+                    , s.java.lang.Appendable.class
+                    , s.java.lang.Cloneable.class
 
-                    , org.aion.avm.shadow.java.lang.invoke.LambdaMetafactory.class
-                    , org.aion.avm.shadow.java.lang.invoke.StringConcatFactory.class
+                    , s.java.lang.invoke.LambdaMetafactory.class
+                    , s.java.lang.invoke.StringConcatFactory.class
 
-                    , org.aion.avm.shadow.java.lang.Void.class
+                    , s.java.lang.Void.class
 
-                    , org.aion.avm.shadow.java.math.BigDecimal.class
-                    , org.aion.avm.shadow.java.math.BigInteger.class
-                    , org.aion.avm.shadow.java.math.MathContext.class
-                    , org.aion.avm.shadow.java.math.RoundingMode.class
+                    , s.java.math.BigDecimal.class
+                    , s.java.math.BigInteger.class
+                    , s.java.math.MathContext.class
+                    , s.java.math.RoundingMode.class
 
-                    , org.aion.avm.shadow.java.util.Arrays.class
-                    , org.aion.avm.shadow.java.util.Collection.class
-                    , org.aion.avm.shadow.java.util.Iterator.class
-                    , org.aion.avm.shadow.java.util.ListIterator.class
-                    , org.aion.avm.shadow.java.util.Map.class
-                    , org.aion.avm.shadow.java.util.Map.Entry.class
-                    , org.aion.avm.shadow.java.util.NoSuchElementException.class
-                    , org.aion.avm.shadow.java.util.Set.class
-                    , org.aion.avm.shadow.java.util.List.class
-                    , org.aion.avm.shadow.java.util.function.Function.class
+                    , s.java.util.Arrays.class
+                    , s.java.util.Collection.class
+                    , s.java.util.Iterator.class
+                    , s.java.util.ListIterator.class
+                    , s.java.util.Map.class
+                    , s.java.util.Map.Entry.class
+                    , s.java.util.NoSuchElementException.class
+                    , s.java.util.Set.class
+                    , s.java.util.List.class
+                    , s.java.util.function.Function.class
 
-                    , org.aion.avm.shadow.java.util.concurrent.TimeUnit.class
+                    , s.java.util.concurrent.TimeUnit.class
                 
-                    , org.aion.avm.shadow.java.io.Serializable.class
+                    , s.java.io.Serializable.class
             };
 
             this.jclClassNames = new HashSet<>();
@@ -245,7 +245,7 @@ public class NodeEnvironment {
     /**
      * @return The map of constants (specified constant identity hash codes to constant instances).
      */
-    public Map<Integer, org.aion.avm.shadow.java.lang.Object> getConstantMap() {
+    public Map<Integer, s.java.lang.Object> getConstantMap() {
         return this.constantMap;
     }
 
@@ -278,7 +278,7 @@ public class NodeEnvironment {
                 throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
             @Override
-            public <T> org.aion.avm.shadow.java.lang.Class<T> wrapAsClass(Class<T> input) {
+            public <T> s.java.lang.Class<T> wrapAsClass(Class<T> input) {
                 throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
             @Override
@@ -300,15 +300,15 @@ public class NodeEnvironment {
                 throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
             @Override
-            public org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
+            public s.java.lang.String wrapAsString(String input) {
                 throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
             @Override
-            public org.aion.avm.shadow.java.lang.Object unwrapThrowable(Throwable t) {
+            public s.java.lang.Object unwrapThrowable(Throwable t) {
                 throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
             @Override
-            public Throwable wrapAsThrowable(org.aion.avm.shadow.java.lang.Object arg) {
+            public Throwable wrapAsThrowable(s.java.lang.Object arg) {
                 throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
             @Override

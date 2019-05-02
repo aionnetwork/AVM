@@ -32,8 +32,8 @@ public class ArraySuperResolverTest {
     private String specialIObjectArray = org.aion.avm.internal.IObjectArray.class.getName();
 
     private String preRenameNonArray = java.lang.String.class.getName();
-    private String postRenameConcreteClass = org.aion.avm.shadow.java.lang.String.class.getName();
-    private String postRenameInterface = org.aion.avm.shadow.java.lang.Comparable.class.getName();
+    private String postRenameConcreteClass = s.java.lang.String.class.getName();
+    private String postRenameInterface = s.java.lang.Comparable.class.getName();
     private String preRenamePrimitiveArray1D = int[].class.getName();
     private String preRenamePrimitiveArray1Dother = byte[].class.getName();
     private String preRenamePrimitiveArrayMD = boolean[][].class.getName();
@@ -71,7 +71,7 @@ public class ArraySuperResolverTest {
         this.postRenameObjectArrayUnifyingType = this.classRenamer.toPostRename(this.preRenameObjectArray, ArrayType.UNIFYING_TYPE);
         this.postRenamePrimitiveArray1Dother = this.classRenamer.toPostRename(this.preRenamePrimitiveArray1Dother, ArrayType.PRECISE_TYPE);
         this.postRenamePrimitiveArrayMDother = this.classRenamer.toPostRename(this.preRenamePrimitiveArrayMDother, ArrayType.PRECISE_TYPE);
-        this.exceptionWrapper = this.classRenamer.toExceptionWrapper(org.aion.avm.shadow.java.lang.RuntimeException.class.getName());
+        this.exceptionWrapper = this.classRenamer.toExceptionWrapper(s.java.lang.RuntimeException.class.getName());
     }
 
     @Test

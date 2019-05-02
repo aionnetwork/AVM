@@ -227,12 +227,12 @@ public final class PlainTypeSuperResolverTest {
 
     @Test
     public void testSuperOfPostRenamePlainTypeAndJavaLangObject() {
-        String commonSuper = this.resolver.getTightestSuperClassIfGivenPlainType(org.aion.avm.shadow.java.lang.Byte.class.getName(), java.lang.Object.class.getName());
+        String commonSuper = this.resolver.getTightestSuperClassIfGivenPlainType(s.java.lang.Byte.class.getName(), java.lang.Object.class.getName());
         assertEquals(java.lang.Object.class.getName(), commonSuper);
 
         // --------------------------------
 
-        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(org.aion.avm.shadow.java.lang.Byte.class.getName(), java.lang.Object.class.getName());
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(s.java.lang.Byte.class.getName(), java.lang.Object.class.getName());
         assertEquals(java.lang.Object.class.getName().replaceAll("\\.", "/"), commonSuper);
     }
 

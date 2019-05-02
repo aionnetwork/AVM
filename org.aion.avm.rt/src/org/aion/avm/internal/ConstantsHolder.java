@@ -1,6 +1,6 @@
 package org.aion.avm.internal;
 
-import org.aion.avm.shadow.java.lang.Object;
+import s.java.lang.Object;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,7 +13,7 @@ public class ConstantsHolder {
 
     private static Map<Integer, Object> constants = new HashMap<>();
 
-    public static void addConstant(int constantId, org.aion.avm.shadow.java.lang.Object constant) {
+    public static void addConstant(int constantId, s.java.lang.Object constant) {
         RuntimeAssertionError.assertTrue(!constants.containsKey(constantId));
         constants.put(constantId, constant);
     }

@@ -29,7 +29,7 @@ public class CommonInstrumentation implements IInstrumentation {
         // Note that we want to fail on any attempt to use the interned string map which isn't the initial call (since <clinit> needs it but any
         // other attempt to use it is an error).
         if (1 == nextHashCode) {
-            newFrame.internedStringWrappers = new IdentityHashMap<String, org.aion.avm.shadow.java.lang.String>();
+            newFrame.internedStringWrappers = new IdentityHashMap<String, s.java.lang.String>();
         }
 
         newFrame.internedClassWrappers = classWrappers;
@@ -58,21 +58,21 @@ public class CommonInstrumentation implements IInstrumentation {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> org.aion.avm.shadow.java.lang.Class<T> wrapAsClass(Class<T> input) {
-        org.aion.avm.shadow.java.lang.Class<T> wrapper = null;
+    public <T> s.java.lang.Class<T> wrapAsClass(Class<T> input) {
+        s.java.lang.Class<T> wrapper = null;
         if (null != input) {
-            wrapper = (org.aion.avm.shadow.java.lang.Class<T>) this.currentFrame.internedClassWrappers.get(input);
+            wrapper = (s.java.lang.Class<T>) this.currentFrame.internedClassWrappers.get(input);
         }
         return wrapper;
     }
 
     @Override
-    public org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
-        org.aion.avm.shadow.java.lang.String wrapper = null;
+    public s.java.lang.String wrapAsString(String input) {
+        s.java.lang.String wrapper = null;
         if (null != input) {
             wrapper = this.currentFrame.internedStringWrappers.get(input);
             if (null == wrapper) {
-                wrapper = new org.aion.avm.shadow.java.lang.String(input);
+                wrapper = new s.java.lang.String(input);
                 this.currentFrame.internedStringWrappers.put(input, wrapper);
             }
         }
@@ -80,8 +80,8 @@ public class CommonInstrumentation implements IInstrumentation {
     }
 
     @Override
-    public org.aion.avm.shadow.java.lang.Object unwrapThrowable(Throwable t) {
-        org.aion.avm.shadow.java.lang.Object shadow = null;
+    public s.java.lang.Object unwrapThrowable(Throwable t) {
+        s.java.lang.Object shadow = null;
         AvmThrowable exceptionToRethrow = null;
         try {
             // NOTE:  This is called for both the cases where the throwable is a VM-generated "java.lang" exception or one of our wrappers.
@@ -106,8 +106,8 @@ public class CommonInstrumentation implements IInstrumentation {
                 exceptionToRethrow = (AvmThrowable)t;
             } else {
                 // This is one of our wrappers.
-                org.aion.avm.exceptionwrapper.org.aion.avm.shadow.java.lang.Throwable wrapper = (org.aion.avm.exceptionwrapper.org.aion.avm.shadow.java.lang.Throwable)t;
-                shadow = (org.aion.avm.shadow.java.lang.Object)wrapper.unwrap();
+                org.aion.avm.exceptionwrapper.s.java.lang.Throwable wrapper = (org.aion.avm.exceptionwrapper.s.java.lang.Throwable)t;
+                shadow = (s.java.lang.Object)wrapper.unwrap();
             }
         } catch (Throwable err) {
             // Unrecoverable internal error.
@@ -120,7 +120,7 @@ public class CommonInstrumentation implements IInstrumentation {
     }
 
     @Override
-    public Throwable wrapAsThrowable(org.aion.avm.shadow.java.lang.Object arg) {
+    public Throwable wrapAsThrowable(s.java.lang.Object arg) {
         Throwable result = null;
         try {
             // In this case, we just want to look up the appropriate wrapper (using reflection) and instantiate a wrapper for this.
@@ -261,22 +261,22 @@ public class CommonInstrumentation implements IInstrumentation {
     }
 
     // Private helpers used internally.
-    private org.aion.avm.shadow.java.lang.Throwable convertVmGeneratedException(Throwable t) throws Exception {
+    private s.java.lang.Throwable convertVmGeneratedException(Throwable t) throws Exception {
         // First step is to convert the message and cause into shadow objects, as well.
         String originalMessage = t.getMessage();
-        org.aion.avm.shadow.java.lang.String message = (null != originalMessage)
-                ? new org.aion.avm.shadow.java.lang.String(originalMessage)
+        s.java.lang.String message = (null != originalMessage)
+                ? new s.java.lang.String(originalMessage)
                 : null;
         // (note that converting the cause is recusrive on the causal chain)
         Throwable originalCause = t.getCause();
-        org.aion.avm.shadow.java.lang.Throwable cause = (null != originalCause)
+        s.java.lang.Throwable cause = (null != originalCause)
                 ? convertVmGeneratedException(originalCause)
                 : null;
         
         // Then, use reflection to find the appropriate wrapper.
         String throwableName = t.getClass().getName();
         Class<?> shadowClass = this.currentFrame.lateLoader.loadClass(PackageConstants.kShadowDotPrefix + throwableName);
-        return (org.aion.avm.shadow.java.lang.Throwable)shadowClass.getConstructor(org.aion.avm.shadow.java.lang.String.class, org.aion.avm.shadow.java.lang.Throwable.class).newInstance(message, cause);
+        return (s.java.lang.Throwable)shadowClass.getConstructor(s.java.lang.String.class, s.java.lang.Throwable.class).newInstance(message, cause);
     }
 
 
@@ -304,7 +304,7 @@ public class CommonInstrumentation implements IInstrumentation {
          * explicit, in the future) but we will always create the map for interning classes.
          * The persistence layer also knows that classes are encoded differently so it will correctly resolve instance through this interning map.
          */
-        private IdentityHashMap<String, org.aion.avm.shadow.java.lang.String> internedStringWrappers;
+        private IdentityHashMap<String, s.java.lang.String> internedStringWrappers;
         private InternedClasses internedClassWrappers;
 
         // Set forceExitState to non-null to re-throw at the entry to every block (forces the contract to exit).

@@ -15,7 +15,7 @@ public final class RunnableFactory {
         this.target = target;
     }
 
-    public org.aion.avm.shadow.java.lang.Runnable instantiate() {
+    public s.java.lang.Runnable instantiate() {
         return InternalRunnable.createRunnable(this.lookup, this.target);
     }
 }

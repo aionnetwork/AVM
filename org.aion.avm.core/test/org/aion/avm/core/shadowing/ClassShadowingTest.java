@@ -61,7 +61,7 @@ public class ClassShadowingTest {
 
         // We can rely on our test-facing toString methods to look into what we got back.
         Object wrappedClass = clazz.getMethod(NamespaceMapper.mapMethodName("returnClass")).invoke(obj);
-        Assert.assertEquals("class org.aion.avm.shadow.java.lang.String", wrappedClass.toString());
+        Assert.assertEquals("class s.java.lang.String", wrappedClass.toString());
         Object wrappedString = clazz.getMethod(NamespaceMapper.mapMethodName("returnString")).invoke(obj);
         Assert.assertEquals("hello", wrappedString.toString());
 
@@ -123,13 +123,13 @@ public class ClassShadowingTest {
         Class<?> clazz = loader.loadUserClassByOriginalName(TestResourceEnum.class.getName(), preserveDebuggability);
         
         // Try the normal constructor (private, so set accessible).
-        Constructor<?> one = clazz.getDeclaredConstructor(org.aion.avm.shadow.java.lang.String.class, int.class, org.aion.avm.shadow.java.lang.String.class);
+        Constructor<?> one = clazz.getDeclaredConstructor(s.java.lang.String.class, int.class, s.java.lang.String.class);
         one.setAccessible(true);
-        Object instance = one.newInstance(new org.aion.avm.shadow.java.lang.String("TEST"), 99, new org.aion.avm.shadow.java.lang.String("TEST"));
+        Object instance = one.newInstance(new s.java.lang.String("TEST"), 99, new s.java.lang.String("TEST"));
         Assert.assertNotNull(instance);
         
         // Try the deserialization constructor.
-        Object stub = clazz.getConstructor(Void.class, int.class).newInstance(null, org.aion.avm.shadow.java.lang.Object.NEW_INSTANCE_READ_INDEX);
+        Object stub = clazz.getConstructor(Void.class, int.class).newInstance(null, s.java.lang.Object.NEW_INSTANCE_READ_INDEX);
         Assert.assertNotNull(stub);
         avm.shutdown();
     }
@@ -141,13 +141,13 @@ public class ClassShadowingTest {
         Class<?> clazz = loader.loadUserClassByOriginalName(TestContainer.InternalEnum.class.getName(), preserveDebuggability);
         
         // Try the normal constructor (private, so set accessible).
-        Constructor<?> one = clazz.getDeclaredConstructor(org.aion.avm.shadow.java.lang.String.class, int.class, org.aion.avm.shadow.java.lang.String.class);
+        Constructor<?> one = clazz.getDeclaredConstructor(s.java.lang.String.class, int.class, s.java.lang.String.class);
         one.setAccessible(true);
-        Object instance = one.newInstance(new org.aion.avm.shadow.java.lang.String("TEST"), 99, new org.aion.avm.shadow.java.lang.String("TEST"));
+        Object instance = one.newInstance(new s.java.lang.String("TEST"), 99, new s.java.lang.String("TEST"));
         Assert.assertNotNull(instance);
         
         // Try the deserialization constructor.
-        Object stub = clazz.getConstructor(Void.class, int.class).newInstance(null, org.aion.avm.shadow.java.lang.Object.NEW_INSTANCE_READ_INDEX);
+        Object stub = clazz.getConstructor(Void.class, int.class).newInstance(null, s.java.lang.Object.NEW_INSTANCE_READ_INDEX);
         Assert.assertNotNull(stub);
         avm.shutdown();
     }
@@ -245,21 +245,21 @@ public class ClassShadowingTest {
             this.realImplementation.exitCurrentFrame();
         }
         @Override
-        public <T> org.aion.avm.shadow.java.lang.Class<T> wrapAsClass(Class<T> input) {
+        public <T> s.java.lang.Class<T> wrapAsClass(Class<T> input) {
             this.countWrappedClasses += 1;
             return this.realImplementation.wrapAsClass(input);
         }
         @Override
-        public org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
+        public s.java.lang.String wrapAsString(String input) {
             this.countWrappedStrings += 1;
             return this.realImplementation.wrapAsString(input);
         }
         @Override
-        public org.aion.avm.shadow.java.lang.Object unwrapThrowable(Throwable input) {
+        public s.java.lang.Object unwrapThrowable(Throwable input) {
             return this.realImplementation.unwrapThrowable(input);
         }
         @Override
-        public Throwable wrapAsThrowable(org.aion.avm.shadow.java.lang.Object input) {
+        public Throwable wrapAsThrowable(s.java.lang.Object input) {
             return this.realImplementation.wrapAsThrowable(input);
         }
         @Override

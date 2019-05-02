@@ -5,7 +5,7 @@ import org.aion.avm.internal.InstrumentationHelpers;
 import org.aion.avm.internal.InternedClasses;
 import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.avm.shadow.java.lang.Class;
+import s.java.lang.Class;
 
 
 /**
@@ -93,15 +93,15 @@ public class TestingHelper implements IInstrumentation {
         throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
     }
     @Override
-    public org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
+    public s.java.lang.String wrapAsString(String input) {
         throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
     }
     @Override
-    public org.aion.avm.shadow.java.lang.Object unwrapThrowable(Throwable t) {
+    public s.java.lang.Object unwrapThrowable(Throwable t) {
         throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
     }
     @Override
-    public Throwable wrapAsThrowable(org.aion.avm.shadow.java.lang.Object arg) {
+    public Throwable wrapAsThrowable(s.java.lang.Object arg) {
         throw RuntimeAssertionError.unreachable("Shouldn't be called in the testing code");
     }
     @Override

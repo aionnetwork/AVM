@@ -385,7 +385,7 @@ public class LoadedDAppTest {
      */
     @Test
     public void serializeDeserializeReferenceToJdkConstant() {
-        LoadedDAppTarget.s_nine = org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_EVEN;
+        LoadedDAppTarget.s_nine = s.java.math.RoundingMode.avm_HALF_EVEN;
         
         LoadedDApp dapp = new LoadedDApp(this.loader, new Class<?>[] {LoadedDAppTarget.class}, EmptyConstantClass.class, LoadedDAppTarget.class.getName(), this.preserveDebuggability);
         int hashcode = 1;
@@ -421,7 +421,7 @@ public class LoadedDAppTest {
         clearStaticState();
         int nextHashCode = dapp.loadEntireGraph(new InternedClasses(), expected);
         Assert.assertEquals(hashcode, nextHashCode);
-        Assert.assertTrue(org.aion.avm.shadow.java.math.RoundingMode.avm_HALF_EVEN == LoadedDAppTarget.s_nine);
+        Assert.assertTrue(s.java.math.RoundingMode.avm_HALF_EVEN == LoadedDAppTarget.s_nine);
     }
 
     /**
@@ -430,7 +430,7 @@ public class LoadedDAppTest {
     @Test
     public void serializeDeserializeReferenceToClass() {
         InternedClasses internedClasses = new InternedClasses();
-        org.aion.avm.shadow.java.lang.Class<?> originalClassRef = internedClasses.get(org.aion.avm.shadow.java.lang.String.class);
+        s.java.lang.Class<?> originalClassRef = internedClasses.get(s.java.lang.String.class);
         LoadedDAppTarget.s_nine = originalClassRef;
         
         LoadedDApp dapp = new LoadedDApp(this.loader, new Class<?>[] {LoadedDAppTarget.class}, EmptyConstantClass.class, LoadedDAppTarget.class.getName(), this.preserveDebuggability);
@@ -474,7 +474,7 @@ public class LoadedDAppTest {
      */
     @Test
     public void serializeDeserializeReferenceToConstantClass() {
-        LoadedDAppTarget.s_nine = org.aion.avm.shadow.java.lang.Byte.avm_TYPE;
+        LoadedDAppTarget.s_nine = s.java.lang.Byte.avm_TYPE;
         
         LoadedDApp dapp = new LoadedDApp(this.loader, new Class<?>[] {LoadedDAppTarget.class}, EmptyConstantClass.class, LoadedDAppTarget.class.getName(), this.preserveDebuggability);
         byte[] result = dapp.saveEntireGraph(1, MAX_GRAPH_SIZE);
@@ -509,7 +509,7 @@ public class LoadedDAppTest {
         clearStaticState();
         int nextHashCode = dapp.loadEntireGraph(new InternedClasses(), expected);
         Assert.assertEquals(1, nextHashCode);
-        Assert.assertTrue(org.aion.avm.shadow.java.lang.Byte.avm_TYPE == LoadedDAppTarget.s_nine);
+        Assert.assertTrue(s.java.lang.Byte.avm_TYPE == LoadedDAppTarget.s_nine);
     }
 
 

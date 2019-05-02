@@ -15,7 +15,7 @@ public final class FunctionFactory {
         this.target = target;
     }
 
-    public org.aion.avm.shadow.java.util.function.Function instantiate() {
+    public s.java.util.function.Function instantiate() {
         return InternalFunction.createFunction(this.lookup, this.target);
     }
 }

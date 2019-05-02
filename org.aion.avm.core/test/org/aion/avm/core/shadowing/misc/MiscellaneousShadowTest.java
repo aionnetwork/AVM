@@ -38,7 +38,7 @@ public class MiscellaneousShadowTest {
         Object string = this.clazz.getMethod(NamespaceMapper.mapMethodName("returnString")).invoke(null);
         Object object = this.clazz.getMethod(NamespaceMapper.mapMethodName("returnObject")).invoke(null);
         Object stringClass = this.clazz.getMethod(NamespaceMapper.mapMethodName("returnClass")).invoke(null);
-        Method cast = this.clazz.getMethod(NamespaceMapper.mapMethodName("cast"), org.aion.avm.shadow.java.lang.Class.class ,org.aion.avm.internal.IObject.class);
+        Method cast = this.clazz.getMethod(NamespaceMapper.mapMethodName("cast"), s.java.lang.Class.class ,org.aion.avm.internal.IObject.class);
         boolean didCastString = (Boolean)cast.invoke(null, stringClass, string);
         Assert.assertTrue(didCastString);
         boolean didCastObject = (Boolean)cast.invoke(null, stringClass, object);
@@ -53,7 +53,7 @@ public class MiscellaneousShadowTest {
         Object string = this.clazz.getMethod(NamespaceMapper.mapMethodName("returnString")).invoke(null);
         Object object = this.clazz.getMethod(NamespaceMapper.mapMethodName("returnObject")).invoke(null);
         Method getClass = this.clazz.getMethod(NamespaceMapper.mapMethodName("getClass"), org.aion.avm.internal.IObject.class);
-        Method getSuperclass = this.clazz.getMethod(NamespaceMapper.mapMethodName("getSuperclass"), org.aion.avm.shadow.java.lang.Class.class);
+        Method getSuperclass = this.clazz.getMethod(NamespaceMapper.mapMethodName("getSuperclass"), s.java.lang.Class.class);
         
         Object stringClass = getClass.invoke(null, string);
         Object objectClass = getClass.invoke(null, object);
@@ -121,13 +121,13 @@ public class MiscellaneousShadowTest {
 
     @Test
     public void testStringBuilderInsertString() throws Exception {
-        org.aion.avm.shadow.java.lang.String result = (org.aion.avm.shadow.java.lang.String) this.clazz.getMethod(NamespaceMapper.mapMethodName("stringBuilderInsertString")).invoke(null);
+        s.java.lang.String result = (s.java.lang.String) this.clazz.getMethod(NamespaceMapper.mapMethodName("stringBuilderInsertString")).invoke(null);
         Assert.assertEquals("InsertTesting", result.getUnderlying());
     }
 
     @Test
     public void testStringBuilderAppendStringBuilder() throws Exception {
-        org.aion.avm.shadow.java.lang.String result = (org.aion.avm.shadow.java.lang.String) this.clazz.getMethod(NamespaceMapper.mapMethodName("stringBuilderAppend")).invoke(null);
+        s.java.lang.String result = (s.java.lang.String) this.clazz.getMethod(NamespaceMapper.mapMethodName("stringBuilderAppend")).invoke(null);
         Assert.assertEquals("TestingBuilder", result.getUnderlying());
     }
 

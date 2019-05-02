@@ -12,7 +12,7 @@ import org.aion.avm.internal.IObjectSerializer;
 import org.aion.avm.internal.RuntimeAssertionError;
 
 
-public final class InternalRunnable extends org.aion.avm.shadow.java.lang.Object implements org.aion.avm.shadow.java.lang.Runnable {
+public final class InternalRunnable extends s.java.lang.Object implements s.java.lang.Runnable {
     private static final String METHOD_PREFIX = "avm_";
 
     public static InternalRunnable createRunnable(MethodHandles.Lookup lookup, MethodHandle target) {
@@ -56,7 +56,7 @@ public final class InternalRunnable extends org.aion.avm.shadow.java.lang.Object
         String externalMethodName = CodecIdioms.deserializeString(deserializer);
         // (remember that the pre-pass always returns null).
         if (null != original) {
-            Class<?> clazz = ((org.aion.avm.shadow.java.lang.Class<?>)original).getRealClass();
+            Class<?> clazz = ((s.java.lang.Class<?>)original).getRealClass();
             // Note that the method name needs a prefix added.
             String methodName = METHOD_PREFIX + externalMethodName;
             
@@ -71,7 +71,7 @@ public final class InternalRunnable extends org.aion.avm.shadow.java.lang.Object
         
         // We save the receiver class as an object reference and the method name, inline.
         // Note that we can only store the class if it is a shadow class, so unwrap it.
-        org.aion.avm.shadow.java.lang.Class<?> clazz = new org.aion.avm.shadow.java.lang.Class<>(this.receiver);
+        s.java.lang.Class<?> clazz = new s.java.lang.Class<>(this.receiver);
         // Note that we need to strip the prefix from the method.
         String methodName = this.methodName.substring(METHOD_PREFIX.length());
         

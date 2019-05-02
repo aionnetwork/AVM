@@ -7,7 +7,7 @@ package org.aion.avm.internal;
  * instantiation, etc).
  */
 public class PackageConstants {
-    public static final String kShadowDotPrefix = "org.aion.avm.shadow.";
+    public static final String kShadowDotPrefix = "s.";
     public static final String kShadowApiDotPrefix = "org.aion.avm.shadowapi.";
     public static final String kExceptionWrapperDotPrefix = "org.aion.avm.exceptionwrapper.";
     public static final String kArrayWrapperDotPrefix = "org.aion.avm.arraywrapper.";
@@ -16,7 +16,7 @@ public class PackageConstants {
     public static final String kUserDotPrefix = "org.aion.avm.user.";
     public static final String kPublicApiDotPrefix = "avm.";
 
-    public static final String kShadowSlashPrefix = "org/aion/avm/shadow/";
+    public static final String kShadowSlashPrefix = "s/";
     public static final String kShadowApiSlashPrefix = "org/aion/avm/shadowapi/";
     public static final String kExceptionWrapperSlashPrefix = "org/aion/avm/exceptionwrapper/";
     public static final String kArrayWrapperSlashPrefix = "org/aion/avm/arraywrapper/";

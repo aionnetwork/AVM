@@ -72,7 +72,7 @@ public class ConstantVisitorTest {
      */
     public static class HelperStub {
         public static final String CLASS_NAME = Helpers.fulllyQualifiedNameToInternalName(HelperStub.class.getName());
-        public static org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
+        public static s.java.lang.String wrapAsString(String input) {
             TestHelpers.wrapAsStringCounter += 1;
             // We don't do anything with this so even null works.
             return null;

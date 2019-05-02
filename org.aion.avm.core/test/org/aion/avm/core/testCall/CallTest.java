@@ -10,7 +10,7 @@ import org.aion.avm.core.SuspendedInstrumentation;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.avm.shadow.java.math.BigInteger;
+import s.java.math.BigInteger;
 import org.junit.Test;
 
 import java.lang.reflect.InvocationTargetException;

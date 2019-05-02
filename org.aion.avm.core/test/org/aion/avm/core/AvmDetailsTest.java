@@ -30,7 +30,7 @@ public class AvmDetailsTest {
         Assert.assertTrue(methods.get(BigInteger.class).contains(descriptor));
 
         //shadow class as input should fail
-        descriptor = new AvmDetails.MethodDescriptor("<init>", new Class<?>[]{org.aion.avm.shadow.java.lang.String.class}, false);
+        descriptor = new AvmDetails.MethodDescriptor("<init>", new Class<?>[]{s.java.lang.String.class}, false);
         Assert.assertFalse(methods.get(BigInteger.class).contains(descriptor));
 
         //java lang class as input should fail

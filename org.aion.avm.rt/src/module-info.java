@@ -1,13 +1,13 @@
 module org.aion.avm.rt {
     exports org.aion.avm.arraywrapper;
-    exports org.aion.avm.exceptionwrapper.org.aion.avm.shadow.java.lang;
+    exports org.aion.avm.exceptionwrapper.s.java.lang;
     exports org.aion.avm.internal;
-    exports org.aion.avm.shadow.java.lang;
-    exports org.aion.avm.shadow.java.lang.invoke;
-    exports org.aion.avm.shadow.java.math;
-    exports org.aion.avm.shadow.java.util;
-    exports org.aion.avm.shadow.java.util.concurrent;
-    exports org.aion.avm.shadow.java.util.function;
+    exports s.java.lang;
+    exports s.java.lang.invoke;
+    exports s.java.math;
+    exports s.java.util;
+    exports s.java.util.concurrent;
+    exports s.java.util.function;
     exports org.aion.avm.shadowapi.avm;
     exports org.aion.avm;
 
@@ -19,8 +19,8 @@ module org.aion.avm.rt {
     requires slf4j.simple;
 
     // When running unit tests in Eclipse, these are required (our Ant build process avoids this but it is probably more correct with them).
-    opens org.aion.avm.shadow.java.lang;
+    opens s.java.lang;
     opens org.aion.avm.shadowapi.avm;
     opens org.aion.avm.internal;
-    exports org.aion.avm.shadow.java.io;
+    exports s.java.io;
 }

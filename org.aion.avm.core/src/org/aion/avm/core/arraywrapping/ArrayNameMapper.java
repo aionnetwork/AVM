@@ -18,7 +18,7 @@ public class ArrayNameMapper {
     static private Pattern IOBJECT_INTERFACE_FORMAT = Pattern.compile("[_]{2,}Lorg/aion/avm/internal/IObject");
 
     static private Set<String> PRIMITIVES = Stream.of("I", "J", "Z", "B", "S", "D", "F", "C").collect(Collectors.toSet());
-    static private Pattern OBJECT_INTERFACE_FORMAT = Pattern.compile("[_\\[]{2,}Lorg/aion/avm/shadow/java/lang/Object");
+    static private Pattern OBJECT_INTERFACE_FORMAT = Pattern.compile("[_\\[]{2,}Ls/java/lang/Object");
 
 
     static java.lang.String updateMethodDesc(java.lang.String desc) {

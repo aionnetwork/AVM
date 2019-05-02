@@ -43,7 +43,7 @@ public class ExceptionWrapperSuperResolverTest {
 
         this.typeAwareClassWriter = new ClassWriter(hierarchy, this.classRenamer);
 
-        String exception = org.aion.avm.shadow.java.lang.EnumConstantNotPresentException.class.getName();
+        String exception = s.java.lang.EnumConstantNotPresentException.class.getName();
         this.exceptionWrapper = this.classRenamer.toExceptionWrapper(exception);
     }
 
@@ -65,7 +65,7 @@ public class ExceptionWrapperSuperResolverTest {
 
     @Test
     public void testSuperOfExceptionWrapperAndPostRenameArray() {
-        String array = org.aion.avm.shadow.java.lang.Object[].class.getName();
+        String array = s.java.lang.Object[].class.getName();
         array = array.substring(0, array.length() - 1); // strip trailing ';' character.
 
         String renamedArray = ArrayRenamer.wrapAsConcreteObjectArray(NameStyle.DOT_NAME, array, 3);
@@ -92,12 +92,12 @@ public class ExceptionWrapperSuperResolverTest {
 
     @Test
     public void testSuperOfExceptionWrapperAndPostRenamePlainType() {
-        String commonSuper = this.resolver.getTightestSuperClassIfGivenPlainType(org.aion.avm.shadow.java.lang.Throwable.class.getName(), this.exceptionWrapper);
+        String commonSuper = this.resolver.getTightestSuperClassIfGivenPlainType(s.java.lang.Throwable.class.getName(), this.exceptionWrapper);
         assertEquals(CommonType.JAVA_LANG_OBJECT.dotName, commonSuper);
 
         // -------------------------
 
-        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(org.aion.avm.shadow.java.lang.Throwable.class.getName(), this.exceptionWrapper);
+        commonSuper = this.typeAwareClassWriter.getCommonSuperClass(s.java.lang.Throwable.class.getName(), this.exceptionWrapper);
         assertEquals(CommonType.JAVA_LANG_OBJECT.dotName.replaceAll("\\.", "/"), commonSuper);
     }
 

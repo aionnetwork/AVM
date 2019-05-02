@@ -17,8 +17,8 @@ public class StandardGlobalResolver implements IGlobalResolver {
 
     @Override
     public String getAsInternalClassName(Object target) {
-        return (target instanceof org.aion.avm.shadow.java.lang.Class)
-                ? ((org.aion.avm.shadow.java.lang.Class<?>)target).getRealClass().getName()
+        return (target instanceof s.java.lang.Class)
+                ? ((s.java.lang.Class<?>)target).getRealClass().getName()
                 : null;
     }
 
@@ -26,7 +26,7 @@ public class StandardGlobalResolver implements IGlobalResolver {
     public Object getClassObjectForInternalName(String internalClassName) {
         try {
             Class<?> underlyingClass = this.classLoader.loadClass(internalClassName);
-            org.aion.avm.shadow.java.lang.Class<?> internedClass = this.internedClassMap.get(underlyingClass);
+            s.java.lang.Class<?> internedClass = this.internedClassMap.get(underlyingClass);
             return internedClass;
         } catch (ClassNotFoundException e) {
             // This can only fail if we were given the wrong loader.
@@ -38,10 +38,10 @@ public class StandardGlobalResolver implements IGlobalResolver {
     public int getAsConstant(Object target) {
         int constant = 0;
 
-        RuntimeAssertionError.assertTrue(target instanceof org.aion.avm.shadow.java.lang.Object);
-        if(((org.aion.avm.shadow.java.lang.Object) target).readIndex < -1)
+        RuntimeAssertionError.assertTrue(target instanceof s.java.lang.Object);
+        if(((s.java.lang.Object) target).readIndex < -1)
         {
-            constant = ConstantToken.getConstantIdFromReadIndex(((org.aion.avm.shadow.java.lang.Object) target).readIndex);
+            constant = ConstantToken.getConstantIdFromReadIndex(((s.java.lang.Object) target).readIndex);
         }
         return constant;
     }

@@ -9,8 +9,8 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.internal.InvalidException;
 import org.aion.avm.internal.RevertException;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.avm.shadow.java.lang.String;
-import org.aion.avm.shadow.java.math.BigInteger;
+import s.java.lang.String;
+import s.java.math.BigInteger;
 import org.aion.kernel.Block;
 import org.aion.kernel.TestingKernel;
 

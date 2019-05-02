@@ -3,8 +3,8 @@ package org.aion.avm.internal;
 import org.aion.avm.shadowapi.avm.Address;
 import org.aion.avm.shadowapi.avm.Result;
 import org.aion.avm.arraywrapper.ByteArray;
-import org.aion.avm.shadow.java.math.BigInteger;
-import org.aion.avm.shadow.java.lang.String;
+import s.java.math.BigInteger;
+import s.java.lang.String;
 
 
 /**

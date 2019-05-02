@@ -1,6 +1,6 @@
 package org.aion.avm.core;
 
-import org.aion.avm.shadow.java.math.BigInteger;
+import s.java.math.BigInteger;
 import org.aion.avm.shadowapi.avm.Address;
 import org.aion.avm.shadowapi.avm.Result;
 import org.aion.avm.internal.*;
@@ -97,10 +97,10 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     @Override
-    public org.aion.avm.shadow.java.math.BigInteger avm_getValue() {
+    public s.java.math.BigInteger avm_getValue() {
         if (null == this.valueCache) {
             java.math.BigInteger value = tx.value;
-            this.valueCache = new org.aion.avm.shadow.java.math.BigInteger(value);
+            this.valueCache = new s.java.math.BigInteger(value);
         }
 
         return this.valueCache;
@@ -143,9 +143,9 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     @Override
-    public org.aion.avm.shadow.java.math.BigInteger avm_getBlockDifficulty() {
+    public s.java.math.BigInteger avm_getBlockDifficulty() {
         if (null == this.blockDifficultyCache) {
-            this.blockDifficultyCache = org.aion.avm.shadow.java.math.BigInteger.avm_valueOf(kernel.getBlockDifficulty());
+            this.blockDifficultyCache = s.java.math.BigInteger.avm_valueOf(kernel.getBlockDifficulty());
         }
 
         return this.blockDifficultyCache;
@@ -177,22 +177,22 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     @Override
-    public org.aion.avm.shadow.java.math.BigInteger avm_getBalance(Address address) {
+    public s.java.math.BigInteger avm_getBalance(Address address) {
         require(null != address, "Address can't be NULL");
 
         // Acquire resource before reading
         avm.getResourceMonitor().acquire(address.unwrap(), this.task);
-        return new org.aion.avm.shadow.java.math.BigInteger(this.kernel.getBalance(org.aion.types.Address.wrap(address.unwrap())));
+        return new s.java.math.BigInteger(this.kernel.getBalance(org.aion.types.Address.wrap(address.unwrap())));
     }
 
     @Override
-    public org.aion.avm.shadow.java.math.BigInteger avm_getBalanceOfThisContract() {
+    public s.java.math.BigInteger avm_getBalanceOfThisContract() {
         // This method can be called inside clinit so CREATE is a valid context.
         org.aion.types.Address contractAddress = this.tx.destinationAddress;
 
         // Acquire resource before reading
         avm.getResourceMonitor().acquire(contractAddress.toBytes(), this.task);
-        return new org.aion.avm.shadow.java.math.BigInteger(this.kernel.getBalance(contractAddress));
+        return new s.java.math.BigInteger(this.kernel.getBalance(contractAddress));
     }
 
     @Override
@@ -211,7 +211,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     @Override
-    public Result avm_call(Address targetAddress, org.aion.avm.shadow.java.math.BigInteger value, ByteArray data, long energyLimit) {
+    public Result avm_call(Address targetAddress, s.java.math.BigInteger value, ByteArray data, long energyLimit) {
         org.aion.types.Address internalSender = this.tx.destinationAddress;
 
         java.math.BigInteger underlyingValue = value.getUnderlying();
@@ -247,7 +247,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     @Override
-    public Result avm_create(org.aion.avm.shadow.java.math.BigInteger value, ByteArray data, long energyLimit) {
+    public Result avm_create(s.java.math.BigInteger value, ByteArray data, long energyLimit) {
         org.aion.types.Address internalSender = this.tx.destinationAddress;
 
         java.math.BigInteger underlyingValue = value.getUnderlying();
@@ -408,12 +408,12 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     @Override
-    public void avm_print(org.aion.avm.shadow.java.lang.String message) {
+    public void avm_print(s.java.lang.String message) {
         task.outputPrint(message.toString());
     }
 
     @Override
-    public void avm_println(org.aion.avm.shadow.java.lang.String message) {
+    public void avm_println(s.java.lang.String message) {
         task.outputPrintln(message.toString());
     }
 

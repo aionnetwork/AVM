@@ -57,8 +57,8 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     private Type typeSA = Type.getType(ShortArray.class);
 
     private static final Set<String> SHADOW_JDK_ENUM_DESC = Set.of(new String[] {
-            "()[Lorg/aion/avm/shadow/java/math/RoundingMode;",
-            "()[Lorg/aion/avm/shadow/java/util/concurrent/TimeUnit;",
+            "()[Ls/java/math/RoundingMode;",
+            "()[Ls/java/util/concurrent/TimeUnit;",
     });
 
 

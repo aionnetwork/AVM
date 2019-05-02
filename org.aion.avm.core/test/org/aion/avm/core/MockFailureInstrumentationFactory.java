@@ -33,19 +33,19 @@ public class MockFailureInstrumentationFactory implements IInstrumentationFactor
                 underlying.exitCurrentFrame();
             }
             @Override
-            public <T> org.aion.avm.shadow.java.lang.Class<T> wrapAsClass(java.lang.Class<T> input) {
+            public <T> s.java.lang.Class<T> wrapAsClass(java.lang.Class<T> input) {
                 return underlying.wrapAsClass(input);
             }
             @Override
-            public org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
+            public s.java.lang.String wrapAsString(String input) {
                 return underlying.wrapAsString(input);
             }
             @Override
-            public org.aion.avm.shadow.java.lang.Object unwrapThrowable(Throwable t) {
+            public s.java.lang.Object unwrapThrowable(Throwable t) {
                 return underlying.unwrapThrowable(t);
             }
             @Override
-            public Throwable wrapAsThrowable(org.aion.avm.shadow.java.lang.Object arg) {
+            public Throwable wrapAsThrowable(s.java.lang.Object arg) {
                 return underlying.wrapAsThrowable(arg);
             }
             @Override

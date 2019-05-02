@@ -145,7 +145,7 @@ public class ParallelExecution {
             SimpleAvm avm = new SimpleAvm(tx.getEnergyLimit(), this.preserveDebuggability, Contract.class);
             avm.attachBlockchainRuntime(new TestingBlockchainRuntime(new EmptyCapabilities()) {
                 @Override
-                public Result avm_call(Address targetAddress, org.aion.avm.shadow.java.math.BigInteger value, ByteArray payload, long energyLimit) {
+                public Result avm_call(Address targetAddress, s.java.math.BigInteger value, ByteArray payload, long energyLimit) {
                     InternalTransaction internalTx = new InternalTransaction(
                             Transaction.Type.CALL,
                             tx.getDestinationAddress(),

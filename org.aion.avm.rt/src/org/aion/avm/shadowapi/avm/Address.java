@@ -3,8 +3,8 @@ package org.aion.avm.shadowapi.avm;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.arraywrapper.CharArray;
 import org.aion.avm.internal.IObject;
-import org.aion.avm.shadow.java.lang.Object;
-import org.aion.avm.shadow.java.lang.String;
+import s.java.lang.Object;
+import s.java.lang.String;
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 

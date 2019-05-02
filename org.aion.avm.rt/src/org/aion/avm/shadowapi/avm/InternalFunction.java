@@ -13,7 +13,7 @@ import org.aion.avm.internal.IObjectSerializer;
 import org.aion.avm.internal.RuntimeAssertionError;
 
 
-public final class InternalFunction extends org.aion.avm.shadow.java.lang.Object implements org.aion.avm.shadow.java.util.function.Function {
+public final class InternalFunction extends s.java.lang.Object implements s.java.util.function.Function {
     private static final String METHOD_PREFIX = "avm_";
 
     public static InternalFunction createFunction(MethodHandles.Lookup lookup, MethodHandle target) {
@@ -62,10 +62,10 @@ public final class InternalFunction extends org.aion.avm.shadow.java.lang.Object
         Object originalParameter = deserializer.readObject();
         // (remember that the pre-pass always returns null).
         if (null != originalReceiver) {
-            Class<?> receiver = ((org.aion.avm.shadow.java.lang.Class<?>)originalReceiver).getRealClass();
+            Class<?> receiver = ((s.java.lang.Class<?>)originalReceiver).getRealClass();
             // Note that the method name needs a prefix added.
             String methodName = METHOD_PREFIX + externalMethodName;
-            Class<?> parameterType = ((org.aion.avm.shadow.java.lang.Class<?>)originalParameter).getRealClass();
+            Class<?> parameterType = ((s.java.lang.Class<?>)originalParameter).getRealClass();
             
             this.receiver = receiver;
             this.methodName = methodName;
@@ -79,10 +79,10 @@ public final class InternalFunction extends org.aion.avm.shadow.java.lang.Object
         
         // We save the classes as object references and the method name, inline.
         // Note that we can only store the class if it is a shadow class, so unwrap it.
-        org.aion.avm.shadow.java.lang.Class<?> receiverClass = new org.aion.avm.shadow.java.lang.Class<>(this.receiver);
+        s.java.lang.Class<?> receiverClass = new s.java.lang.Class<>(this.receiver);
         // Note that we need to strip the prefix from the method.
         String methodName = this.methodName.substring(METHOD_PREFIX.length());
-        org.aion.avm.shadow.java.lang.Class<?> parameterClass = new org.aion.avm.shadow.java.lang.Class<>(this.parameterType);
+        s.java.lang.Class<?> parameterClass = new s.java.lang.Class<>(this.parameterType);
         
         serializer.writeObject(receiverClass);
         CodecIdioms.serializeString(serializer, methodName);

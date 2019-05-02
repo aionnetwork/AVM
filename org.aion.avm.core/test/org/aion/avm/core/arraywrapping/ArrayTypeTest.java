@@ -8,6 +8,7 @@ import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -73,7 +74,7 @@ public class ArrayTypeTest {
     @Test
     public void testObjectToString() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Method method = clazz.getMethod(NamespaceMapper.mapMethodName("testObjectToString"));
-        org.aion.avm.shadow.java.lang.String expectedShadowString = new org.aion.avm.shadow.java.lang.String("java.lang.Object@3java.lang.Object@4SubClassSuperClass");
+        s.java.lang.String expectedShadowString = new s.java.lang.String("java.lang.Object@3java.lang.Object@4SubClassSuperClass");
         assertEquals(expectedShadowString, method.invoke(clazz.getConstructor().newInstance()));
     }
 

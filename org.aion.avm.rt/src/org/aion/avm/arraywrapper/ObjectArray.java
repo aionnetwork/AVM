@@ -125,7 +125,7 @@ public class ObjectArray extends Array implements IObjectArray {
 
         serializer.writeInt(this.underlying.length);
         for (int i = 0; i < this.underlying.length; ++i) {
-            serializer.writeObject((org.aion.avm.shadow.java.lang.Object)this.underlying[i]);
+            serializer.writeObject((s.java.lang.Object)this.underlying[i]);
         }
     }
 }

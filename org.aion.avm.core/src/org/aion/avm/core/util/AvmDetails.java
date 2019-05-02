@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 
 public class AvmDetails {
     private static List<Class<?>> omittedClasses = new ArrayList<>(
-            Arrays.asList(org.aion.avm.shadow.java.lang.invoke.LambdaMetafactory.class, org.aion.avm.shadow.java.lang.invoke.StringConcatFactory.class));
+            Arrays.asList(s.java.lang.invoke.LambdaMetafactory.class, s.java.lang.invoke.StringConcatFactory.class));
 
     /**
      * @return Map of supported Class objects to a list of supported methods.

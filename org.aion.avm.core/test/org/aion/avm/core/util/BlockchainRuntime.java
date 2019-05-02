@@ -4,7 +4,7 @@ import avm.Address;
 import avm.Result;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.internal.IBlockchainRuntime;
-import org.aion.avm.shadow.java.lang.String;
+import s.java.lang.String;
 
 public class BlockchainRuntime {
 

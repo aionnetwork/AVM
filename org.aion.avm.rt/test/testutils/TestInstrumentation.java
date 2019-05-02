@@ -4,8 +4,8 @@ import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.InternedClasses;
 import org.aion.avm.internal.OutOfEnergyException;
 import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.avm.shadow.java.lang.Class;
-import org.aion.avm.shadow.java.lang.Object;
+import s.java.lang.Class;
+import s.java.lang.Object;
 
 
 /**
@@ -25,7 +25,7 @@ public class TestInstrumentation implements IInstrumentation {
         throw RuntimeAssertionError.unreachable("Not expected in this test");
     }
     @Override
-    public org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
+    public s.java.lang.String wrapAsString(String input) {
         throw RuntimeAssertionError.unreachable("Not expected in this test");
     }
     @Override

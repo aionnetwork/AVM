@@ -3,7 +3,7 @@ package org.aion.avm.core.testindy.java.lang;
 /**
  * @author Roman Katerinenko
  */
-public class Integer extends org.aion.avm.shadow.java.lang.Object {
+public class Integer extends s.java.lang.Object {
     private int val;
     private boolean avm_valueOfWasCalled;
 

@@ -57,7 +57,7 @@ public class LoadedDApp {
     
     static {
         try {
-            Class<?> shadowObject = org.aion.avm.shadow.java.lang.Object.class;
+            Class<?> shadowObject = s.java.lang.Object.class;
             SERIALIZE_SELF = shadowObject.getDeclaredMethod("serializeSelf", Class.class, IObjectSerializer.class);
             DESERIALIZE_SELF = shadowObject.getDeclaredMethod("deserializeSelf", Class.class, IObjectDeserializer.class);
             FIELD_READ_INDEX = shadowObject.getDeclaredField("readIndex");
@@ -306,10 +306,10 @@ public class LoadedDApp {
             throw new UncaughtException(cause);
 
             // thrown by users
-        } else if (cause instanceof org.aion.avm.exceptionwrapper.org.aion.avm.shadow.java.lang.Throwable) {
+        } else if (cause instanceof org.aion.avm.exceptionwrapper.s.java.lang.Throwable) {
             // Note that we will need to unwrap this since the wrapper doesn't actually communicate anything, just being
             // used to satisfy Java exception relationship requirements (the user code populates the wrapped object).
-            throw new UncaughtException(((org.aion.avm.exceptionwrapper.org.aion.avm.shadow.java.lang.Throwable) cause).unwrap().toString(), cause);
+            throw new UncaughtException(((org.aion.avm.exceptionwrapper.s.java.lang.Throwable) cause).unwrap().toString(), cause);
 
         } else {
             RuntimeAssertionError.unexpected(cause);

@@ -16,7 +16,7 @@ public class Helper implements IRuntimeSetup {
     private static IInstrumentation target;
 
 
-    public static <T> org.aion.avm.shadow.java.lang.Class<T> wrapAsClass(Class<T> input) {
+    public static <T> s.java.lang.Class<T> wrapAsClass(Class<T> input) {
         return target.wrapAsClass(input);
     }
 
@@ -27,15 +27,15 @@ public class Helper implements IRuntimeSetup {
      * @param input The original String constant.
      * @return The interned shadow String wrapper.
      */
-    public static org.aion.avm.shadow.java.lang.String wrapAsString(String input) {
+    public static s.java.lang.String wrapAsString(String input) {
         return target.wrapAsString(input);
     }
 
-    public static org.aion.avm.shadow.java.lang.Object unwrapThrowable(Throwable t) {
+    public static s.java.lang.Object unwrapThrowable(Throwable t) {
         return target.unwrapThrowable(t);
     }
 
-    public static Throwable wrapAsThrowable(org.aion.avm.shadow.java.lang.Object arg) {
+    public static Throwable wrapAsThrowable(s.java.lang.Object arg) {
         return target.wrapAsThrowable(arg);
     }
 

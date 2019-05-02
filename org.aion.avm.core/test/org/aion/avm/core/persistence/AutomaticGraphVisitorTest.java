@@ -63,7 +63,7 @@ public class AutomaticGraphVisitorTest {
 
     @Test
     public void createSecondarySpecialConstructor() throws Exception {
-        Object secondary = this.secondaryClass.getConstructor(Void.class, int.class).newInstance(null, org.aion.avm.shadow.java.lang.Object.NEW_INSTANCE_READ_INDEX);
+        Object secondary = this.secondaryClass.getConstructor(Void.class, int.class).newInstance(null, s.java.lang.Object.NEW_INSTANCE_READ_INDEX);
         Assert.assertEquals(0, this.secondaryClass.getDeclaredField("avm_value").getInt(secondary));
         this.secondaryClass.getMethod("avm_setValue", int.class).invoke(secondary, 1);
         Assert.assertEquals(1, this.secondaryClass.getDeclaredField("avm_value").getInt(secondary));

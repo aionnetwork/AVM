@@ -2,8 +2,8 @@ package org.aion.avm.arraywrapper;
 
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.internal.IObject;
-import org.aion.avm.shadow.java.lang.Cloneable;
-import org.aion.avm.shadow.java.lang.Object;
+import s.java.lang.Cloneable;
+import s.java.lang.Object;
 
 
 public abstract class Array extends Object implements Cloneable, IArray {

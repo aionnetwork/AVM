@@ -3,9 +3,9 @@ package org.aion.avm.shadowapi.avm;
 import org.aion.avm.StorageFees;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.internal.IBlockchainRuntime;
-import org.aion.avm.shadow.java.lang.Object;
-import org.aion.avm.shadow.java.lang.String;
-import org.aion.avm.shadow.java.math.BigInteger;
+import s.java.lang.Object;
+import s.java.lang.String;
+import s.java.math.BigInteger;
 
 import org.aion.avm.internal.IInstrumentation;
 import org.aion.avm.RuntimeMethodFeeSchedule;

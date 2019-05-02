@@ -58,10 +58,10 @@ public class StubGeneratorTest {
         InstrumentationHelpers.pushNewStackFrame(runtimeSetup, loader, 5L, 1, null);
         
         // Create an instance and prove that we can interact with it.
-        Constructor<?> con = aioobe.getConstructor(org.aion.avm.shadow.java.lang.String.class);
-        org.aion.avm.shadow.java.lang.String contents = new org.aion.avm.shadow.java.lang.String("one");
+        Constructor<?> con = aioobe.getConstructor(s.java.lang.String.class);
+        s.java.lang.String contents = new s.java.lang.String("one");
         Object instance = con.newInstance(contents);
-        org.aion.avm.shadow.java.lang.Throwable shadow = (org.aion.avm.shadow.java.lang.Throwable)instance;
+        s.java.lang.Throwable shadow = (s.java.lang.Throwable)instance;
         // Ask for the toString (our internal version) since we know what that should look like.
         Assert.assertEquals(PackageConstants.kShadowDotPrefix + "java.lang.ArrayIndexOutOfBoundsException: one", shadow.toString());
         
@@ -91,7 +91,7 @@ public class StubGeneratorTest {
         Constructor<?> con = aioobe.getConstructor(Object.class);
         String contents = "one";
         Object instance = con.newInstance(contents);
-        org.aion.avm.exceptionwrapper.org.aion.avm.shadow.java.lang.Throwable wrapper = (org.aion.avm.exceptionwrapper.org.aion.avm.shadow.java.lang.Throwable)instance;
+        org.aion.avm.exceptionwrapper.s.java.lang.Throwable wrapper = (org.aion.avm.exceptionwrapper.s.java.lang.Throwable)instance;
         // We can just unwrap this one.
         Assert.assertEquals(wrapper.unwrap(), contents);
         // Also, make sure that it is safe to cast this to the actual Throwable.
@@ -155,12 +155,12 @@ public class StubGeneratorTest {
         InstrumentationHelpers.pushNewStackFrame(runtimeSetup, generated, 5L, 1, null);
         
         // Create an instance and prove that we can interact with it.
-        Constructor<?> con = notFound.getConstructor(org.aion.avm.shadow.java.lang.String.class, org.aion.avm.shadow.java.lang.Throwable.class);
-        org.aion.avm.shadow.java.lang.String contents = new org.aion.avm.shadow.java.lang.String("one");
-        org.aion.avm.shadow.java.lang.Throwable cause = new org.aion.avm.shadow.java.lang.Throwable();
+        Constructor<?> con = notFound.getConstructor(s.java.lang.String.class, s.java.lang.Throwable.class);
+        s.java.lang.String contents = new s.java.lang.String("one");
+        s.java.lang.Throwable cause = new s.java.lang.Throwable();
         
         Object instance = con.newInstance(contents, cause);
-        org.aion.avm.shadow.java.lang.Throwable shadow = (org.aion.avm.shadow.java.lang.Throwable)instance;
+        s.java.lang.Throwable shadow = (s.java.lang.Throwable)instance;
         
         // Call our getException and make sure it is the cause.
         Method getException = notFound.getMethod(NamespaceMapper.mapMethodName("getException"));

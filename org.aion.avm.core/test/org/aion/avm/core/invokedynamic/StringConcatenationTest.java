@@ -87,9 +87,9 @@ public class StringConcatenationTest {
     public void given_stringConcatLambda_then_bootstrapMethodShouldBeShadowed() throws Exception {
         final var clazz = transformClass(IndyConcatenationTestResource.class);
         final var actual = callMethod(clazz, "avm_concatWithDynamicArgs",
-                new org.aion.avm.shadow.java.lang.String("a"),
-                new org.aion.avm.shadow.java.lang.String("b"),
-                new org.aion.avm.shadow.java.lang.String("c"));
+                new s.java.lang.String("a"),
+                new s.java.lang.String("b"),
+                new s.java.lang.String("c"));
         Assert.assertEquals("abc", actual);
     }
 
@@ -97,9 +97,9 @@ public class StringConcatenationTest {
     public void given_stringConcatLambda_then_bootstrapMethodShouldBeShadowed2() throws Exception {
         final var clazz = transformClass(IndyConcatenationTestResource.class);
         final var actual = callMethod(clazz, "avm_concatWithCharacters",
-                new org.aion.avm.shadow.java.lang.String("a"),
-                new org.aion.avm.shadow.java.lang.String("b"),
-                new org.aion.avm.shadow.java.lang.String("c"));
+                new s.java.lang.String("a"),
+                new s.java.lang.String("b"),
+                new s.java.lang.String("c"));
         Assert.assertEquals("yabcx12.8", actual);
     }
 
@@ -111,16 +111,16 @@ public class StringConcatenationTest {
     }
 
     private static String callMethod(Class<?> clazz,
-                                     String methodName, org.aion.avm.shadow.java.lang.String... stringArgs) throws Exception {
+                                     String methodName, s.java.lang.String... stringArgs) throws Exception {
         final var instance = clazz.getDeclaredConstructor().newInstance();
         final var method = clazz.getDeclaredMethod(methodName, getTypesFrom(stringArgs));
-        final var actual = (org.aion.avm.shadow.java.lang.String) method.invoke(instance, (Object[])stringArgs);
+        final var actual = (s.java.lang.String) method.invoke(instance, (Object[])stringArgs);
         return actual.getUnderlying();
     }
 
     private static Class<?>[] getTypesFrom(Object[] objects) {
         return Stream.of(objects)
-                .map((obj) -> (obj == null) ? org.aion.avm.shadow.java.lang.String.class : obj.getClass())
+                .map((obj) -> (obj == null) ? s.java.lang.String.class : obj.getClass())
                 .toArray(Class[]::new);
     }
 

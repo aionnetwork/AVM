@@ -14,10 +14,10 @@ public interface IInstrumentation {
     void enterNewFrame(ClassLoader contractLoader, long energyLeft, int nextHashCode, InternedClasses classWrappers);
     void exitCurrentFrame();
 
-    <T> org.aion.avm.shadow.java.lang.Class<T> wrapAsClass(Class<T> input);
-    org.aion.avm.shadow.java.lang.String wrapAsString(String input);
-    org.aion.avm.shadow.java.lang.Object unwrapThrowable(Throwable t);
-    Throwable wrapAsThrowable(org.aion.avm.shadow.java.lang.Object arg);
+    <T> s.java.lang.Class<T> wrapAsClass(Class<T> input);
+    s.java.lang.String wrapAsString(String input);
+    s.java.lang.Object unwrapThrowable(Throwable t);
+    Throwable wrapAsThrowable(s.java.lang.Object arg);
     void chargeEnergy(long cost) throws OutOfEnergyException;
     long energyLeft();
 
