@@ -44,7 +44,7 @@ public class TypeAwareClassWriterTest {
     public void testWrappers_generated() throws Exception {
         TestClass clazz = new TestClass();
         String common = clazz.testing_getCommonSuperClass(ExceptionWrapperNameMapper.slashWrapperNameForClassName(PackageConstants.kShadowSlashPrefix + "java/lang/AssertionError"), ExceptionWrapperNameMapper.slashWrapperNameForClassName(PackageConstants.kShadowSlashPrefix + "java/lang/Error"));
-        Assert.assertEquals("org/aion/avm/exceptionwrapper/s/java/lang/Error", common);
+        Assert.assertEquals("e/s/java/lang/Error", common);
     }
 
     @Test

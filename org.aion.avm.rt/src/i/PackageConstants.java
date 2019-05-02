@@ -9,7 +9,7 @@ package i;
 public class PackageConstants {
     public static final String kShadowDotPrefix = "s.";
     public static final String kShadowApiDotPrefix = "p.";
-    public static final String kExceptionWrapperDotPrefix = "org.aion.avm.exceptionwrapper.";
+    public static final String kExceptionWrapperDotPrefix = "e.";
     public static final String kArrayWrapperDotPrefix = "org.aion.avm.arraywrapper.";
     public static final String kArrayWrapperUnifyingDotPrefix = "org.aion.avm.arraywrapper.interface.";
     public static final String kInternalDotPrefix = "i.";
@@ -18,7 +18,7 @@ public class PackageConstants {
 
     public static final String kShadowSlashPrefix = "s/";
     public static final String kShadowApiSlashPrefix = "p/";
-    public static final String kExceptionWrapperSlashPrefix = "org/aion/avm/exceptionwrapper/";
+    public static final String kExceptionWrapperSlashPrefix = "e/";
     public static final String kArrayWrapperSlashPrefix = "org/aion/avm/arraywrapper/";
     public static final String kArrayWrapperUnifyingSlashPrefix = "org/aion/avm/arraywrapper/interface/";
     public static final String kInternalSlashPrefix = "i/";

@@ -294,7 +294,7 @@ public class LoadedDApp {
 
     /**
      * The exception could be any {@link i.AvmThrowable}, any {@link java.lang.RuntimeException},
-     * or a {@link org.aion.avm.exceptionwrapper.java.lang.Throwable}.
+     * or a {@link e.java.lang.Throwable}.
      */
     private void handleUncaughtException(Throwable cause) throws Throwable {
         // thrown by us
@@ -306,10 +306,10 @@ public class LoadedDApp {
             throw new UncaughtException(cause);
 
             // thrown by users
-        } else if (cause instanceof org.aion.avm.exceptionwrapper.s.java.lang.Throwable) {
+        } else if (cause instanceof e.s.java.lang.Throwable) {
             // Note that we will need to unwrap this since the wrapper doesn't actually communicate anything, just being
             // used to satisfy Java exception relationship requirements (the user code populates the wrapped object).
-            throw new UncaughtException(((org.aion.avm.exceptionwrapper.s.java.lang.Throwable) cause).unwrap().toString(), cause);
+            throw new UncaughtException(((e.s.java.lang.Throwable) cause).unwrap().toString(), cause);
 
         } else {
             RuntimeAssertionError.unexpected(cause);

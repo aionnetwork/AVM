@@ -78,7 +78,7 @@ public class NodeEnvironment {
             };
 
             this.exceptionwrapperClasses = new Class<?>[] {
-                org.aion.avm.exceptionwrapper.s.java.lang.Throwable.class
+                e.s.java.lang.Throwable.class
             };
 
             this.shadowClasses = new Class<?>[] {

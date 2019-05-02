@@ -106,7 +106,7 @@ public class CommonInstrumentation implements IInstrumentation {
                 exceptionToRethrow = (AvmThrowable)t;
             } else {
                 // This is one of our wrappers.
-                org.aion.avm.exceptionwrapper.s.java.lang.Throwable wrapper = (org.aion.avm.exceptionwrapper.s.java.lang.Throwable)t;
+                e.s.java.lang.Throwable wrapper = (e.s.java.lang.Throwable)t;
                 shadow = (s.java.lang.Object)wrapper.unwrap();
             }
         } catch (Throwable err) {

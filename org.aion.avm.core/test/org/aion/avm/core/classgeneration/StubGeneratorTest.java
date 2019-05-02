@@ -91,7 +91,7 @@ public class StubGeneratorTest {
         Constructor<?> con = aioobe.getConstructor(Object.class);
         String contents = "one";
         Object instance = con.newInstance(contents);
-        org.aion.avm.exceptionwrapper.s.java.lang.Throwable wrapper = (org.aion.avm.exceptionwrapper.s.java.lang.Throwable)instance;
+        e.s.java.lang.Throwable wrapper = (e.s.java.lang.Throwable)instance;
         // We can just unwrap this one.
         Assert.assertEquals(wrapper.unwrap(), contents);
         // Also, make sure that it is safe to cast this to the actual Throwable.
