@@ -105,6 +105,8 @@ public final class ClassRenamer {
      *
      * This method does not handle exception wrapping! Use: {@code toExceptionWrapper()}.
      *
+     * NOTE: this method will rename java.lang.Object to shadow Object!
+     *
      * @param preRenameClassName The pre-rename class name to be renamed.
      * @param arrayType Whether to produce a precise or unifying array type.
      * @return the post-rename version of the given name.
@@ -112,14 +114,14 @@ public final class ClassRenamer {
     public String toPostRename(String preRenameClassName, ArrayType arrayType) {
         RuntimeAssertionError.assertTrue(!preRenameClassName.contains((this.style == NameStyle.DOT_NAME) ? "/" : "."));
 
-        if (isPreRenameArray(preRenameClassName)) {
+        if (isPreRenameUserClass(preRenameClassName)) {
+            return toPostRenameUserDefinedClass(preRenameClassName);
+        } else if (isPreRenameArray(preRenameClassName)) {
             return toPostRenameArray(preRenameClassName, arrayType);
         } else if (isPreRenameApiClass(preRenameClassName)) {
             return toPostRenameApiClass(preRenameClassName);
         } else if (isPreRenameJclClass(preRenameClassName)) {
             return toPostRenameJclClass(preRenameClassName);
-        } else if (isPreRenameUserClass(preRenameClassName)) {
-            return toPostRenameUserDefinedClass(preRenameClassName);
         } else {
             throw RuntimeAssertionError.unreachable("Expected a pre-rename class name: " + preRenameClassName);
         }
@@ -135,7 +137,9 @@ public final class ClassRenamer {
     public String toPreRename(String postRename) {
         RuntimeAssertionError.assertTrue(!postRename.contains((this.style == NameStyle.DOT_NAME) ? "/" : "."));
 
-        if (isIObject(postRename)) {
+        if (isPostRenameUserClass(postRename)) {
+            return toPreRenameUserDefinedClass(postRename);
+        } else if (isIObject(postRename)) {
             return getJavaLangObject();
         } else if (isExceptionWrapper(postRename)) {
             return toPreRenameExceptionWrapper(postRename);
@@ -145,8 +149,6 @@ public final class ClassRenamer {
             return toPreRenameApiClass(postRename);
         } else if (isPostRenameJclClass(postRename)) {
             return toPreRenameJclClass(postRename);
-        } else if (isPostRenameUserClass(postRename)) {
-            return toPreRenameUserDefinedClass(postRename);
         } else {
             throw RuntimeAssertionError.unreachable("Expected a post-rename class name: " + postRename);
         }
@@ -183,7 +185,7 @@ public final class ClassRenamer {
             return false;
         }
 
-        return isPreRenameArray(name) || isPreRenameApiClass(name) || isPreRenameJclClass(name) || isPreRenameUserClass(name);
+        return isPreRenameUserClass(name) || isPreRenameArray(name) || isPreRenameApiClass(name) || isPreRenameJclClass(name);
     }
 
     //<--------------------------------RENAMING METHODS-------------------------------------------->
