@@ -21,7 +21,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
 
     public static byte[] arrayWrappingFactory(String request, ClassLoader loader){
 
-        if (request.startsWith(PackageConstants.kArrayWrapperDotPrefix + "interface._")){
+        if (request.startsWith(PackageConstants.kArrayWrapperUnifyingDotPrefix + "_")){
             return genWrapperInterface(request, loader);
         }
 
@@ -47,7 +47,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
 
         String wrapperInterfaceSlashName = Helpers.fulllyQualifiedNameToInternalName(requestInterface);
         // Get element class and array dim
-        String elementInterfaceSlashName = wrapperInterfaceSlashName.substring((PackageConstants.kArrayWrapperSlashPrefix + "interface/").length());
+        String elementInterfaceSlashName = wrapperInterfaceSlashName.substring((PackageConstants.kArrayWrapperUnifyingSlashPrefix).length());
         int dim = ArrayNameMapper.getPrefixSize(elementInterfaceSlashName, '_');
         String elementInterfaceDotName = ArrayNameMapper.getElementInterfaceName(requestInterface);
 
@@ -79,20 +79,20 @@ public class ArrayWrappingClassGenerator implements Opcodes {
         // Handle if we have a multi-dimensional IObject interface wrapper to point to its lower dimensional self.
         if (ArrayNameMapper.isIObjectInterfaceFormat(elementInterfaceSlashName)) {
             String slashName = elementInterfaceSlashName.substring(1);  // remove a _ from name
-            String fullSlashName = PackageConstants.kArrayWrapperSlashPrefix + "interface/" + slashName;
+            String fullSlashName = PackageConstants.kArrayWrapperUnifyingSlashPrefix + slashName;
             elementInterfaceWrapperNames.add(ArrayNameMapper.getInterfaceWrapper(fullSlashName));
         }
 
         // Handle if we have a multi-dimensional Object interface wrapper to point to its lower dimensional self.
         if (ArrayNameMapper.isObjectInterfaceFormat(elementInterfaceSlashName)) {
             String slashName = elementInterfaceSlashName.substring(1);
-            String fullSlashName = PackageConstants.kArrayWrapperSlashPrefix + "interface/" + slashName;
+            String fullSlashName = PackageConstants.kArrayWrapperUnifyingSlashPrefix + slashName;
             String interfaceName = ArrayNameMapper.getInterfaceWrapper(fullSlashName);
             elementInterfaceWrapperNames.add(interfaceName);
         }
 
         // Handle _IObject unifying type so that it unifies under IObjectArray.
-        String IObject1D = PackageConstants.kArrayWrapperSlashPrefix + "interface/_L" + PackageConstants.kInternalSlashPrefix + "IObject";
+        String IObject1D = PackageConstants.kArrayWrapperUnifyingSlashPrefix + "_L" + PackageConstants.kInternalSlashPrefix + "IObject";
         if (wrapperInterfaceSlashName.equals(IObject1D)) {
             elementInterfaceWrapperNames.add(PackageConstants.kInternalSlashPrefix + "IObjectArray");
         }

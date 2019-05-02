@@ -113,7 +113,7 @@ public class AvmSharedClassLoader extends ClassLoader {
         }
 
         // Array wrapper classes are either already in dynamic cache, or need to be generated
-        if (name.startsWith(PackageConstants.kArrayWrapperDotPrefix)){
+        if (name.startsWith(PackageConstants.kArrayWrapperDotPrefix) || name.startsWith(PackageConstants.kArrayWrapperUnifyingDotPrefix)){
             synchronized (this.cacheDynamic) {
                 if (this.cacheDynamic.containsKey(name)) {
                     result = this.cacheDynamic.get(name);

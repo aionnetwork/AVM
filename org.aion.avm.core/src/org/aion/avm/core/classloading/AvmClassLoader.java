@@ -127,7 +127,7 @@ public class AvmClassLoader extends ClassLoader {
     }
 
     private boolean isUserArrayWrapper(String className) {
-        if (className.startsWith(PackageConstants.kArrayWrapperDotPrefix + "interface")) {
+        if (className.startsWith(PackageConstants.kArrayWrapperUnifyingDotPrefix)) {
             return this.bytecodeMap.containsKey(ArrayNameMapper.getElementInterfaceName(className));
         } else if (className.startsWith(PackageConstants.kArrayWrapperDotPrefix + "$")) {
             return this.bytecodeMap.containsKey(ArrayNameMapper.getClassWrapperElementName(className));
