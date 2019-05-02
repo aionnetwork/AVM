@@ -415,7 +415,7 @@ public class RuntimeMethodFeeSchedule {
     public static final long Class_avm_toString = RT_METHOD_FEE_LEVEL_2; // totalCost - 56;
     public static final long Class_avm_cast = RT_METHOD_FEE_LEVEL_2; // totalCost - 230; // byte code cost - 130; invoked methods cost - 100;
     public static final long Class_avm_getSuperclass = RT_METHOD_FEE_LEVEL_3; // totalCost - 429; //maximum cost of multiple blocks; // byte code cost - 329; invoked methods cost - 100;
-    public static final long Class_avm_desiredAssertionStatus = RT_METHOD_FEE_LEVEL_4; // totalCost - 1997; // byte code cost - 56; invoked methods cost - 1941;
+    public static final long Class_avm_desiredAssertionStatus = RT_METHOD_FEE_LEVEL_1; // totalCost - 1997; // byte code cost - 56; invoked methods cost - 1941;
 
     public static final long StringBuilder_avm_constructor = RT_METHOD_FEE_LEVEL_2; // totalCost - 391; // byte code cost - 291; invoked methods cost - 100;
     public static final long StringBuilder_avm_constructor_1 = RT_METHOD_FEE_LEVEL_3; // totalCost - 579; // byte code cost - 351; invoked methods cost - 228;

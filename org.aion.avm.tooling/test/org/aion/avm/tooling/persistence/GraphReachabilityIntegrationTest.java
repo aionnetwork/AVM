@@ -242,7 +242,7 @@ public class GraphReachabilityIntegrationTest {
         long basicCost = BillingRules.getBasicTransactionCost(txData);
         long codeInstantiationOfDeploymentFee = BillingRules.getDeploymentFee(11, optimizedJar.length);
         long clinit = 83L;
-        long assertionStatus = 1500L;
+        long assertionStatus = 100L;
         long clinit2 = 3L + 31L;
         long miscCharges = basicCost + codeInstantiationOfDeploymentFee + clinit + assertionStatus + clinit2;
         // One write of 13563L.
