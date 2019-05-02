@@ -2,7 +2,7 @@ package org.aion.avm.core.testCall;
 
 import p.avm.Address;
 import p.avm.Result;
-import org.aion.avm.arraywrapper.ByteArray;
+import a.ByteArray;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.blockchainruntime.TestingBlockchainRuntime;

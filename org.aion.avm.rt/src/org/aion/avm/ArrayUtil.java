@@ -20,14 +20,14 @@ public final class ArrayUtil {
     private static final Pattern POST_RENAME_UNIFYING_SLASH = Pattern.compile("^" + PackageConstants.kArrayWrapperUnifyingSlashPrefix + "_+L.+");
 
     private static Set<String> postRenamePrimitiveSimpleNames = Stream.of(
-        org.aion.avm.arraywrapper.IntArray.class.getSimpleName(),
-        org.aion.avm.arraywrapper.LongArray.class.getSimpleName(),
-        org.aion.avm.arraywrapper.ByteArray.class.getSimpleName(),
-        org.aion.avm.arraywrapper.BooleanArray.class.getSimpleName(),
-        org.aion.avm.arraywrapper.ShortArray.class.getSimpleName(),
-        org.aion.avm.arraywrapper.DoubleArray.class.getSimpleName(),
-        org.aion.avm.arraywrapper.FloatArray.class.getSimpleName(),
-        org.aion.avm.arraywrapper.CharArray.class.getSimpleName())
+        a.IntArray.class.getSimpleName(),
+        a.LongArray.class.getSimpleName(),
+        a.ByteArray.class.getSimpleName(),
+        a.BooleanArray.class.getSimpleName(),
+        a.ShortArray.class.getSimpleName(),
+        a.DoubleArray.class.getSimpleName(),
+        a.FloatArray.class.getSimpleName(),
+        a.CharArray.class.getSimpleName())
         .collect(Collectors.toSet());
 
     private static Set<Character> primitiveSignifiers = Stream.of('I', 'J', 'Z', 'B', 'S', 'D', 'F', 'C').collect(Collectors.toSet());

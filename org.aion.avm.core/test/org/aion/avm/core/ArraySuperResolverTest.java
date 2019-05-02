@@ -26,9 +26,9 @@ public class ArraySuperResolverTest {
     private ArraySuperResolver resolver;
     private TypeAwareClassWriter typeAwareClassWriter;
 
-    private String specialArray = org.aion.avm.arraywrapper.Array.class.getName();
-    private String specialIArray = org.aion.avm.arraywrapper.IArray.class.getName();
-    private String specialObjectArray = org.aion.avm.arraywrapper.ObjectArray.class.getName();
+    private String specialArray = a.Array.class.getName();
+    private String specialIArray = a.IArray.class.getName();
+    private String specialObjectArray = a.ObjectArray.class.getName();
     private String specialIObjectArray = i.IObjectArray.class.getName();
 
     private String preRenameNonArray = java.lang.String.class.getName();

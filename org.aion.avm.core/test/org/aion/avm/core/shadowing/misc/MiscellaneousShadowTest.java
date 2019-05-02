@@ -2,7 +2,7 @@ package org.aion.avm.core.shadowing.misc;
 
 import java.lang.reflect.Method;
 
-import org.aion.avm.arraywrapper.CharArray;
+import a.CharArray;
 import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.junit.After;

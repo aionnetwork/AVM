@@ -1,7 +1,7 @@
 package org.aion.avm.core.arraywrapping;
 
 import java.util.regex.Pattern;
-import org.aion.avm.arraywrapper.*;
+import a.*;
 import i.PackageConstants;
 import i.RuntimeAssertionError;
 import org.objectweb.asm.*;
@@ -46,7 +46,7 @@ import java.util.Set;
 class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     static private Pattern PRIMITIVE_ARRAY_FORMAT = Pattern.compile("[\\$\\[]+[IJZBSDFC]");
 
-    private Type typeA = Type.getType(org.aion.avm.arraywrapper.IArray.class);
+    private Type typeA = Type.getType(a.IArray.class);
     private Type typeBA = Type.getType(ByteArray.class);
     private Type typeZA = Type.getType(BooleanArray.class);
     private Type typeCA = Type.getType(CharArray.class);

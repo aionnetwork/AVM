@@ -1,7 +1,7 @@
 package s.java.lang;
 
 import org.aion.avm.ClassNameExtractor;
-import org.aion.avm.arraywrapper.ObjectArray;
+import a.ObjectArray;
 import i.AvmThrowable;
 import i.ConstantToken;
 import i.IInstrumentation;

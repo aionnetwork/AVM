@@ -1,7 +1,7 @@
 package org.aion.avm.core.arraywrapping;
 
-import org.aion.avm.arraywrapper.BooleanArray;
-import org.aion.avm.arraywrapper.ByteArray;
+import a.BooleanArray;
+import a.ByteArray;
 import org.aion.avm.core.rejection.RejectedClassException;
 import org.aion.avm.core.types.ClassHierarchy;
 import org.aion.avm.core.util.Helpers;

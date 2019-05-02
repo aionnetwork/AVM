@@ -1,7 +1,7 @@
 package s.java.util.concurrent;
 
 import org.aion.avm.RuntimeMethodFeeSchedule;
-import org.aion.avm.arraywrapper.ObjectArray;
+import a.ObjectArray;
 import i.ConstantToken;
 import i.IInstrumentation;
 import i.IObjectArray;

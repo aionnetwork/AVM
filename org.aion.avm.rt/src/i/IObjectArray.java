@@ -1,7 +1,7 @@
 package i;
 
 
-import org.aion.avm.arraywrapper.IArray;
+import a.IArray;
 
 /**
  * This interface contains the common ObjectArray methods callable from transformed code.

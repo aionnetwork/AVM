@@ -1,27 +1,27 @@
-package org.aion.avm.arraywrapper;
+package a;
 
 import i.*;
 import java.util.Arrays;
 
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
-public class FloatArray extends Array {
+public class CharArray extends Array {
 
-    private float[] underlying;
+    private char[] underlying;
 
     /**
-     * Static FloatArray factory
+     * Static CharArray factory
      *
-     * After instrumentation, NEWARRAY bytecode (with float as type) will be replaced by a INVOKESTATIC to
+     * After instrumentation, NEWARRAY bytecode (with char as type) will be replaced by a INVOKESTATIC to
      * this method.
      *
-     * @param size Size of the float array
+     * @param size Size of the char array
      *
-     * @return New empty float array wrapper
+     * @return New empty char array wrapper
      */
-    public static FloatArray initArray(int size){
-        chargeEnergy(size * ArrayElement.FLOAT.getEnergy());
-        return new FloatArray(size);
+    public static CharArray initArray(int size){
+        chargeEnergy(size * ArrayElement.CHAR.getEnergy());
+        return new CharArray(size);
     }
 
     @Override
@@ -30,44 +30,44 @@ public class FloatArray extends Array {
         return this.underlying.length;
     }
 
-    public float get(int idx) {
+    public char get(int idx) {
         lazyLoad();
         return this.underlying[idx];
     }
 
-    public void set(int idx, float val) {
+    public void set(int idx, char val) {
         lazyLoad();
         this.underlying[idx] = val;
     }
 
     @Override
     public IObject avm_clone() {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.FloatArray_avm_clone + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * length());
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.CharArray_avm_clone + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * length());
         lazyLoad();
-        return new FloatArray(Arrays.copyOf(underlying, underlying.length));
+        return new CharArray(Arrays.copyOf(underlying, underlying.length));
     }
 
     @Override
     public IObject clone() {
         lazyLoad();
-        return new FloatArray(Arrays.copyOf(underlying, underlying.length));
+        return new CharArray(Arrays.copyOf(underlying, underlying.length));
     }
 
     //========================================================
     // Internal Helper
     //========================================================
 
-    public FloatArray(int c) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.FloatArray_avm_constructor);
-        this.underlying = new float[c];
+    public CharArray(int c) {
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.CharArray_avm_constructor);
+        this.underlying = new char[c];
     }
 
-    public FloatArray(float[] underlying) {
+    public CharArray(char[] underlying) {
         RuntimeAssertionError.assertTrue(null != underlying);
         this.underlying = underlying;
     }
 
-    public float[] getUnderlying() {
+    public char[] getUnderlying() {
         lazyLoad();
         return underlying;
     }
@@ -76,7 +76,7 @@ public class FloatArray extends Array {
     public void setUnderlyingAsObject(java.lang.Object u){
         RuntimeAssertionError.assertTrue(null != u);
         lazyLoad();
-        this.underlying = (float[]) u;
+        this.underlying = (char[]) u;
     }
 
     @Override
@@ -95,28 +95,28 @@ public class FloatArray extends Array {
     // Persistent Memory Support
     //========================================================
 
-    public FloatArray(Void ignore, int readIndex) {
+    public CharArray(Void ignore, int readIndex) {
         super(ignore, readIndex);
     }
 
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
-        super.deserializeSelf(FloatArray.class, deserializer);
+        super.deserializeSelf(CharArray.class, deserializer);
 
         // TODO (AKI-118):  We probably want faster array copies.
         int length = deserializer.readInt();
-        this.underlying = new float[length];
+        this.underlying = new char[length];
         for (int i = 0; i < length; ++i) {
-            this.underlying[i] = deserializer.readFloat();
+            this.underlying[i] = deserializer.readChar();
         }
     }
 
     public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
-        super.serializeSelf(FloatArray.class, serializer);
+        super.serializeSelf(CharArray.class, serializer);
 
         // TODO (AKI-118):  We probably want faster array copies.
         serializer.writeInt(this.underlying.length);
         for (int i = 0; i < this.underlying.length; ++i) {
-            serializer.writeFloat(this.underlying[i]);
+            serializer.writeChar(this.underlying[i]);
         }
     }
 }

@@ -1,5 +1,5 @@
 module org.aion.avm.rt {
-    exports org.aion.avm.arraywrapper;
+    exports a;
     exports e.s.java.lang;
     exports i;
     exports s.java.lang;
@@ -21,6 +21,6 @@ module org.aion.avm.rt {
     // When running unit tests in Eclipse, these are required (our Ant build process avoids this but it is probably more correct with them).
     opens s.java.lang;
     opens p.avm;
-    opens org.aion.avm.internal;
+    opens i;
     exports s.java.io;
 }

@@ -21,11 +21,11 @@ public class NameMapperTest {
         String objectMDslashName = objectMDdotName.replaceAll("\\.", "/");
         String interfaceObjectMDslashName = interfaceObjectMDdotName.replaceAll("\\.", "/");
 
-        String expectedPrimitive1DdotName = "org.aion.avm.arraywrapper.ByteArray";
-        String expectedPrimitiveMDdotName = "org.aion.avm.arraywrapper.$$S";
-        String expectedObject1DdotName = "org.aion.avm.arraywrapper.interface._Ljava.lang.Number";
-        String expectedObjectMDdotName = "org.aion.avm.arraywrapper.interface.__Ljava.lang.Number";
-        String expectedInterfaceObjectMDdotName = "org.aion.avm.arraywrapper.interface._Ljava.lang.CharSequence";
+        String expectedPrimitive1DdotName = "a.ByteArray";
+        String expectedPrimitiveMDdotName = "a.$$S";
+        String expectedObject1DdotName = "w._Ljava.lang.Number";
+        String expectedObjectMDdotName = "w.__Ljava.lang.Number";
+        String expectedInterfaceObjectMDdotName = "w._Ljava.lang.CharSequence";
 
         String expectedPrimitive1DslashName = expectedPrimitive1DdotName.replaceAll("\\.", "/");
         String expectedPrimitiveMDslashName = expectedPrimitiveMDdotName.replaceAll("\\.", "/");
@@ -53,11 +53,11 @@ public class NameMapperTest {
         String objectMDslashName = objectMDdotName.replaceAll("\\.", "/");
         String interfaceObjectMDslashName = interfaceObjectMDdotName.replaceAll("\\.", "/");
 
-        String expectedPrimitive1DdotName = "org.aion.avm.arraywrapper.IntArray";
-        String expectedPrimitiveMDdotName = "org.aion.avm.arraywrapper.$$$Z";
-        String expectedObject1DdotName = "org.aion.avm.arraywrapper.$Ljava.lang.String";
-        String expectedObjectMDdotName = "org.aion.avm.arraywrapper.$$Ljava.lang.String";
-        String expectedInterfaceObjectMDdotName = "org.aion.avm.arraywrapper.$Ljava.lang.Comparable";
+        String expectedPrimitive1DdotName = "a.IntArray";
+        String expectedPrimitiveMDdotName = "a.$$$Z";
+        String expectedObject1DdotName = "a.$Ljava.lang.String";
+        String expectedObjectMDdotName = "a.$$Ljava.lang.String";
+        String expectedInterfaceObjectMDdotName = "a.$Ljava.lang.Comparable";
 
         String expectedPrimitive1DslashName = expectedPrimitive1DdotName.replaceAll("\\.", "/");
         String expectedPrimitiveMDslashName = expectedPrimitiveMDdotName.replaceAll("\\.", "/");

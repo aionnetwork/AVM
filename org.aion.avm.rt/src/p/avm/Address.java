@@ -1,7 +1,7 @@
 package p.avm;
 
-import org.aion.avm.arraywrapper.ByteArray;
-import org.aion.avm.arraywrapper.CharArray;
+import a.ByteArray;
+import a.CharArray;
 import i.IObject;
 import s.java.lang.Object;
 import s.java.lang.String;

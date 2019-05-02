@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import avm.Address;
-import org.aion.avm.arraywrapper.ByteArray;
+import a.ByteArray;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.util.ABIUtil;
 

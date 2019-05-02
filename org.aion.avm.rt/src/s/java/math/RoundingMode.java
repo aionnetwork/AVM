@@ -1,6 +1,6 @@
 package s.java.math;
 
-import org.aion.avm.arraywrapper.ObjectArray;
+import a.ObjectArray;
 import i.ConstantToken;
 import i.IInstrumentation;
 import i.IObjectArray;

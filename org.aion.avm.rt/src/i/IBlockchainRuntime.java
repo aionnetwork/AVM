@@ -2,7 +2,7 @@ package i;
 
 import p.avm.Address;
 import p.avm.Result;
-import org.aion.avm.arraywrapper.ByteArray;
+import a.ByteArray;
 import s.java.math.BigInteger;
 import s.java.lang.String;
 

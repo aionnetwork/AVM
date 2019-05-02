@@ -2,7 +2,7 @@ package org.aion.avm.core.testWallet;
 
 import avm.Address;
 import avm.Blockchain;
-import org.aion.avm.arraywrapper.ByteArray;
+import a.ByteArray;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 

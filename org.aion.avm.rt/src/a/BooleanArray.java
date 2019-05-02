@@ -1,27 +1,27 @@
-package org.aion.avm.arraywrapper;
+package a;
 
 import i.*;
 import java.util.Arrays;
 
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
-public class ByteArray extends Array {
+public class BooleanArray extends Array {
 
-    private byte[] underlying;
+    private boolean[] underlying;
 
     /**
-     * Static ByteArray factory
+     * Static BooleanArray factory
      *
-     * After instrumentation, NEWARRAY bytecode (with byte/boolean as type) will be replaced by a INVOKESTATIC to
+     * After instrumentation, NEWARRAY bytecode (with boolean as type) will be replaced by a INVOKESTATIC to
      * this method.
      *
-     * @param size Size of the byte array
+     * @param size Size of the boolean array
      *
-     * @return New empty byte array wrapper
+     * @return New empty boolean array wrapper
      */
-    public static ByteArray initArray(int size){
+    public static BooleanArray initArray(int size){
         chargeEnergy(size * ArrayElement.BYTE.getEnergy());
-        return new ByteArray(size);
+        return new BooleanArray(size);
     }
 
     @Override
@@ -30,12 +30,12 @@ public class ByteArray extends Array {
         return this.underlying.length;
     }
 
-    public byte get(int idx) {
+    public boolean get(int idx) {
         lazyLoad();
         return this.underlying[idx];
     }
 
-    public void set(int idx, byte val) {
+    public void set(int idx, boolean val) {
         lazyLoad();
         this.underlying[idx] = val;
     }
@@ -44,19 +44,19 @@ public class ByteArray extends Array {
     public IObject avm_clone() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ByteArray_avm_clone + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * length());
         lazyLoad();
-        return new ByteArray(Arrays.copyOf(underlying, underlying.length));
+        return new BooleanArray(Arrays.copyOf(underlying, underlying.length));
     }
 
     @Override
     public IObject clone() {
         lazyLoad();
-        return new ByteArray(Arrays.copyOf(underlying, underlying.length));
+        return new BooleanArray(Arrays.copyOf(underlying, underlying.length));
     }
 
     @Override
     public boolean equals(java.lang.Object obj) {
         lazyLoad();
-        return obj instanceof ByteArray && Arrays.equals(this.underlying, ((ByteArray) obj).underlying);
+        return obj instanceof BooleanArray && Arrays.equals(this.underlying, ((BooleanArray) obj).underlying);
     }
 
     @Override
@@ -69,17 +69,17 @@ public class ByteArray extends Array {
     // Internal Helper
     //========================================================
 
-    public ByteArray(int c) {
+    public BooleanArray(int c) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.ByteArray_avm_constructor);
-        this.underlying = new byte[c];
+        this.underlying = new boolean[c];
     }
 
-    public ByteArray(byte[] underlying) {
+    public BooleanArray(boolean[] underlying) {
         RuntimeAssertionError.assertTrue(null != underlying);
         this.underlying = underlying;
     }
 
-    public byte[] getUnderlying() {
+    public boolean[] getUnderlying() {
         lazyLoad();
         return underlying;
     }
@@ -88,7 +88,7 @@ public class ByteArray extends Array {
     public void setUnderlyingAsObject(java.lang.Object u){
         RuntimeAssertionError.assertTrue(null != u);
         lazyLoad();
-        this.underlying = (byte[]) u;
+        this.underlying = (boolean[]) u;
     }
 
     @Override
@@ -107,19 +107,19 @@ public class ByteArray extends Array {
     // Persistent Memory Support
     //========================================================
 
-    public ByteArray(Void ignore, int readIndex) {
+    public BooleanArray(Void ignore, int readIndex) {
         super(ignore, readIndex);
     }
 
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
-        super.deserializeSelf(ByteArray.class, deserializer);
+        super.deserializeSelf(BooleanArray.class, deserializer);
 
-        this.underlying = CodecIdioms.deserializeByteArray(deserializer);
+        this.underlying = CodecIdioms.deserializeBooleanArray(deserializer);
     }
 
     public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
-        super.serializeSelf(ByteArray.class, serializer);
+        super.serializeSelf(BooleanArray.class, serializer);
 
-        CodecIdioms.serializeByteArray(serializer, this.underlying);
+        CodecIdioms.serializeBooleanArray(serializer, this.underlying);
     }
 }

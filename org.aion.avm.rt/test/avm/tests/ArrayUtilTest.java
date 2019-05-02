@@ -98,7 +98,7 @@ public class ArrayUtilTest {
 
     @Test
     public void testIsPostRenamePrimitiveArray1DdotName() {
-        String arrayDotName = org.aion.avm.arraywrapper.LongArray.class.getName();
+        String arrayDotName = a.LongArray.class.getName();
 
         assertTrue(ArrayUtil.isPostRenameSingleDimensionPrimitiveArray(NameStyle.DOT_NAME, arrayDotName));
         assertFalse(ArrayUtil.isPostRenameMultiDimensionPrimitiveArray(NameStyle.DOT_NAME, arrayDotName));
@@ -123,7 +123,7 @@ public class ArrayUtilTest {
 
     @Test
     public void testIsPostRenamePrimitiveArray1DslashName() {
-        String arraySlashName = org.aion.avm.arraywrapper.CharArray.class.getName().replaceAll("\\.", "/");
+        String arraySlashName = a.CharArray.class.getName().replaceAll("\\.", "/");
 
         assertTrue(ArrayUtil.isPostRenameSingleDimensionPrimitiveArray(NameStyle.SLASH_NAME, arraySlashName));
         assertFalse(ArrayUtil.isPostRenameMultiDimensionPrimitiveArray(NameStyle.SLASH_NAME, arraySlashName));
@@ -357,7 +357,7 @@ public class ArrayUtilTest {
 
     @Test
     public void testDimensionOfPostRenamePrimitiveArrayDotName() {
-        String array1dotName = org.aion.avm.arraywrapper.DoubleArray.class.getName();
+        String array1dotName = a.DoubleArray.class.getName();
         String array2dotName = PackageConstants.kArrayWrapperDotPrefix + float[][].class.getName().replaceAll("\\[", "\\$");
         String array3dotName = PackageConstants.kArrayWrapperDotPrefix + byte[][][].class.getName().replaceAll("\\[", "\\$");
 
@@ -376,7 +376,7 @@ public class ArrayUtilTest {
 
     @Test
     public void testDimensionOfPostRenamePrimitiveArraySlashName() {
-        String array1slashName = org.aion.avm.arraywrapper.CharArray.class.getName().replaceAll("\\.", "/");
+        String array1slashName = a.CharArray.class.getName().replaceAll("\\.", "/");
         String array2slashName = PackageConstants.kArrayWrapperSlashPrefix + int[][].class.getName().replaceAll("\\[", "\\$");
         String array3slashName = PackageConstants.kArrayWrapperSlashPrefix + long[][][].class.getName().replaceAll("\\[", "\\$");
 

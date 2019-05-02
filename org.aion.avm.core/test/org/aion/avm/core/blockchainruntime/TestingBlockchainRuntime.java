@@ -3,7 +3,7 @@ package org.aion.avm.core.blockchainruntime;
 import p.avm.Address;
 import p.avm.Result;
 import i.IBlockchainRuntime;
-import org.aion.avm.arraywrapper.ByteArray;
+import a.ByteArray;
 import org.aion.avm.core.IExternalCapabilities;
 import org.aion.avm.core.util.Helpers;
 import i.InvalidException;

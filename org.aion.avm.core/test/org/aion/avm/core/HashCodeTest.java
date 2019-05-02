@@ -1,7 +1,7 @@
 package org.aion.avm.core;
 
 import avm.Address;
-import org.aion.avm.arraywrapper.ByteArray;
+import a.ByteArray;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.types.ClassInfo;

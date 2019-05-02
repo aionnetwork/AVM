@@ -1,7 +1,7 @@
 package p.avm;
 
 import org.aion.avm.StorageFees;
-import org.aion.avm.arraywrapper.ByteArray;
+import a.ByteArray;
 import i.IBlockchainRuntime;
 import s.java.lang.Object;
 import s.java.lang.String;

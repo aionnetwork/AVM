@@ -1,4 +1,4 @@
-package org.aion.avm.arraywrapper;
+package a;
 
 import i.IObject;
 

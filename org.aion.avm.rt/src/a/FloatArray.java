@@ -1,27 +1,27 @@
-package org.aion.avm.arraywrapper;
+package a;
 
 import i.*;
 import java.util.Arrays;
 
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
-public class LongArray extends Array {
+public class FloatArray extends Array {
 
-    private long[] underlying;
+    private float[] underlying;
 
     /**
-     * Static LongArray factory
+     * Static FloatArray factory
      *
-     * After instrumentation, NEWARRAY bytecode (with long as type) will be replaced by a INVOKESTATIC to
+     * After instrumentation, NEWARRAY bytecode (with float as type) will be replaced by a INVOKESTATIC to
      * this method.
      *
-     * @param size Size of the long array
+     * @param size Size of the float array
      *
-     * @return New empty long array wrapper
+     * @return New empty float array wrapper
      */
-    public static LongArray initArray(int size){
-        chargeEnergy(size * ArrayElement.LONG.getEnergy());
-        return new LongArray(size);
+    public static FloatArray initArray(int size){
+        chargeEnergy(size * ArrayElement.FLOAT.getEnergy());
+        return new FloatArray(size);
     }
 
     @Override
@@ -30,44 +30,44 @@ public class LongArray extends Array {
         return this.underlying.length;
     }
 
-    public long get(int idx) {
+    public float get(int idx) {
         lazyLoad();
         return this.underlying[idx];
     }
 
-    public void set(int idx, long val) {
+    public void set(int idx, float val) {
         lazyLoad();
         this.underlying[idx] = val;
     }
 
     @Override
     public IObject avm_clone() {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.LongArray_avm_clone + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * length());
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.FloatArray_avm_clone + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * length());
         lazyLoad();
-        return new LongArray(Arrays.copyOf(underlying, underlying.length));
+        return new FloatArray(Arrays.copyOf(underlying, underlying.length));
     }
 
     @Override
     public IObject clone() {
         lazyLoad();
-        return new LongArray(Arrays.copyOf(underlying, underlying.length));
+        return new FloatArray(Arrays.copyOf(underlying, underlying.length));
     }
 
     //========================================================
     // Internal Helper
     //========================================================
 
-    public LongArray(int c) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.LongArray_avm_constructor);
-        this.underlying = new long[c];
+    public FloatArray(int c) {
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.FloatArray_avm_constructor);
+        this.underlying = new float[c];
     }
 
-    public LongArray(long[] underlying) {
+    public FloatArray(float[] underlying) {
         RuntimeAssertionError.assertTrue(null != underlying);
         this.underlying = underlying;
     }
 
-    public long[] getUnderlying() {
+    public float[] getUnderlying() {
         lazyLoad();
         return underlying;
     }
@@ -76,7 +76,7 @@ public class LongArray extends Array {
     public void setUnderlyingAsObject(java.lang.Object u){
         RuntimeAssertionError.assertTrue(null != u);
         lazyLoad();
-        this.underlying = (long[]) u;
+        this.underlying = (float[]) u;
     }
 
     @Override
@@ -95,28 +95,28 @@ public class LongArray extends Array {
     // Persistent Memory Support
     //========================================================
 
-    public LongArray(Void ignore, int readIndex) {
+    public FloatArray(Void ignore, int readIndex) {
         super(ignore, readIndex);
     }
 
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
-        super.deserializeSelf(LongArray.class, deserializer);
+        super.deserializeSelf(FloatArray.class, deserializer);
 
         // TODO (AKI-118):  We probably want faster array copies.
         int length = deserializer.readInt();
-        this.underlying = new long[length];
+        this.underlying = new float[length];
         for (int i = 0; i < length; ++i) {
-            this.underlying[i] = deserializer.readLong();
+            this.underlying[i] = deserializer.readFloat();
         }
     }
 
     public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
-        super.serializeSelf(LongArray.class, serializer);
+        super.serializeSelf(FloatArray.class, serializer);
 
         // TODO (AKI-118):  We probably want faster array copies.
         serializer.writeInt(this.underlying.length);
         for (int i = 0; i < this.underlying.length; ++i) {
-            serializer.writeLong(this.underlying[i]);
+            serializer.writeFloat(this.underlying[i]);
         }
     }
 }

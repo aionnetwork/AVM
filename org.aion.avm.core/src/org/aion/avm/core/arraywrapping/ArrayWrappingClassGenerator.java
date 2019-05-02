@@ -3,7 +3,7 @@ package org.aion.avm.core.arraywrapping;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 import java.util.*;
-import org.aion.avm.arraywrapper.ArrayElement;
+import a.ArrayElement;
 import org.aion.avm.core.util.Helpers;
 import i.PackageConstants;
 import i.RuntimeAssertionError;
@@ -25,7 +25,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
             return genWrapperInterface(request, loader);
         }
 
-        // we only handle class generation request prefixed with org.aion.avm.arraywrapper.$
+        // we only handle class generation request prefixed with a.$
         if (request.startsWith(PackageConstants.kArrayWrapperDotPrefix + "$")){
             return genWrapperClass(request, loader);
         }

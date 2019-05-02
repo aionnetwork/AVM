@@ -1,6 +1,6 @@
 package s.java.util;
 
-import org.aion.avm.arraywrapper.ByteArray;
+import a.ByteArray;
 import i.IInstrumentation;
 import s.java.lang.Object;
 

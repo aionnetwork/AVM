@@ -63,18 +63,18 @@ public class NodeEnvironment {
             };
 
             this.arraywrapperClasses = new Class<?>[] {
-                    org.aion.avm.arraywrapper.IArray.class
-                    , org.aion.avm.arraywrapper.Array.class
-                    , org.aion.avm.arraywrapper.ArrayElement.class
-                    , org.aion.avm.arraywrapper.BooleanArray.class
-                    , org.aion.avm.arraywrapper.ByteArray.class
-                    , org.aion.avm.arraywrapper.CharArray.class
-                    , org.aion.avm.arraywrapper.DoubleArray.class
-                    , org.aion.avm.arraywrapper.FloatArray.class
-                    , org.aion.avm.arraywrapper.IntArray.class
-                    , org.aion.avm.arraywrapper.LongArray.class
-                    , org.aion.avm.arraywrapper.ObjectArray.class
-                    , org.aion.avm.arraywrapper.ShortArray.class
+                    a.IArray.class
+                    , a.Array.class
+                    , a.ArrayElement.class
+                    , a.BooleanArray.class
+                    , a.ByteArray.class
+                    , a.CharArray.class
+                    , a.DoubleArray.class
+                    , a.FloatArray.class
+                    , a.IntArray.class
+                    , a.LongArray.class
+                    , a.ObjectArray.class
+                    , a.ShortArray.class
             };
 
             this.exceptionwrapperClasses = new Class<?>[] {

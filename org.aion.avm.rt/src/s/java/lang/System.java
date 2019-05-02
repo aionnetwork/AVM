@@ -1,6 +1,6 @@
 package s.java.lang;
 
-import org.aion.avm.arraywrapper.Array;
+import a.Array;
 import i.IInstrumentation;
 import i.IObject;
 import org.aion.avm.RuntimeMethodFeeSchedule;

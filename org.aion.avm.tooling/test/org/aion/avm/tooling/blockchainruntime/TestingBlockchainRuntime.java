@@ -6,7 +6,7 @@ import org.aion.avm.tooling.AddressUtil;
 import org.aion.avm.tooling.crypto.CryptoUtil;
 import org.aion.avm.tooling.hash.HashUtils;
 import i.IBlockchainRuntime;
-import org.aion.avm.arraywrapper.ByteArray;
+import a.ByteArray;
 import org.aion.avm.core.util.Helpers;
 import i.InvalidException;
 import i.RevertException;

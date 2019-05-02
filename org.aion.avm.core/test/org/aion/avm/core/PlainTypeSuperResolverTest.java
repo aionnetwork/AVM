@@ -31,7 +31,7 @@ public final class PlainTypeSuperResolverTest {
     private String preRenamePlainType = java.lang.System.class.getName();
 
     private String postRenamePlainType;
-    private String postRenamePrimitiveArray = org.aion.avm.arraywrapper.FloatArray.class.getName();
+    private String postRenamePrimitiveArray = a.FloatArray.class.getName();
     private String postRenameConcreteTypeArray;
     private String postRenameUnifyingTypeArray;
     private String exceptionWrapper;

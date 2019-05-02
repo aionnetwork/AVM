@@ -1,27 +1,27 @@
-package org.aion.avm.arraywrapper;
+package a;
 
 import i.*;
 import java.util.Arrays;
 
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
-public class IntArray extends Array {
+public class LongArray extends Array {
 
-    private int[] underlying;
+    private long[] underlying;
 
     /**
-     * Static IntArray factory
+     * Static LongArray factory
      *
-     * After instrumentation, NEWARRAY bytecode (with int as type) will be replaced by a INVOKESTATIC to
+     * After instrumentation, NEWARRAY bytecode (with long as type) will be replaced by a INVOKESTATIC to
      * this method.
      *
-     * @param size Size of the int array
+     * @param size Size of the long array
      *
-     * @return New empty int array wrapper
+     * @return New empty long array wrapper
      */
-    public static IntArray initArray(int size){
-        chargeEnergy(size * ArrayElement.INT.getEnergy());
-        return new IntArray(size);
+    public static LongArray initArray(int size){
+        chargeEnergy(size * ArrayElement.LONG.getEnergy());
+        return new LongArray(size);
     }
 
     @Override
@@ -30,44 +30,44 @@ public class IntArray extends Array {
         return this.underlying.length;
     }
 
-    public int get(int idx) {
+    public long get(int idx) {
         lazyLoad();
         return this.underlying[idx];
     }
 
-    public void set(int idx, int val) {
+    public void set(int idx, long val) {
         lazyLoad();
         this.underlying[idx] = val;
     }
 
     @Override
     public IObject avm_clone() {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.IntArray_avm_clone + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * length());
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.LongArray_avm_clone + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * length());
         lazyLoad();
-        return new IntArray(Arrays.copyOf(underlying, underlying.length));
+        return new LongArray(Arrays.copyOf(underlying, underlying.length));
     }
 
     @Override
     public IObject clone() {
         lazyLoad();
-        return new IntArray(Arrays.copyOf(underlying, underlying.length));
+        return new LongArray(Arrays.copyOf(underlying, underlying.length));
     }
 
     //========================================================
     // Internal Helper
     //========================================================
 
-    public IntArray(int c) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.IntArray_avm_constructor);
-        this.underlying = new int[c];
+    public LongArray(int c) {
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.LongArray_avm_constructor);
+        this.underlying = new long[c];
     }
 
-    public IntArray(int[] underlying) {
+    public LongArray(long[] underlying) {
         RuntimeAssertionError.assertTrue(null != underlying);
         this.underlying = underlying;
     }
 
-    public int[] getUnderlying() {
+    public long[] getUnderlying() {
         lazyLoad();
         return underlying;
     }
@@ -76,7 +76,7 @@ public class IntArray extends Array {
     public void setUnderlyingAsObject(java.lang.Object u){
         RuntimeAssertionError.assertTrue(null != u);
         lazyLoad();
-        this.underlying = (int[]) u;
+        this.underlying = (long[]) u;
     }
 
     @Override
@@ -95,28 +95,28 @@ public class IntArray extends Array {
     // Persistent Memory Support
     //========================================================
 
-    public IntArray(Void ignore, int readIndex) {
+    public LongArray(Void ignore, int readIndex) {
         super(ignore, readIndex);
     }
 
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
-        super.deserializeSelf(IntArray.class, deserializer);
+        super.deserializeSelf(LongArray.class, deserializer);
 
         // TODO (AKI-118):  We probably want faster array copies.
         int length = deserializer.readInt();
-        this.underlying = new int[length];
+        this.underlying = new long[length];
         for (int i = 0; i < length; ++i) {
-            this.underlying[i] = deserializer.readInt();
+            this.underlying[i] = deserializer.readLong();
         }
     }
 
     public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
-        super.serializeSelf(IntArray.class, serializer);
+        super.serializeSelf(LongArray.class, serializer);
 
         // TODO (AKI-118):  We probably want faster array copies.
         serializer.writeInt(this.underlying.length);
         for (int i = 0; i < this.underlying.length; ++i) {
-            serializer.writeInt(this.underlying[i]);
+            serializer.writeLong(this.underlying[i]);
         }
     }
 }

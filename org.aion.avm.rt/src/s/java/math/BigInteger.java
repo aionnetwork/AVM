@@ -1,6 +1,6 @@
 package s.java.math;
 
-import org.aion.avm.arraywrapper.ByteArray;
+import a.ByteArray;
 import i.*;
 import s.java.lang.Comparable;
 import s.java.lang.String;

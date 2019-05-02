@@ -4,7 +4,7 @@ import s.java.math.BigInteger;
 import p.avm.Address;
 import p.avm.Result;
 import i.*;
-import org.aion.avm.arraywrapper.ByteArray;
+import a.ByteArray;
 import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.LogSizeUtils;
 import org.aion.kernel.*;
