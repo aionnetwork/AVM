@@ -1,7 +1,7 @@
 package org.aion.kernel;
 
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.ResultCode;
 

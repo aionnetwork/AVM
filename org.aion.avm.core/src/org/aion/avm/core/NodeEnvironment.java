@@ -11,7 +11,7 @@ import org.aion.avm.core.types.ClassInformation;
 import org.aion.avm.core.types.ClassInformationFactory;
 import org.aion.avm.core.types.ClassHierarchyBuilder;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.*;
+import i.*;
 
 import java.io.IOException;
 import java.io.InputStream;

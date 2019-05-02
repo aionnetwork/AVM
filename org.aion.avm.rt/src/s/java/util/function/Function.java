@@ -1,12 +1,12 @@
 package s.java.util.function;
 
-import org.aion.avm.internal.IObject;
+import i.IObject;
 
 /**
  * @author Roman Katerinenko
  */
 public interface Function extends IObject {
 
-    org.aion.avm.internal.IObject avm_apply(org.aion.avm.internal.IObject t);
+    i.IObject avm_apply(i.IObject t);
 
 }

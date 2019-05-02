@@ -1,6 +1,6 @@
 package s.java.lang;
 
-import org.aion.avm.internal.IInstrumentation;
+import i.IInstrumentation;
 
 
 /**

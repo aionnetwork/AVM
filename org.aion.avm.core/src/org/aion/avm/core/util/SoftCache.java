@@ -4,7 +4,7 @@ import java.lang.ref.SoftReference;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 
 
 /**

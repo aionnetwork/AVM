@@ -2,7 +2,7 @@ package org.aion.avm.core.miscvisitors;
 
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.Helper;
+import i.Helper;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;

@@ -13,11 +13,11 @@ import java.util.function.Predicate;
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.SoftCache;
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.IInstrumentationFactory;
-import org.aion.avm.internal.InstrumentationHelpers;
-import org.aion.avm.internal.JvmError;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.IInstrumentation;
+import i.IInstrumentationFactory;
+import i.InstrumentationHelpers;
+import i.JvmError;
+import i.RuntimeAssertionError;
 import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.parallel.AddressResourceMonitor;
 import org.aion.parallel.TransactionTask;
@@ -29,7 +29,7 @@ import org.aion.vm.api.interfaces.TransactionResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.aion.avm.internal.RuntimeAssertionError.unexpected;
+import static i.RuntimeAssertionError.unexpected;
 
 
 public class AvmImpl implements AvmInternal {

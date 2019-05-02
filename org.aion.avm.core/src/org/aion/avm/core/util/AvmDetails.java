@@ -2,7 +2,7 @@ package org.aion.avm.core.util;
 
 import org.aion.avm.ArrayClassNameMapper;
 import org.aion.avm.core.NodeEnvironment;
-import org.aion.avm.internal.PackageConstants;
+import i.PackageConstants;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;

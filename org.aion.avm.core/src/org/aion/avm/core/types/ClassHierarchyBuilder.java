@@ -3,7 +3,7 @@ package org.aion.avm.core.types;
 import java.util.Set;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.rejection.RejectedClassException;
-import org.aion.avm.internal.PackageConstants;
+import i.PackageConstants;
 
 /**
  * A utility for building instances of a class hierarchy.

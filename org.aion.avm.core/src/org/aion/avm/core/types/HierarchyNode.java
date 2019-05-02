@@ -2,7 +2,7 @@ package org.aion.avm.core.types;
 
 import java.util.HashSet;
 import java.util.Set;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 
 /**
  * A node in a class hierarchy, which represents a class in that hierarchy.

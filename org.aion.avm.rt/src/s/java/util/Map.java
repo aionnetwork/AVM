@@ -1,6 +1,6 @@
 package s.java.util;
 
-import org.aion.avm.internal.IObject;
+import i.IObject;
 
 public interface Map<K, V> extends IObject {
 

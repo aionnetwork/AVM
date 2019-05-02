@@ -1,7 +1,7 @@
 package org.aion.kernel;
 
 import java.math.BigInteger;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 import org.aion.data.IAccountStore;
 import org.aion.data.IDataStore;
 import org.aion.data.MemoryBackedDataStore;

@@ -6,8 +6,8 @@ import org.aion.avm.ArrayUtil;
 import org.aion.avm.NameStyle;
 import org.aion.avm.core.arraywrapping.ArrayNameMapper;
 import org.aion.avm.core.types.CommonType;
-import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.PackageConstants;
+import i.RuntimeAssertionError;
 
 public final class ClassRenamer {
     // The naming convention of the names in these sets will be the same as indicated by style.

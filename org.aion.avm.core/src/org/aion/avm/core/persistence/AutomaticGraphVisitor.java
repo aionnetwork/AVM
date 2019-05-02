@@ -1,7 +1,7 @@
 package org.aion.avm.core.persistence;
 
 import org.aion.avm.core.ClassToolchain;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;

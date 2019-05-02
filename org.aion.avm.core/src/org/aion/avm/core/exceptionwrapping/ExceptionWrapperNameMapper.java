@@ -1,7 +1,7 @@
 package org.aion.avm.core.exceptionwrapping;
 
-import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.PackageConstants;
+import i.RuntimeAssertionError;
 
 
 /**

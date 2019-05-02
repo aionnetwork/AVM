@@ -2,12 +2,12 @@ package p.avm;
 
 import org.aion.avm.StorageFees;
 import org.aion.avm.arraywrapper.ByteArray;
-import org.aion.avm.internal.IBlockchainRuntime;
+import i.IBlockchainRuntime;
 import s.java.lang.Object;
 import s.java.lang.String;
 import s.java.math.BigInteger;
 
-import org.aion.avm.internal.IInstrumentation;
+import i.IInstrumentation;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 

@@ -1,7 +1,7 @@
 package org.aion.avm;
 
-import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.PackageConstants;
+import i.RuntimeAssertionError;
 
 public final class ArrayRenamer {
     private static final String BASIC_DOT_WRAPPER = PackageConstants.kArrayWrapperDotPrefix;

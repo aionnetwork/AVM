@@ -1,7 +1,7 @@
 package s.java.lang;
 
 import org.aion.avm.ClassNameExtractor;
-import org.aion.avm.internal.IInstrumentation;
+import i.IInstrumentation;
 import s.java.io.Serializable;
 
 /**

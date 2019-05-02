@@ -2,9 +2,9 @@ package p.avm;
 
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.arraywrapper.CharArray;
-import org.aion.avm.internal.IObject;
+import i.IObject;
 import s.java.lang.Object;
-import org.aion.avm.internal.IInstrumentation;
+import i.IInstrumentation;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 import s.java.lang.String;
 

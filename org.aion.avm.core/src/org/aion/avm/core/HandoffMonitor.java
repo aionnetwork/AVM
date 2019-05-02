@@ -1,6 +1,6 @@
 package org.aion.avm.core;
 
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.parallel.TransactionTask;
 

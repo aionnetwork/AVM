@@ -1,7 +1,7 @@
 package org.aion.avm.arraywrapper;
 
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.IObject;
+import i.IInstrumentation;
+import i.IObject;
 import s.java.lang.Cloneable;
 import s.java.lang.Object;
 

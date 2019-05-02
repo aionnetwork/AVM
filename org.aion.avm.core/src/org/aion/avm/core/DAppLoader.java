@@ -9,7 +9,7 @@ import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.types.ImmortalDappModule;
 import org.aion.avm.core.types.TransformedDappModule;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.PackageConstants;
+import i.PackageConstants;
 
 
 /**

@@ -6,10 +6,10 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.aion.avm.internal.CodecIdioms;
-import org.aion.avm.internal.IObjectDeserializer;
-import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.CodecIdioms;
+import i.IObjectDeserializer;
+import i.IObjectSerializer;
+import i.RuntimeAssertionError;
 
 
 public final class InternalRunnable extends s.java.lang.Object implements s.java.lang.Runnable {

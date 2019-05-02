@@ -1,7 +1,7 @@
 package s.java.lang;
 
 import org.aion.avm.ClassNameExtractor;
-import org.aion.avm.internal.*;
+import i.*;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 

@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.parallel.TransactionTask;
 import org.aion.types.Address;

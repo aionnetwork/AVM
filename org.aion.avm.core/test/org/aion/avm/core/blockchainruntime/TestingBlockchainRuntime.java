@@ -2,13 +2,13 @@ package org.aion.avm.core.blockchainruntime;
 
 import p.avm.Address;
 import p.avm.Result;
-import org.aion.avm.internal.IBlockchainRuntime;
+import i.IBlockchainRuntime;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.IExternalCapabilities;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.InvalidException;
-import org.aion.avm.internal.RevertException;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.InvalidException;
+import i.RevertException;
+import i.RuntimeAssertionError;
 import s.java.lang.String;
 import s.java.math.BigInteger;
 import org.aion.kernel.Block;

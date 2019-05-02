@@ -9,8 +9,8 @@ import java.util.Stack;
 import org.aion.avm.core.AvmTransaction;
 import org.aion.avm.core.ReentrantDAppStack;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.IInstrumentation;
+import i.RuntimeAssertionError;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.KernelInterface;
 

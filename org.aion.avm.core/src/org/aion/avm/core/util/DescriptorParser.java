@@ -1,6 +1,6 @@
 package org.aion.avm.core.util;
 
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 
 
 /**

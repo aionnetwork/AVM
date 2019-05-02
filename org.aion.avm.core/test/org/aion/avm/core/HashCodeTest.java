@@ -7,7 +7,7 @@ import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.*;
+import i.*;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

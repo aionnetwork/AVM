@@ -3,7 +3,7 @@ package org.aion.avm.core.persistence;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;

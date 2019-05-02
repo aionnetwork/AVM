@@ -9,7 +9,7 @@ import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.IExternalCapabilities;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 import org.aion.avm.tooling.StandardCapabilities;
 import org.aion.cli.ArgumentParser.Action;
 import org.aion.kernel.*;

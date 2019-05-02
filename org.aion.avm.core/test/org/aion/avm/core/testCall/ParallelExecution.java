@@ -10,7 +10,7 @@ import org.aion.avm.core.blockchainruntime.TestingBlockchainRuntime;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 import org.aion.kernel.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

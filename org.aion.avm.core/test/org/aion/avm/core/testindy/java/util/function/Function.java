@@ -5,6 +5,6 @@ package org.aion.avm.core.testindy.java.util.function;
  */
 public interface Function {
 
-    org.aion.avm.internal.IObject avm_apply(org.aion.avm.internal.IObject t);
+    i.IObject avm_apply(i.IObject t);
 
 }

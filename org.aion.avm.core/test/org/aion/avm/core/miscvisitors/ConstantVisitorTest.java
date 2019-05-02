@@ -7,7 +7,7 @@ import org.aion.avm.core.ConstantClassBuilder;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.PackageConstants;
+import i.PackageConstants;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.ClassWriter;

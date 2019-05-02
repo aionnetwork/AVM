@@ -5,8 +5,8 @@ import java.util.stream.Collectors;
 
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.PackageConstants;
+import i.RuntimeAssertionError;
 
 
 /**

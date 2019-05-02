@@ -1,6 +1,6 @@
 package org.aion.parallel;
 
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 
 import java.util.HashMap;
 import java.util.HashSet;

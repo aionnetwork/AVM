@@ -9,7 +9,7 @@ import org.aion.avm.core.blockchainruntime.TestingBlockchainRuntime;
 import org.aion.avm.core.SuspendedInstrumentation;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 import s.java.math.BigInteger;
 import org.junit.Test;
 

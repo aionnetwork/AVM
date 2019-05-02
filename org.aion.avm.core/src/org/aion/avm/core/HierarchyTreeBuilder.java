@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 
 
 /**

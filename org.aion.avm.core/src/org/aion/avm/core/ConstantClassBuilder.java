@@ -2,8 +2,8 @@ package org.aion.avm.core;
 
 import org.aion.avm.core.miscvisitors.StringConstantCollectorVisitor;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.PackageConstants;
+import i.Helper;
+import i.PackageConstants;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;

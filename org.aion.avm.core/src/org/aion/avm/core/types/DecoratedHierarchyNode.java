@@ -1,7 +1,7 @@
 package org.aion.avm.core.types;
 
 import java.util.Set;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 
 /**
  * A decorated node is just a {@link IHierarchyNode} wrapper that allows for a node to be marked different

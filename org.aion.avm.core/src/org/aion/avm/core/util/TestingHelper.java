@@ -1,10 +1,10 @@
 package org.aion.avm.core.util;
 
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.InstrumentationHelpers;
-import org.aion.avm.internal.InternedClasses;
-import org.aion.avm.internal.OutOfEnergyException;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.IInstrumentation;
+import i.InstrumentationHelpers;
+import i.InternedClasses;
+import i.OutOfEnergyException;
+import i.RuntimeAssertionError;
 import s.java.lang.Class;
 
 

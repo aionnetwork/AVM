@@ -1,6 +1,6 @@
 package s.java.util;
 
-import org.aion.avm.internal.IInstrumentation;
+import i.IInstrumentation;
 import s.java.lang.RuntimeException;
 import s.java.lang.String;
 

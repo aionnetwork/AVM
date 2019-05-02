@@ -1,7 +1,7 @@
 package org.aion.avm.tooling.deploy;
 
 import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;

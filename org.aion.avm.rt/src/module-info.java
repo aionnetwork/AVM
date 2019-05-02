@@ -1,7 +1,7 @@
 module org.aion.avm.rt {
     exports org.aion.avm.arraywrapper;
     exports org.aion.avm.exceptionwrapper.s.java.lang;
-    exports org.aion.avm.internal;
+    exports i;
     exports s.java.lang;
     exports s.java.lang.invoke;
     exports s.java.math;

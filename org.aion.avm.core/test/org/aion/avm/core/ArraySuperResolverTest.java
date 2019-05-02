@@ -29,7 +29,7 @@ public class ArraySuperResolverTest {
     private String specialArray = org.aion.avm.arraywrapper.Array.class.getName();
     private String specialIArray = org.aion.avm.arraywrapper.IArray.class.getName();
     private String specialObjectArray = org.aion.avm.arraywrapper.ObjectArray.class.getName();
-    private String specialIObjectArray = org.aion.avm.internal.IObjectArray.class.getName();
+    private String specialIObjectArray = i.IObjectArray.class.getName();
 
     private String preRenameNonArray = java.lang.String.class.getName();
     private String postRenameConcreteClass = s.java.lang.String.class.getName();
@@ -496,7 +496,7 @@ public class ArraySuperResolverTest {
     public void testSuperWhenMultipleTightestCommonSupersExistPostRename() {
         String class1 = java.lang.Integer.class.getName();
         String class2 = java.lang.Character.class.getName();
-        String superClass = org.aion.avm.internal.IObject.class.getName();
+        String superClass = i.IObject.class.getName();
 
         String postRenameClass1 = this.classRenamer.toPostRename(class1, ArrayType.UNIFYING_TYPE);
         String postRenameClass2 = this.classRenamer.toPostRename(class2, ArrayType.UNIFYING_TYPE);

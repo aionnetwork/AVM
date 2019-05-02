@@ -8,12 +8,12 @@ import java.util.Map;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
-import org.aion.avm.internal.CommonInstrumentation;
-import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.IRuntimeSetup;
-import org.aion.avm.internal.InstrumentationHelpers;
-import org.aion.avm.internal.PackageConstants;
+import i.CommonInstrumentation;
+import i.Helper;
+import i.IInstrumentation;
+import i.IRuntimeSetup;
+import i.InstrumentationHelpers;
+import i.PackageConstants;
 import org.junit.Assert;
 import org.junit.Test;
 

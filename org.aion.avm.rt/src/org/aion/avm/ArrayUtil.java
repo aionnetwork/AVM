@@ -4,8 +4,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.PackageConstants;
+import i.RuntimeAssertionError;
 
 public final class ArrayUtil {
     private static final String DOT_PREFIX = PackageConstants.kArrayWrapperDotPrefix;

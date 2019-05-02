@@ -1,11 +1,11 @@
 package s.java.lang;
 
-import org.aion.avm.internal.ConstantToken;
-import org.aion.avm.internal.IInstrumentation;
+import i.ConstantToken;
+import i.IInstrumentation;
 import org.aion.avm.RuntimeMethodFeeSchedule;
-import org.aion.avm.internal.IObject;
+import i.IObject;
 import s.java.io.Serializable;
-import org.aion.avm.internal.ShadowClassConstantId;
+import i.ShadowClassConstantId;
 
 public final class Character extends Object implements Serializable, Comparable<Character> {
     static {

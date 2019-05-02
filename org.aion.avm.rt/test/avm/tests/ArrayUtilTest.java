@@ -9,7 +9,7 @@ import java.math.BigInteger;
 import java.util.concurrent.TimeUnit;
 import org.aion.avm.ArrayUtil;
 import org.aion.avm.NameStyle;
-import org.aion.avm.internal.PackageConstants;
+import i.PackageConstants;
 import org.junit.Test;
 
 public class ArrayUtilTest {

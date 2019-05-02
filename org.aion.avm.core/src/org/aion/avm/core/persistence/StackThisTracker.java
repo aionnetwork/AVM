@@ -1,6 +1,6 @@
 package org.aion.avm.core.persistence;
 
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 import org.objectweb.asm.tree.analysis.Frame;
 
 

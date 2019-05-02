@@ -2,10 +2,10 @@ package s.java.lang;
 
 import org.aion.avm.ClassNameExtractor;
 import org.aion.avm.arraywrapper.ObjectArray;
-import org.aion.avm.internal.AvmThrowable;
-import org.aion.avm.internal.ConstantToken;
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.IObject;
+import i.AvmThrowable;
+import i.ConstantToken;
+import i.IInstrumentation;
+import i.IObject;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

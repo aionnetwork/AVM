@@ -11,7 +11,7 @@ import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.PackageConstants;
+import i.PackageConstants;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;

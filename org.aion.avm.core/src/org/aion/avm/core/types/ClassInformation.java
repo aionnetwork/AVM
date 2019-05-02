@@ -1,7 +1,7 @@
 package org.aion.avm.core.types;
 
 import java.util.Arrays;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 
 /**
  * Information pertaining to a class. In particular, the name of the class as well as the names of

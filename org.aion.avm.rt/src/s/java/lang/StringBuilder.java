@@ -1,11 +1,11 @@
 package s.java.lang;
 
 import org.aion.avm.arraywrapper.CharArray;
-import org.aion.avm.internal.CodecIdioms;
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.IObject;
-import org.aion.avm.internal.IObjectDeserializer;
-import org.aion.avm.internal.IObjectSerializer;
+import i.CodecIdioms;
+import i.IInstrumentation;
+import i.IObject;
+import i.IObjectDeserializer;
+import i.IObjectSerializer;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 import s.java.io.Serializable;
 

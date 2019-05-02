@@ -2,7 +2,7 @@ package org.aion.avm.core.verification;
 
 import java.util.Map;
 
-import org.aion.avm.internal.UncaughtException;
+import i.UncaughtException;
 
 
 /**

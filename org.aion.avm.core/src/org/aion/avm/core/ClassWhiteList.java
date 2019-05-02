@@ -1,6 +1,6 @@
 package org.aion.avm.core;
 
-import org.aion.avm.internal.PackageConstants;
+import i.PackageConstants;
 
 
 /**

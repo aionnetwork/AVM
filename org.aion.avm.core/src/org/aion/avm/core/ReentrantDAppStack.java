@@ -4,8 +4,8 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import org.aion.avm.core.persistence.LoadedDApp;
-import org.aion.avm.internal.InternedClasses;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.InternedClasses;
+import i.RuntimeAssertionError;
 import org.aion.types.Address;
 
 

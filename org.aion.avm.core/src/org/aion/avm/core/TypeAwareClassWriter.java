@@ -2,7 +2,7 @@ package org.aion.avm.core;
 
 import org.aion.avm.core.types.ClassHierarchy;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 import org.objectweb.asm.ClassWriter;
 
 

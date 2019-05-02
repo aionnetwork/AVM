@@ -1,6 +1,6 @@
 package org.aion.avm.core.types;
 
-import org.aion.avm.internal.PackageConstants;
+import i.PackageConstants;
 
 /**
  * An enumeration of some types that are used often and for which we have no good way of

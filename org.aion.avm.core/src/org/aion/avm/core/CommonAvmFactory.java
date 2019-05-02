@@ -1,8 +1,8 @@
 package org.aion.avm.core;
 
-import org.aion.avm.internal.CommonInstrumentation;
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.IInstrumentationFactory;
+import i.CommonInstrumentation;
+import i.IInstrumentation;
+import i.IInstrumentationFactory;
 
 
 /**

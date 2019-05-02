@@ -1,7 +1,7 @@
 package org.aion.avm.core.classgeneration;
 
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
-import org.aion.avm.internal.PackageConstants;
+import i.PackageConstants;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;

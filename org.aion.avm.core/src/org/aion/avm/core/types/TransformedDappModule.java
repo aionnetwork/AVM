@@ -2,8 +2,8 @@ package org.aion.avm.core.types;
 
 import java.util.Map;
 
-import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.PackageConstants;
+import i.RuntimeAssertionError;
 
 
 /**

@@ -1,8 +1,8 @@
 package org.aion.avm.core.classloading;
 
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
-import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.PackageConstants;
+import i.RuntimeAssertionError;
 
 import java.util.ArrayList;
 import java.util.HashMap;

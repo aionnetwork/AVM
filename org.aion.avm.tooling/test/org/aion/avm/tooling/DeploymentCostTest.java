@@ -7,7 +7,7 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.tooling.poc.AionBufferPerfContract;
 import org.aion.avm.tooling.poc.TRS;
 import org.aion.avm.tooling.testExchange.*;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;

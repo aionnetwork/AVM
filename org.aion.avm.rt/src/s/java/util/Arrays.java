@@ -1,7 +1,7 @@
 package s.java.util;
 
 import org.aion.avm.arraywrapper.ByteArray;
-import org.aion.avm.internal.IInstrumentation;
+import i.IInstrumentation;
 import s.java.lang.Object;
 
 import org.aion.avm.RuntimeMethodFeeSchedule;

@@ -1,6 +1,6 @@
 package s.java.math;
 
-import org.aion.avm.internal.*;
+import i.*;
 import s.java.io.Serializable;
 import s.java.lang.Object;
 import s.java.lang.String;

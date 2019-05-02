@@ -1,7 +1,7 @@
 package s.java.lang;
 
 import java.io.IOException;
-import org.aion.avm.internal.IObject;
+import i.IObject;
 
 public interface Appendable extends IObject {
 

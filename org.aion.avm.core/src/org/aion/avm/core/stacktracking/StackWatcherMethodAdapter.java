@@ -1,6 +1,6 @@
 package org.aion.avm.core.stacktracking;
 
-import org.aion.avm.internal.Helper;
+import i.Helper;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;

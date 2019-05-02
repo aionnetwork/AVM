@@ -3,11 +3,11 @@ package s.java.lang.invoke;
 import java.lang.invoke.ConstantCallSite;
 import java.lang.invoke.LambdaConversionException;
 
-import org.aion.avm.internal.FunctionFactory;
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.InvokeDynamicChecks;
-import org.aion.avm.internal.RunnableFactory;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.FunctionFactory;
+import i.IInstrumentation;
+import i.InvokeDynamicChecks;
+import i.RunnableFactory;
+import i.RuntimeAssertionError;
 
 
 public final class LambdaMetafactory extends s.java.lang.Object {

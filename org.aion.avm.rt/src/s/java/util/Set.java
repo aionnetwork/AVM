@@ -1,7 +1,7 @@
 package s.java.util;
 
 import org.aion.avm.arraywrapper.ObjectArray;
-import org.aion.avm.internal.IObject;
+import i.IObject;
 
 public interface Set<E> extends Collection<E> {
 

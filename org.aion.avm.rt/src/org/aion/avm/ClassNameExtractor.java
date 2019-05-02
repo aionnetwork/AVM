@@ -1,6 +1,6 @@
 package org.aion.avm;
 
-import org.aion.avm.internal.PackageConstants;
+import i.PackageConstants;
 
 public class ClassNameExtractor {
 

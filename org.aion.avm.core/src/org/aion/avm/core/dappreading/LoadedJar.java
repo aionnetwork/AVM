@@ -12,7 +12,7 @@ import java.util.jar.Manifest;
 import java.util.zip.ZipException;
 
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 
 
 /**

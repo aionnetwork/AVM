@@ -1,7 +1,7 @@
 package org.aion.avm.tooling;
 
 import java.math.BigInteger;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 import org.aion.avm.tooling.arraywrapping.TestResource.B;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import avm.Blockchain;

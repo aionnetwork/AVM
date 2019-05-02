@@ -15,22 +15,22 @@ import org.aion.avm.core.ClassRenamer;
 import org.aion.avm.core.ClassRenamerBuilder;
 import org.aion.avm.core.types.CommonType;
 import org.aion.avm.core.util.DebugNameResolver;
-import org.aion.avm.internal.AvmThrowable;
-import org.aion.avm.internal.IBlockchainRuntime;
-import org.aion.avm.internal.IObjectDeserializer;
-import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.PackageConstants;
+import i.AvmThrowable;
+import i.IBlockchainRuntime;
+import i.IObjectDeserializer;
+import i.IObjectSerializer;
+import i.PackageConstants;
 import p.avm.Blockchain;
 import org.aion.avm.arraywrapper.ByteArray;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.IRuntimeSetup;
-import org.aion.avm.internal.InternedClasses;
-import org.aion.avm.internal.MethodAccessException;
-import org.aion.avm.internal.OutOfEnergyException;
-import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.avm.internal.UncaughtException;
+import i.Helper;
+import i.IRuntimeSetup;
+import i.InternedClasses;
+import i.MethodAccessException;
+import i.OutOfEnergyException;
+import i.RuntimeAssertionError;
+import i.UncaughtException;
 
 
 /**
@@ -293,7 +293,7 @@ public class LoadedDApp {
     }
 
     /**
-     * The exception could be any {@link org.aion.avm.internal.AvmThrowable}, any {@link java.lang.RuntimeException},
+     * The exception could be any {@link i.AvmThrowable}, any {@link java.lang.RuntimeException},
      * or a {@link org.aion.avm.exceptionwrapper.java.lang.Throwable}.
      */
     private void handleUncaughtException(Throwable cause) throws Throwable {

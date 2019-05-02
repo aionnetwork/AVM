@@ -1,6 +1,6 @@
 package org.aion.avm.core.rejection;
 
-import org.aion.avm.internal.AvmException;
+import i.AvmException;
 
 
 /**

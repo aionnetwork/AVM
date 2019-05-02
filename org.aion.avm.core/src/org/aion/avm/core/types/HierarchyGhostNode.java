@@ -3,7 +3,7 @@ package org.aion.avm.core.types;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 
 /**
  * A ghost node in a class hierarchy, which represents some class in that hierarchy.

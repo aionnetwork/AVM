@@ -1,6 +1,6 @@
 package org.aion.avm.exceptionwrapper.s.java.lang;
 
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 
 /**
  * All the exceptions in the guest environment need to be wrapped by something which is _actually_ a java.lang.Throwable.

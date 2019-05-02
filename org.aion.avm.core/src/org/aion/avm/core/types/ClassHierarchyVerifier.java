@@ -2,7 +2,7 @@ package org.aion.avm.core.types;
 
 import java.util.HashSet;
 import java.util.Set;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 
 /**
  * A class that verifies that a given class hierarchy is complete and has no inconsistencies.

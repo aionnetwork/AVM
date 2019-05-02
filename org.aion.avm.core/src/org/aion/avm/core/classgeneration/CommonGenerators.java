@@ -8,8 +8,8 @@ import java.util.Set;
 
 import org.aion.avm.ClassNameExtractor;
 import org.aion.avm.core.types.CommonType;
-import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.PackageConstants;
+import i.RuntimeAssertionError;
 
 
 /**

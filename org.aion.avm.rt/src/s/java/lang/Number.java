@@ -1,7 +1,7 @@
 package s.java.lang;
 
-import org.aion.avm.internal.ConstantToken;
-import org.aion.avm.internal.IInstrumentation;
+import i.ConstantToken;
+import i.IInstrumentation;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 import s.java.io.Serializable;
 

@@ -3,8 +3,8 @@ package org.aion.avm.core.miscvisitors;
 import org.aion.avm.core.rejection.RejectedClassException;
 import org.aion.avm.core.util.DebugNameResolver;
 import org.aion.avm.core.util.DescriptorParser;
-import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.PackageConstants;
+import i.RuntimeAssertionError;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Type;
 

@@ -9,7 +9,7 @@ import org.aion.avm.core.types.ClassInformation;
 import org.aion.avm.core.types.DecoratedHierarchyNode;
 import org.aion.avm.core.types.HierarchyGhostNode;
 import org.aion.avm.core.types.HierarchyNode;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

@@ -1,6 +1,6 @@
 package s.java.io;
 
-import org.aion.avm.internal.IObject;
+import i.IObject;
 
 public interface Serializable extends IObject {
 

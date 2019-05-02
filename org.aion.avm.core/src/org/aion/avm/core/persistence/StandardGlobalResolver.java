@@ -1,9 +1,9 @@
 package org.aion.avm.core.persistence;
 
 import org.aion.avm.core.NodeEnvironment;
-import org.aion.avm.internal.ConstantToken;
-import org.aion.avm.internal.InternedClasses;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.ConstantToken;
+import i.InternedClasses;
+import i.RuntimeAssertionError;
 
 
 public class StandardGlobalResolver implements IGlobalResolver {

@@ -7,10 +7,10 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.aion.avm.internal.CodecIdioms;
-import org.aion.avm.internal.IObjectDeserializer;
-import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.CodecIdioms;
+import i.IObjectDeserializer;
+import i.IObjectSerializer;
+import i.RuntimeAssertionError;
 
 
 public final class InternalFunction extends s.java.lang.Object implements s.java.util.function.Function {
@@ -90,9 +90,9 @@ public final class InternalFunction extends s.java.lang.Object implements s.java
     }
 
     @Override
-    public org.aion.avm.internal.IObject avm_apply(org.aion.avm.internal.IObject input) {
+    public i.IObject avm_apply(i.IObject input) {
         try {
-            return (org.aion.avm.internal.IObject) target.invoke(null, input);
+            return (i.IObject) target.invoke(null, input);
         } catch (IllegalAccessException | IllegalArgumentException e) {
             // This would be a problem in our setup - an internal error.
             throw RuntimeAssertionError.unexpected(e);

@@ -1,7 +1,7 @@
 package org.aion.avm.core.persistence;
 
-import org.aion.avm.internal.IObjectDeserializer;
-import org.aion.avm.internal.IObjectSerializer;
+import i.IObjectDeserializer;
+import i.IObjectSerializer;
 
 
 public class TargetRoot {

@@ -12,7 +12,7 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.OutOfEnergyException;
+import i.OutOfEnergyException;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.*;
 import org.junit.Assert;

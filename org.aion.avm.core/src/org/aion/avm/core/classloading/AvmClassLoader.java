@@ -6,8 +6,8 @@ import java.util.function.Function;
 import org.aion.avm.core.arraywrapping.ArrayNameMapper;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassGenerator;
 import org.aion.avm.core.util.DebugNameResolver;
-import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.PackageConstants;
+import i.RuntimeAssertionError;
 
 
 /**

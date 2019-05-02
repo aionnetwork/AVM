@@ -1,7 +1,7 @@
 package org.aion.avm.core.blockchainruntime;
 
 import org.aion.avm.core.IExternalCapabilities;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 import org.aion.kernel.TestingKernel;
 import org.aion.types.Address;
 import org.aion.vm.api.interfaces.TransactionInterface;

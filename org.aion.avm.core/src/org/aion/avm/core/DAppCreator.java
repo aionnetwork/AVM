@@ -36,7 +36,7 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.DebugNameResolver;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.verification.Verifier;
-import org.aion.avm.internal.*;
+import i.*;
 import org.aion.kernel.*;
 import org.aion.parallel.TransactionTask;
 import org.aion.types.Address;

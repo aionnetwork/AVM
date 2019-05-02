@@ -1,7 +1,7 @@
 package s.java.util;
 
-import org.aion.avm.internal.IObject;
-import org.aion.avm.internal.IObjectArray;
+import i.IObject;
+import i.IObjectArray;
 import s.java.lang.Iterable;
 
 public interface Collection<E> extends Iterable<E>{

@@ -1,7 +1,7 @@
 package org.aion.avm.core.shadowing;
 
 import org.aion.avm.core.util.DescriptorParser;
-import org.aion.avm.internal.PackageConstants;
+import i.PackageConstants;
 
 class IObjectReplacer {
     private static final String JAVA_LANG_OBJECT = "java/lang/Object";

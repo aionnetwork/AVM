@@ -4,7 +4,7 @@ import org.aion.avm.core.ClassToolchain;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.MethodNode;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 
 import java.util.List;
 import java.util.Map;

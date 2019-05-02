@@ -1,7 +1,7 @@
 package s.java.lang;
 
-import org.aion.avm.internal.ConstantToken;
-import org.aion.avm.internal.ShadowClassConstantId;
+import i.ConstantToken;
+import i.ShadowClassConstantId;
 
 public final class Void extends Object{
 

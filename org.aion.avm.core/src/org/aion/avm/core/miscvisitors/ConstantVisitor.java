@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.aion.avm.core.ClassToolchain;
-import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.Helper;
+import i.PackageConstants;
+import i.RuntimeAssertionError;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;

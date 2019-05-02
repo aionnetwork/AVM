@@ -11,7 +11,7 @@ import org.aion.avm.core.ClassRenamer.ArrayType;
 import org.aion.avm.core.types.ClassHierarchy;
 import org.aion.avm.core.types.ClassHierarchyBuilder;
 import org.aion.avm.core.types.CommonType;
-import org.aion.avm.internal.PackageConstants;
+import i.PackageConstants;
 import org.junit.Before;
 import org.junit.Test;
 

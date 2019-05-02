@@ -1,7 +1,7 @@
 package org.aion.avm.core;
 
 import java.util.concurrent.atomic.AtomicInteger;
-import org.aion.avm.internal.*;
+import i.*;
 
 
 /**

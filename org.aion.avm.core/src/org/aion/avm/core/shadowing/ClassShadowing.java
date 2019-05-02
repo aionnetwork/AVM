@@ -3,9 +3,9 @@ package org.aion.avm.core.shadowing;
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.ClassWhiteList;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.IObject;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.Helper;
+import i.IObject;
+import i.RuntimeAssertionError;
 import org.objectweb.asm.*;
 
 import java.util.stream.Stream;

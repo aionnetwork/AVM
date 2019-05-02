@@ -10,7 +10,7 @@ import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.*;
+import i.*;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
@@ -160,7 +160,7 @@ public class ClassShadowingTest {
         SimpleAvm avm = new SimpleAvm(1_000_000L, preserveDebuggability, TestObjectCreation.class);
         Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(TestObjectCreation.class.getName(), preserveDebuggability);
         Method createInstance = clazz.getMethod(NamespaceMapper.mapMethodName("createInstance"));
-        Method isEqual = clazz.getMethod(NamespaceMapper.mapMethodName("isEqual"), org.aion.avm.internal.IObject.class, org.aion.avm.internal.IObject.class);
+        Method isEqual = clazz.getMethod(NamespaceMapper.mapMethodName("isEqual"), i.IObject.class, i.IObject.class);
 
         Object one = createInstance.invoke(null);
         Object two = createInstance.invoke(null);

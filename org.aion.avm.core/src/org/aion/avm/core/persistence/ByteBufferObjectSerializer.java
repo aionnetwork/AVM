@@ -6,8 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.IdentityHashMap;
 import java.util.Queue;
 
-import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.IObjectSerializer;
+import i.RuntimeAssertionError;
 
 
 public class ByteBufferObjectSerializer implements IObjectSerializer {

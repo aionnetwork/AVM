@@ -5,8 +5,8 @@ import org.aion.avm.NameStyle;
 import org.aion.avm.core.rejection.RejectedClassException;
 import org.aion.avm.ArrayUtil;
 import org.aion.avm.core.util.DescriptorParser;
-import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.PackageConstants;
+import i.RuntimeAssertionError;
 
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 
 public class ArrayNameMapper {
 
-    static private Pattern IOBJECT_INTERFACE_FORMAT = Pattern.compile("[_]{2,}Lorg/aion/avm/internal/IObject");
+    static private Pattern IOBJECT_INTERFACE_FORMAT = Pattern.compile("[_]{2,}Li/IObject");
 
     static private Set<String> PRIMITIVES = Stream.of("I", "J", "Z", "B", "S", "D", "F", "C").collect(Collectors.toSet());
     static private Pattern OBJECT_INTERFACE_FORMAT = Pattern.compile("[_\\[]{2,}Ls/java/lang/Object");

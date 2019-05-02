@@ -1,6 +1,6 @@
 package s.java.lang;
 
-import org.aion.avm.internal.IObject;
+import i.IObject;
 import s.java.util.Iterator;
 
 public interface Iterable<T> extends IObject {

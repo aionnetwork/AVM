@@ -1,7 +1,7 @@
 package org.aion.avm.tooling.crypto;
 
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 
 import java.security.InvalidKeyException;
 import java.security.SignatureException;

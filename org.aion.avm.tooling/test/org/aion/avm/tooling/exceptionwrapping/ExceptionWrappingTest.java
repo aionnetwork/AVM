@@ -3,7 +3,7 @@ package org.aion.avm.tooling.exceptionwrapping;
 import org.aion.avm.core.util.ABIUtil;
 import avm.Address;
 import org.aion.avm.tooling.AvmRule;
-import org.aion.avm.internal.PackageConstants;
+import i.PackageConstants;
 import org.aion.kernel.AvmTransactionResult;
 import org.junit.Assert;
 import org.junit.Before;

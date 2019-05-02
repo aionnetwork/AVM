@@ -2,15 +2,15 @@ package org.aion.avm.core.util;
 
 import p.avm.Blockchain;
 import org.aion.types.Address;
-import org.aion.avm.internal.IBlockchainRuntime;
-import org.aion.avm.internal.IRuntimeSetup;
+import i.IBlockchainRuntime;
+import i.IRuntimeSetup;
 import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.ClassRenameVisitor;
-import org.aion.avm.internal.CommonInstrumentation;
-import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.RuntimeAssertionError;
-import org.aion.avm.internal.StackWatcher;
+import i.CommonInstrumentation;
+import i.Helper;
+import i.RuntimeAssertionError;
+import i.StackWatcher;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 

@@ -15,7 +15,7 @@ import org.aion.avm.core.testWallet.RequireFailedException;
 import org.aion.avm.core.testWallet.Wallet;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.Block;
 import org.aion.kernel.TestingKernel;

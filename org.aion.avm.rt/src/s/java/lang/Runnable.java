@@ -1,6 +1,6 @@
 package s.java.lang;
 
-import org.aion.avm.internal.IObject;
+import i.IObject;
 
 /**
  * @author Roman Katerinenko

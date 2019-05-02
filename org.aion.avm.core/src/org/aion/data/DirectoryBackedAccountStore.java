@@ -11,7 +11,7 @@ import java.util.Map;
 
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 
 public class DirectoryBackedAccountStore implements IAccountStore {
     private static final String FILE_NAME_CODE = "code";

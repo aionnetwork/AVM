@@ -2,7 +2,7 @@ package org.aion.avm.core.persistence;
 
 import org.aion.avm.core.util.DescriptorParser;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;

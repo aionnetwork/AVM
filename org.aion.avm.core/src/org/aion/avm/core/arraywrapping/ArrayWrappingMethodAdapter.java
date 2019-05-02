@@ -2,8 +2,8 @@ package org.aion.avm.core.arraywrapping;
 
 import java.util.regex.Pattern;
 import org.aion.avm.arraywrapper.*;
-import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.PackageConstants;
+import i.RuntimeAssertionError;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.AdviceAdapter;
 import org.objectweb.asm.commons.Method;

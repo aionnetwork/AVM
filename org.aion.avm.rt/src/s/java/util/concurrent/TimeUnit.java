@@ -2,10 +2,10 @@ package s.java.util.concurrent;
 
 import org.aion.avm.RuntimeMethodFeeSchedule;
 import org.aion.avm.arraywrapper.ObjectArray;
-import org.aion.avm.internal.ConstantToken;
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.IObjectArray;
-import org.aion.avm.internal.ShadowClassConstantId;
+import i.ConstantToken;
+import i.IInstrumentation;
+import i.IObjectArray;
+import i.ShadowClassConstantId;
 import s.java.lang.Class;
 import s.java.lang.Enum;
 import s.java.lang.String;

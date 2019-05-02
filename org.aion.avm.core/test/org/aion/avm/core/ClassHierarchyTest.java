@@ -18,8 +18,8 @@ import org.aion.avm.core.types.ClassHierarchyVerifier;
 import org.aion.avm.core.types.ClassInformation;
 import org.aion.avm.core.types.CommonType;
 import org.aion.avm.core.types.HierarchyVerificationResult;
-import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.PackageConstants;
+import i.RuntimeAssertionError;
 import org.junit.Test;
 
 public class ClassHierarchyTest {

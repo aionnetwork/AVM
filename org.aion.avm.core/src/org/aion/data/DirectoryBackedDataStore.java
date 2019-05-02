@@ -3,7 +3,7 @@ package org.aion.data;
 import java.io.File;
 
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 
 
 public class DirectoryBackedDataStore implements IDataStore {

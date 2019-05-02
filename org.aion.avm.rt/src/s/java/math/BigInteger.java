@@ -1,7 +1,7 @@
 package s.java.math;
 
 import org.aion.avm.arraywrapper.ByteArray;
-import org.aion.avm.internal.*;
+import i.*;
 import s.java.lang.Comparable;
 import s.java.lang.String;
 import s.java.lang.Number;

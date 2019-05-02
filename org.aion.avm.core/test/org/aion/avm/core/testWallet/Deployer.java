@@ -26,7 +26,7 @@ import org.aion.avm.core.types.CommonType;
 import org.aion.avm.core.util.BlockchainRuntime;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.TestingHelper;
-import org.aion.avm.internal.*;
+import i.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import java.lang.reflect.InvocationTargetException;

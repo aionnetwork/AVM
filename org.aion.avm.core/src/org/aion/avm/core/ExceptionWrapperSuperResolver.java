@@ -4,7 +4,7 @@ import org.aion.avm.core.ClassRenamer.ArrayType;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapperNameMapper;
 import org.aion.avm.core.types.ClassHierarchy;
 import org.aion.avm.core.types.CommonType;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 
 /**
  * A class that is used to determine a tightest common super class of two types, where at least one

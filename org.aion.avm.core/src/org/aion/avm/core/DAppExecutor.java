@@ -5,7 +5,7 @@ import org.aion.avm.StorageFees;
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.persistence.ReentrantGraph;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.*;
+import i.*;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.parallel.TransactionTask;
 import org.aion.types.Address;

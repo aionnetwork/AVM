@@ -1,8 +1,8 @@
 package s.java.lang;
 
 import org.aion.avm.arraywrapper.Array;
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.IObject;
+import i.IInstrumentation;
+import i.IObject;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 
 

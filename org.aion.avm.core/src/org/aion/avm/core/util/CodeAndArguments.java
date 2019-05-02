@@ -2,7 +2,7 @@ package org.aion.avm.core.util;
 
 import java.nio.ByteBuffer;
 
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.RuntimeAssertionError;
 
 
 /**

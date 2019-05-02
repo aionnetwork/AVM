@@ -1,9 +1,9 @@
 package org.aion.avm.core.persistence;
 
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.IObjectDeserializer;
-import org.aion.avm.internal.IObjectSerializer;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.IObjectDeserializer;
+import i.IObjectSerializer;
+import i.RuntimeAssertionError;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;

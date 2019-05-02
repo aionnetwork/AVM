@@ -1,8 +1,8 @@
 package org.aion.avm.core.types;
 
 import org.aion.avm.ClassNameExtractor;
-import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.PackageConstants;
+import i.RuntimeAssertionError;
 
 public final class NonWrapperClassRenamer {
 

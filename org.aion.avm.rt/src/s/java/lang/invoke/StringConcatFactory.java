@@ -1,8 +1,8 @@
 package s.java.lang.invoke;
 
-import org.aion.avm.internal.IInstrumentation;
-import org.aion.avm.internal.InvokeDynamicChecks;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.IInstrumentation;
+import i.InvokeDynamicChecks;
+import i.RuntimeAssertionError;
 import s.java.lang.Integer;
 import s.java.lang.Short;
 import s.java.lang.String;

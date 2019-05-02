@@ -5,8 +5,8 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import org.aion.avm.internal.IObjectDeserializer;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.IObjectDeserializer;
+import i.RuntimeAssertionError;
 
 
 public class ByteBufferObjectDeserializer implements IObjectDeserializer {

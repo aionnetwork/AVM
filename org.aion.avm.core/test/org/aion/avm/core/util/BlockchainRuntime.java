@@ -3,7 +3,7 @@ package org.aion.avm.core.util;
 import avm.Address;
 import avm.Result;
 import org.aion.avm.arraywrapper.ByteArray;
-import org.aion.avm.internal.IBlockchainRuntime;
+import i.IBlockchainRuntime;
 import s.java.lang.String;
 
 public class BlockchainRuntime {

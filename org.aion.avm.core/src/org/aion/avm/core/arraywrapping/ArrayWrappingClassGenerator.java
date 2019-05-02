@@ -5,8 +5,8 @@ import org.aion.avm.RuntimeMethodFeeSchedule;
 import java.util.*;
 import org.aion.avm.arraywrapper.ArrayElement;
 import org.aion.avm.core.util.Helpers;
-import org.aion.avm.internal.PackageConstants;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.PackageConstants;
+import i.RuntimeAssertionError;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -369,7 +369,7 @@ public class ArrayWrappingClassGenerator implements Opcodes {
 
     private static void genClone(ClassWriter cw, String wrapper) {
         String cloneMethodName = "avm_clone";
-        String cloneMethodDesc = "()Lorg/aion/avm/internal/IObject;";
+        String cloneMethodDesc = "()Li/IObject;";
         MethodVisitor methodVisitor = cw.visitMethod(ACC_PUBLIC, cloneMethodName, cloneMethodDesc, null, null);
 
         // energy charge

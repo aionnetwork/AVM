@@ -1,6 +1,6 @@
 package s.java.util;
 
-import org.aion.avm.internal.IObject;
+import i.IObject;
 
 public interface Iterator<E> extends IObject {
     boolean avm_hasNext();

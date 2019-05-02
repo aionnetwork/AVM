@@ -1,7 +1,7 @@
 package s.java.lang;
 
 import org.aion.avm.arraywrapper.CharArray;
-import org.aion.avm.internal.*;
+import i.*;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 import s.java.io.Serializable;
 

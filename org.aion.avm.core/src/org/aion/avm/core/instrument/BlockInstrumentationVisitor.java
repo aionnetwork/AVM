@@ -2,8 +2,8 @@ package org.aion.avm.core.instrument;
 
 import java.util.List;
 
-import org.aion.avm.internal.Helper;
-import org.aion.avm.internal.RuntimeAssertionError;
+import i.Helper;
+import i.RuntimeAssertionError;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;

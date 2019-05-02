@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.aion.avm.NameStyle;
 import org.aion.avm.core.arraywrapping.ArrayNameMapper;
-import org.aion.avm.internal.PackageConstants;
+import i.PackageConstants;
 import org.junit.Test;
 
 public class NameMapperTest {
