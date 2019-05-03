@@ -8,6 +8,16 @@ import org.aion.avm.tooling.abi.Callable;
 public class TestExceptionResource {
 
     @Callable
+    public static void tryCatchLoop(int count) {
+        for (int i = 0; i < count; i++) {
+            try {
+                ((Object) null).hashCode();
+            } catch (Exception e) {
+            }
+        }
+    }
+
+    @Callable
     public static int tryMultiCatchFinally() {
         int r = 0;
         try {

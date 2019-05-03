@@ -96,4 +96,12 @@ public class ExceptionWrappingTest {
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
         Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + PackageConstants.kShadowDotPrefix + NullPointerException.class.getName()).equals(result.getUncaughtException().getClass().getName()));
     }
+
+    @Test
+    public void testTryCatchLoop() {
+        byte[] txData = ABIUtil.encodeMethodArguments("tryCatchLoop", 20000);
+        AvmTransactionResult result = (AvmTransactionResult) avmRule.call(from, dappAddr, BigInteger.ZERO, txData).getTransactionResult();
+        Assert.assertTrue(result.getResultCode().isSuccess());
+        System.out.println(2_000_000 - result.getEnergyRemaining());
+    }
 }

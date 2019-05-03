@@ -68,6 +68,11 @@ public class StringConcatTest {
         Assert.assertTrue(callStatic("concatWithAddress", avmRule.getPreminedAccount()));
     }
 
+    @Test
+    public void concat(){
+        Assert.assertTrue(callStatic("concat"));
+    }
+
     private boolean callStatic(String methodName, Object... args) {
         byte[] data = ABIUtil.encodeMethodArguments(methodName, args);
         return (boolean) avmRule.call(sender, contract, value, data, 2_000_000, 1).getDecodedReturnData();
