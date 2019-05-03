@@ -134,7 +134,7 @@ public final class ClassHierarchy {
         } else {
 
             for (ClassInformation preRenameClassInfo : preRenameUserDefinedClassInfos) {
-                add(preRenameClassInfo.toPostRenameClassInfo());
+                add(ClassInformationRenamer.toPostRenameClassInfo(preRenameClassInfo));
             }
 
         }

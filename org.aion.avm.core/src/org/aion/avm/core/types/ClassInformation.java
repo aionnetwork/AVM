@@ -16,7 +16,7 @@ import i.RuntimeAssertionError;
  * IObject, to help with correctness) but is simply a correctness measure so that the user can track
  * whether or not they are holding a pre- or post-rename class. Additionally, pre-rename class
  * information can easily be converted into post-rename class information using the
- * {@code toPostRenameClassInfo()} method.
+ * {@link ClassInformationRenamer} class.
  *
  * A class information object should be used to hold information about exception wrappers or about
  * generated array wrappers (handwritten array wrappers are fine). Or simply: any generated wrapper
@@ -133,22 +133,6 @@ public final class ClassInformation {
     }
 
     /**
-     * Returns a post-rename class info derived from this class info.
-     *
-     * This method will perform all necessary renaming and reparenting if necessary.
-     */
-    public ClassInformation toPostRenameClassInfo() {
-        RuntimeAssertionError.assertTrue(this.isPreRenameClassInfo);
-        RuntimeAssertionError.assertTrue(!this.dotName.equals(CommonType.JAVA_LANG_OBJECT.dotName));
-
-        String renamedSelf = NonWrapperClassRenamer.toPostRenameClassName(this.dotName);
-        String renamedParent = getParentRenamed();
-        String[] renamedInterfaces = getInterfacesRenamed();
-
-        return postRenameInfoFor(this.isInterface, renamedSelf, renamedParent, renamedInterfaces);
-    }
-
-    /**
      * Returns an array of all super classes and super interfaces, if any.
      *
      * Returns an empty array if none.
@@ -176,28 +160,6 @@ public final class ClassInformation {
             + "name = '" + this.dotName + "', "
             + "super class = '" + this.superClassDotName + "', "
             + "# of interfaces = " + this.superInterfacesDotNames.length;
-    }
-
-    private String getParentRenamed() {
-        if (this.superClassDotName == null) {
-            return null;
-        }
-
-        if (this.superClassDotName.equals(CommonType.JAVA_LANG_OBJECT.dotName)) {
-            return (this.isInterface) ? null : CommonType.SHADOW_OBJECT.dotName;
-        }
-
-        return NonWrapperClassRenamer.toPostRenameClassName(this.superClassDotName);
-    }
-
-    private String[] getInterfacesRenamed() {
-        String[] renamedInterfaces = new String[this.superInterfacesDotNames.length];
-
-        for (int i = 0; i < this.superInterfacesDotNames.length; i++) {
-            renamedInterfaces[i] = NonWrapperClassRenamer.toPostRenameClassName(this.superInterfacesDotNames[i]);
-        }
-
-        return renamedInterfaces;
     }
 
     /**

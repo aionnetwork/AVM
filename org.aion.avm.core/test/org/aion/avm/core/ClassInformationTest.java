@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import org.aion.avm.core.types.ClassInformation;
+import org.aion.avm.core.types.ClassInformationRenamer;
 import org.aion.avm.core.types.CommonType;
 import i.PackageConstants;
 import i.RuntimeAssertionError;
@@ -23,13 +24,13 @@ public class ClassInformationTest {
     public void testPostRenameClassInfoWithNoSupers() {
         // Check a regular class.
         ClassInformation info = ClassInformation.preRenameInfoFor(false, "class", null, null);
-        ClassInformation renamedInfo = info.toPostRenameClassInfo();
+        ClassInformation renamedInfo = ClassInformationRenamer.toPostRenameClassInfo(info);
         assertEquals(CommonType.SHADOW_OBJECT.dotName, renamedInfo.superClassDotName);
         assertEquals(0, renamedInfo.getInterfaces().length);
 
         // Check an interface.
         info = ClassInformation.preRenameInfoFor(true, "class", null, null);
-        renamedInfo = info.toPostRenameClassInfo();
+        renamedInfo = ClassInformationRenamer.toPostRenameClassInfo(info);
         assertNull(renamedInfo.superClassDotName);
         assertEquals(1, renamedInfo.getInterfaces().length);
         assertEquals(CommonType.I_OBJECT.dotName, renamedInfo.getInterfaces()[0]);
@@ -38,7 +39,7 @@ public class ClassInformationTest {
     @Test
     public void testRenamingPreRenameClassWithJavaLangObjectSuper() {
         ClassInformation info = ClassInformation.preRenameInfoFor(false, "self", CommonType.JAVA_LANG_OBJECT.dotName, null);
-        ClassInformation renamedInfo = info.toPostRenameClassInfo();
+        ClassInformation renamedInfo = ClassInformationRenamer.toPostRenameClassInfo(info);
 
         assertEquals(0, renamedInfo.getInterfaces().length);
         assertEquals(CommonType.SHADOW_OBJECT.dotName, renamedInfo.superClassDotName);
@@ -47,7 +48,7 @@ public class ClassInformationTest {
     @Test
     public void testRenamingPreRenameInterfaceWithJavaLangObjectSuper() {
         ClassInformation info = ClassInformation.preRenameInfoFor(true, "self", CommonType.JAVA_LANG_OBJECT.dotName, null);
-        ClassInformation renamedInfo = info.toPostRenameClassInfo();
+        ClassInformation renamedInfo = ClassInformationRenamer.toPostRenameClassInfo(info);
 
         assertNull(renamedInfo.superClassDotName);
         assertEquals(1, renamedInfo.getInterfaces().length);
@@ -60,7 +61,7 @@ public class ClassInformationTest {
     @Test(expected = RuntimeAssertionError.class)
     public void testRenamingJavaLangObjectClassInfo() {
         ClassInformation info = ClassInformation.preRenameInfoFor(false, CommonType.JAVA_LANG_OBJECT.dotName, null, null);
-        info.toPostRenameClassInfo();
+        ClassInformationRenamer.toPostRenameClassInfo(info);
     }
 
     @Test
