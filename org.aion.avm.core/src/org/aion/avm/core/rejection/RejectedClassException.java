@@ -18,7 +18,7 @@ public class RejectedClassException extends AvmException {
         throw new RejectedClassException("Blacklisted Opcode detected: 0x" + Integer.toHexString(opcode));
     }
 
-    public static void nonWhiteListedClass(String className) {
+    public static RejectedClassException nonWhiteListedClass(String className) {
         throw new RejectedClassException("Class is not on white-list: " + className);
     }
 

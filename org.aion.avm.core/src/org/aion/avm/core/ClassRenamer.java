@@ -5,6 +5,7 @@ import java.util.Set;
 import org.aion.avm.ArrayUtil;
 import org.aion.avm.NameStyle;
 import org.aion.avm.core.arraywrapping.ArrayNameMapper;
+import org.aion.avm.core.rejection.RejectedClassException;
 import org.aion.avm.core.types.CommonType;
 import i.PackageConstants;
 import i.RuntimeAssertionError;
@@ -99,6 +100,9 @@ public final class ClassRenamer {
      * given name is expected to be the same style that this class was initialized with, and the
      * returned name will be in this same style.
      *
+     * This method will throw a {@link RejectedClassException#nonWhiteListedClass(String)} if the
+     * given name does not match any of our pre-rename name checks.
+     *
      * If an array name is given then {@code arrayType} will determine whether or not the post-rename
      * name will be a precise or unifying type name. If the provided name is not an array then
      * {@code arrayType} may be set null.
@@ -111,7 +115,36 @@ public final class ClassRenamer {
      * @param arrayType Whether to produce a precise or unifying array type.
      * @return the post-rename version of the given name.
      */
-    public String toPostRename(String preRenameClassName, ArrayType arrayType) {
+    public String toPostRenameOrRejectClass(String preRenameClassName, ArrayType arrayType) {
+        return toPostRenameInternal(preRenameClassName, arrayType, true);
+    }
+
+    /**
+     * Returns the post-rename name of the provided pre-rename class name. The naming style of the
+     * given name is expected to be the same style that this class was initialized with, and the
+     * returned name will be in this same style.
+     *
+     * This method will throw a {@link RuntimeAssertionError} if the given name is determined not to
+     * be a pre-rename class name.
+     *
+     * If an array name is given then {@code arrayType} will determine whether or not the post-rename
+     * name will be a precise or unifying type name. If the provided name is not an array then
+     * {@code arrayType} may be set null.
+     *
+     * This method does not handle exception wrapping! Use: {@code toExceptionWrapper()}.
+     *
+     * NOTE: this method will rename java.lang.Object to shadow Object!
+     *
+     * @param name The pre-rename class name to be renamed.
+     * @param arrayType Whether to produce a precise or unifying array type.
+     * @return the post-rename version of the given name.
+     */
+    public String toPostRename(String name, ArrayType arrayType) {
+        return toPostRenameInternal(name, arrayType, false);
+    }
+
+
+    private String toPostRenameInternal(String preRenameClassName, ArrayType arrayType, boolean isDefinitelyPreRename) {
         RuntimeAssertionError.assertTrue(!preRenameClassName.contains((this.style == NameStyle.DOT_NAME) ? "/" : "."));
 
         if (isPreRenameUserClass(preRenameClassName)) {
@@ -123,7 +156,11 @@ public final class ClassRenamer {
         } else if (isPreRenameJclClass(preRenameClassName)) {
             return toPostRenameJclClass(preRenameClassName);
         } else {
-            throw RuntimeAssertionError.unreachable("Expected a pre-rename class name: " + preRenameClassName);
+            if (isDefinitelyPreRename) {
+                throw RejectedClassException.nonWhiteListedClass(preRenameClassName);
+            } else {
+                throw RuntimeAssertionError.unreachable("Expected a pre-rename class name: " + preRenameClassName);
+            }
         }
     }
 
