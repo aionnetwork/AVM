@@ -52,7 +52,7 @@ public class ABICompilerMethodVisitor extends MethodVisitor {
                 throw new ABICompilerException("@Callable methods must be public", methodName);
             }
             if (!isStatic) {
-                throw new ABICompilerException("@Callable methods must be public", methodName);
+                throw new ABICompilerException("@Callable methods must be static", methodName);
             }
             checkArgumentsAndReturnType();
             isCallable = true;
