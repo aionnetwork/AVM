@@ -92,7 +92,8 @@ public class BlockchainGetDataTest {
         ResultWrapper result = call("getAddressAndModify", isModify);
 
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
-        Assert.assertEquals(isModify, new String((byte[]) result.getDecodedReturnData()).startsWith("modified!"));
+        // AKI-143: It is now not possible to modify an Address.
+        Assert.assertEquals(false, new String((byte[]) result.getDecodedReturnData()).startsWith("modified!"));
         Assert.assertArrayEquals(expected.unwrap(), dappAddr.unwrap());
     }
 
@@ -128,7 +129,8 @@ public class BlockchainGetDataTest {
         ResultWrapper result = call("getCallerAndModify", isModify);
 
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
-        Assert.assertEquals(isModify, new String((byte[]) result.getDecodedReturnData()).startsWith("modified!"));
+        // AKI-143: It is now not possible to modify an Address.
+        Assert.assertEquals(false, new String((byte[]) result.getDecodedReturnData()).startsWith("modified!"));
         Assert.assertArrayEquals(expected.unwrap(), from.unwrap());
     }
 
@@ -156,7 +158,8 @@ public class BlockchainGetDataTest {
         ResultWrapper result = call("getOriginAndModify", isModify);
 
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
-        Assert.assertEquals(isModify, new String((byte[]) result.getDecodedReturnData()).startsWith("modified!"));
+        // AKI-143: It is now not possible to modify an Address.
+        Assert.assertEquals(false, new String((byte[]) result.getDecodedReturnData()).startsWith("modified!"));
         Assert.assertArrayEquals(expected.unwrap(), from.unwrap());
     }
 
@@ -185,7 +188,8 @@ public class BlockchainGetDataTest {
         ResultWrapper result = call("getBlockCoinbaseAndModify", isModify);
 
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
-        Assert.assertEquals(isModify, new String((byte[]) result.getDecodedReturnData()).startsWith("modified!"));
+        // AKI-143: It is now not possible to modify an Address.
+        Assert.assertEquals(false, new String((byte[]) result.getDecodedReturnData()).startsWith("modified!"));
         Assert.assertArrayEquals(expected.unwrap(), blockCoinbase.toBytes());
     }
 

@@ -3,6 +3,8 @@ package p.avm;
 import a.ByteArray;
 import a.CharArray;
 import i.IObject;
+import i.IObjectDeserializer;
+import i.IObjectSerializer;
 import s.java.lang.Object;
 import s.java.lang.String;
 import i.IInstrumentation;
@@ -19,7 +21,8 @@ public class Address extends Object {
     // Runtime-facing implementation.
     public static final int avm_LENGTH = 32;
 
-    private ByteArray underlying;
+    // Note that we always contain an internal byte[] and we serialize that, specially.
+    private final byte[] internalArray = new byte[avm_LENGTH];
 
     /**
      * The constructor which user code can call, directly, to create an Address object.
@@ -29,7 +32,10 @@ public class Address extends Object {
      */
     public Address(ByteArray raw) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Address_avm_constructor);
-        setUnderlying(raw);
+        if (null == raw) {
+            throw new NullPointerException();
+        }
+        setUnderlying(raw.getUnderlying());
     }
 
     /**
@@ -40,47 +46,29 @@ public class Address extends Object {
     public ByteArray avm_unwrap() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Address_avm_unwrap);
         lazyLoad();
-        return this.underlying;
+        byte[] copy = copyOfInternal();
+        return new ByteArray(copy);
     }
 
     @Override
     public int avm_hashCode() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Address_avm_hashCode);
-        lazyLoad();
-        // Just a really basic implementation.
-        int code = 0;
-        for (byte elt : this.underlying.getUnderlying()) {
-            code += (int)elt;
-        }
-        return code;
+        
+        return internalHashCode();
     }
 
     @Override
     public boolean avm_equals(IObject obj) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Address_avm_equals);
 
-        boolean isEqual = this == obj;
-        if (!isEqual && (obj instanceof Address)) {
-            Address other = (Address)obj;
-            lazyLoad();
-            other.lazyLoad();
-            if (this.underlying.length() == other.underlying.length()) {
-                isEqual = true;
-                byte[] us = this.underlying.getUnderlying();
-                byte[] them = other.underlying.getUnderlying();
-                for (int i = 0; isEqual && (i < us.length); ++i) {
-                    isEqual = (us[i] == them[i]);
-                }
-            }
-        }
-        return isEqual;
+        return internalEquals(obj);
     }
 
     @Override
     public String avm_toString() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Address_avm_toString);
         lazyLoad();
-        return toHexString(this.underlying.getUnderlying());
+        return toHexString(this.internalArray);
     }
 
     private static String toHexString(byte[] bytes) {
@@ -107,7 +95,10 @@ public class Address extends Object {
      * @param raw The raw bytes representing the address.
      */
     public Address(byte[] raw) {
-        setUnderlying(new ByteArray(raw));
+        if (null == raw) {
+            throw new NullPointerException();
+        }
+        setUnderlying(raw);
     }
 
     /**
@@ -117,34 +108,17 @@ public class Address extends Object {
      */
     public byte[] unwrap() {
         lazyLoad();
-        return this.underlying.getUnderlying();
+        return copyOfInternal();
     }
 
     @Override
     public boolean equals(java.lang.Object obj) {
-        boolean isEqual = this == obj;
-        if (!isEqual && (obj instanceof Address)) {
-            Address other = (Address) obj;
-            lazyLoad();
-            other.lazyLoad();
-            if (this.underlying.length() == other.underlying.length()) {
-                isEqual = true;
-                for (int i = 0; isEqual && (i < other.underlying.length()); ++i) {
-                    isEqual = (this.underlying.get(i) == other.underlying.get(i));
-                }
-            }
-        }
-        return isEqual;
+        return internalEquals(obj);
     }
 
     @Override
     public int hashCode() {
-        int code = 0;
-        lazyLoad();
-        for (byte elt : this.underlying.getUnderlying()) {
-            code += (int)elt;
-        }
-        return code;
+        return internalHashCode();
     }
 
     // Support for deserialization
@@ -152,10 +126,54 @@ public class Address extends Object {
         super(ignore, readIndex);
     }
 
-    private void setUnderlying(ByteArray raw) {
-        if (raw == null || raw.length() != avm_LENGTH) {
+    public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
+        super.deserializeSelf(Address.class, deserializer);
+        for (int i = 0; i < avm_LENGTH; ++i) {
+            this.internalArray[i] = deserializer.readByte();
+        }
+    }
+
+    public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
+        super.serializeSelf(Address.class, serializer);
+        for (int i = 0; i < avm_LENGTH; ++i) {
+            serializer.writeByte(this.internalArray[i]);
+        }
+    }
+
+
+    private void setUnderlying(byte[] raw) {
+        if (raw.length != avm_LENGTH) {
             throw new IllegalArgumentException();
         }
-        this.underlying = raw;
+        System.arraycopy(raw, 0, this.internalArray, 0, avm_LENGTH);
+    }
+
+    private byte[] copyOfInternal() {
+        byte[] copy = new byte[avm_LENGTH];
+        System.arraycopy(this.internalArray, 0, copy, 0, avm_LENGTH);
+        return copy;
+    }
+
+    private int internalHashCode() {
+        int code = 0;
+        lazyLoad();
+        for (byte elt : this.internalArray) {
+            code += (int)elt;
+        }
+        return code;
+    }
+
+    private boolean internalEquals(java.lang.Object obj) {
+        boolean isEqual = this == obj;
+        if (!isEqual && (obj instanceof Address)) {
+            Address other = (Address) obj;
+            lazyLoad();
+            other.lazyLoad();
+            isEqual = true;
+            for (int i = 0; isEqual && (i < avm_LENGTH); ++i) {
+                isEqual = (this.internalArray[i] == other.internalArray[i]);
+            }
+        }
+        return isEqual;
     }
 }

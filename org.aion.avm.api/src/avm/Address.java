@@ -10,7 +10,7 @@ public class Address {
      */
     public static final int LENGTH = 32;
 
-    private final byte[] raw;
+    private final byte[] raw = new byte[LENGTH];
 
     /**
      * Create an Address instance from byte array.
@@ -19,10 +19,13 @@ public class Address {
      * @throws IllegalArgumentException when the input byte array is null or the length is invalid.
      */
     public Address(byte[] raw) throws IllegalArgumentException {
-        if (raw == null || raw.length != LENGTH) {
+        if (raw == null) {
+            throw new NullPointerException();
+        }
+        if (raw.length != LENGTH) {
             throw new IllegalArgumentException();
         }
-        this.raw = raw;
+        System.arraycopy(raw, 0, this.raw, 0, LENGTH);
     }
 
     /**
@@ -31,7 +34,9 @@ public class Address {
      * @return the wrapped byte array.
      */
     public byte[] unwrap() {
-        return this.raw;
+        byte[] copy = new byte[LENGTH];
+        System.arraycopy(this.raw, 0, copy, 0, LENGTH);
+        return copy;
     }
 
     @Override
@@ -49,11 +54,9 @@ public class Address {
         boolean isEqual = this == obj;
         if (!isEqual && (obj instanceof Address)) {
             Address other = (Address) obj;
-            if (this.raw.length == other.raw.length) {
-                isEqual = true;
-                for (int i = 0; isEqual && (i < other.raw.length); ++i) {
-                    isEqual = (this.raw[i] == other.raw[i]);
-                }
+            isEqual = true;
+            for (int i = 0; isEqual && (i < LENGTH); ++i) {
+                isEqual = (this.raw[i] == other.raw[i]);
             }
         }
         return isEqual;
