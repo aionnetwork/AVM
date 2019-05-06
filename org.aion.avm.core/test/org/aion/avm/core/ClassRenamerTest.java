@@ -106,9 +106,9 @@ public class ClassRenamerTest {
         String expectedResult = p.avm.Result.class.getName();
         String expectedAddress = p.avm.Address.class.getName();
 
-        checkRenamingDotStyle(blockchain, expectedBlockchain, expectedBlockchain, null);
-        checkRenamingDotStyle(result, expectedResult, expectedResult, null);
-        checkRenamingDotStyle(address, expectedAddress, expectedAddress, null);
+        checkRenamingDotStyle(blockchain, expectedBlockchain, expectedBlockchain, ArrayType.NOT_ARRAY);
+        checkRenamingDotStyle(result, expectedResult, expectedResult, ArrayType.NOT_ARRAY);
+        checkRenamingDotStyle(address, expectedAddress, expectedAddress, ArrayType.NOT_ARRAY);
     }
 
     @Test
@@ -121,9 +121,9 @@ public class ClassRenamerTest {
         String expectedResult = p.avm.Result.class.getName().replaceAll("\\.", "/");
         String expectedAddress = p.avm.Address.class.getName().replaceAll("\\.", "/");
 
-        checkRenamingSlashStyle(blockchain, expectedBlockchain, expectedBlockchain, null);
-        checkRenamingSlashStyle(result, expectedResult, expectedResult, null);
-        checkRenamingSlashStyle(address, expectedAddress, expectedAddress, null);
+        checkRenamingSlashStyle(blockchain, expectedBlockchain, expectedBlockchain, ArrayType.NOT_ARRAY);
+        checkRenamingSlashStyle(result, expectedResult, expectedResult, ArrayType.NOT_ARRAY);
+        checkRenamingSlashStyle(address, expectedAddress, expectedAddress, ArrayType.NOT_ARRAY);
     }
     
     @Test
@@ -146,14 +146,14 @@ public class ClassRenamerTest {
         String expectedUtil = s.java.util.Set.class.getName();
         String expectedMath = s.java.math.RoundingMode.class.getName();
 
-        checkRenamingDotStyle(object, expectedObject, expectedObject, null);
-        checkRenamingDotStyle(throwable, expectedThrowable, expectedThrowable, null);
-        checkRenamingDotStyle(exception, expectedException, expectedException, null);
-        checkRenamingDotStyle(io, expectedIo, expectedIo, null);
-        checkRenamingDotStyle(concurrent, expectedConcurrent, expectedConcurrent, null);
-        checkRenamingDotStyle(function, expectedFunction, expectedFunction, null);
-        checkRenamingDotStyle(util, expectedUtil, expectedUtil, null);
-        checkRenamingDotStyle(math, expectedMath, expectedMath, null);
+        checkRenamingDotStyle(object, expectedObject, expectedObject, ArrayType.NOT_ARRAY);
+        checkRenamingDotStyle(throwable, expectedThrowable, expectedThrowable, ArrayType.NOT_ARRAY);
+        checkRenamingDotStyle(exception, expectedException, expectedException, ArrayType.NOT_ARRAY);
+        checkRenamingDotStyle(io, expectedIo, expectedIo, ArrayType.NOT_ARRAY);
+        checkRenamingDotStyle(concurrent, expectedConcurrent, expectedConcurrent, ArrayType.NOT_ARRAY);
+        checkRenamingDotStyle(function, expectedFunction, expectedFunction, ArrayType.NOT_ARRAY);
+        checkRenamingDotStyle(util, expectedUtil, expectedUtil, ArrayType.NOT_ARRAY);
+        checkRenamingDotStyle(math, expectedMath, expectedMath, ArrayType.NOT_ARRAY);
     }
 
     @Test
@@ -176,14 +176,14 @@ public class ClassRenamerTest {
         String expectedUtil = s.java.util.Set.class.getName().replaceAll("\\.", "/");
         String expectedMath = s.java.math.RoundingMode.class.getName().replaceAll("\\.", "/");
 
-        checkRenamingSlashStyle(object, expectedObject, expectedObject, null);
-        checkRenamingSlashStyle(throwable, expectedThrowable, expectedThrowable, null);
-        checkRenamingSlashStyle(exception, expectedException, expectedException, null);
-        checkRenamingSlashStyle(io, expectedIo, expectedIo, null);
-        checkRenamingSlashStyle(concurrent, expectedConcurrent, expectedConcurrent, null);
-        checkRenamingSlashStyle(function, expectedFunction, expectedFunction, null);
-        checkRenamingSlashStyle(util, expectedUtil, expectedUtil, null);
-        checkRenamingSlashStyle(math, expectedMath, expectedMath, null);
+        checkRenamingSlashStyle(object, expectedObject, expectedObject, ArrayType.NOT_ARRAY);
+        checkRenamingSlashStyle(throwable, expectedThrowable, expectedThrowable, ArrayType.NOT_ARRAY);
+        checkRenamingSlashStyle(exception, expectedException, expectedException, ArrayType.NOT_ARRAY);
+        checkRenamingSlashStyle(io, expectedIo, expectedIo, ArrayType.NOT_ARRAY);
+        checkRenamingSlashStyle(concurrent, expectedConcurrent, expectedConcurrent, ArrayType.NOT_ARRAY);
+        checkRenamingSlashStyle(function, expectedFunction, expectedFunction, ArrayType.NOT_ARRAY);
+        checkRenamingSlashStyle(util, expectedUtil, expectedUtil, ArrayType.NOT_ARRAY);
+        checkRenamingSlashStyle(math, expectedMath, expectedMath, ArrayType.NOT_ARRAY);
     }
     
     @Test
@@ -196,8 +196,8 @@ public class ClassRenamerTest {
         String expectedBuffer = PackageConstants.kUserDotPrefix + buffer;
         String expectedDecoder = PackageConstants.kUserDotPrefix + decoder;
 
-        checkRenamingDotStyle(buffer, expectedBuffer, expectedBufferDebug, null);
-        checkRenamingDotStyle(decoder, expectedDecoder, expectedDecoderDebug, null);
+        checkRenamingDotStyle(buffer, expectedBuffer, expectedBufferDebug, ArrayType.NOT_ARRAY);
+        checkRenamingDotStyle(decoder, expectedDecoder, expectedDecoderDebug, ArrayType.NOT_ARRAY);
     }
 
     @Test
@@ -210,8 +210,8 @@ public class ClassRenamerTest {
         String expectedBuffer = PackageConstants.kUserSlashPrefix + buffer;
         String expectedDecoder = PackageConstants.kUserSlashPrefix + decoder;
 
-        checkRenamingSlashStyle(buffer, expectedBuffer, expectedBufferDebug, null);
-        checkRenamingSlashStyle(decoder, expectedDecoder, expectedDecoderDebug, null);
+        checkRenamingSlashStyle(buffer, expectedBuffer, expectedBufferDebug, ArrayType.NOT_ARRAY);
+        checkRenamingSlashStyle(decoder, expectedDecoder, expectedDecoderDebug, ArrayType.NOT_ARRAY);
     }
     
     @Test
@@ -219,7 +219,7 @@ public class ClassRenamerTest {
         String expectedUserClassDebug = userClass;
         String expectedUserClass = PackageConstants.kUserDotPrefix + userClass;
 
-        checkRenamingDotStyle(userClass, expectedUserClass, expectedUserClassDebug, null);
+        checkRenamingDotStyle(userClass, expectedUserClass, expectedUserClassDebug, ArrayType.NOT_ARRAY);
     }
 
     @Test
@@ -227,7 +227,7 @@ public class ClassRenamerTest {
         String expectedUserClassDebug = userClass.replaceAll("\\.", "/");
         String expectedUserClass = PackageConstants.kUserSlashPrefix + userClass.replaceAll("\\.", "/");
 
-        checkRenamingSlashStyle(userClass, expectedUserClass, expectedUserClassDebug, null);
+        checkRenamingSlashStyle(userClass, expectedUserClass, expectedUserClassDebug, ArrayType.NOT_ARRAY);
     }
 
     @Test
@@ -235,7 +235,7 @@ public class ClassRenamerTest {
         String exception = java.lang.VirtualMachineError.class.getName();
         String expectedException = PackageConstants.kShadowDotPrefix + exception;
 
-        checkRenamingDotStyle(exception, expectedException, expectedException, null);
+        checkRenamingDotStyle(exception, expectedException, expectedException, ArrayType.NOT_ARRAY);
     }
 
     @Test
@@ -243,21 +243,21 @@ public class ClassRenamerTest {
         String exception = java.lang.VirtualMachineError.class.getName().replaceAll("\\.", "/");
         String expectedException = PackageConstants.kShadowSlashPrefix + exception;
 
-        checkRenamingSlashStyle(exception, expectedException, expectedException, null);
+        checkRenamingSlashStyle(exception, expectedException, expectedException, ArrayType.NOT_ARRAY);
     }
 
     @Test(expected = RejectedClassException.class)
     public void testPostRenameClassRejection() {
         String nonWhitelisted = java.lang.instrument.ClassDefinition.class.getName();
 
-        preRenameLoadedDotRenamer.toPostRenameOrRejectClass(nonWhitelisted, null);
+        preRenameLoadedDotRenamer.toPostRenameOrRejectClass(nonWhitelisted, ArrayType.NOT_ARRAY);
     }
 
     @Test(expected = RuntimeAssertionError.class)
     public void testPostRenameClassAssertionError() {
         String postRename = PackageConstants.kUserDotPrefix + userClass;
 
-        preRenameLoadedDotRenamer.toPostRename(postRename, null);
+        preRenameLoadedDotRenamer.toPostRename(postRename, ArrayType.NOT_ARRAY);
     }
 
     @Test

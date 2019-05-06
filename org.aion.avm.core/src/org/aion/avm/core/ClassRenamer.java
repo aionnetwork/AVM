@@ -35,7 +35,7 @@ public final class ClassRenamer {
 
     public enum NameCategory { PRE_RENAME, POST_RENAME }
 
-    public enum ArrayType { PRECISE_TYPE, UNIFYING_TYPE }
+    public enum ArrayType { PRECISE_TYPE, UNIFYING_TYPE, NOT_ARRAY }
 
     /**
      * Constructs a new class renamer.
@@ -104,8 +104,7 @@ public final class ClassRenamer {
      * given name does not match any of our pre-rename name checks.
      *
      * If an array name is given then {@code arrayType} will determine whether or not the post-rename
-     * name will be a precise or unifying type name. If the provided name is not an array then
-     * {@code arrayType} may be set null.
+     * name will be a precise or unifying type name.
      *
      * This method does not handle exception wrapping! Use: {@code toExceptionWrapper()}.
      *
@@ -128,8 +127,7 @@ public final class ClassRenamer {
      * be a pre-rename class name.
      *
      * If an array name is given then {@code arrayType} will determine whether or not the post-rename
-     * name will be a precise or unifying type name. If the provided name is not an array then
-     * {@code arrayType} may be set null.
+     * name will be a precise or unifying type name.
      *
      * This method does not handle exception wrapping! Use: {@code toExceptionWrapper()}.
      *
@@ -146,6 +144,7 @@ public final class ClassRenamer {
 
     private String toPostRenameInternal(String preRenameClassName, ArrayType arrayType, boolean isDefinitelyPreRename) {
         RuntimeAssertionError.assertTrue(!preRenameClassName.contains((this.style == NameStyle.DOT_NAME) ? "/" : "."));
+        RuntimeAssertionError.assertTrue(arrayType != null);
 
         if (isPreRenameUserClass(preRenameClassName)) {
             return toPostRenameUserDefinedClass(preRenameClassName);
@@ -276,7 +275,7 @@ public final class ClassRenamer {
             } else {
                 throw RuntimeAssertionError.unreachable("Precise-type arrays are prohibited: " + preRenameArray);
             }
-        } else {
+        } else if (arrayType == ArrayType.UNIFYING_TYPE) {
             if (this.unifyingArraysPermitted) {
                 String arraySlashName = (this.style == NameStyle.DOT_NAME) ? preRenameArray.replaceAll("\\.", "/") : preRenameArray;
                 String original = ArrayNameMapper.getUnifyingArrayWrapperDescriptor(arraySlashName);
@@ -284,6 +283,8 @@ public final class ClassRenamer {
             } else {
                 throw RuntimeAssertionError.unreachable("Unifying-type arrays are prohibited: " + preRenameArray);
             }
+        } else {
+            throw RuntimeAssertionError.unreachable("Expected a non-array type to be passed in but got: " + preRenameArray);
         }
     }
 
