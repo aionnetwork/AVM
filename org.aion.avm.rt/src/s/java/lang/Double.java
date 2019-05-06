@@ -158,11 +158,6 @@ public final class Double extends Number implements Comparable<Double>{
         return java.lang.Double.doubleToLongBits(value);
     }
 
-    public static long avm_doubleToRawLongBits(double value){
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_doubleToRawLongBits);
-        return java.lang.Double.doubleToRawLongBits(value);
-    }
-
     public static double avm_longBitsToDouble(long bits){
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Double_avm_longBitsToDouble);
         return java.lang.Double.longBitsToDouble(bits);

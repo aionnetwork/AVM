@@ -167,11 +167,6 @@ public final class Float extends Number implements Comparable<Float> {
         return internalFloatToIntBits(value);
     }
 
-    public static int avm_floatToRawIntBits(float value){
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_floatToRawIntBits);
-        return java.lang.Float.floatToRawIntBits(value);
-    }
-
     public static float avm_intBitsToFloat(int bits){
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Float_avm_intBitsToFloat);
         return java.lang.Float.intBitsToFloat(bits);

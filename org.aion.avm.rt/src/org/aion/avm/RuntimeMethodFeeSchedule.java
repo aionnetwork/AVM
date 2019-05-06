@@ -144,7 +144,6 @@ public class RuntimeMethodFeeSchedule {
     public static final long Double_avm_hashCode = RT_METHOD_FEE_LEVEL_1; // totalCost - 122;
     public static final long Double_avm_hashCode_1 = RT_METHOD_FEE_LEVEL_2; // totalCost - 216; // byte code cost - 116; invoked methods cost - 100;
     public static final long Double_avm_doubleToLongBits = RT_METHOD_FEE_LEVEL_2; // totalCost - 216; // byte code cost - 116; invoked methods cost - 100;
-    public static final long Double_avm_doubleToRawLongBits = RT_METHOD_FEE_LEVEL_2; // totalCost - 216; // byte code cost - 116; invoked methods cost - 100;
     public static final long Double_avm_longBitsToDouble = RT_METHOD_FEE_LEVEL_2; // totalCost - 216; // byte code cost - 116; invoked methods cost - 100;
     public static final long Double_avm_compareTo = RT_METHOD_FEE_LEVEL_1; // totalCost - 134;
     public static final long Double_avm_compare = RT_METHOD_FEE_LEVEL_2; // totalCost - 222; // byte code cost - 122; invoked methods cost - 100;
@@ -192,7 +191,6 @@ public class RuntimeMethodFeeSchedule {
     public static final long Float_avm_hashCode_1 = RT_METHOD_FEE_LEVEL_1; // totalCost - 116;
     public static final long Float_avm_equals = RT_METHOD_FEE_LEVEL_2; // totalCost - 343; //maximum cost of multiple blocks;
     public static final long Float_avm_floatToIntBits = RT_METHOD_FEE_LEVEL_2; // totalCost - 216; // byte code cost - 116; invoked methods cost - 100;
-    public static final long Float_avm_floatToRawIntBits = RT_METHOD_FEE_LEVEL_2; // totalCost - 216; // byte code cost - 116; invoked methods cost - 100;
     public static final long Float_avm_intBitsToFloat = RT_METHOD_FEE_LEVEL_2; // totalCost - 216; // byte code cost - 116; invoked methods cost - 100;
     public static final long Float_avm_compareTo = RT_METHOD_FEE_LEVEL_1; // totalCost - 134;
     public static final long Float_avm_compare = RT_METHOD_FEE_LEVEL_2; // totalCost - 222; // byte code cost - 122; invoked methods cost - 100;

@@ -105,7 +105,7 @@ public final class ABIEncoder {
      */
     public static byte[] encodeOneFloat(float data) {
         byte[] result = new byte[Float.BYTES + 1];
-        int dataBits = Float.floatToRawIntBits(data);
+        int dataBits = Float.floatToIntBits(data);
         result[0] = ABIToken.FLOAT;
         result[1]  = (byte) ((dataBits >> 24) & BYTE_MASK);
         result[2]  = (byte) ((dataBits >> 16) & BYTE_MASK);
@@ -121,7 +121,7 @@ public final class ABIEncoder {
      */
     public static byte[] encodeOneDouble(double data) {
         byte[] result = new byte[Double.BYTES + 1];
-        long dataBits = Double.doubleToRawLongBits(data);
+        long dataBits = Double.doubleToLongBits(data);
         result[0] = ABIToken.DOUBLE;
         result[1]  = (byte) ((dataBits >> 56) & BYTE_MASK);
         result[2]  = (byte) ((dataBits >> 48) & BYTE_MASK);
@@ -327,7 +327,7 @@ public final class ABIEncoder {
             result[1] = (byte) ((data.length >> 8) & BYTE_MASK);
             result[2] = (byte) (data.length & BYTE_MASK);
             for (int i = 0, j = 3; i < data.length; i++, j+=Float.BYTES) {
-                int dataBits = Float.floatToRawIntBits(data[i]);
+                int dataBits = Float.floatToIntBits(data[i]);
                 result[j]  = (byte) ((dataBits >> 24) & BYTE_MASK);
                 result[j+1]  = (byte) ((dataBits >> 16) & BYTE_MASK);
                 result[j+2]  = (byte) ((dataBits >> 8) & BYTE_MASK);
@@ -358,7 +358,7 @@ public final class ABIEncoder {
             result[1] = (byte) ((data.length >> 8) & BYTE_MASK);
             result[2] = (byte) (data.length & BYTE_MASK);
             for (int i = 0, j = 3; i < data.length; i++, j+=Double.BYTES) {
-                long dataBits = Double.doubleToRawLongBits(data[i]);
+                long dataBits = Double.doubleToLongBits(data[i]);
                 result[j]  = (byte) ((dataBits >> 56) & BYTE_MASK);
                 result[j+1]  = (byte) ((dataBits >> 48) & BYTE_MASK);
                 result[j+2]  = (byte) ((dataBits >> 40) & BYTE_MASK);

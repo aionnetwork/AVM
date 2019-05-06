@@ -52,7 +52,7 @@ public class ByteBufferObjectSerializer implements IObjectSerializer {
 
     @Override
     public void writeFloat(float value) {
-        this.buffer.putFloat(value);
+        this.buffer.putInt(Float.floatToIntBits(value));
     }
 
     @Override
@@ -62,7 +62,7 @@ public class ByteBufferObjectSerializer implements IObjectSerializer {
 
     @Override
     public void writeDouble(double value) {
-        this.buffer.putDouble(value);
+        this.buffer.putLong(Double.doubleToLongBits(value));
     }
 
     @Override

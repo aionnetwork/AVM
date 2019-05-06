@@ -52,7 +52,7 @@ public class ByteBufferObjectDeserializer implements IObjectDeserializer {
 
     @Override
     public float readFloat() {
-        return this.buffer.getFloat();
+        return Float.intBitsToFloat(this.buffer.getInt());
     }
 
     @Override
@@ -62,7 +62,7 @@ public class ByteBufferObjectDeserializer implements IObjectDeserializer {
 
     @Override
     public double readDouble() {
-        return this.buffer.getDouble();
+        return Double.longBitsToDouble(this.buffer.getLong());
     }
 
     @Override

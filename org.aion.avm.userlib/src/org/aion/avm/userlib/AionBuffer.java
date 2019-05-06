@@ -243,7 +243,7 @@ public class AionBuffer {
      * @return The receiver (for call chaining).
      */
     public AionBuffer putDouble(double value) {
-        return putLong(Double.doubleToRawLongBits(value));
+        return putLong(Double.doubleToLongBits(value));
     }
 
     /**
@@ -252,7 +252,7 @@ public class AionBuffer {
      * @return The receiver (for call chaining).
      */
     public AionBuffer putFloat(float value) {
-        return putInt(Float.floatToRawIntBits(value));
+        return putInt(Float.floatToIntBits(value));
     }
 
     /**
