@@ -36,9 +36,9 @@ public class ConstantBillingTest {
         BytecodeFeeScheduler feeScheduler = new BytecodeFeeScheduler();
         feeScheduler.initialize();
 
-        //TODO Once AKI-136 is finished this getstatic should be replaced by ldc -- we are currently
-        // charging for the constant instrumentation code we inject into the user code!
-        long ldcFee = feeScheduler.getFee(Opcodes.GETSTATIC);
+        // See AKI-136: static instrumentation code is no longer billed, so we charge for an ldc + putstatic in the clinit now (assigning constant to static field)
+        // rather than a getstatic + putstatic (fetching the constant from our constant instrumentation class)
+        long ldcFee = feeScheduler.getFee(Opcodes.LDC);
         long putstaticFee = feeScheduler.getFee(Opcodes.PUTSTATIC);
         long returnFee = feeScheduler.getFee(Opcodes.RETURN);
 
