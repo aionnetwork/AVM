@@ -24,7 +24,7 @@ public class SelfDestructClinitTest {
     public void destructDuringClinit() {
         byte[] args = ABIUtil.encodeDeploymentArguments(0);
         AvmRule.ResultWrapper result = deploy(args);
-        byte[] code = avmRule.kernel.getCode(org.aion.types.Address.wrap(result.getDappAddress().unwrap()));
+        byte[] code = avmRule.kernel.getCode(org.aion.types.Address.wrap(result.getDappAddress().toByteArray()));
         Assert.assertNull(code);
         Assert.assertEquals(530702 - refundPerContract, energyLimit - result.getTransactionResult().getEnergyRemaining());
     }
@@ -40,7 +40,7 @@ public class SelfDestructClinitTest {
         byte[] args = ABIUtil.encodeDeploymentArguments(1, toBeDestroyed, txData);
 
         AvmRule.ResultWrapper result = deploy(args);
-        byte[] code = avmRule.kernel.getCode(org.aion.types.Address.wrap(toBeDestroyed.unwrap()));
+        byte[] code = avmRule.kernel.getCode(org.aion.types.Address.wrap(toBeDestroyed.toByteArray()));
         Assert.assertNull(code);
         Assert.assertEquals(571479 - refundPerContract, energyLimit - result.getTransactionResult().getEnergyRemaining());
     }

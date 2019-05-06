@@ -116,7 +116,7 @@ public class PerformanceTest {
 
     private void callSingle(org.aion.types.Address sender, Block block, Address contractAddr, String methodName) {
         byte[] argData = ABIUtil.encodeMethodArguments(methodName);
-        Transaction call = Transaction.call(sender, org.aion.types.Address.wrap(contractAddr.unwrap()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
+        Transaction call = Transaction.call(sender, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
         AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {call})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
     }
@@ -161,7 +161,7 @@ public class PerformanceTest {
             for (int i = 0; i < transactionBlockSize; ++i) {
                 org.aion.types.Address sender = userAddrs[i];
                 Address contractAddr = Nto1 ? contractAddrs[0] : contractAddrs[i];
-                transactionArray[i] = Transaction.call(sender, org.aion.types.Address.wrap(contractAddr.unwrap()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
+                transactionArray[i] = Transaction.call(sender, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
             }
             SimpleFuture<TransactionResult>[] futures = avm.run(this.kernel, transactionArray);
             for (SimpleFuture<TransactionResult> future : futures) {

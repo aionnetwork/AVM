@@ -64,7 +64,7 @@ public class ERC20Token {
         if ((senderBalance >= tokens) && (tokens > 0) && (receiverBalance + tokens > 0)) {
             ledger.put(sender, senderBalance - tokens);
             ledger.put(receiver, receiverBalance + tokens);
-            Blockchain.log("Transfer".getBytes(), sender.unwrap(), receiver.unwrap(), Long.toString(tokens).getBytes());
+            Blockchain.log("Transfer".getBytes(), sender.toByteArray(), receiver.toByteArray(), Long.toString(tokens).getBytes());
             return true;
         }
 
@@ -79,7 +79,7 @@ public class ERC20Token {
             allowance.put(sender, newEntry);
         }
 
-        Blockchain.log("Approval".getBytes(), sender.unwrap(), spender.unwrap(), Long.toString(tokens).getBytes());
+        Blockchain.log("Approval".getBytes(), sender.toByteArray(), spender.toByteArray(), Long.toString(tokens).getBytes());
         allowance.get(sender).put(spender, tokens);
 
         return true;
@@ -94,7 +94,7 @@ public class ERC20Token {
         long limit = allowance(from, sender);
 
         if ((fromBalance > tokens) && (limit > tokens) && (toBalance + tokens > 0)) {
-            Blockchain.log("Transfer".getBytes(), from.unwrap(), to.unwrap(), Long.toString(tokens).getBytes());
+            Blockchain.log("Transfer".getBytes(), from.toByteArray(), to.toByteArray(), Long.toString(tokens).getBytes());
             ledger.put(from, fromBalance - tokens);
             allowance.get(from).put(sender, limit - tokens);
             ledger.put(to, toBalance + tokens);
@@ -108,7 +108,7 @@ public class ERC20Token {
         if (Blockchain.getCaller().equals(minter)) {
             long receiverBalance = ledger.getOrDefault(receiver, 0L);
             if ((tokens > 0) && (receiverBalance + tokens > 0)) {
-                Blockchain.log("Mint".getBytes(), receiver.unwrap(), Long.toString(tokens).getBytes());
+                Blockchain.log("Mint".getBytes(), receiver.toByteArray(), Long.toString(tokens).getBytes());
                 ledger.put(receiver, receiverBalance + tokens);
                 totalSupply += tokens;
                 return true;

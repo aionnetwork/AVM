@@ -139,7 +139,7 @@ public final class AvmRule implements TestRule {
      * @return Result of the operation
      */
     public ResultWrapper balanceTransfer(Address from, Address to, BigInteger value, long energyLimit, long energyPrice) {
-        Transaction tx = Transaction.call(org.aion.types.Address.wrap(from.unwrap()), org.aion.types.Address.wrap(to.unwrap()), kernel.getNonce(org.aion.types.Address.wrap(from.unwrap())), value, new byte[0], energyLimit, energyPrice);
+        Transaction tx = Transaction.call(org.aion.types.Address.wrap(from.toByteArray()), org.aion.types.Address.wrap(to.toByteArray()), kernel.getNonce(org.aion.types.Address.wrap(from.toByteArray())), value, new byte[0], energyLimit, energyPrice);
 
         return new ResultWrapper(avm.run(this.kernel, new Transaction[]{tx})[0].get());
     }
@@ -163,12 +163,12 @@ public final class AvmRule implements TestRule {
     }
 
     private ResultWrapper callDapp(Address from, Address dappAddress, BigInteger value, byte[] transactionData, long energyLimit, long energyPrice) {
-        Transaction tx = Transaction.call(org.aion.types.Address.wrap(from.unwrap()), org.aion.types.Address.wrap(dappAddress.unwrap()), kernel.getNonce(org.aion.types.Address.wrap(from.unwrap())), value, transactionData, energyLimit, energyPrice);
+        Transaction tx = Transaction.call(org.aion.types.Address.wrap(from.toByteArray()), org.aion.types.Address.wrap(dappAddress.toByteArray()), kernel.getNonce(org.aion.types.Address.wrap(from.toByteArray())), value, transactionData, energyLimit, energyPrice);
         return new ResultWrapper(avm.run(this.kernel, new Transaction[]{tx})[0].get());
     }
 
     private ResultWrapper deployDapp(Address from, BigInteger value, byte[] dappBytes, long energyLimit, long energyPrice) {
-        Transaction tx = Transaction.create(org.aion.types.Address.wrap(from.unwrap()), kernel.getNonce(org.aion.types.Address.wrap(from.unwrap())), value, dappBytes, energyLimit, energyPrice);
+        Transaction tx = Transaction.create(org.aion.types.Address.wrap(from.toByteArray()), kernel.getNonce(org.aion.types.Address.wrap(from.toByteArray())), value, dappBytes, energyLimit, energyPrice);
         return new ResultWrapper(avm.run(this.kernel, new Transaction[]{tx})[0].get());
     }
 

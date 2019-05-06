@@ -75,19 +75,19 @@ public class DemoTest {
         // FUNDING and CHECK BALANCE
         //================
         arguments = ABIUtil.encodeMethodArguments("mint", walletDapp, 5000L);
-        tx = Transaction.call(pepeMinter, org.aion.types.Address.wrap(tokenDapp.unwrap()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
+        tx = Transaction.call(pepeMinter, org.aion.types.Address.wrap(tokenDapp.toByteArray()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txResult = avm.run(kernel, new Transaction[] {tx})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
         System.out.println("\n>> PEPE Mint to deliver 5000 tokens to the wallet: " + ABIUtil.decodeOneObject(txResult.getReturnData()));
 
         arguments = ABIUtil.encodeMethodArguments("balanceOf", walletDapp);
-        tx = Transaction.call(pepeMinter, org.aion.types.Address.wrap(tokenDapp.unwrap()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
+        tx = Transaction.call(pepeMinter, org.aion.types.Address.wrap(tokenDapp.toByteArray()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txResult = avm.run(kernel, new Transaction[] {tx})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
         System.out.println(">> balance of wallet: " + ABIUtil.decodeOneObject(txResult.getReturnData()));
 
         arguments = ABIUtil.encodeMethodArguments("balanceOf", new Address(receiver.toBytes()));
-        tx = Transaction.call(pepeMinter, org.aion.types.Address.wrap(tokenDapp.unwrap()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
+        tx = Transaction.call(pepeMinter, org.aion.types.Address.wrap(tokenDapp.toByteArray()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txResult = avm.run(kernel, new Transaction[] {tx})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
         System.out.println(">> balance of receiver: " + ABIUtil.decodeOneObject(txResult.getReturnData()));
@@ -97,7 +97,7 @@ public class DemoTest {
         //================
         byte[] data = ABIUtil.encodeMethodArguments("transfer", new Address(receiver.toBytes()), 3000L);
         arguments = ABIUtil.encodeMethodArguments("propose", tokenDapp, 0L, data, energyLimit);
-        tx = Transaction.call(deployer, org.aion.types.Address.wrap(walletDapp.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, arguments, 2_000_000L, energyPrice);
+        tx = Transaction.call(deployer, org.aion.types.Address.wrap(walletDapp.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, arguments, 2_000_000L, energyPrice);
         txResult = avm.run(kernel, new Transaction[] {tx})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
         System.out.println("\n>> Deployer to propose a transaction of 3000 PEPE tokens to Receiver. (Tx ID " + Helpers.bytesToHexString((byte[]) ABIUtil.decodeOneObject(txResult.getReturnData())) + ")");
@@ -107,7 +107,7 @@ public class DemoTest {
         // CONFIRM #1
         //================
         arguments = ABIUtil.encodeMethodArguments("confirm", pendingTx);
-        tx = Transaction.call(owner1, org.aion.types.Address.wrap(walletDapp.unwrap()), kernel.getNonce(owner1), BigInteger.ZERO, arguments, energyLimit, energyPrice);
+        tx = Transaction.call(owner1, org.aion.types.Address.wrap(walletDapp.toByteArray()), kernel.getNonce(owner1), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txResult = avm.run(kernel, new Transaction[] {tx})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
         System.out.println(">> Transaction confirmed by Owner 1: " + ABIUtil.decodeOneObject(txResult.getReturnData()));
@@ -116,7 +116,7 @@ public class DemoTest {
         // CONFIRM #2
         //================
         arguments = ABIUtil.encodeMethodArguments("confirm", pendingTx);
-        tx = Transaction.call(owner2, org.aion.types.Address.wrap(walletDapp.unwrap()), kernel.getNonce(owner2), BigInteger.ZERO, arguments, energyLimit, energyPrice);
+        tx = Transaction.call(owner2, org.aion.types.Address.wrap(walletDapp.toByteArray()), kernel.getNonce(owner2), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txResult = avm.run(kernel, new Transaction[] {tx})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
         System.out.println(">> Transaction confirmed by Owner 2: " + ABIUtil.decodeOneObject(txResult.getReturnData()));
@@ -127,13 +127,13 @@ public class DemoTest {
         // CHECK BALANCE
         //================
         arguments = ABIUtil.encodeMethodArguments("balanceOf", walletDapp);
-        tx = Transaction.call(pepeMinter, org.aion.types.Address.wrap(tokenDapp.unwrap()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
+        tx = Transaction.call(pepeMinter, org.aion.types.Address.wrap(tokenDapp.toByteArray()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txResult = avm.run(kernel, new Transaction[] {tx})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
         System.out.println("\n>> balance of wallet: " + ABIUtil.decodeOneObject(txResult.getReturnData()));
 
         arguments = ABIUtil.encodeMethodArguments("balanceOf", new Address(receiver.toBytes()));
-        tx = Transaction.call(pepeMinter, org.aion.types.Address.wrap(tokenDapp.unwrap()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
+        tx = Transaction.call(pepeMinter, org.aion.types.Address.wrap(tokenDapp.toByteArray()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txResult = avm.run(kernel, new Transaction[] {tx})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
         System.out.println(">> balance of receiver: " + ABIUtil.decodeOneObject(txResult.getReturnData()));

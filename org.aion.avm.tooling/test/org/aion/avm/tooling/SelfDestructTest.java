@@ -2,9 +2,7 @@ package org.aion.avm.tooling;
 
 import org.aion.avm.core.util.ABIUtil;
 import avm.Address;
-import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.Block;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -68,7 +66,7 @@ public class SelfDestructTest {
     @Test
     public void deleteSelfDuringDeploy() {
         // Provide the deployer address as an argument, it will pay to them.
-        Address target = deployCommonResource(deployer.unwrap());
+        Address target = deployCommonResource(deployer.toByteArray());
         
         // The response should be real, but also impossible to call.
         Assert.assertTrue(null != target);
@@ -97,7 +95,7 @@ public class SelfDestructTest {
         // Give it some money, so we can check this later.
         sendMoney(target, new BigInteger("128"));
         
-        long start = avmRule.kernel.getBalance(org.aion.types.Address.wrap(target.unwrap())).longValueExact();
+        long start = avmRule.kernel.getBalance(org.aion.types.Address.wrap(target.toByteArray())).longValueExact();
         Assert.assertEquals(128L, start);
         
         byte[] argData = ABIUtil.encodeMethodArguments("deleteAndReturnBalance", deployer);
@@ -114,7 +112,7 @@ public class SelfDestructTest {
         // Give it some money, so we can check this later.
         sendMoney(target, new BigInteger("128"));
         
-        long start = avmRule.kernel.getBalance(org.aion.types.Address.wrap(target.unwrap())).longValueExact();
+        long start = avmRule.kernel.getBalance(org.aion.types.Address.wrap(target.toByteArray())).longValueExact();
         Assert.assertEquals(128L, start);
         
         byte[] argData = ABIUtil.encodeMethodArguments("deleteAndReturnBalanceFromAnother", deployer, bystander);
@@ -166,7 +164,7 @@ public class SelfDestructTest {
         
         // Give it some money, so we can check this later.
         sendMoney(target, new BigInteger("128"));
-        long start = avmRule.kernel.getBalance(org.aion.types.Address.wrap(target.unwrap())).longValueExact();
+        long start = avmRule.kernel.getBalance(org.aion.types.Address.wrap(target.toByteArray())).longValueExact();
         Assert.assertEquals(128L, start);
         
         byte[] argData = ABIUtil.encodeMethodArguments("deleteAndReturnBeneficiaryBalance", beneficiary);
@@ -176,7 +174,7 @@ public class SelfDestructTest {
         failToCall(target);
         
         // Check that we can see the balance having moved.
-        long end = avmRule.kernel.getBalance(org.aion.types.Address.wrap(beneficiary.unwrap())).longValueExact();
+        long end = avmRule.kernel.getBalance(org.aion.types.Address.wrap(beneficiary.toByteArray())).longValueExact();
         Assert.assertEquals(128L, end);
     }
 

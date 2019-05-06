@@ -43,7 +43,7 @@ public class Address extends Object {
      * 
      * @return The raw bytes underneath the address.
      */
-    public ByteArray avm_unwrap() {
+    public ByteArray avm_toByteArray() {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.Address_avm_unwrap);
         lazyLoad();
         byte[] copy = copyOfInternal();
@@ -106,7 +106,7 @@ public class Address extends Object {
      * 
      * @return The raw bytes underneath the address.
      */
-    public byte[] unwrap() {
+    public byte[] toByteArray() {
         lazyLoad();
         return copyOfInternal();
     }

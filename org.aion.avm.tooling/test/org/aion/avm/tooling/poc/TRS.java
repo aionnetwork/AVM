@@ -66,7 +66,7 @@ public class TRS {
             BigInteger value = BigInteger.valueOf(amount);
             deposited.put(address, value);
             withdrawn.put(address, BigInteger.ZERO);
-            Blockchain.log(address.unwrap(), value.toByteArray());
+            Blockchain.log(address.toByteArray(), value.toByteArray());
         }
     }
 
@@ -83,7 +83,7 @@ public class TRS {
             }
 
             totalfv = totalfv.add(amount);
-            Blockchain.log(beneficiary.unwrap(), amount.toByteArray());
+            Blockchain.log(beneficiary.toByteArray(), amount.toByteArray());
         }
     }
 
@@ -126,7 +126,7 @@ public class TRS {
             }
 
             remainder = remainder.subtract(diff);
-            Blockchain.log(address.unwrap(), diff.toByteArray());
+            Blockchain.log(address.toByteArray(), diff.toByteArray());
             return true;
         }
         return false;
@@ -184,7 +184,7 @@ public class TRS {
         if (Blockchain.getCaller().equals(newOwner)) {
             owner = newOwner;
             newOwner = null;
-            Blockchain.log(owner.unwrap());
+            Blockchain.log(owner.toByteArray());
         }
     }
 

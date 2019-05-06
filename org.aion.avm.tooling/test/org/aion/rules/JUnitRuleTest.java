@@ -87,13 +87,13 @@ public class JUnitRuleTest {
         TransactionResult result = avmRule.balanceTransfer(preminedAccount, to, BigInteger.valueOf(100L), 21000, 1L).getTransactionResult();
 
         assertTrue(result.getResultCode().isSuccess());
-        assertEquals(BigInteger.valueOf(100L), avmRule.kernel.getBalance(org.aion.types.Address.wrap(to.unwrap())));
+        assertEquals(BigInteger.valueOf(100L), avmRule.kernel.getBalance(org.aion.types.Address.wrap(to.toByteArray())));
 
         // balance transfer to contract
         result = avmRule.balanceTransfer(preminedAccount, dappAddr, BigInteger.valueOf(100L), 51000, 1L).getTransactionResult();
 
         assertTrue(result.getResultCode().isSuccess());
-        assertEquals(BigInteger.valueOf(100L), avmRule.kernel.getBalance(org.aion.types.Address.wrap(dappAddr.unwrap())));
+        assertEquals(BigInteger.valueOf(100L), avmRule.kernel.getBalance(org.aion.types.Address.wrap(dappAddr.toByteArray())));
 
     }
 }

@@ -13,10 +13,11 @@ public class Address {
     private final byte[] raw = new byte[LENGTH];
 
     /**
-     * Create an Address instance from byte array.
+     * Create an Address with the contents of the given raw byte array.
      *
      * @param raw a byte array
-     * @throws IllegalArgumentException when the input byte array is null or the length is invalid.
+     * @throws NullPointerException when the input byte array is null.
+     * @throws IllegalArgumentException when the input byte array length is invalid.
      */
     public Address(byte[] raw) throws IllegalArgumentException {
         if (raw == null) {
@@ -29,11 +30,11 @@ public class Address {
     }
 
     /**
-     * Returns the underlying byte array.
+     * Converts the receiver to a new byte array.
      *
-     * @return the wrapped byte array.
+     * @return a byte array containing a copy of the receiver.
      */
-    public byte[] unwrap() {
+    public byte[] toByteArray() {
         byte[] copy = new byte[LENGTH];
         System.arraycopy(this.raw, 0, copy, 0, LENGTH);
         return copy;

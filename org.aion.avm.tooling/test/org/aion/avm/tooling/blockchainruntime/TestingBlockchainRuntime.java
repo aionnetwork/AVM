@@ -178,7 +178,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     @Override
     public BigInteger avm_getBalance(Address address) {
         Objects.requireNonNull(address);
-        return new BigInteger(kernel.getBalance(org.aion.types.Address.wrap(address.unwrap())));
+        return new BigInteger(kernel.getBalance(org.aion.types.Address.wrap(address.toByteArray())));
     }
 
     @Override
@@ -189,7 +189,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     @Override
     public int avm_getCodeSize(Address address) {
         Objects.requireNonNull(address);
-        byte[] vc = kernel.getTransformedCode(org.aion.types.Address.wrap(address.unwrap()));
+        byte[] vc = kernel.getTransformedCode(org.aion.types.Address.wrap(address.toByteArray()));
         return vc == null ? 0 : vc.length;
     }
 

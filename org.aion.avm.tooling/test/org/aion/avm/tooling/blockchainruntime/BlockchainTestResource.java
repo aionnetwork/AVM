@@ -12,9 +12,9 @@ public class BlockchainTestResource {
 
     public static byte[] main() {
         AionBuffer buffer = AionBuffer.allocate(1024);
-        buffer.put(getAddress().unwrap());
-        buffer.put(getCaller().unwrap());
-        buffer.put(getOrigin().unwrap());
+        buffer.put(getAddress().toByteArray());
+        buffer.put(getCaller().toByteArray());
+        buffer.put(getOrigin().toByteArray());
         buffer.putLong(getEnergyLimit());
         buffer.putLong(getEnergyPrice());
         buffer.putLong(getValue().longValue());
@@ -23,7 +23,7 @@ public class BlockchainTestResource {
         buffer.putLong(getBlockTimestamp());
         buffer.putLong(getBlockNumber());
         buffer.putLong(getBlockEnergyLimit());
-        buffer.put(getBlockCoinbase().unwrap());
+        buffer.put(getBlockCoinbase().toByteArray());
         buffer.put(getBlockDifficulty().toByteArray());
 
         buffer.put("value".getBytes());

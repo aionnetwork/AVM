@@ -69,7 +69,7 @@ public class DefaultMethodIntegrationTest {
         
         // Setup the call (parameters are currently ignored).
         byte[] argData = new byte[0];
-        Transaction call = Transaction.call(deployer, org.aion.types.Address.wrap(contractAddr.unwrap()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
+        Transaction call = Transaction.call(deployer, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
         
         // The NoSuchMethodError triggers a "FAILED_EXCEPTION" state.
         AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {call})[0].get();

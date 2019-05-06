@@ -21,33 +21,33 @@ public class EventLogger {
     public static final String kConfirmationNeeded = "confirmationNeeded";
 
     public static void confirmation(Address sender, Operation operation) {
-        byte[] senderBytes = sender.unwrap();
+        byte[] senderBytes = sender.toByteArray();
         byte[] operationBytes = operation.getByteArrayAccess();
         byte[] data = ByteArrayHelpers.concatenate(senderBytes, operationBytes);
         Blockchain.log(kConfirmation.getBytes(), data);
     }
 
     public static void revoke(Address sender, Operation operation) {
-        byte[] senderBytes = sender.unwrap();
+        byte[] senderBytes = sender.toByteArray();
         byte[] operationBytes = operation.getByteArrayAccess();
         byte[] data = ByteArrayHelpers.concatenate(senderBytes, operationBytes);
         Blockchain.log(kRevoke.getBytes(), data);
     }
 
     public static void ownerChanged(Address oldOwner, Address newOwner) {
-        byte[] oldBytes = oldOwner.unwrap();
-        byte[] newBytes = newOwner.unwrap();
+        byte[] oldBytes = oldOwner.toByteArray();
+        byte[] newBytes = newOwner.toByteArray();
         byte[] data = ByteArrayHelpers.concatenate(oldBytes, newBytes);
         Blockchain.log(kOwnerChanged.getBytes(), data);
     }
 
     public static void ownerAdded(Address newOwner) {
-        byte[] data = newOwner.unwrap();
+        byte[] data = newOwner.toByteArray();
         Blockchain.log(kOwnerAdded.getBytes(), data);
     }
 
     public static void ownerRemoved(Address oldOwner) {
-        byte[] data = oldOwner.unwrap();
+        byte[] data = oldOwner.toByteArray();
         Blockchain.log(kOwnerRemoved.getBytes(), data);
     }
 
@@ -57,26 +57,26 @@ public class EventLogger {
     }
 
     public static void deposit(Address from, long value) {
-        byte[] fromBytes = from.unwrap();
+        byte[] fromBytes = from.toByteArray();
         byte[] data = ByteArrayHelpers.appendLong(fromBytes, value);
         Blockchain.log(kDeposit.getBytes(), data);
     }
 
     public static void singleTransact(Address owner, long value, Address to, byte[] data) {
-        byte[] ownerBytes = owner.unwrap();
+        byte[] ownerBytes = owner.toByteArray();
         byte[] ownerValue = ByteArrayHelpers.appendLong(ownerBytes, value);
-        byte[] toBytes = to.unwrap();
+        byte[] toBytes = to.toByteArray();
         byte[] partial = ByteArrayHelpers.concatenate(ownerValue, toBytes);
         byte[] finalData = ByteArrayHelpers.concatenate(partial, data);
         Blockchain.log(kSingleTransact.getBytes(), finalData);
     }
 
     public static void multiTransact(Address owner, Operation operation, long value, Address to, byte[] data) {
-        byte[] ownerBytes = owner.unwrap();
+        byte[] ownerBytes = owner.toByteArray();
         byte[] operationBytes = operation.getByteArrayAccess();
         byte[] ownerOperation = ByteArrayHelpers.concatenate(ownerBytes, operationBytes);
         byte[] ownerOperationValue = ByteArrayHelpers.appendLong(ownerOperation, value);
-        byte[] toBytes = to.unwrap();
+        byte[] toBytes = to.toByteArray();
         byte[] partial = ByteArrayHelpers.concatenate(ownerOperationValue, toBytes);
         byte[] finalData = ByteArrayHelpers.concatenate(partial, data);
         Blockchain.log(kMultiTransact.getBytes(), finalData);
@@ -84,10 +84,10 @@ public class EventLogger {
 
     public static void confirmationNeeded(Operation operation, Address initiator, long value, Address to, byte[] data) {
         byte[] operationBytes = operation.getByteArrayAccess();
-        byte[] initBytes = initiator.unwrap();
+        byte[] initBytes = initiator.toByteArray();
         byte[] operationInit = ByteArrayHelpers.concatenate(operationBytes, initBytes);
         byte[] operationInitValue = ByteArrayHelpers.appendLong(operationInit, value);
-        byte[] toBytes = to.unwrap();
+        byte[] toBytes = to.toByteArray();
         byte[] partial = ByteArrayHelpers.concatenate(operationInitValue, toBytes);
         byte[] finalData = ByteArrayHelpers.concatenate(partial, data);
         Blockchain.log(kConfirmationNeeded.getBytes(), finalData);

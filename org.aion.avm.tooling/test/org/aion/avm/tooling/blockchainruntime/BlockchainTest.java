@@ -60,7 +60,7 @@ public class BlockchainTest {
     public void testAVMContractCodeDistinguish() {
         byte[] jar = avmRule.getDappBytes(BlockchainTestResource.class, new byte[0], AionBuffer.class);
         Address dappAddress = installJarAsDApp(jar);
-        org.aion.types.Address dappAddressApi = new org.aion.types.Address(dappAddress.unwrap());
+        org.aion.types.Address dappAddressApi = new org.aion.types.Address(dappAddress.toByteArray());
 
         CodeAndArguments decodeFromBytes = CodeAndArguments.decodeFromBytes(jar);
         assertEquals(decodeFromBytes.code.length, avmRule.kernel.getCode(dappAddressApi).length);
@@ -83,12 +83,12 @@ public class BlockchainTest {
     }
 
     private ByteBuffer getReturnData(Address dappAddress, byte[] txData) {
-        org.aion.types.Address dappAddressApi = new org.aion.types.Address(dappAddress.unwrap());
+        org.aion.types.Address dappAddressApi = new org.aion.types.Address(dappAddress.toByteArray());
 
         ByteBuffer buffer = ByteBuffer.allocate(1024);
-        buffer.put(dappAddress.unwrap());
-        buffer.put(premined.unwrap());
-        buffer.put(premined.unwrap());
+        buffer.put(dappAddress.toByteArray());
+        buffer.put(premined.toByteArray());
+        buffer.put(premined.toByteArray());
         buffer.putLong(energyLimit);
         buffer.putLong(energyPrice);
         buffer.putLong(BigInteger.ONE.longValue());

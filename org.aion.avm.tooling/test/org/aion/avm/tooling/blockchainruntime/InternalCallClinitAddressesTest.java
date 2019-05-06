@@ -73,7 +73,7 @@ public class InternalCallClinitAddressesTest {
         printTestContext("verifyRunningInternalCallsFromDappIntoOtherDapps", numInternalTransactionsToSpawn, recurseFirst);
 
         Address contract = deployInternalCallClinitAddressTrackerContract();
-        Address[] deployedContracts = generateTheAddressesOfTheContractsThatWillBeCreated(numInternalTransactionsToSpawn, contract, avmRule.kernel.getNonce(org.aion.types.Address.wrap(contract.unwrap())).longValue());
+        Address[] deployedContracts = generateTheAddressesOfTheContractsThatWillBeCreated(numInternalTransactionsToSpawn, contract, avmRule.kernel.getNonce(org.aion.types.Address.wrap(contract.toByteArray())).longValue());
         printOrderOfContractCalls(contract, deployedContracts);
 
         // Grab the 'report', the batch of all addresses that were tracked by the contract.
@@ -125,8 +125,8 @@ public class InternalCallClinitAddressesTest {
         for (int i = 0; i < numContractsToDeploy; i++) {
             // Create a "fake" transaction so we can use the common helper to precompute the target contract address.
             Transaction fakeTransaction = (0 == i)
-                    ? Transaction.create(org.aion.types.Address.wrap(contract.unwrap()), BigInteger.valueOf(nonce + i), BigInteger.ZERO, new byte[0], energyLimit, energyPrice)
-                    : Transaction.create(org.aion.types.Address.wrap(contracts[i - 1].unwrap()), BigInteger.ZERO, BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
+                    ? Transaction.create(org.aion.types.Address.wrap(contract.toByteArray()), BigInteger.valueOf(nonce + i), BigInteger.ZERO, new byte[0], energyLimit, energyPrice)
+                    : Transaction.create(org.aion.types.Address.wrap(contracts[i - 1].toByteArray()), BigInteger.ZERO, BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
             contracts[i] = new Address(AddressUtil.generateContractAddress(fakeTransaction).toBytes());
         }
         return contracts;

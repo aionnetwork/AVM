@@ -360,7 +360,7 @@ public class AionBuffer {
         if (remaining < Address.LENGTH) {
             throw new BufferOverflowException();
         }
-        byte[] raw = value.unwrap();
+        byte[] raw = value.toByteArray();
         System.arraycopy(raw, 0, this.buffer, this.position, raw.length);
         this.position += raw.length;
         return this;

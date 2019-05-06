@@ -68,7 +68,7 @@ public class Wallet {
         }
 
         pendingTx.confirmations.add(sender);
-        Blockchain.log("Confirm".getBytes(), sender.unwrap(), new byte[0]);
+        Blockchain.log("Confirm".getBytes(), sender.toByteArray(), new byte[0]);
 
         if (pendingTx.confirmations.size() >= confirmationsRequired) {
             // remove the transaction
@@ -101,7 +101,7 @@ public class Wallet {
 
         public byte[] getId() {
             AionBuffer buffer = AionBuffer.allocate(Address.LENGTH + Long.BYTES + data.length + Long.BYTES);
-            buffer.put(to.unwrap());
+            buffer.put(to.toByteArray());
             buffer.putLong(value);
             buffer.put(data);
             buffer.putLong(energyLimit);

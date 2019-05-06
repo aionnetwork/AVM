@@ -408,7 +408,7 @@ public final class ABIEncoder {
             result[0] = ABIToken.NULL;
             result[1] = ABIToken.ADDRESS;
         } else {
-            byte[] addressBytes = data.unwrap();
+            byte[] addressBytes = data.toByteArray();
             if(Address.LENGTH != addressBytes.length) {
                 throw new ABIException("Address was of unexpected length");
             }

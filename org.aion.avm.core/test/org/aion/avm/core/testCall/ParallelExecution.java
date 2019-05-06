@@ -149,7 +149,7 @@ public class ParallelExecution {
                     InternalTransaction internalTx = new InternalTransaction(
                             Transaction.Type.CALL,
                             tx.getDestinationAddress(),
-                            org.aion.types.Address.wrap(targetAddress.unwrap()),
+                            org.aion.types.Address.wrap(targetAddress.toByteArray()),
                             BigInteger.ZERO,
                             value.getUnderlying(),
                             payload.getUnderlying(),

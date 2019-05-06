@@ -74,7 +74,7 @@ public class CallTest {
                 SimpleAvm avm2 = null;
                 try {
                     avm2 = new SimpleAvm(e, CallTest.this.preserveDebuggability, Callee.class);
-                    avm2.attachBlockchainRuntime(new TestingBlockchainRuntime(new EmptyCapabilities()).withCaller(to).withAddress(a.unwrap()).withData(d.getUnderlying()));
+                    avm2.attachBlockchainRuntime(new TestingBlockchainRuntime(new EmptyCapabilities()).withCaller(to).withAddress(a.toByteArray()).withData(d.getUnderlying()));
                     Class<?> clazz = avm2.getClassLoader().loadUserClassByOriginalName(Callee.class.getName(), CallTest.this.preserveDebuggability);
                     Object ret = clazz.getMethod(NamespaceMapper.mapMethodName("main")).invoke(null);
 

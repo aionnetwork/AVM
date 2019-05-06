@@ -16,15 +16,15 @@ public class BlockchainRuntime {
     // Compiler-facing implementation.
 
     public static Address getAddress() {
-        return new Address(blockchainRuntime.avm_getAddress().unwrap());
+        return new Address(blockchainRuntime.avm_getAddress().toByteArray());
     }
 
     public static Address getCaller() {
-        return new Address(blockchainRuntime.avm_getCaller().unwrap());
+        return new Address(blockchainRuntime.avm_getCaller().toByteArray());
     }
 
     public static Address getOrigin() {
-        return new Address(blockchainRuntime.avm_getOrigin().unwrap());
+        return new Address(blockchainRuntime.avm_getOrigin().toByteArray());
     }
 
     public static long getEnergyLimit() {
@@ -56,7 +56,7 @@ public class BlockchainRuntime {
     }
 
     public static Address getBlockCoinbase() {
-        return new Address(blockchainRuntime.avm_getBlockCoinbase().unwrap());
+        return new Address(blockchainRuntime.avm_getBlockCoinbase().toByteArray());
     }
 
     public static java.math.BigInteger getBlockDifficulty() {
@@ -65,7 +65,7 @@ public class BlockchainRuntime {
 
 
     public static java.math.BigInteger getBalance(Address address) {
-        return blockchainRuntime.avm_getBalance(new p.avm.Address(address.unwrap())).getUnderlying();
+        return blockchainRuntime.avm_getBalance(new p.avm.Address(address.toByteArray())).getUnderlying();
     }
 
     public static java.math.BigInteger getBalanceOfThisContract() {
@@ -73,7 +73,7 @@ public class BlockchainRuntime {
     }
 
     public static int getCodeSize(Address address) {
-        return blockchainRuntime.avm_getCodeSize(new p.avm.Address(address.unwrap()));
+        return blockchainRuntime.avm_getCodeSize(new p.avm.Address(address.toByteArray()));
     }
 
 
@@ -82,7 +82,7 @@ public class BlockchainRuntime {
     }
 
     public static Result call(Address targetAddress, java.math.BigInteger value, byte[] data, long energyLimit) {
-        //return blockchainRuntime.avm_call(new p.org.aion.avm.api.Address(targetAddress.unwrap()), new BigInteger(value), new ByteArray(data), energyLimit);
+        //return blockchainRuntime.avm_call(new p.org.aion.avm.api.Address(targetAddress.toByteArray()), new BigInteger(value), new ByteArray(data), energyLimit);
         return new Result(true, new byte[0]);
     }
 
@@ -92,7 +92,7 @@ public class BlockchainRuntime {
     }
 
     public static void selfDestruct(Address beneficiary) {
-        blockchainRuntime.avm_selfDestruct(new p.avm.Address(beneficiary.unwrap()));
+        blockchainRuntime.avm_selfDestruct(new p.avm.Address(beneficiary.toByteArray()));
     }
 
     public static void log(byte[] data) {

@@ -25,6 +25,6 @@ public class LengthOfAddressTarget {
     }
 
     public static int getAddressLength(Address address) {
-        return address.unwrap().length;
+        return address.toByteArray().length;
     }
 }

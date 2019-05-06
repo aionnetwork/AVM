@@ -465,7 +465,7 @@ public final class ABIStreamingEncoder {
             buffer.putByte(ABIToken.NULL);
             buffer.putByte(ABIToken.ADDRESS);
         } else {
-            byte[] addressBytes = data.unwrap();
+            byte[] addressBytes = data.toByteArray();
             if(Address.LENGTH != addressBytes.length) {
                 throw new ABIException("Address was of unexpected length");
             }

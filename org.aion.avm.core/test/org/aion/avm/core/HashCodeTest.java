@@ -296,12 +296,12 @@ public class HashCodeTest {
         // Compare these outside.
         Assert.assertEquals(outside.hashCode(), inside.hashCode());
 
-        Assert.assertEquals(outside, new Address(inside.unwrap()));
-        Assert.assertEquals(new p.avm.Address(outside.unwrap()), inside);
+        Assert.assertEquals(outside, new Address(inside.toByteArray()));
+        Assert.assertEquals(new p.avm.Address(outside.toByteArray()), inside);
 
         // Compare them insider.
         boolean didBothMatch = (Boolean) this.clazz.getMethod(NamespaceMapper.mapMethodName("compareAddresses"), p.avm.Address.class, p.avm.Address.class)
-                .invoke(null, new p.avm.Address(outside.unwrap()), inside);
+                .invoke(null, new p.avm.Address(outside.toByteArray()), inside);
         Assert.assertTrue(didBothMatch);
     }
 

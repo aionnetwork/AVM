@@ -87,14 +87,14 @@ public class BlockchainGetDataTest {
     }
 
     private void testGetAddressThenModify(boolean isModify) {
-        Address expected = new Address(dappAddr.unwrap().clone());
+        Address expected = new Address(dappAddr.toByteArray().clone());
 
         ResultWrapper result = call("getAddressAndModify", isModify);
 
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
         // AKI-143: It is now not possible to modify an Address.
         Assert.assertEquals(false, new String((byte[]) result.getDecodedReturnData()).startsWith("modified!"));
-        Assert.assertArrayEquals(expected.unwrap(), dappAddr.unwrap());
+        Assert.assertArrayEquals(expected.toByteArray(), dappAddr.toByteArray());
     }
 
     @Test
@@ -102,7 +102,7 @@ public class BlockchainGetDataTest {
         ResultWrapper result = call("getAddress");
 
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
-        Assert.assertArrayEquals(dappAddr.unwrap(), (byte[]) result.getDecodedReturnData());
+        Assert.assertArrayEquals(dappAddr.toByteArray(), (byte[]) result.getDecodedReturnData());
     }
 
     @Test
@@ -124,14 +124,14 @@ public class BlockchainGetDataTest {
     }
 
     private void testGetCallerThenModify(boolean isModify) {
-        Address expected = new Address(from.unwrap().clone());
+        Address expected = new Address(from.toByteArray().clone());
 
         ResultWrapper result = call("getCallerAndModify", isModify);
 
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
         // AKI-143: It is now not possible to modify an Address.
         Assert.assertEquals(false, new String((byte[]) result.getDecodedReturnData()).startsWith("modified!"));
-        Assert.assertArrayEquals(expected.unwrap(), from.unwrap());
+        Assert.assertArrayEquals(expected.toByteArray(), from.toByteArray());
     }
 
     @Test
@@ -153,14 +153,14 @@ public class BlockchainGetDataTest {
     }
 
     private void testGetOriginThenModify(boolean isModify) {
-        Address expected = new Address(from.unwrap().clone());
+        Address expected = new Address(from.toByteArray().clone());
 
         ResultWrapper result = call("getOriginAndModify", isModify);
 
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
         // AKI-143: It is now not possible to modify an Address.
         Assert.assertEquals(false, new String((byte[]) result.getDecodedReturnData()).startsWith("modified!"));
-        Assert.assertArrayEquals(expected.unwrap(), from.unwrap());
+        Assert.assertArrayEquals(expected.toByteArray(), from.toByteArray());
     }
 
     @Test
@@ -190,7 +190,7 @@ public class BlockchainGetDataTest {
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
         // AKI-143: It is now not possible to modify an Address.
         Assert.assertEquals(false, new String((byte[]) result.getDecodedReturnData()).startsWith("modified!"));
-        Assert.assertArrayEquals(expected.unwrap(), blockCoinbase.toBytes());
+        Assert.assertArrayEquals(expected.toByteArray(), blockCoinbase.toBytes());
     }
 
     @Test

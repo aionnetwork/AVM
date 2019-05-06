@@ -3,9 +3,7 @@ package org.aion.avm.tooling.blockchainruntime;
 import org.aion.avm.core.util.ABIUtil;
 import avm.Address;
 import avm.Blockchain;
-import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.tooling.AvmRule;
-import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -165,7 +163,7 @@ public class InternalCallContractBalanceTest {
 
     private void giveValueToContracts(Address[] contracts, BigInteger[] value) {
         for (int i = 0; i < contracts.length; i++) {
-            avmRule.kernel.adjustBalance(org.aion.types.Address.wrap(contracts[i].unwrap()), value[i]);
+            avmRule.kernel.adjustBalance(org.aion.types.Address.wrap(contracts[i].toByteArray()), value[i]);
         }
     }
 
@@ -181,7 +179,7 @@ public class InternalCallContractBalanceTest {
 
     private static void verifyEachContractHasSpecifiedBalance(Address[] contracts, BigInteger[] balances) {
         for (int i = 0; i < contracts.length; i++) {
-            assertEquals(avmRule.kernel.getBalance(org.aion.types.Address.wrap(contracts[i].unwrap())), balances[i]);
+            assertEquals(avmRule.kernel.getBalance(org.aion.types.Address.wrap(contracts[i].toByteArray())), balances[i]);
         }
     }
 

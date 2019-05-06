@@ -197,7 +197,7 @@ public class ExceptionWrappingIntegrationTest {
         byte[] argData = (null != methodName)
                 ? ABIUtil.encodeMethodArguments(methodName)
                 : new byte[0];
-        Transaction call = Transaction.call(from, org.aion.types.Address.wrap(contractAddr.unwrap()), kernel.getNonce(from), BigInteger.ZERO, argData, energyLimit, 1l);
+        Transaction call = Transaction.call(from, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(from), BigInteger.ZERO, argData, energyLimit, 1l);
         return avm.run(kernel, new Transaction[] {call})[0].get();
     }
 }

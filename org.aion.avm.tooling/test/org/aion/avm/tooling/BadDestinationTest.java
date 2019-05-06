@@ -119,7 +119,7 @@ public class BadDestinationTest {
     }
 
     private void addCodeToAddress(Address address) {
-        avmRule.kernel.setTransformedCode(org.aion.types.Address.wrap(address.unwrap()), new byte[1]);
+        avmRule.kernel.setTransformedCode(org.aion.types.Address.wrap(address.toByteArray()), new byte[1]);
     }
 
 }

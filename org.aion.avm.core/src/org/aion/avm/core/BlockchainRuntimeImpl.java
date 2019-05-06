@@ -80,7 +80,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     @Override
     public Address avm_getOrigin() {
         if (null == this.originCache) {
-            this.originCache = new Address(task.getOriginAddress().unwrap().clone());
+            this.originCache = new Address(task.getOriginAddress().toByteArray());
         }
 
         return this.originCache;
@@ -181,8 +181,8 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         require(null != address, "Address can't be NULL");
 
         // Acquire resource before reading
-        avm.getResourceMonitor().acquire(address.unwrap(), this.task);
-        return new s.java.math.BigInteger(this.kernel.getBalance(org.aion.types.Address.wrap(address.unwrap())));
+        avm.getResourceMonitor().acquire(address.toByteArray(), this.task);
+        return new s.java.math.BigInteger(this.kernel.getBalance(org.aion.types.Address.wrap(address.toByteArray())));
     }
 
     @Override
@@ -200,8 +200,8 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         require(null != address, "Address can't be NULL");
 
         // Acquire resource before reading
-        avm.getResourceMonitor().acquire(address.unwrap(), this.task);
-        byte[] vc = this.kernel.getCode(org.aion.types.Address.wrap(address.unwrap()));
+        avm.getResourceMonitor().acquire(address.toByteArray(), this.task);
+        byte[] vc = this.kernel.getCode(org.aion.types.Address.wrap(address.toByteArray()));
         return vc == null ? 0 : vc.length;
     }
 
@@ -227,7 +227,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
             throw new CallDepthLimitExceededException("Internal call depth cannot be more than 10");
         }
 
-        org.aion.types.Address target = org.aion.types.Address.wrap(targetAddress.unwrap());
+        org.aion.types.Address target = org.aion.types.Address.wrap(targetAddress.toByteArray());
         if (!kernel.destinationAddressIsSafeForThisVM(target)) {
             throw new IllegalArgumentException("Attempt to execute code using a foreign virtual machine");
         }
@@ -289,12 +289,12 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         org.aion.types.Address contractAddr = this.tx.destinationAddress;
 
         // Acquire beneficiary address, the address of current contract is already locked at this stage.
-        this.avm.getResourceMonitor().acquire(beneficiary.unwrap(), this.task);
+        this.avm.getResourceMonitor().acquire(beneficiary.toByteArray(), this.task);
 
         // Value transfer
         java.math.BigInteger balanceToTransfer = this.kernel.getBalance(contractAddr);
         this.kernel.adjustBalance(contractAddr, balanceToTransfer.negate());
-        this.kernel.adjustBalance(org.aion.types.Address.wrap(beneficiary.unwrap()), balanceToTransfer);
+        this.kernel.adjustBalance(org.aion.types.Address.wrap(beneficiary.toByteArray()), balanceToTransfer);
 
         // Delete Account
         // Note that the account being deleted means it will still run but no DApp which sees this delete

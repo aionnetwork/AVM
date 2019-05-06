@@ -8,7 +8,7 @@ import org.aion.avm.userlib.AionBuffer;
 public class BlockchainGetDataResource {
 
     static {
-        AionBuffer buffer = AionBuffer.wrap(Blockchain.getAddress().unwrap());
+        AionBuffer buffer = AionBuffer.wrap(Blockchain.getAddress().toByteArray());
         buffer.put("modified!".getBytes());
     }
 
@@ -31,16 +31,16 @@ public class BlockchainGetDataResource {
 
     @Callable
     public static byte[] getAddressAndModify(boolean isModify) {
-        AionBuffer buffer = AionBuffer.wrap(Blockchain.getAddress().unwrap());
+        AionBuffer buffer = AionBuffer.wrap(Blockchain.getAddress().toByteArray());
         if (isModify) {
             buffer.put("modified!".getBytes());
         }
-        return Blockchain.getAddress().unwrap();
+        return Blockchain.getAddress().toByteArray();
     }
 
     @Callable
     public static byte[] getAddress() {
-        return Blockchain.getAddress().unwrap();
+        return Blockchain.getAddress().toByteArray();
     }
 
 
@@ -51,11 +51,11 @@ public class BlockchainGetDataResource {
 
     @Callable
     public static byte[] getCallerAndModify(boolean isModify) {
-        AionBuffer buffer = AionBuffer.wrap(Blockchain.getCaller().unwrap());
+        AionBuffer buffer = AionBuffer.wrap(Blockchain.getCaller().toByteArray());
         if (isModify) {
             buffer.put("modified!".getBytes());
         }
-        return Blockchain.getCaller().unwrap();
+        return Blockchain.getCaller().toByteArray();
     }
 
     @Callable
@@ -65,11 +65,11 @@ public class BlockchainGetDataResource {
 
     @Callable
     public static byte[] getOriginAndModify(boolean isModify) {
-        AionBuffer buffer = AionBuffer.wrap(Blockchain.getOrigin().unwrap());
+        AionBuffer buffer = AionBuffer.wrap(Blockchain.getOrigin().toByteArray());
         if (isModify) {
             buffer.put("modified!".getBytes());
         }
-        return Blockchain.getOrigin().unwrap();
+        return Blockchain.getOrigin().toByteArray();
     }
 
     @Callable
@@ -79,11 +79,11 @@ public class BlockchainGetDataResource {
 
     @Callable
     public static byte[] getBlockCoinbaseAndModify(boolean isModify) {
-        AionBuffer buffer = AionBuffer.wrap(Blockchain.getBlockCoinbase().unwrap());
+        AionBuffer buffer = AionBuffer.wrap(Blockchain.getBlockCoinbase().toByteArray());
         if (isModify) {
             buffer.put("modified!".getBytes());
         }
-        return Blockchain.getBlockCoinbase().unwrap();
+        return Blockchain.getBlockCoinbase().toByteArray();
     }
 
     @Callable

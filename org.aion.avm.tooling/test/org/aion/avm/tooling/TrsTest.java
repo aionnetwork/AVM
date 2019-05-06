@@ -31,7 +31,7 @@ public class TrsTest {
     @BeforeClass
     public static void setup() {
         DEPLOYER_API = avmRule.getPreminedAccount();
-        DEPLOYER = new Address(DEPLOYER_API.unwrap());
+        DEPLOYER = new Address(DEPLOYER_API.toByteArray());
         kernel = avmRule.kernel;
     }
 
@@ -164,7 +164,7 @@ public class TrsTest {
 
         AvmRule.ResultWrapper result = avmRule.deploy(DEPLOYER_API, BigInteger.ZERO, jarBytes, ENERGY_LIMIT, ENERGY_PRICE);
         assertTrue(result.getReceiptStatus().isSuccess());
-        contract = new Address(result.getDappAddress().unwrap());
+        contract = new Address(result.getDappAddress().toByteArray());
         return result.getTransactionResult();
     }
 

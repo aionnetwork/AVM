@@ -10,7 +10,7 @@ public class TestContract {
     static Address deployer;
 
     static {
-        deployer = new Address(Blockchain.getCaller().unwrap());
+        deployer = new Address(Blockchain.getCaller().toByteArray());
     }
 
     public static byte[] main() {

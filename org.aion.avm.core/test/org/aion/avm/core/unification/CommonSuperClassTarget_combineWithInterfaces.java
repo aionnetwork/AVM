@@ -59,7 +59,7 @@ public class CommonSuperClassTarget_combineWithInterfaces {
 
         combineInterfaceWithException2(true, new SubRootA2Child(), new EmptyException()).toString();
         combineInterfaceWithEnum(false, EnumB.ME, EmptyEnum.ME).length();
-        ((Address) combineInterfaceWithApi(false, EnumB.ME, new Address(new byte[32]))).unwrap();
+        ((Address) combineInterfaceWithApi(false, EnumB.ME, new Address(new byte[32]))).toByteArray();
         combineInterfaceWithUserlib(true, EnumA1.ME, null).toString();
     }
 

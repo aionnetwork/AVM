@@ -185,7 +185,7 @@ public class PersistanceNameMappingTestTarget {
 
     private static void verifyApiFields() {
         Blockchain.require(address != null);
-        Blockchain.require(address.unwrap().length == avm.Address.LENGTH);
+        Blockchain.require(address.toByteArray().length == avm.Address.LENGTH);
     }
 
     private static void verifyArrayFields() {

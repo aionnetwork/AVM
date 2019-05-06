@@ -13,7 +13,6 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.TestingKernel;
 import org.aion.types.Address;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.BeforeClass;
@@ -29,14 +28,12 @@ public class CircularDependenciesTest {
     private static final long ENERGY_LIMIT = 100_000_000_000L;
     private static final long ENERGY_PRICE = 1;
 
-    private static TestingKernel kernel;
     Address contract;
 
     @BeforeClass
     public static void setup() {
         DEPLOYER_API = avmRule.getPreminedAccount();
-        DEPLOYER = new Address(DEPLOYER_API.unwrap());
-        kernel = avmRule.kernel;
+        DEPLOYER = new Address(DEPLOYER_API.toByteArray());
     }
 
     private TransactionResult callContract(String method, Object... parameters) {
@@ -62,7 +59,7 @@ public class CircularDependenciesTest {
         byte[] jarBytes = avmRule.getDappBytes(CircularDependencyATarget.class, null, CircularDependencyBTarget.class);
         AvmRule.ResultWrapper result = avmRule.deploy(DEPLOYER_API, BigInteger.ZERO, jarBytes, ENERGY_LIMIT, ENERGY_PRICE);
         assertTrue(result.getReceiptStatus().isSuccess());
-        contract = new Address(result.getDappAddress().unwrap());
+        contract = new Address(result.getDappAddress().toByteArray());
 
         callContract("getValue");
     }
