@@ -1,6 +1,7 @@
 package org.aion.avm.core.types;
 
 import java.util.Set;
+import org.aion.avm.core.ClassRenamer;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.rejection.RejectedClassException;
 import i.PackageConstants;
@@ -13,9 +14,9 @@ import i.PackageConstants;
  */
 public final class ClassHierarchyBuilder {
     private ClassHierarchyVerifier verifier;
+    private ClassRenamer classRenamer;
     private Set<ClassInformation> userClassInfos;
     private Set<ClassInformation> nonUserClassInfos;
-    private boolean preserveDebuggability;
 
     private boolean addShadowJcl = false;
     private boolean addArrays = false;
@@ -73,13 +74,14 @@ public final class ClassHierarchyBuilder {
      *
      * If this special behaviour is unwanted, use {@code addNonUserDefinedClasses()}.
      *
+     * @param classRenamer The class renamer utility.
      * @param classInfos The class infos representing the user-defined classes.
      * @return this builder.
      */
-    public ClassHierarchyBuilder addPreRenameUserDefinedClasses(Set<ClassInformation> classInfos, boolean preserveDebuggability) {
+    public ClassHierarchyBuilder addPreRenameUserDefinedClasses(ClassRenamer classRenamer, Set<ClassInformation> classInfos) {
         this.addUserClasses = true;
+        this.classRenamer = classRenamer;
         this.userClassInfos = classInfos;
-        this.preserveDebuggability = preserveDebuggability;
         return this;
     }
 
@@ -177,7 +179,7 @@ public final class ClassHierarchyBuilder {
      * we are in debug mode.
      */
     private void addUserClasses(ClassHierarchy hierarchy) {
-        hierarchy.addPreRenameUserDefinedClasses(this.userClassInfos, this.preserveDebuggability);
+        hierarchy.addPreRenameUserDefinedClasses(this.classRenamer, this.userClassInfos);
     }
 
     /**

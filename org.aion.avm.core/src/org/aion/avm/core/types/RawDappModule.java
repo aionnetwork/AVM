@@ -1,9 +1,13 @@
 package org.aion.avm.core.types;
 
+import java.util.HashSet;
 import java.util.Map;
 
 import java.util.Set;
+import org.aion.avm.NameStyle;
 import org.aion.avm.core.ClassHierarchyForest;
+import org.aion.avm.core.ClassRenamer;
+import org.aion.avm.core.ClassRenamerBuilder;
 import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.rejection.RejectedClassException;
 
@@ -32,9 +36,14 @@ public class RawDappModule {
             ClassInformationFactory classInfoFactory = new ClassInformationFactory();
             Set<ClassInformation> classInfos = classInfoFactory.fromUserDefinedPreRenameJar(loadedJar);
 
+            ClassRenamer classRenamer = new ClassRenamerBuilder(NameStyle.DOT_NAME, preserveDebuggability)
+                .loadPreRenameUserDefinedClasses(extractClassNames(classInfos))
+                .loadPostRenameJclExceptionClasses(fetchPostRenameJclExceptions())
+                .build();
+
             ClassHierarchy fullHierarchy = new ClassHierarchyBuilder()
                 .addShadowJcl()
-                .addPreRenameUserDefinedClasses(classInfos, preserveDebuggability)
+                .addPreRenameUserDefinedClasses(classRenamer, classInfos)
                 .addHandwrittenArrayWrappers()
                 .addPostRenameJclExceptions()
                 .build();
@@ -43,7 +52,7 @@ public class RawDappModule {
             String mainClass = loadedJar.mainClassName;
             // To be a valid Dapp, this must specify a main class and have at least one class.
             return ((null != mainClass) && !classes.isEmpty())
-                ? new RawDappModule(classes, mainClass, forest, jar.length, classes.size(), fullHierarchy)
+                ? new RawDappModule(classes, mainClass, forest, jar.length, classes.size(), fullHierarchy, classRenamer)
                 : null;
         } catch (RejectedClassException e) {
             throw e;
@@ -53,22 +62,41 @@ public class RawDappModule {
         }
     }
 
+    private static Set<String> extractClassNames(Set<ClassInformation> classInformations) {
+        Set<String> classNames = new HashSet<>();
+        for (ClassInformation classInformation : classInformations) {
+            classNames.add(classInformation.dotName);
+        }
+        return classNames;
+    }
+
+    private static Set<String> fetchPostRenameJclExceptions() {
+        Set<String> exceptions = new HashSet<>();
+        for (CommonType type : CommonType.values()) {
+            if (type.isShadowException) {
+                exceptions.add(type.dotName);
+            }
+        }
+        return exceptions;
+    }
 
     public final Map<String, byte[]> classes;
     public final String mainClass;
     public final ClassHierarchyForest classHierarchyForest;
     public final ClassHierarchy classHierarchy;
+    public final ClassRenamer classRenamer;
 
     // For billing purpose
     public final long bytecodeSize;
     public final long numberOfClasses;
     
-    private RawDappModule(Map<String, byte[]> classes, String mainClass, ClassHierarchyForest classHierarchyForest, long bytecodeSize, long numberOfClasses, ClassHierarchy hierarchy) {
+    private RawDappModule(Map<String, byte[]> classes, String mainClass, ClassHierarchyForest classHierarchyForest, long bytecodeSize, long numberOfClasses, ClassHierarchy hierarchy, ClassRenamer classRenamer) {
         this.classes = classes;
         this.mainClass = mainClass;
         this.classHierarchyForest = classHierarchyForest;
         this.bytecodeSize = bytecodeSize;
         this.numberOfClasses = numberOfClasses;
         this.classHierarchy = hierarchy;
+        this.classRenamer = classRenamer;
     }
 }

@@ -76,9 +76,10 @@ public class TypeAwareClassWriterTest {
         classesToAdd.add(ClassInformation.preRenameInfoFor(false, "C", "B", null));
         classesToAdd.add(ClassInformation.preRenameInfoFor(false, "B2", "A", null));
 
-        ClassHierarchy classHierarchy = new ClassHierarchyBuilder()
-            .addPreRenameUserDefinedClasses(classesToAdd, preserveDebuggability)
-            .build();
+        Set<String> userClasses = new HashSet<>();
+        for (ClassInformation classToAdd : classesToAdd) {
+            userClasses.add(classToAdd.dotName);
+        }
 
         Set<String> jclExceptions = new HashSet<>();
         for (CommonType type : CommonType.values()) {
@@ -88,8 +89,12 @@ public class TypeAwareClassWriterTest {
         }
 
         ClassRenamer classRenamer = new ClassRenamerBuilder(NameStyle.DOT_NAME, preserveDebuggability)
-            .loadPreRenameUserDefinedClasses(classHierarchy.getPreRenameUserDefinedClassesAndInterfaces())
+            .loadPreRenameUserDefinedClasses(userClasses)
             .loadPostRenameJclExceptionClasses(jclExceptions)
+            .build();
+
+        ClassHierarchy classHierarchy = new ClassHierarchyBuilder()
+            .addPreRenameUserDefinedClasses(classRenamer, classesToAdd)
             .build();
 
         TestClass clazz = new TestClass(classHierarchy, classRenamer);

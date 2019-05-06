@@ -372,9 +372,14 @@ public class Deployer {
         ClassInformationFactory classInfoFactory = new ClassInformationFactory();
         Set<ClassInformation> classInfos = classInfoFactory.fromUserDefinedPreRenameJar(jar);
 
+        ClassRenamer classRenamer = new ClassRenamerBuilder(NameStyle.DOT_NAME, preserveDebuggability)
+            .loadPreRenameUserDefinedClasses(extractClassNames(classInfos))
+            .loadPostRenameJclExceptionClasses(fetchPostRenameJclExceptions())
+            .build();
+
         return new ClassHierarchyBuilder()
             .addShadowJcl()
-            .addPreRenameUserDefinedClasses(classInfos, preserveDebuggability)
+            .addPreRenameUserDefinedClasses(classRenamer, classInfos)
             .addHandwrittenArrayWrappers()
             .addPostRenameJclExceptions()
             .build();
@@ -397,5 +402,23 @@ public class Deployer {
             }
         };
 
+    }
+
+    private static Set<String> extractClassNames(Set<ClassInformation> classInformations) {
+        Set<String> classNames = new HashSet<>();
+        for (ClassInformation classInformation : classInformations) {
+            classNames.add(classInformation.dotName);
+        }
+        return classNames;
+    }
+
+    private static Set<String> fetchPostRenameJclExceptions() {
+        Set<String> exceptions = new HashSet<>();
+        for (CommonType type : CommonType.values()) {
+            if (type.isShadowException) {
+                exceptions.add(type.dotName);
+            }
+        }
+        return exceptions;
     }
 }

@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.aion.avm.NameStyle;
 import org.aion.avm.core.types.ClassHierarchy;
 import org.aion.avm.core.types.ClassHierarchyBuilder;
 import org.aion.avm.core.types.ClassHierarchyVerifier;
@@ -128,6 +129,8 @@ public class ClassHierarchyTest {
      */
     @Test
     public void testAddingUserDefinedClassesWhenNotInDebugMode() {
+        boolean preserveDebuggability = false;
+
         ClassInformation interface1 = ClassInformation.preRenameInfoFor(true, "int1", CommonType.JAVA_LANG_OBJECT.dotName, null);
         ClassInformation interface2 = ClassInformation.preRenameInfoFor(true, "int2", null, new String[]{ interface1.dotName });
         ClassInformation class1 = ClassInformation.preRenameInfoFor(false, "class1", CommonType.JAVA_LANG_OBJECT.dotName, null);
@@ -135,13 +138,15 @@ public class ClassHierarchyTest {
 
         Set<ClassInformation> classes = new HashSet<>(toList(interface1, interface2, class1, class2));
 
+        ClassRenamer classRenamer = newClassRenamer(classes, preserveDebuggability);
+
         ClassHierarchy hierarchy = new ClassHierarchyBuilder().build();
-        hierarchy.addPreRenameUserDefinedClasses(classes, false);
+        hierarchy.addPreRenameUserDefinedClasses(classRenamer, classes);
 
         // When we ask for the classes back we get the pre-rename classes.
         assertEquals(BASE_SIZE + 4, hierarchy.size());
         assertEquals(extractClassNamesToSet(classes), hierarchy.getPreRenameUserDefinedClassesAndInterfaces());
-        assertEquals(extractClassNamesToSetNoInterfaces(classes), hierarchy.getPreRenameUserDefinedClassesOnly(false));
+        assertEquals(extractClassNamesToSetNoInterfaces(classes), hierarchy.getPreRenameUserDefinedClassesOnly(classRenamer));
 
         // However, none of the pre-rename classes are actually nodes in the hierarchy.
         for (ClassInformation classInformation : classes) {
@@ -173,6 +178,8 @@ public class ClassHierarchyTest {
      */
     @Test
     public void testAddingUserDefinedClassesWhenInDebugMode() {
+        boolean preserveDebuggability = true;
+
         ClassInformation interface1 = ClassInformation.preRenameInfoFor(true, "int1", CommonType.JAVA_LANG_OBJECT.dotName, null);
         ClassInformation interface2 = ClassInformation.preRenameInfoFor(true, "int2", null, new String[]{ interface1.dotName });
         ClassInformation class1 = ClassInformation.preRenameInfoFor(false, "class1",CommonType.JAVA_LANG_OBJECT.dotName, null);
@@ -180,13 +187,15 @@ public class ClassHierarchyTest {
 
         Set<ClassInformation> classes = new HashSet<>(toList(interface1, interface2, class1, class2));
 
+        ClassRenamer classRenamer = newClassRenamer(classes, preserveDebuggability);
+
         ClassHierarchy hierarchy = new ClassHierarchyBuilder().build();
-        hierarchy.addPreRenameUserDefinedClasses(classes, true);
+        hierarchy.addPreRenameUserDefinedClasses(classRenamer, classes);
 
         // When we ask for the classes back we get the pre-rename classes.
         assertEquals(BASE_SIZE + 4, hierarchy.size());
         assertEquals(extractClassNamesToSet(classes), hierarchy.getPreRenameUserDefinedClassesAndInterfaces());
-        assertEquals(extractClassNamesToSetNoInterfaces(classes), hierarchy.getPreRenameUserDefinedClassesOnly(true));
+        assertEquals(extractClassNamesToSetNoInterfaces(classes), hierarchy.getPreRenameUserDefinedClassesOnly(classRenamer));
 
         // Since these classes do not get renamed, they are all in the hierarchy as-is.
         for (ClassInformation classInformation : classes) {
@@ -381,4 +390,20 @@ public class ClassHierarchyTest {
         return names;
     }
 
+    private static Set<String> fetchPostRenameJclExceptions() {
+        Set<String> exceptions = new HashSet<>();
+        for (CommonType type : CommonType.values()) {
+            if (type.isShadowException) {
+                exceptions.add(type.dotName);
+            }
+        }
+        return exceptions;
+    }
+
+    private ClassRenamer newClassRenamer(Set<ClassInformation> userClassInfos, boolean preserveDebuggability) {
+        return new ClassRenamerBuilder(NameStyle.DOT_NAME, preserveDebuggability)
+            .loadPreRenameUserDefinedClasses(extractClassNamesToSet(userClassInfos))
+            .loadPostRenameJclExceptionClasses(fetchPostRenameJclExceptions())
+            .build();
+    }
 }

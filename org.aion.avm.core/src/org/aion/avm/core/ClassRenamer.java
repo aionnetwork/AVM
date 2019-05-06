@@ -11,6 +11,9 @@ import i.PackageConstants;
 import i.RuntimeAssertionError;
 
 public final class ClassRenamer {
+    // ClassRenamer doesn't make use of it, but a convenient way to pass this value around.
+    public final boolean preserveDebuggability;
+
     // The naming convention of the names in these sets will be the same as indicated by style.
     private NameStyle style;
     private Set<String> preRenameJclExceptions;
@@ -93,6 +96,7 @@ public final class ClassRenamer {
         }
 
         this.style = style;
+        this.preserveDebuggability = preserveDebuggability;
     }
 
     /**
@@ -142,7 +146,7 @@ public final class ClassRenamer {
     }
 
 
-    private String toPostRenameInternal(String preRenameClassName, ArrayType arrayType, boolean isDefinitelyPreRename) {
+    private String toPostRenameInternal(String preRenameClassName, ArrayType arrayType, boolean allowClassRejection) {
         RuntimeAssertionError.assertTrue(!preRenameClassName.contains((this.style == NameStyle.DOT_NAME) ? "/" : "."));
         RuntimeAssertionError.assertTrue(arrayType != null);
 
@@ -155,7 +159,7 @@ public final class ClassRenamer {
         } else if (isPreRenameJclClass(preRenameClassName)) {
             return toPostRenameJclClass(preRenameClassName);
         } else {
-            if (isDefinitelyPreRename) {
+            if (allowClassRejection) {
                 throw RejectedClassException.nonWhiteListedClass(preRenameClassName);
             } else {
                 throw RuntimeAssertionError.unreachable("Expected a pre-rename class name: " + preRenameClassName);

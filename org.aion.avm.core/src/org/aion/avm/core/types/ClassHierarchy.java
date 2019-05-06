@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import i.RuntimeAssertionError;
+import org.aion.avm.core.ClassRenamer;
+import org.aion.avm.core.ClassRenamer.ArrayType;
 
 /**
  * A class hierarchy is a representation of a class type hierarchy.
@@ -70,21 +72,13 @@ public final class ClassHierarchy {
      * proper way of adding user-defined classes to the hierarchy so that they are handled correctly
      * in both debug and non-debug modes!
      *
-     * If {@code preserveDebuggability == false} then the pre-rename classes submitted will be renamed
-     * and then added into the hierarchy.
-     *
-     * If {@code preserveDebuggability == true} then the pre-rename classes will not be renamed because
-     * their post-rename name is identical to the pre-rename name. However, if these classes have
-     * any non-user-defined super classes (that is, any super classes not listed in the input set)
-     * then these super classes will be renamed!
-     *
      * This method can only ever be called once, this is because all user-defined classes should be
      * submitted all at once in a single batch, otherwise complications can arise in debug mode.
      *
+     * @param classRenamer The class renamer utility.
      * @param preRenameUserDefinedClassInfos The pre-rename user-defined classes.
-     * @param preserveDebuggability Whether or not we are in debug mode.
      */
-    public void addPreRenameUserDefinedClasses(Set<ClassInformation> preRenameUserDefinedClassInfos, boolean preserveDebuggability) {
+    public void addPreRenameUserDefinedClasses(ClassRenamer classRenamer, Set<ClassInformation> preRenameUserDefinedClassInfos) {
         RuntimeAssertionError.assertTrue(this.preRenameUserDefinedClasses == null);
         this.preRenameUserDefinedClasses = new HashSet<>();
 
@@ -95,7 +89,7 @@ public final class ClassHierarchy {
 
         // Some extra work is required if debuggability is preserved: the user class remains unnamed
         // but any non-user class parents that it subclasses DO get renamed.
-        if (preserveDebuggability) {
+        if (classRenamer.preserveDebuggability) {
 
             Set<ClassInformation> authoritativeUserDefinedClassSet = new HashSet<>();
             for (ClassInformation classInfo : preRenameUserDefinedClassInfos) {
@@ -109,13 +103,13 @@ public final class ClassHierarchy {
 
                 if (superClass != null) {
                     superClass = !this.preRenameUserDefinedClasses.contains(superClass)
-                        ? NonWrapperClassRenamer.toPostRenameClassName(superClass)
+                        ? classRenamer.toPostRenameOrRejectClass(superClass, ArrayType.NOT_ARRAY)
                         : superClass;
                 }
 
                 for (int i = 0; i < superInterfaces.length; i++) {
                     superInterfaces[i] = !this.preRenameUserDefinedClasses.contains(superInterfaces[i])
-                        ? NonWrapperClassRenamer.toPostRenameClassName(superInterfaces[i])
+                        ? classRenamer.toPostRenameOrRejectClass(superInterfaces[i], ArrayType.NOT_ARRAY)
                         : superInterfaces[i];
                 }
 
@@ -134,7 +128,7 @@ public final class ClassHierarchy {
         } else {
 
             for (ClassInformation preRenameClassInfo : preRenameUserDefinedClassInfos) {
-                add(ClassInformationRenamer.toPostRenameClassInfo(preRenameClassInfo));
+                add(ClassInformationRenamer.toPostRenameClassInfo(classRenamer, preRenameClassInfo));
             }
 
         }
@@ -152,16 +146,6 @@ public final class ClassHierarchy {
 
         RuntimeAssertionError.assertTrue(this.nameToNodeMapping.containsKey(className));
         return this.nameToNodeMapping.get(className).getClassInfo().isInterface;
-    }
-
-    /**
-     * Returns {@code true} only if className is an interface.
-     *
-     * Assumption is that className is a pre-renamed class name.
-     */
-    public boolean preRenameTypeIsInterface(String className) {
-        String postRenameClassName = NonWrapperClassRenamer.toPostRenameClassName(className);
-        return postRenameTypeIsInterface(postRenameClassName);
     }
 
     public String getConcreteSuperClassDotName(String className) {
@@ -233,7 +217,7 @@ public final class ClassHierarchy {
      *
      * Note that this does not include java/lang/Object WHEREAS THE OLD WAY DID. (enum, throwable)
      */
-    public Set<String> getPreRenameUserDefinedClassesOnly(boolean preserveDebuggability) {
+    public Set<String> getPreRenameUserDefinedClassesOnly(ClassRenamer classRenamer) {
         Set<String> classes = new HashSet<>();
 
         if (this.preRenameUserDefinedClasses == null) {
@@ -244,7 +228,7 @@ public final class ClassHierarchy {
 
             // If we are not in debug mode then we have to rename this class since only the renamed version
             // is in the hierarchy.
-            String classNameForQuery = (preserveDebuggability) ? className : NonWrapperClassRenamer.toPostRenameClassName(className);
+            String classNameForQuery = classRenamer.toPostRename(className, ArrayType.NOT_ARRAY);
 
             if (!this.nameToNodeMapping.get(classNameForQuery).getClassInfo().isInterface) {
                 classes.add(className);

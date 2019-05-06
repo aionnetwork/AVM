@@ -3,6 +3,7 @@ package org.aion.avm.core;
 import org.aion.avm.NameStyle;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 import org.aion.avm.StorageFees;
+import org.aion.avm.core.ClassRenamer.ArrayType;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapter;
 import org.aion.avm.core.arraywrapping.ArrayWrappingClassAdapterRef;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
@@ -157,15 +158,9 @@ public class DAppCreator {
         Set<String> userInterfaceSlashNames = new HashSet<>();
 
         for (String preRenameUserClassOrInterface : preRenameUserClassesAndInterfaces) {
-            if (preserveDebuggability) {
-                // In debug mode, our pre-rename classes are not renamed, so we query as if it is post-rename.
-                if (classHierarchy.postRenameTypeIsInterface(preRenameUserClassOrInterface)) {
-                    userInterfaceSlashNames.add(PackageConstants.kUserSlashPrefix + Helpers.fulllyQualifiedNameToInternalName(preRenameUserClassOrInterface));
-                }
-            } else {
-                if (classHierarchy.preRenameTypeIsInterface(preRenameUserClassOrInterface)) {
-                    userInterfaceSlashNames.add(PackageConstants.kUserSlashPrefix + Helpers.fulllyQualifiedNameToInternalName(preRenameUserClassOrInterface));
-                }
+            // We set ArrayType to null because we never expect to see arrays here!
+            if (classHierarchy.postRenameTypeIsInterface(classRenamer.toPostRename(preRenameUserClassOrInterface, ArrayType.NOT_ARRAY))) {
+                userInterfaceSlashNames.add(PackageConstants.kUserSlashPrefix + Helpers.fulllyQualifiedNameToInternalName(preRenameUserClassOrInterface));
             }
         }
 
@@ -221,20 +216,8 @@ public class DAppCreator {
             }
             ClassHierarchyForest dappClassesForest = rawDapp.classHierarchyForest;
 
-            Set<String> jclExceptions = new HashSet<>();
-            for (CommonType type : CommonType.values()) {
-                if (type.isShadowException) {
-                    jclExceptions.add(type.dotName);
-                }
-            }
-
-            ClassRenamer classRenamer = new ClassRenamerBuilder(NameStyle.DOT_NAME, preserveDebuggability)
-                .loadPreRenameUserDefinedClasses(rawDapp.classHierarchy.getPreRenameUserDefinedClassesAndInterfaces())
-                .loadPostRenameJclExceptionClasses(jclExceptions)
-                .build();
-
             // transform
-            Map<String, byte[]> transformedClasses = transformClasses(rawDapp.classes, dappClassesForest, rawDapp.classHierarchy, classRenamer, preserveDebuggability);
+            Map<String, byte[]> transformedClasses = transformClasses(rawDapp.classes, dappClassesForest, rawDapp.classHierarchy, rawDapp.classRenamer, preserveDebuggability);
             TransformedDappModule transformedDapp = TransformedDappModule.fromTransformedClasses(transformedClasses, rawDapp.mainClass);
 
             dapp = DAppLoader.fromTransformed(transformedDapp, preserveDebuggability);
@@ -389,7 +372,7 @@ public class DAppCreator {
         Map<String, byte[]> safeClasses = new HashMap<>();
 
         Set<String> preRenameUserClassAndInterfaceSet = classHierarchy.getPreRenameUserDefinedClassesAndInterfaces();
-        Set<String> preRenameUserDefinedClasses = classHierarchy.getPreRenameUserDefinedClassesOnly(preserveDebuggability);
+        Set<String> preRenameUserDefinedClasses = classHierarchy.getPreRenameUserDefinedClassesOnly(classRenamer);
 
         PreRenameClassAccessRules preRenameClassAccessRules = new PreRenameClassAccessRules(preRenameUserDefinedClasses, preRenameUserClassAndInterfaceSet);
         NamespaceMapper namespaceMapper = new NamespaceMapper(preRenameClassAccessRules);

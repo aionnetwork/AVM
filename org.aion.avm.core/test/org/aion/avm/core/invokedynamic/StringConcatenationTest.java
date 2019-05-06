@@ -146,7 +146,8 @@ public class StringConcatenationTest {
     }
 
     private static byte[] transformForStringConcatTest(byte[] origBytecode, String className, String constantClassName, Map<String, String> constantToFieldMap) {
-        ClassHierarchy classHierarchy = buildNewHierarchy(className, preserveDebuggability);
+        Set<ClassInformation> classToAdd = new HashSet<>();
+        classToAdd.add(ClassInformation.preRenameInfoFor(false, className, CommonType.JAVA_LANG_OBJECT.dotName, null));
 
         Set<String> jclExceptions = new HashSet<>();
         for (CommonType type : CommonType.values()) {
@@ -156,13 +157,15 @@ public class StringConcatenationTest {
         }
 
         ClassRenamer classRenamer = new ClassRenamerBuilder(NameStyle.DOT_NAME, preserveDebuggability)
-            .loadPreRenameUserDefinedClasses(classHierarchy.getPreRenameUserDefinedClassesAndInterfaces())
+            .loadPreRenameUserDefinedClasses(extractClassNames(classToAdd))
             .loadPostRenameJclExceptionClasses(jclExceptions)
             .build();
 
+        ClassHierarchy classHierarchy = buildNewHierarchy(classRenamer, classToAdd);
+
         final String shadowPackage = PackageConstants.kShadowSlashPrefix;
         return new ClassToolchain.Builder(origBytecode, ClassReader.EXPAND_FRAMES)
-                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(buildSingletonAccessRules(classHierarchy, preserveDebuggability)), StringConcatenationTest.preserveDebuggability))
+                .addNextVisitor(new UserClassMappingVisitor(new NamespaceMapper(buildSingletonAccessRules(classHierarchy, classRenamer)), StringConcatenationTest.preserveDebuggability))
                 .addNextVisitor(new ConstantVisitor(constantClassName, constantToFieldMap))
                 .addNextVisitor(new ClassShadowing(shadowPackage))
                 .addNextVisitor(new InvokedynamicShadower(shadowPackage))
@@ -171,13 +174,17 @@ public class StringConcatenationTest {
                 .runAndGetBytecode();
     }
 
-    private static ClassHierarchy buildNewHierarchy(String classDotName, boolean preserveDebuggability) {
-        Set<ClassInformation> classToAdd = new HashSet<>();
-        classToAdd.add(ClassInformation
-            .preRenameInfoFor(false, classDotName, CommonType.JAVA_LANG_OBJECT.dotName, null));
+    private static Set<String> extractClassNames(Set<ClassInformation> classInfos) {
+        Set<String> classNames = new HashSet<>();
+        for (ClassInformation classInformation : classInfos) {
+            classNames.add(classInformation.dotName);
+        }
+        return classNames;
+    }
 
+    private static ClassHierarchy buildNewHierarchy(ClassRenamer classRenamer, Set<ClassInformation> classToAdd) {
         return new ClassHierarchyBuilder()
-            .addPreRenameUserDefinedClasses(classToAdd, preserveDebuggability)
+            .addPreRenameUserDefinedClasses(classRenamer, classToAdd)
             .build();
     }
 }
