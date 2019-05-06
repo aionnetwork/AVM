@@ -1,7 +1,10 @@
 package org.aion.avm.userlib;
 
+import java.math.BigInteger;
 import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
+
+import avm.Address;
 
 
 /**
@@ -10,6 +13,9 @@ import java.nio.BufferUnderflowException;
 public class AionBuffer {
     private static final int BYTE_MASK = 0xff;
     private static final int BYTE_SIZE = Byte.SIZE;
+    // Note that AVM forces all BigInteger to 32-bytes, so we will serialize them as this fixed-size value.
+    private static final int BIG_INTEGER_BYTES = 32;
+
     private final byte[] buffer;
     private int position;
     private int limit;
@@ -175,6 +181,36 @@ public class AionBuffer {
         return s;
     }
 
+    /**
+     * Returns the next 32-byte Aion address in the buffer and advances the position.
+     * @return The address.
+     */
+    public Address getAddress() {
+        int remaining = this.limit - this.position;
+        if (remaining < Address.LENGTH) {
+            throw new BufferUnderflowException();
+        }
+        byte[] raw = new byte[Address.LENGTH];
+        System.arraycopy(this.buffer, this.position, raw, 0, raw.length);
+        this.position += raw.length;
+        return new Address(raw);
+    }
+
+    /**
+     * Returns the next 32-byte signed BigInteger in the buffer and advances the position.
+     * @return The BigInteger.
+     */
+    public BigInteger get32ByteInt() {
+        int remaining = this.limit - this.position;
+        if (remaining < BIG_INTEGER_BYTES) {
+            throw new BufferUnderflowException();
+        }
+        byte[] raw = new byte[BIG_INTEGER_BYTES];
+        System.arraycopy(this.buffer, this.position, raw, 0, raw.length);
+        this.position += raw.length;
+        return new BigInteger(raw);
+    }
+
     // ====================
     // relative put methods
     // ====================
@@ -308,6 +344,54 @@ public class AionBuffer {
         this.buffer[this.position] = (byte) ((value >> 8) & BYTE_MASK);
         this.buffer[this.position + 1] = (byte) (value & BYTE_MASK);
         this.position += Short.BYTES;
+        return this;
+    }
+
+    /**
+     * Stores an Aion address into the buffer and advances the position.
+     * @param value The address to write.
+     * @return The receiver (for call chaining).
+     */
+    public AionBuffer putAddress(Address value) {
+        if (value == null) {
+            throw new NullPointerException();
+        }
+        int remaining = this.limit - this.position;
+        if (remaining < Address.LENGTH) {
+            throw new BufferOverflowException();
+        }
+        byte[] raw = value.unwrap();
+        System.arraycopy(raw, 0, this.buffer, this.position, raw.length);
+        this.position += raw.length;
+        return this;
+    }
+
+    /**
+     * Stores a 32-byte signed BigInteger into the buffer and advances the position.
+     * Note that this BigInteger is always stored as 32 bytes, even if its internal representation may be smaller.
+     * @param value The BigInteger to write.
+     * @return The receiver (for call chaining).
+     */
+    public AionBuffer put32ByteInt(BigInteger value) {
+        if (value == null) {
+            throw new NullPointerException();
+        }
+        int remaining = this.limit - this.position;
+        if (remaining < BIG_INTEGER_BYTES) {
+            throw new BufferOverflowException();
+        }
+        byte prefixByte = (-1 == value.signum())
+                ? (byte)0xff
+                : (byte)0x0;
+        byte[] raw = value.toByteArray();
+        // BigInteger instances can't be larger than 32-bytes, in AVM.
+        assert (raw.length <= BIG_INTEGER_BYTES);
+        // Add additional 0-bytes for any not expressed in the BigInteger (this is big-endian, so they preceed the value).
+        for (int i = raw.length; i < BIG_INTEGER_BYTES; ++i) {
+            internalPutByte(prefixByte);
+        }
+        System.arraycopy(raw, 0, this.buffer, this.position, raw.length);
+        this.position += raw.length;
         return this;
     }
 

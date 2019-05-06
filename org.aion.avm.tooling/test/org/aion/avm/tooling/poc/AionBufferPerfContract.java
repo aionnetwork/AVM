@@ -1,18 +1,26 @@
 package org.aion.avm.tooling.poc;
 
 import org.aion.avm.userlib.abi.ABIDecoder;
+
+import avm.Address;
 import avm.Blockchain;
+
+import java.math.BigInteger;
+
 import org.aion.avm.userlib.AionBuffer;
 
 public class AionBufferPerfContract {
     public static final int NUM_ELEMENTS = 400;
     public static final int TRANSFER_SIZE = 100;
+    public static final int BIG_ELT_COUNT = 10;
     private static final byte[] BYTES = new byte[TRANSFER_SIZE];
     private static AionBuffer targetNobytes, targetNoChars, targetNoShorts, targetNoInts,
         targetNoFloats, targetNoLongs, targetNoDoubles, targetHasBytes, targetHasChars,
         targetHasShorts, targetHasInts, targetHasFloats, targetHasLongs, targetHasDoubles,
         targetHasIntsCopy;
     private static AionBuffer[] targetNothingTransferred, targetFullForTransfer;
+    private static AionBuffer addressBuffer;
+    private static AionBuffer bigIntBuffer;
 
     static {
         targetNobytes = AionBuffer.allocate(NUM_ELEMENTS);
@@ -32,6 +40,8 @@ public class AionBufferPerfContract {
         targetHasIntsCopy = AionBuffer.wrap(targetHasInts.getArray());
         targetNothingTransferred = produceEmptyBuffers(NUM_ELEMENTS);
         targetFullForTransfer = produceFullBuffers(NUM_ELEMENTS);
+        addressBuffer = AionBuffer.allocate(32 * BIG_ELT_COUNT);
+        bigIntBuffer = AionBuffer.allocate(32 * BIG_ELT_COUNT);
     }
 
     public static byte[] main() {
@@ -61,6 +71,12 @@ public class AionBufferPerfContract {
             } else if (methodName.equals("callPutDouble")) {
                 callPutDouble();
                 return new byte[0];
+            } else if (methodName.equals("callPutAddress")) {
+                callPutAddress();
+                return new byte[0];
+            } else if (methodName.equals("callPutBigInt")) {
+                callPutBigInt();
+                return new byte[0];
             } else if (methodName.equals("callTransferBytesToBuffer")) {
                 callTransferBytesToBuffer();
                 return new byte[0];
@@ -84,6 +100,12 @@ public class AionBufferPerfContract {
                 return new byte[0];
             } else if (methodName.equals("callGetDouble")) {
                 callGetDouble();
+                return new byte[0];
+            } else if (methodName.equals("callGetAddress")) {
+                callGetAddress();
+                return new byte[0];
+            } else if (methodName.equals("callGetBigInt")) {
+                callGetBigInt();
                 return new byte[0];
             } else if (methodName.equals("callTransferBytesFromBuffer")) {
                 callTransferBytesFromBuffer();
@@ -132,6 +154,20 @@ public class AionBufferPerfContract {
             targetNoDoubles.putDouble(i);
     }
 
+    public static void callPutAddress() {
+        Address address = Blockchain.getAddress();
+        for (int i = 0; i < BIG_ELT_COUNT; i++) {
+            addressBuffer.putAddress(address);
+        }
+    }
+
+    public static void callPutBigInt() {
+        BigInteger value = Blockchain.getValue();
+        for (int i = 0; i < BIG_ELT_COUNT; i++) {
+            bigIntBuffer.put32ByteInt(value);
+        }
+    }
+
     public static void callTransferBytesToBuffer() {
         for (int i = 0; i < NUM_ELEMENTS; i++)
             targetNothingTransferred[i].put(BYTES);
@@ -177,6 +213,20 @@ public class AionBufferPerfContract {
         targetHasDoubles.flip();
         for (int i = 0; i < NUM_ELEMENTS; i++)
             targetHasDoubles.getDouble();
+    }
+
+    public static void callGetAddress() {
+        addressBuffer.flip();
+        for (int i = 0; i < BIG_ELT_COUNT; i++) {
+            addressBuffer.getAddress();
+        }
+    }
+
+    public static void callGetBigInt() {
+        bigIntBuffer.flip();
+        for (int i = 0; i < BIG_ELT_COUNT; i++) {
+            bigIntBuffer.get32ByteInt();
+        }
     }
 
     public static void callTransferBytesFromBuffer() {

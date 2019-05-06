@@ -113,6 +113,22 @@ public class AionBufferPerfTest {
         AvmTransactionResult getDoubleResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
         System.out.println(">> getDouble()         : " + getDoubleResult.getEnergyUsed() / AionBufferPerfContract.NUM_ELEMENTS);
 
+        args = ABIUtil.encodeMethodArguments("callPutAddress");
+        AvmTransactionResult putAddressResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
+        System.out.println(">> putAddress()         : " + putAddressResult.getEnergyUsed() / AionBufferPerfContract.BIG_ELT_COUNT);
+
+        args = ABIUtil.encodeMethodArguments("callGetAddress");
+        AvmTransactionResult getAddressResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
+        System.out.println(">> getAddress()         : " + getAddressResult.getEnergyUsed() / AionBufferPerfContract.BIG_ELT_COUNT);
+
+        args = ABIUtil.encodeMethodArguments("callPutBigInt");
+        AvmTransactionResult putBigIntResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
+        System.out.println(">> putBigInt()         : " + putBigIntResult.getEnergyUsed() / AionBufferPerfContract.BIG_ELT_COUNT);
+
+        args = ABIUtil.encodeMethodArguments("callGetBigInt");
+        AvmTransactionResult getBigIntResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
+        System.out.println(">> getBigInt()         : " + getBigIntResult.getEnergyUsed() / AionBufferPerfContract.BIG_ELT_COUNT);
+
         args = ABIUtil.encodeMethodArguments("callTransferBytesToBuffer");
         AvmTransactionResult putResult = (AvmTransactionResult) call(kernel, avm, contract, from, args);
         System.out.println(">> put()               : "

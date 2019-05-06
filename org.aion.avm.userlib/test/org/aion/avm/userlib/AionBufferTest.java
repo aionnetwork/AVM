@@ -14,6 +14,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import avm.Address;
+
+
 public class AionBufferTest {
     private static final int RANGE_1BYTE = BigInteger.TWO.pow(8).intValue();
     private static final int RANGE_2BYTES = BigInteger.TWO.pow(16).intValue();
@@ -544,6 +547,38 @@ public class AionBufferTest {
         assertEquals(0, buffer.getPosition());
         assertEquals(Integer.BYTES, buffer.getLimit());
         assertEquals(100, buffer.getCapacity());
+    }
+
+    @Test
+    public void testAddress() {
+        Address one = new Address(new byte[] {0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1});
+        Address two = new Address(new byte[] {0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2});
+        AionBuffer buffer = AionBuffer.allocate(100);
+        buffer.putAddress(one);
+        buffer.putAddress(two);
+        
+        buffer.flip();
+        Address read1 = buffer.getAddress();
+        Address read2 = buffer.getAddress();
+        
+        assertEquals(one, read1);
+        assertEquals(two, read2);
+    }
+
+    @Test
+    public void testBigInteger() {
+        BigInteger one = new BigInteger("55");
+        BigInteger two = new BigInteger("-1234567890");
+        AionBuffer buffer = AionBuffer.allocate(100);
+        buffer.put32ByteInt(one);
+        buffer.put32ByteInt(two);
+        
+        buffer.flip();
+        BigInteger read1 = buffer.get32ByteInt();
+        BigInteger read2 = buffer.get32ByteInt();
+        
+        assertEquals(one, read1);
+        assertEquals(two, read2);
     }
 
     // <------------------------------------helpers below------------------------------------------>

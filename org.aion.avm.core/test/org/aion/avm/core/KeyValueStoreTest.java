@@ -157,7 +157,7 @@ public class KeyValueStoreTest {
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         assertArrayEquals(new byte[0], txResult.getReturnData());
         long deleteZeroCost = txResult.getEnergyUsed();
-        assertEquals(51803L + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage, deleteZeroCost);
+        assertEquals(51823L + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage, deleteZeroCost);
 
         // zero -> nonzero
         data = ABIUtil.encodeMethodArguments("testAvmPutStorage", key, value);
@@ -166,7 +166,7 @@ public class KeyValueStoreTest {
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         assertArrayEquals(new byte[0], txResult.getReturnData());
         long setStorageCost = txResult.getEnergyUsed();
-        assertEquals(55125L + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_setStorage + StorageFees.WRITE_PRICE_PER_BYTE * value.length, setStorageCost);
+        assertEquals(55145L + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_setStorage + StorageFees.WRITE_PRICE_PER_BYTE * value.length, setStorageCost);
 
         // nonzero -> nonzero
         data = ABIUtil.encodeMethodArguments("testAvmPutStorage", key, value);
@@ -175,7 +175,7 @@ public class KeyValueStoreTest {
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         assertArrayEquals(new byte[0], txResult.getReturnData());
         long modifyStorageCost = txResult.getEnergyUsed();
-        assertEquals(55125L + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage + StorageFees.WRITE_PRICE_PER_BYTE * value.length, modifyStorageCost);
+        assertEquals(55145L + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage + StorageFees.WRITE_PRICE_PER_BYTE * value.length, modifyStorageCost);
         // set storage cost 20000 + linear factor cost, modify storage cost 5000
         assertEquals(15000L, setStorageCost - modifyStorageCost);
 
@@ -185,7 +185,7 @@ public class KeyValueStoreTest {
         txResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {tx})[0].get();
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         long getStorageCost = txResult.getEnergyUsed();
-        assertEquals(49396L + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_getStorage + StorageFees.READ_PRICE_PER_BYTE * value.length, getStorageCost);
+        assertEquals(49416L + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_getStorage + StorageFees.READ_PRICE_PER_BYTE * value.length, getStorageCost);
 
         // nonzero -> zero
         data = ABIUtil.encodeMethodArguments("testAvmPutStorageNullValue", key);
@@ -194,7 +194,7 @@ public class KeyValueStoreTest {
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         assertArrayEquals(new byte[0], txResult.getReturnData());
         long deleteStorageCost = txResult.getEnergyUsed();
-        assertEquals(51803 + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage - RuntimeMethodFeeSchedule.BlockchainRuntime_avm_deleteStorage_refund, deleteStorageCost);
+        assertEquals(51823 + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage - RuntimeMethodFeeSchedule.BlockchainRuntime_avm_deleteStorage_refund, deleteStorageCost);
         // both deletion cost 5000, but deleting a non-zero value gets 20000 refund
         assertEquals(15000L, deleteZeroCost - deleteStorageCost);
 
@@ -205,7 +205,7 @@ public class KeyValueStoreTest {
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         assertArrayEquals(null, txResult.getReturnData());
         long getZeroCost = txResult.getEnergyUsed();
-        assertEquals(49396 + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_getStorage, getZeroCost);
+        assertEquals(49416 + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_getStorage, getZeroCost);
         assertEquals(value.length * StorageFees.READ_PRICE_PER_BYTE, getStorageCost - getZeroCost);
     }
 }
