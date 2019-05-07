@@ -19,6 +19,14 @@ class StackWatcherMethodAdapter extends AdviceAdapter implements Opcodes {
     private int maxS = 0;       //maxStack for current method
     private int tc = 0;         //number of try catch block for current method
 
+    // These values come from an early stage of development where we were computing them ourselves.
+    // They are no longer necessary because ClassWriter.COMPUTE_FRAMES computes these values for us
+    // and overrides whatever we have specified here. However, these values are required for consensus
+    // because they are passed into instrumented code to determine when a stack overflow occurs.
+    // See AKI-108 for a more detailed analysis (these values are also not always what they should be).
+    private static final int NUM_INSTRUMENTED_LOCALS = 2;
+    private static final int NUM_INSTRUMENTED_STACK = 1;
+
     //List of exception handler code label (aka the start of catch block)
     private ArrayList<Label> catchBlockList = new ArrayList<Label>();
 
@@ -32,10 +40,9 @@ class StackWatcherMethodAdapter extends AdviceAdapter implements Opcodes {
         super(Opcodes.ASM6, mv, access, name, desc);
     }
 
-    //TODO (AKI-108): Test the assumption of using 2 and 1
     public void setMax(MethodNode node, int l, int s){
-        this.maxL = l + 2;
-        this.maxS = s + 1;
+        this.maxL = l + this.NUM_INSTRUMENTED_LOCALS;
+        this.maxS = s + this.NUM_INSTRUMENTED_STACK;
         node.maxLocals = maxL;
         node.maxStack = maxS;
     }
