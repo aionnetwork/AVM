@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import java.util.Arrays;
 import s.java.math.BigInteger;
 import p.avm.Address;
 import p.avm.Result;
@@ -475,6 +476,6 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         task.decrementTransactionStackDepth();
 
         return new Result(newResult.getResultCode().isSuccess(),
-                newResult.getReturnData() == null ? null : new ByteArray(newResult.getReturnData()));
+                newResult.getReturnData() == null ? null : new ByteArray(Arrays.copyOf(newResult.getReturnData(), newResult.getReturnData().length)));
     }
 }

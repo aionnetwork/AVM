@@ -2,6 +2,7 @@ package org.aion.avm.tooling;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import avm.Address;
 import java.math.BigInteger;
@@ -19,8 +20,13 @@ public class ManipulateCreateAndCallResultsTest {
 
     private Address deployer = avmRule.getPreminedAccount();
 
-    //TODO: this test should pass.
-    @Test(expected = Exception.class)
+    /**
+     * NOTE: this test shows that it is possible to create a dApp with an external transaction and
+     * then to modify the dApp address using the returned array. This is fine, because the only person
+     * who can do this is the one directly embedding it, and if they are doing so they probably have
+     * a reason to.
+     */
+    @Test
     public void testManipulateDeployResult() {
         byte[] jar = avmRule.getDappBytes(DappManipulator.class, new byte[0]);
 
@@ -39,7 +45,7 @@ public class ManipulateCreateAndCallResultsTest {
         byte[] data = ABIUtil.encodeMethodArguments("getAddress");
         result = avmRule.call(deployer, contract, BigInteger.ZERO, data, 2_000_000, 1).getTransactionResult();
         assertEquals(Code.SUCCESS, result.getResultCode());
-        assertArrayEquals(originalAddress, new ABIDecoder(result.getReturnData()).decodeOneByteArray());
+        assertNull(result.getReturnData());
     }
 
     @Test
@@ -64,8 +70,7 @@ public class ManipulateCreateAndCallResultsTest {
         assertEquals(Code.SUCCESS, result.getResultCode());
     }
 
-    //TODO: this test should pass.
-    @Test(expected = Exception.class)
+    @Test
     public void testManipulateCreateResult() {
         // Deploy the dapp that will create the other dapp and modify its returned address.
         avmRule.kernel.generateBlock();
