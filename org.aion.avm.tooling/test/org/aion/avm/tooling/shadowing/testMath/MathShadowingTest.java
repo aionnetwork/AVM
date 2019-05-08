@@ -19,7 +19,7 @@ public class MathShadowingTest {
     private Address from = avmRule.getPreminedAccount();
     private Address dappAddr;
 
-    private long energyLimit = 600_000_00000L;
+    private long energyLimit = 5_000_000L;
     private long energyPrice = 1;
 
 
@@ -31,10 +31,8 @@ public class MathShadowingTest {
 
     @Test
     public void testMaxMin() {
-        byte[] txData = ABIUtil.encodeMethodArguments("testMaxMin");
-        Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
-
-        Assert.assertEquals(true, result);
+        AvmRule.ResultWrapper result = callStatic("testMaxMin");
+        Assert.assertEquals(true, result.getDecodedReturnData());
     }
 
     /**
@@ -42,17 +40,74 @@ public class MathShadowingTest {
      */
     @Test
     public void createSimpleContext() {
-        byte[] txData = ABIUtil.encodeMethodArguments("testMathContext");
-        Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
-
-        Assert.assertEquals(5, result);
+        AvmRule.ResultWrapper result = callStatic("testMathContext");
+        Assert.assertEquals(5, result.getDecodedReturnData());
     }
 
     @Test
     public void getRoundingMode() {
-        byte[] txData = ABIUtil.encodeMethodArguments("getRoundingMode");
-        TransactionResult result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
+        callStatic("getRoundingMode");
+    }
 
-        Assert.assertTrue(result.getResultCode().isSuccess());
+    @Test
+    public void testCosh() {
+        callStatic("testCosh");
+    }
+
+    @Test
+    public void testSinh() {
+        callStatic("testSinh");
+    }
+
+    @Test
+    public void testPow2() {
+        callStatic("testPow2");
+    }
+
+    @Test
+    public void testAtan() {
+        callStatic("testAtan");
+    }
+
+    @Test
+    public void testTan() {
+        callStatic("testTan");
+    }
+
+    @Test
+    public void testAcos() {
+        callStatic("testAcos");
+    }
+
+    @Test
+    public void testCos() {
+        callStatic("testCos");
+    }
+
+    @Test
+    public void testAsin() {
+        callStatic("testCos");
+    }
+
+    @Test
+    public void testSin() {
+        callStatic("testSin");
+    }
+
+    @Test
+    public void testLog() {
+        callStatic("testLog");
+    }
+
+    @Test
+    public void testExp() {
+        callStatic("testExp");
+    }
+
+    private AvmRule.ResultWrapper callStatic(String methodName){
+        byte[] txData = ABIUtil.encodeMethodArguments(methodName);
+        AvmRule.ResultWrapper result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Assert.assertTrue(result.getTransactionResult().getResultCode().isSuccess());
+        return result;
     }
 }

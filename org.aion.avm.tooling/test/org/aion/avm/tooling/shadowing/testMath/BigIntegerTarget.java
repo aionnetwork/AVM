@@ -136,4 +136,36 @@ public class BigIntegerTarget {
         }
         return didFail;
     }
+
+    @Callable
+    public static void NPEThrownCorrectly() {
+        BigInteger result;
+        try {
+            result = BigInteger.TEN.multiply(null);
+            throw new RuntimeException("Instead of NPE got " + result);
+        } catch (NullPointerException npe) {
+            // Expected
+        }
+
+        try {
+            result = BigInteger.TEN.divide(null);
+            throw new RuntimeException("Instead of NPE got " + result);
+        } catch (NullPointerException npe) {
+           // Expected
+        }
+
+        try {
+            result = BigInteger.TEN.add(null);
+            throw new RuntimeException("Instead of NPE got " + result);
+        } catch (NullPointerException npe) {
+            // Expected
+        }
+
+        try {
+            result = BigInteger.TEN.subtract(null);
+            throw new RuntimeException("Instead of NPE got " + result);
+        } catch (NullPointerException npe) {
+            // Expected
+        }
+    }
 }

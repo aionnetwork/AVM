@@ -167,6 +167,12 @@ public class BigIntegerTest {
         Assert.assertTrue((boolean) wrapper.getDecodedReturnData());
     }
 
+    @Test
+    public void NPEThrownCorrectly() {
+        AvmRule.ResultWrapper wrapper = callStatic("NPEThrownCorrectly");
+        Assert.assertTrue(wrapper.getTransactionResult().getResultCode().isSuccess());
+    }
+
     private AvmRule.ResultWrapper callStatic(String methodName, Object... args) {
         byte[] data = ABIUtil.encodeMethodArguments(methodName, args);
         return avmRule.call(sender, contract, value, data, 2_000_000, 1);

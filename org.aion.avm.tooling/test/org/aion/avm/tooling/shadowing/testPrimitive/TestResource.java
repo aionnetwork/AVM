@@ -560,6 +560,17 @@ public class TestResource {
                     throw new RuntimeException("Double 1.0 does not equal 1.0d");
             }
         }
+
+        static class BitwiseConversion {
+            public static void main(String args[]) {
+                if (Double.longBitsToDouble(Double.doubleToLongBits(Double.POSITIVE_INFINITY)) != Double.POSITIVE_INFINITY)
+                    throw new RuntimeException("Double.longBitsToDouble(Double.doubleToLongBits(start)) did not return start");
+                if (Double.longBitsToDouble(Double.doubleToLongBits(Double.NEGATIVE_INFINITY)) != Double.NEGATIVE_INFINITY)
+                    throw new RuntimeException("Double.longBitsToDouble(Double.doubleToLongBits(start)) did not return start");
+                if (!Double.isNaN(Double.longBitsToDouble(Double.doubleToLongBits(Double.NaN))))
+                    throw new RuntimeException("Double.longBitsToDouble(Double.doubleToLongBits(start)) did not return start");
+            }
+        }
     }
 
     @Callable
@@ -569,6 +580,7 @@ public class TestResource {
         DoubleTest.NaNInfinityParsing.main(null);
         DoubleTest.ToString.main(null);
         DoubleTest.Equals.main(null);
+        DoubleTest.BitwiseConversion.main(null);
         return true;
     }
 
@@ -751,6 +763,17 @@ public class TestResource {
 
             }
         }
+
+        static class BitwiseConversion {
+            public static void main(String args[]) {
+                if (Float.intBitsToFloat(Float.floatToIntBits(Float.POSITIVE_INFINITY)) != Float.POSITIVE_INFINITY)
+                    throw new RuntimeException("Float.intBitsToFloat(Float.floatToIntBits(start)) did not return start");
+                if (Float.intBitsToFloat(Float.floatToIntBits(Float.NEGATIVE_INFINITY)) != Float.NEGATIVE_INFINITY)
+                    throw new RuntimeException("Float.intBitsToFloat(Float.floatToIntBits(start)) did not return start");
+                if (!Float.isNaN(Float.intBitsToFloat(Float.floatToIntBits(Float.NaN))))
+                    throw new RuntimeException("Float.intBitsToFloat(Float.floatToIntBits(start)) did not return start");
+            }
+        }
     }
 
     @Callable
@@ -758,6 +781,7 @@ public class TestResource {
         FloatTest.Constants.main(null);
         FloatTest.Extrema.main(null);
         FloatTest.NaNInfinityParsing.main(null);
+        FloatTest.BitwiseConversion.main(null);
         return true;
     }
 
@@ -1017,6 +1041,39 @@ public class TestResource {
                 throw new RuntimeException("Reverse of " + value + ",was equal to " + reversed);
             }
         }
+
+        public static void bitOperation(){
+            if (Integer.highestOneBit(0) != 0)
+                throw new RuntimeException("unexpected value for highestOneBit(0)");
+            if (Integer.highestOneBit(-1) != Integer.MIN_VALUE)
+                throw new RuntimeException("unexpected value for highestOneBit(-1)");
+            if (Integer.highestOneBit(1) != 1)
+                throw new RuntimeException("unexpected value for highestOneBit(1)");
+
+            if (Integer.lowestOneBit(0) != 0)
+                throw new RuntimeException("unexpected value for lowestOneBit(0)");
+            if (Integer.lowestOneBit(-1) != 1)
+                throw new RuntimeException("unexpected value for lowestOneBit(-1)");
+            if (Integer.lowestOneBit(Integer.MIN_VALUE) != Integer.MIN_VALUE)
+                throw new RuntimeException("unexpected value for lowestOneBit(MIN_VALUE)");
+
+            if (Integer.numberOfLeadingZeros(0) != Integer.SIZE)
+                throw new RuntimeException("unexpected value for numberOfLeadingZeros(0)");
+            if (Integer.numberOfLeadingZeros(-1) != 0)
+                throw new RuntimeException("unexpected value for numberOfLeadingZeros(-1)");
+            if (Integer.numberOfLeadingZeros(1) != (Integer.SIZE - 1))
+                throw new RuntimeException("unexpected value for numberOfLeadingZeros(1)");
+
+            if (Integer.numberOfTrailingZeros(0) != Integer.SIZE)
+                throw new RuntimeException("unexpected value for numberOfTrailingZeros(0)");
+            if (Integer.numberOfTrailingZeros(1) != 0)
+                throw new RuntimeException("unexpected value for numberOfTrailingZeros(1)");
+            if (Integer.numberOfTrailingZeros(Integer.MIN_VALUE) != (Integer.SIZE - 1))
+                throw new RuntimeException("unexpected value for numberOfTrailingZeros(MIN_VALUE)");
+
+            if (Integer.bitCount(Integer.MAX_VALUE) != Integer.bitCount(Integer.reverseBytes(Integer.MAX_VALUE)))
+                throw new RuntimeException("unexpected value for Integer.bitCount(Integer.reverseBytes(MAX_VALUE))");
+        }
     }
 
     @Callable
@@ -1026,6 +1083,7 @@ public class TestResource {
         IntegerTest.ToString.main(null);
         IntegerTest.reverse();
         IntegerTest.comparableTest();
+        IntegerTest.bitOperation();
         return true;
     }
 
