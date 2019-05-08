@@ -26,9 +26,7 @@ public class StorageManipulationTest {
         Address contract = new Address(result.getReturnData());;
         byte[] data = ABIUtil.encodeMethodArguments("manipulatePutStorageKey");
         result = avmRule.call(deployer, contract, BigInteger.ZERO, data, 2_000_000, 1).getTransactionResult();
-
-        //TODO: this should be SUCCESS
-        assertEquals(Code.FAILED_REVERT, result.getResultCode());
+        assertEquals(Code.SUCCESS, result.getResultCode());
     }
 
     @Test
@@ -41,9 +39,7 @@ public class StorageManipulationTest {
         Address contract = new Address(result.getReturnData());;
         byte[] data = ABIUtil.encodeMethodArguments("manipulatePutStorageValue");
         result = avmRule.call(deployer, contract, BigInteger.ZERO, data, 2_000_000, 1).getTransactionResult();
-
-        //TODO: this should be SUCCESS
-        assertEquals(Code.FAILED_REVERT, result.getResultCode());
+        assertEquals(Code.SUCCESS, result.getResultCode());
     }
 
     @Test
@@ -56,9 +52,7 @@ public class StorageManipulationTest {
         Address contract = new Address(result.getReturnData());;
         byte[] data = ABIUtil.encodeMethodArguments("manipulateGetStorageValue");
         result = avmRule.call(deployer, contract, BigInteger.ZERO, data, 2_000_000, 1).getTransactionResult();
-
-        //TODO: this should be SUCCESS
-        assertEquals(Code.FAILED_REVERT, result.getResultCode());
+        assertEquals(Code.SUCCESS, result.getResultCode());
     }
 
     @Test
@@ -71,8 +65,6 @@ public class StorageManipulationTest {
         Address contract = new Address(result.getReturnData());;
         byte[] data = ABIUtil.encodeMethodArguments("manipulateStorageInReentrantCall");
         result = avmRule.call(deployer, contract, BigInteger.ZERO, data, 2_000_000, 1).getTransactionResult();
-
-        //TODO: this should be SUCCESS
-        assertEquals(Code.FAILED_REVERT, result.getResultCode());
+        assertEquals(Code.SUCCESS, result.getResultCode());
     }
 }

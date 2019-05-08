@@ -157,11 +157,14 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         require(key != null, "Key can't be NULL");
         require(key.getUnderlying().length == 32, "Key must be 32 bytes");
 
+        byte[] keyCopy = Arrays.copyOf(key.getUnderlying(), key.getUnderlying().length);
+        byte[] valueCopy = (value == null) ? null : Arrays.copyOf(value.getUnderlying(), value.getUnderlying().length);
+
         org.aion.types.Address contractAddress = this.tx.destinationAddress;
         if (value == null) {
-            kernel.removeStorage(contractAddress, key.getUnderlying());
+            kernel.removeStorage(contractAddress, keyCopy);
         } else {
-            kernel.putStorage(contractAddress, key.getUnderlying(), value.getUnderlying());
+            kernel.putStorage(contractAddress, keyCopy, valueCopy);
         }
     }
 
@@ -173,7 +176,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         org.aion.types.Address contractAddress = this.tx.destinationAddress;
         byte[] data = this.kernel.getStorage(contractAddress, key.getUnderlying());
         return (null != data)
-            ? new ByteArray(data)
+            ? new ByteArray(Arrays.copyOf(data, data.length))
             : null;
     }
 
