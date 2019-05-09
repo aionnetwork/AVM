@@ -32,7 +32,7 @@ import org.junit.Test;
 public class ABICompilerTest {
     private static final String CHATTY_CALCULATOR_ABI = ABICompiler.getVersionNumber()
         + "\norg.aion.avm.tooling.abi.ChattyCalculatorTarget"
-        + "\nClinit: "
+        + "\nClinit: ()"
         + "\npublic static String amIGreater(int, int)\n";
 
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
@@ -64,7 +64,7 @@ public class ABICompilerTest {
         Assert.assertEquals(
             ABICompiler.getVersionNumber()
                 + "\norg.aion.avm.tooling.abi.TestDAppTarget"
-                + "\nClinit: "
+                + "\nClinit: ()"
                 + "\npublic static String returnHelloWorld()"
                 + "\npublic static String returnGoodbyeWorld()"
                 + "\npublic static String returnEcho(String)"
@@ -136,7 +136,7 @@ public class ABICompilerTest {
         Assert.assertEquals(
             ABICompiler.getVersionNumber()
                 + "\norg.aion.avm.tooling.abi.StaticInitializersTarget"
-                + "\nClinit: int String "
+                + "\nClinit: (int, String)"
                 + "\npublic static int getInt()"
                 + "\npublic static String getString()"
                 + "\npublic static String amIGreater(int, int)\n",

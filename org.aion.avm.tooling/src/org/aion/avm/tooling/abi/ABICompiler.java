@@ -137,10 +137,19 @@ public class ABICompiler {
         PrintStream abiStream = new PrintStream(rawStream);
         abiStream.println(VERSION_NUMBER);
         abiStream.println(this.mainClassName);
-        abiStream.print("Clinit: ");
-        for (Type t: this.initializables) {
-            abiStream.print(ABIUtils.shortenClassName(t.getClassName()) + " ");
+
+        abiStream.print("Clinit: (");
+        int numberOfInitializables = this.initializables.size();
+        if (numberOfInitializables > 0) {
+            for (int i = 0; i < numberOfInitializables - 1; i++) {
+                abiStream.print(
+                    ABIUtils.shortenClassName(this.initializables.get(i).getClassName()) + ", ");
+            }
+            abiStream.print(ABIUtils
+                .shortenClassName(this.initializables.get(numberOfInitializables - 1).getClassName()));
         }
+        abiStream.print(")");
+
         abiStream.println();
         for (String s : this.callables) {
             abiStream.println(s);
