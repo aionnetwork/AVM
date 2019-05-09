@@ -1,5 +1,6 @@
 package org.aion.avm.core.arraywrapping;
 
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 import a.*;
 import i.PackageConstants;
@@ -278,7 +279,33 @@ class ArrayWrappingMethodAdapter extends AdviceAdapter implements Opcodes {
     @Override
     public void visitInvokeDynamicInsn(String name, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
         String desc = ArrayNameMapper.updateMethodDesc(descriptor);
-
-        super.visitInvokeDynamicInsn(name, desc, bootstrapMethodHandle, bootstrapMethodArguments);
+        super.visitInvokeDynamicInsn(name, desc, bootstrapMethodHandle, updateBootstrapMethodArguments(bootstrapMethodArguments));
     }
+
+    private Object[] updateBootstrapMethodArguments(Object[] origArgs) {
+        final var newArgs = new ArrayList<>(origArgs.length);
+        for (final Object origArg : origArgs) {
+            final Object newArg;
+            if (origArg instanceof Type) {
+                newArg = updateTypeArgument((Type) origArg);
+            } else if (origArg instanceof Handle) {
+                newArg = updateHandleTypeArgument((Handle) origArg);
+            } else {
+                newArg = origArg;
+            }
+            newArgs.add(newArg);
+        }
+        return newArgs.toArray();
+    }
+
+    private Type updateTypeArgument(Type origType) {
+        final String newMethodDescriptor = ArrayNameMapper.updateMethodDesc(origType.getDescriptor());
+        return Type.getMethodType(newMethodDescriptor);
+    }
+
+    private Handle updateHandleTypeArgument(Handle origHandle) {
+        final String newMethodDescriptor = ArrayNameMapper.updateMethodDesc(origHandle.getDesc());
+        return new Handle(origHandle.getTag(), origHandle.getOwner(), origHandle.getName(), newMethodDescriptor, origHandle.isInterface());
+    }
+
 }

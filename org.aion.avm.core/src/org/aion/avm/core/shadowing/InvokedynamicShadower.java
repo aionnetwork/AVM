@@ -65,6 +65,11 @@ public class InvokedynamicShadower extends ClassToolchain.ToolChainClassVisitor 
                 if (!RUNNABLE_DESCRIPTOR.equals(methodDescriptor) && !FUNCTION_DESCRIPTOR.equals(methodDescriptor)) {
                     throw RejectedClassException.invokeDynamicLambdaType(methodDescriptor);
                 }
+                if (bootstrapMethodHandle.getTag() != Opcodes.H_INVOKEVIRTUAL && bootstrapMethodHandle.getTag() != Opcodes.H_INVOKESTATIC
+                        && bootstrapMethodHandle.getTag() != Opcodes.H_NEWINVOKESPECIAL && bootstrapMethodHandle.getTag() != Opcodes.H_INVOKEINTERFACE) {
+                    throw RejectedClassException.invokeDynamicHandleType(bootstrapMethodHandle.getTag(), methodDescriptor);
+                }
+
                 handleLambdaIndy(origMethodName, methodDescriptor, bootstrapMethodHandle, bootstrapMethodArguments);
             } else {
                 throw RejectedClassException.invokeDynamicUnsupportedMethodOwner(origMethodName, methodOwner);

@@ -61,6 +61,9 @@ public class RejectedClassException extends AvmException {
         throw new RejectedClassException("Unsupported invokedymanic lambda type: \"" + methodDescriptor + "\"");
     }
 
+    public static RejectedClassException invokeDynamicHandleType(int handleKind, String methodDescriptor) {
+        throw new RejectedClassException("Unsupported invokedymanic method handle: method descriptor: " + methodDescriptor +", reference kind: " + handleKind);
+    }
     public RejectedClassException(String message) {
         super(message);
     }
