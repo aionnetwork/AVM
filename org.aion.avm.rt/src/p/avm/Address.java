@@ -17,7 +17,7 @@ import org.aion.avm.RuntimeMethodFeeSchedule;
  * There is a good chance that we will convert this into an interface so that our implementation can provide a richer interface to
  * our AVM code than we want to support for the contract.
  */
-public class Address extends Object {
+public final class Address extends Object {
     // Runtime-facing implementation.
     public static final int avm_LENGTH = 32;
 

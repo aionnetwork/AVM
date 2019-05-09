@@ -9,7 +9,7 @@ import org.aion.avm.RuntimeMethodFeeSchedule;
 import s.java.lang.String;
 
 
-public class Result extends Object {
+public final class Result extends Object {
 
     private boolean success;
 
