@@ -36,7 +36,7 @@ public class CommonInstrumentation implements IInstrumentation {
 
         // setting up a default stack watcher.
         newFrame.stackWatcher = new StackWatcher();
-        newFrame.stackWatcher.setPolicy(StackWatcher.POLICY_SIZE);
+        newFrame.stackWatcher.setPolicy(StackWatcher.POLICY_SIZE | StackWatcher.POLICY_DEPTH);
         newFrame.stackWatcher.setMaxStackDepth(512);
         newFrame.stackWatcher.setMaxStackSize(16 * 1024);
         
