@@ -82,31 +82,56 @@ public final class StringBuffer extends Object implements CharSequence, Serializ
     }
 
     public StringBuffer avm_append(String str) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * str.internalLength());
-        this.v = this.v.append(str);
+        int lengthForBilling = (null != str)
+                ? str.internalLength()
+                : 0;
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * lengthForBilling);
+        java.lang.String underlying = (null != str)
+                ? str.getUnderlying()
+                : null;
+        this.v = this.v.append(underlying);
         return this;
     }
 
     public StringBuffer avm_append(StringBuffer sb) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_2 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * sb.internalLength());
-        this.v = this.v.append(sb.v);
+        int lengthForBilling = (null != sb)
+                ? sb.internalLength()
+                : 0;
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_2 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * lengthForBilling);
+        java.lang.StringBuffer underlying = (null != sb)
+                ? sb.getUnderlying()
+                : null;
+        this.v = this.v.append(underlying);
         return this;
     }
 
     public StringBuffer avm_append(CharSequence s){
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_3 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * s.avm_length());
-        this.v = this.v.append(s.avm_toString());
+        int lengthForBilling = (null != s)
+                ? s.avm_length()
+                : 0;
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_3 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * lengthForBilling);
+        java.lang.String underlying = (null != s)
+                ? s.avm_toString().getUnderlying()
+                : null;
+        this.v = this.v.append(underlying);
         return this;
     }
 
     public StringBuffer avm_append(CharSequence s, int start, int end){
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_4 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(end - start, 0));
-        this.v = this.v.append(s.avm_toString().getUnderlying(), start, end);
+        java.lang.String underlying = (null != s)
+                ? s.avm_toString().getUnderlying()
+                : null;
+        this.v = this.v.append(underlying, start, end);
         return this;
     }
 
     public StringBuffer avm_append(CharArray str) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_5 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * str.length());
+        int lengthForBilling = (null != str)
+                ? str.length()
+                : 0;
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_5 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * lengthForBilling);
+        // Note the underlying value is not used since this will actually throw NPE if given null.
         this.v = this.v.append(str.getUnderlying());
         return this;
     }
@@ -201,26 +226,45 @@ public final class StringBuffer extends Object implements CharSequence, Serializ
     }
 
     public StringBuffer avm_insert(int offset, String str) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_2 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (str.internalLength() + java.lang.Math.max(internalLength() - offset, 0)));
-        this.v.insert(offset, str.getUnderlying());
+        int lengthForBilling = (null != str)
+                ? str.internalLength()
+                : 0;
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_2 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (lengthForBilling + java.lang.Math.max(internalLength() - offset, 0)));
+        java.lang.String underlying = (null != str)
+                ? str.getUnderlying()
+                : null;
+        this.v.insert(offset, underlying);
         return this;
     }
 
     public StringBuffer avm_insert(int offset, CharArray str) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_3 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (str.length() + java.lang.Math.max(internalLength() - offset, 0)));
+        int lengthForBilling = (null != str)
+                ? str.length()
+                : 0;
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_3 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (lengthForBilling + java.lang.Math.max(internalLength() - offset, 0)));
+        // Note the underlying value is not used since this will actually throw NPE if given null.
         this.v.insert(offset, str.getUnderlying());
         return this;
     }
 
     public StringBuffer avm_insert(int dstOffset, CharSequence s){
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_4 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (s.avm_length() + java.lang.Math.max(internalLength() - dstOffset, 0)));
-        this.v.insert(dstOffset, s.avm_toString());
+        int lengthForBilling = (null != s)
+                ? s.avm_length()
+                : 0;
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_4 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (lengthForBilling + java.lang.Math.max(internalLength() - dstOffset, 0)));
+        java.lang.String underlying = (null != s)
+                ? s.avm_toString().getUnderlying()
+                : null;
+        this.v.insert(dstOffset, underlying);
         return this;
     }
 
     public StringBuffer avm_insert(int dstOffset, CharSequence s, int start, int end) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_5 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (java.lang.Math.max(end - start, 0) + java.lang.Math.max(internalLength() - dstOffset, 0)));
-        this.v.insert(dstOffset, s.avm_subSequence(start, end));
+        java.lang.String underlying = (null != s)
+                ? s.avm_toString().getUnderlying()
+                : "null";
+        this.v.insert(dstOffset, underlying.subSequence(start, end));
         return this;
     }
 

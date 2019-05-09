@@ -179,26 +179,45 @@ public final class StringBuilder extends Object implements CharSequence, Seriali
     }
 
     public StringBuilder avm_insert(int offset, String str) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_insert_2 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (str.internalLength() + java.lang.Math.max(internalLength() - offset, 0)));
-        this.v.insert(offset, str.getUnderlying());
+        int lengthForBilling = (null != str)
+                ? str.internalLength()
+                : 0;
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_insert_2 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (lengthForBilling + java.lang.Math.max(internalLength() - offset, 0)));
+        java.lang.String underlying = (null != str)
+                ? str.getUnderlying()
+                : null;
+        this.v.insert(offset, underlying);
         return this;
     }
 
     public StringBuilder avm_insert(int offset, CharArray str) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_insert_3 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (str.length() + java.lang.Math.max(internalLength() - offset, 0)));
+        int lengthForBilling = (null != str)
+                ? str.length()
+                : 0;
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_insert_3 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (lengthForBilling + java.lang.Math.max(internalLength() - offset, 0)));
+        // Note the underlying value is not used since this will actually throw NPE if given null.
         this.v.insert(offset, str.getUnderlying());
         return this;
     }
 
     public StringBuilder avm_insert(int dstOffset, CharSequence s) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_insert_4 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (s.avm_length() + java.lang.Math.max(internalLength() - dstOffset, 0)));
-        this.v.insert(dstOffset, s.avm_toString().getUnderlying());
+        int lengthForBilling = (null != s)
+                ? s.avm_length()
+                : 0;
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_insert_4 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * (lengthForBilling + java.lang.Math.max(internalLength() - dstOffset, 0)));
+        java.lang.String underlying = (null != s)
+                ? s.avm_toString().getUnderlying()
+                : null;
+        this.v.insert(dstOffset, underlying);
         return this;
     }
 
     public StringBuilder avm_insert(int dstOffset, CharSequence s, int start, int end) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_insert_5 + java.lang.Math.max(end - start, 0) + java.lang.Math.max(internalLength() - dstOffset, 0));
-        this.v.insert(dstOffset, s.avm_subSequence(start, end).avm_toString().getUnderlying());
+        java.lang.String underlying = (null != s)
+                ? s.avm_toString().getUnderlying()
+                : "null";
+        this.v.insert(dstOffset, underlying.subSequence(start, end));
         return this;
     }
 

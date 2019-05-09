@@ -26,7 +26,9 @@ public class TestResource {
                 return ABIEncoder.encodeOneString(singleStringReturnUpperCase());
             }   else if (methodName.equals("stringReturnSubSequence")) {
                 return ABIEncoder.encodeOneString(stringReturnSubSequence());
-            } else {
+            }  else if (methodName.equals("equalsIgnoreCase")) {
+                return ABIEncoder.encodeOneBoolean(equalsIgnoreCase());
+        }else {
                 return new byte[0];
             }
         }
@@ -84,5 +86,10 @@ public class TestResource {
     public static String stringReturnSubSequence(){
         String str = "ReturnSubSequence";
         return str.subSequence(6, 9).toString();
+    }
+
+    public static boolean equalsIgnoreCase(){
+        String str = "equalsIgnoreCase";
+        return str.equalsIgnoreCase(null);
     }
 }

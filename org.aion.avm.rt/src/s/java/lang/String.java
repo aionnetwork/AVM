@@ -116,7 +116,10 @@ public final class String extends Object implements Comparable<String>, CharSequ
     public boolean avm_equalsIgnoreCase(String anotherString) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_equalsIgnoreCase + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * internalLength());
         lazyLoad();
-        return this.v.equalsIgnoreCase(anotherString.v);
+        java.lang.String underlying = (null != anotherString)
+                ? anotherString.getUnderlying()
+                : null;
+        return this.v.equalsIgnoreCase(underlying);
     }
 
     public int avm_compareTo(String anotherString) {
@@ -144,19 +147,28 @@ public final class String extends Object implements Comparable<String>, CharSequ
     }
 
     public boolean avm_startsWith(String prefix, int toffset) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_startsWith + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * prefix.internalLength());
+        int lengthForBilling = (null != prefix)
+                ? prefix.internalLength()
+                : 0;
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_startsWith + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * lengthForBilling);
         lazyLoad();
         return this.v.startsWith(prefix.v, toffset);
     }
 
     public boolean avm_startsWith(String prefix) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_startsWith_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * prefix.internalLength());
+        int lengthForBilling = (null != prefix)
+                ? prefix.internalLength()
+                : 0;
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_startsWith_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * lengthForBilling);
         lazyLoad();
         return this.v.startsWith(prefix.v);
     }
 
     public boolean avm_endsWith(String prefix) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_endsWith + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * prefix.internalLength());
+        int lengthForBilling = (null != prefix)
+                ? prefix.internalLength()
+                : 0;
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_endsWith + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * lengthForBilling);
         lazyLoad();
         return this.v.endsWith(prefix.v);
     }
@@ -324,7 +336,10 @@ public final class String extends Object implements Comparable<String>, CharSequ
     }
 
     public static String avm_valueOf(CharArray a){
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_valueOf_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * a.length());
+        int lengthForBilling = (null != a)
+                ? a.length()
+                : 0;
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_valueOf_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * lengthForBilling);
         a.lazyLoad();
         return new String(java.lang.String.valueOf(a.getUnderlying()));
     }
@@ -342,7 +357,10 @@ public final class String extends Object implements Comparable<String>, CharSequ
     }
 
     public static String avm_copyValueOf(CharArray a){
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_copyValueOf_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * a.length());
+        int lengthForBilling = (null != a)
+                ? a.length()
+                : 0;
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_copyValueOf_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * lengthForBilling);
         a.lazyLoad();
         return new String(java.lang.String.copyValueOf(a.getUnderlying()));
     }

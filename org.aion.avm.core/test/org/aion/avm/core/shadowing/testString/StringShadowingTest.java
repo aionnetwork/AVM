@@ -69,6 +69,12 @@ public class StringShadowingTest {
         tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         result = avm.run(kernel, new Transaction[] {tx})[0].get();
         Assert.assertEquals("Sub", ABIUtil.decodeOneObject(result.getReturnData()));
+
+        txData = ABIUtil.encodeMethodArguments("equalsIgnoreCase");
+        tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        result = avm.run(kernel, new Transaction[] {tx})[0].get();
+        Assert.assertEquals(false, ABIUtil.decodeOneObject(result.getReturnData()));
+
         avm.shutdown();
     }
 
