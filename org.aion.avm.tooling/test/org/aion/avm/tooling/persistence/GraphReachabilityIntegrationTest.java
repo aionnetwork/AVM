@@ -88,7 +88,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -74160;
+        long userlibCost = -74826;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + userlibCost, "run249_reentrant_notLoaded");
         
@@ -125,7 +125,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -73439;
+        long userlibCost = -74105;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + userlibCost, "run249_reentrant_loaded");
         
@@ -158,7 +158,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long run_userlibCost = -71460;
+        long run_userlibCost = -72126;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + run_userlibCost, "runNewInstance_reentrant");
         
@@ -201,7 +201,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long run_userlibCost = -114964;
+        long run_userlibCost = -116296;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + run_userlibCost, "runNewInstance_reentrant2");
         

@@ -388,8 +388,8 @@ public final class ABIEncoder {
             byte[] stringBytes = data.getBytes();
             result = new byte[stringBytes.length + Short.BYTES + 1];
             result[0] = ABIToken.STRING;
-            result[1] = (byte) ((data.length() >> 8) & BYTE_MASK);
-            result[2] = (byte) (data.length() & BYTE_MASK);
+            result[1] = (byte) ((stringBytes.length >> 8) & BYTE_MASK);
+            result[2] = (byte) (stringBytes.length & BYTE_MASK);
             System.arraycopy(stringBytes, 0, result, 3, stringBytes.length);
         }
         return result;

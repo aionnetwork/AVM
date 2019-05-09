@@ -1,5 +1,6 @@
 package org.aion.avm.userlib.abi;
 
+import avm.Address;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -67,6 +68,27 @@ public class ABIEncoderTest {
         encoded = ABIEncoder.encodeOneDouble(1000.0);
         decoder = new ABIDecoder(encoded);
         Assert.assertEquals(1000.0, decoder.decodeOneDouble(), 0.1);
+    }
+
+    @Test
+    public void testStringAddressSymmetry() {
+        ABIDecoder decoder;
+
+
+        byte[] encoded = ABIEncoder.encodeOneString("saleem sinai");
+        decoder = new ABIDecoder(encoded);
+        Assert.assertEquals("saleem sinai", decoder.decodeOneString());
+
+        encoded = ABIEncoder.encodeOneString("囉哈哈囉");
+        decoder = new ABIDecoder(encoded);
+        Assert.assertEquals("囉哈哈囉", decoder.decodeOneString());
+
+        // The bytes corresponding to address 0xb844c4b8041d7b475590d76a8178889386dd44a5c96d0ecabe152ab848f7f0ee
+        byte[] addrBytes = new byte[]{-100, 98, 79, 34, -117, 87, -49, 55, -41, -128, -53, -107, -6, -126, -41, -118, -60, -20, -67, -121, -121, -7, -15, -60, 106, -25, -72, -32, 32, 66, 14, -80};
+        Address addr = new Address(addrBytes);
+        encoded = ABIEncoder.encodeOneAddress(addr);
+        decoder = new ABIDecoder(encoded);
+        Assert.assertEquals(addr, decoder.decodeOneAddress());
     }
 
     @Test
