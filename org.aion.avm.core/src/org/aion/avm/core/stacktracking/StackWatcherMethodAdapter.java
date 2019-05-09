@@ -1,6 +1,7 @@
 package org.aion.avm.core.stacktracking;
 
 import i.Helper;
+import i.RuntimeAssertionError;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -19,13 +20,14 @@ class StackWatcherMethodAdapter extends AdviceAdapter implements Opcodes {
     private int maxS = 0;       //maxStack for current method
     private int tc = 0;         //number of try catch block for current method
 
-    // These values come from an early stage of development where we were computing them ourselves.
-    // They are no longer necessary because ClassWriter.COMPUTE_FRAMES computes these values for us
-    // and overrides whatever we have specified here. However, these values are required for consensus
-    // because they are passed into instrumented code to determine when a stack overflow occurs.
-    // See AKI-108 for a more detailed analysis (these values are also not always what they should be).
+    // These values represent the upper bound of additional locals & stack space our instrumented code
+    // uses. The ClassWriter overwrites the max-locals and max-stack in the end since we always specify
+    // COMPUTE_FRAMES; however, intermediate stages of the pipeline may try to perform verification of
+    // the stack shape etc. prior to the ClassWriter recomputing these values, and so we safely pass
+    // off these upper bounds to satisfy any intermediate checks.
+    // See AKI-108 for more details.
     private static final int NUM_INSTRUMENTED_LOCALS = 2;
-    private static final int NUM_INSTRUMENTED_STACK = 1;
+    private static final int NUM_INSTRUMENTED_STACK = 2;
 
     //List of exception handler code label (aka the start of catch block)
     private ArrayList<Label> catchBlockList = new ArrayList<Label>();
@@ -41,10 +43,15 @@ class StackWatcherMethodAdapter extends AdviceAdapter implements Opcodes {
     }
 
     public void setMax(MethodNode node, int l, int s){
-        this.maxL = l + this.NUM_INSTRUMENTED_LOCALS;
-        this.maxS = s + this.NUM_INSTRUMENTED_STACK;
-        node.maxLocals = maxL;
-        node.maxStack = maxS;
+        this.maxL = l;
+        this.maxS = s;
+    }
+
+    @Override
+    public void visitMaxs(int maxStack, int maxLocals) {
+        RuntimeAssertionError.assertTrue(maxStack == this.maxS);
+        RuntimeAssertionError.assertTrue(maxLocals == this.maxL);
+        super.visitMaxs(maxStack + NUM_INSTRUMENTED_STACK, maxLocals + NUM_INSTRUMENTED_LOCALS);
     }
 
     public void setTryCatchBlockNum(int l){
