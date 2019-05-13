@@ -2,7 +2,10 @@ package i;
 
 import java.util.*;
 
-
+/**
+ * CommonInstrumentation operates on the state of the Dapp running in a single thread, only used internally
+ * Forces the execution to stop if the abort state is activated
+ **/
 public class CommonInstrumentation implements IInstrumentation {
     // Single-frame states (the currentFrame cannot also be in the callerFrame - this is just an optimization since the currentFrame access
     // is the common case and is in the critical path - may actually be worth fully-inlining these variables, at some point).

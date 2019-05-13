@@ -92,7 +92,9 @@ public class AvmImpl implements AvmInternal {
                             System.out.println(this.getName() + " start  " + incomingTask.getIndex());
                         }
 
-                        // TODO (AKI-112):  Determine if we can coalesce the IInstrumentation and TransactionTask to avoid this attach/detach.
+                        // Attach the IInstrumentation helper to the task to support asynchronous abort
+                        // Instrumentation helper will abort the execution of the transaction by throwing an exception during chargeEnergy call
+                        // Aborted transaction will be retried later
                         incomingTask.startNewTransaction();
                         incomingTask.attachInstrumentationForThread();
                         outgoingResult = AvmImpl.this.backgroundProcessTransaction(incomingTask);

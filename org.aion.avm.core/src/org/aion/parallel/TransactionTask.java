@@ -16,8 +16,11 @@ import org.aion.vm.api.interfaces.KernelInterface;
 
 
 /**
- * A TransactionTask represent a complete transaction chain started from an external transaction.
+ * A TransactionTask represent a complete transaction chain started from an external transaction. It represents the logical ordering of the block to be passed to the concurrent executor.
  * The purpose of this class is to support asynchronous task abort to achieve concurrency.
+ * TransactionTask will be associated with an IInstrumentation to set its abort state, if either the transaction sender or target Address have been acquired
+ * If both addresses can be acquired, the TransactionTask will be the owner of both Address resources,
+ * preventing other transactions with the same address to be processed while this task is being executed
  */
 public class TransactionTask implements Comparable<TransactionTask>{
     private final KernelInterface parentKernel;
