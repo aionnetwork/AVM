@@ -54,4 +54,30 @@ public class StringBuilderResource {
         }
         Blockchain.require(thrown);
     }
+
+    @Callable
+    public static void stringBuilderAddObject() {
+        StringBuilder sb = new StringBuilder();
+        SampleClass sampleClass = new SampleClass();
+        sb.append(sampleClass);
+        Blockchain.require(sb.toString().equals(sampleClass.toString()));
+
+        sb.insert(sampleClass.toString().length(), sampleClass);
+        Blockchain.require(sb.toString().equals(sampleClass.toString() + sampleClass.toString()));
+
+    }
+
+    @Callable
+    public static void stringBuilderConstructor() {
+        StringBuilder sb = new StringBuilder(100);
+        Blockchain.require(sb.length() == 0);
+
+        StringBuilder sb2 = new StringBuilder("MyString");
+        Blockchain.require(sb2.toString().equals("MyString"));
+
+        StringBuilder sb3 = new StringBuilder((CharSequence) "MyString");
+        Blockchain.require(sb3.toString().equals("MyString"));
+    }
+
+    public static class SampleClass{}
 }

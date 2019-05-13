@@ -36,6 +36,16 @@ public class StringBuilderTest {
         callStatic("stringBuilderAppendNull");
     }
 
+    @Test
+    public void stringBuilderAddObject(){
+        callStatic("stringBuilderAddObject");
+    }
+
+    @Test
+    public void stringBuilderConstructor(){
+        callStatic("stringBuilderConstructor");
+    }
+
     private void callStatic(String methodName, Object... args) {
         byte[] data = ABIUtil.encodeMethodArguments(methodName, args);
         AvmRule.ResultWrapper result = avmRule.call(from, dappAddr, BigInteger.ZERO, data, 2_000_000, 1);

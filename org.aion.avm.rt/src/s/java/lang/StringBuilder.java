@@ -22,23 +22,27 @@ public final class StringBuilder extends Object implements CharSequence, Seriali
     }
 
     public StringBuilder(int capacity) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_constructor_1);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_constructor_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * capacity);
         this.v = new java.lang.StringBuilder(capacity);
     }
 
     public StringBuilder(String str) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_constructor_2);
+        int lengthForBilling = (null != str)
+                ? str.internalLength()
+                : 0;
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_constructor_2 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * lengthForBilling);
         this.v = new java.lang.StringBuilder(str.getUnderlying());
     }
 
     public StringBuilder(CharSequence seq){
-        this.v = new java.lang.StringBuilder(seq.avm_toString().getUnderlying());
+        this.v = new java.lang.StringBuilder();
+        avm_append(seq);
     }
 
     public StringBuilder avm_append(IObject obj) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_append);
         // Note that we want to convert this to a string, at our level, so we can call avm_toString() - the lower-level will call toString().
-        this.v.append(String.internalValueOfObject(obj));
+        // delegating the call to avm_append
+        this.avm_append(String.internalValueOfObject(obj));
         return this;
     }
 
@@ -173,8 +177,8 @@ public final class StringBuilder extends Object implements CharSequence, Seriali
     }
 
     public StringBuilder avm_insert(int offset, IObject obj) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_insert_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(internalLength() - offset, 0));
-        this.v.insert(offset, obj);
+        //delegating the call to avm_insert
+        avm_insert(offset, String.internalValueOfObject(obj));
         return this;
     }
 
@@ -284,7 +288,7 @@ public final class StringBuilder extends Object implements CharSequence, Seriali
     }
 
     public String avm_toString() {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_toString);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuilder_avm_toString + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * internalLength());
         return internalToString();
     }
 

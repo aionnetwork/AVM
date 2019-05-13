@@ -53,4 +53,20 @@ public class ShadowEnergyLimitTarget {
             testValue.toString();
         }
     }
+
+    @Callable
+    public static int forceOutOfMemory(int count) {
+        String test = "A";
+        // We use both the invokedynamic and manual approach to show that these both fail correctly.
+        if (0 == (count % 2)) {
+            for (int i = 0; i < count; ++i) {
+                test += test;
+            }
+        } else {
+            for (int i = 0; i < count; ++i) {
+                test = new StringBuilder(test).append((Object)test).toString();
+            }
+        }
+        return test.length();
+    }
 }

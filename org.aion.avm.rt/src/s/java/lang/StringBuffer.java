@@ -18,17 +18,20 @@ public final class StringBuffer extends Object implements CharSequence, Serializ
     }
 
     public StringBuffer(int capacity) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_constructor_1);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_constructor_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * capacity);
         this.v = new java.lang.StringBuffer(capacity);
     }
 
     public StringBuffer(String str) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_constructor_2);
+        int lengthForBilling = (null != str)
+                ? str.internalLength()
+                : 0;
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_constructor_2 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * lengthForBilling);
         this.v = new java.lang.StringBuffer(str.getUnderlying());
     }
 
     public StringBuffer(CharSequence seq) {
-        this(seq.avm_length() + 16);
+        this.v = new java.lang.StringBuffer();
         avm_append(seq);
     }
 
@@ -75,9 +78,8 @@ public final class StringBuffer extends Object implements CharSequence, Serializ
     }
 
     public StringBuffer avm_append(IObject obj) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append);
-        // using public method to stay consistent with jcl implementation
-        this.v = this.v.append(String.internalValueOfObject(obj).getUnderlying());
+        //delegating the call to avm_append
+        this.avm_append(String.internalValueOfObject(obj));
         return this;
     }
 
@@ -220,8 +222,8 @@ public final class StringBuffer extends Object implements CharSequence, Serializ
     }
 
     public StringBuffer avm_insert(int offset, IObject obj) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_insert_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(internalLength() - offset, 0));
-        this.v.insert(offset, obj);
+        // delegating the call to avm_insert
+        avm_insert(offset, String.internalValueOfObject(obj));
         return this;
     }
 
@@ -331,7 +333,7 @@ public final class StringBuffer extends Object implements CharSequence, Serializ
     }
 
     public String avm_toString() {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_toString);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_toString + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * internalLength());
         return new String(this);
     }
 

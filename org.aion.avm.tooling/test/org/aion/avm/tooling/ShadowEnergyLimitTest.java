@@ -2,6 +2,7 @@ package org.aion.avm.tooling;
 
 import avm.Address;
 import org.aion.avm.core.util.ABIUtil;
+import org.aion.kernel.AvmTransactionResult;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -67,6 +68,12 @@ public class ShadowEnergyLimitTest {
             System.out.println("callBigIntegerToString time(ns) " + time);
     }
 
+    @Test
+    public void callOutOfMemory() {
+        callForEnergyFailure("forceOutOfMemory", 1000);
+        callForEnergyFailure("forceOutOfMemory", 1001);
+    }
+
     private long run(String methodName, Object... args) {
         for (int i = 0; i < warmup; i++) {
             callStatic(methodName, args);
@@ -76,6 +83,13 @@ public class ShadowEnergyLimitTest {
             time += callStatic(methodName, args);
         }
         return time / benchmark;
+    }
+
+    private void callForEnergyFailure(String methodName, Object... args) {
+        byte[] data = ABIUtil.encodeMethodArguments(methodName, args);
+        AvmRule.ResultWrapper callResult = avmRule.call(sender, contract, value, data, 2_000_000, 1);
+        AvmTransactionResult result = (AvmTransactionResult)callResult.getTransactionResult();
+        Assert.assertEquals(AvmTransactionResult.Code.FAILED_OUT_OF_ENERGY, result.getResultCode());
     }
 
     private long callStatic(String methodName, Object... args) {

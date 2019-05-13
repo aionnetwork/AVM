@@ -155,4 +155,31 @@ public class StringBufferResource {
         active.setLength(0);
         Blockchain.require(active.length() == 0);
     }
+
+
+    @Callable
+    public static void stringBufferAddObject() {
+        StringBuffer sb = new StringBuffer();
+        SampleClass sampleClass = new SampleClass();
+        sb.append(sampleClass);
+        Blockchain.require(sb.toString().equals(sampleClass.toString()));
+
+        sb.insert(sampleClass.toString().length(), sampleClass);
+        Blockchain.require(sb.toString().equals(sampleClass.toString() + sampleClass.toString()));
+
+    }
+
+    @Callable
+    public static void stringBufferConstructor() {
+        StringBuffer sb = new StringBuffer(100);
+        Blockchain.require(sb.length() == 0);
+
+        StringBuffer sb2 = new StringBuffer("MyString");
+        Blockchain.require(sb2.toString().equals("MyString"));
+
+        StringBuffer sb3 = new StringBuffer((CharSequence) "MyString");
+        Blockchain.require(sb3.toString().equals("MyString"));
+    }
+
+    public static class SampleClass{}
 }

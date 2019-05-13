@@ -72,6 +72,16 @@ public class StringBufferTest {
         callStatic("setLength");
     }
 
+    @Test
+    public void stringBufferAddObject(){
+        callStatic("stringBufferAddObject");
+    }
+
+    @Test
+    public void stringBufferConstructor(){
+        callStatic("stringBufferConstructor");
+    }
+
 
     private void callStatic(String methodName, Object... args) {
         byte[] data = ABIUtil.encodeMethodArguments(methodName, args);

@@ -8,7 +8,7 @@ public class StringConcatTarget {
     @Callable
     public static boolean concat(){
         String s = "";
-        for(int i = 0; i< 1386; i++){
+        for(int i = 0; i< 400; i++){
             s += "a";
         }
         return true;
