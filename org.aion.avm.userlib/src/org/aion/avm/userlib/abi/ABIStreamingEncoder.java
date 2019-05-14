@@ -11,15 +11,6 @@ public final class ABIStreamingEncoder {
 
     private AionBuffer buffer;
 
-    public final static int BYTE_ENCODING_LENGTH = Byte.BYTES + 1;
-    public final static int BOOLEAN_ENCODING_LENGTH = BYTE_ENCODING_LENGTH;
-    public final static int CHAR_ENCODING_LENGTH = Character.BYTES + 1;
-    public final static int SHORT_ENCODING_LENGTH = Short.BYTES + 1;
-    public final static int INT_ENCODING_LENGTH = Integer.BYTES + 1;
-    public final static int LONG_ENCODING_LENGTH = Long.BYTES + 1;
-    public final static int FLOAT_ENCODING_LENGTH = Float.BYTES + 1;
-    public final static int DOUBLE_ENCODING_LENGTH = Double.BYTES + 1;
-
     // NULL followed by array type (e.g. A_BYTE)
     private final static int NULL_ARRAY_ONE_DIMENSION = 2;
 

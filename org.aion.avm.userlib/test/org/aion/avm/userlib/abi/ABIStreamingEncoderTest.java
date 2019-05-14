@@ -4,39 +4,47 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class ABIStreamingEncoderTest {
+    private final static int BYTE_ENCODING_LENGTH = Byte.BYTES + 1;
+    private final static int BOOLEAN_ENCODING_LENGTH = BYTE_ENCODING_LENGTH;
+    private final static int CHAR_ENCODING_LENGTH = Character.BYTES + 1;
+    private final static int SHORT_ENCODING_LENGTH = Short.BYTES + 1;
+    private final static int INT_ENCODING_LENGTH = Integer.BYTES + 1;
+    private final static int LONG_ENCODING_LENGTH = Long.BYTES + 1;
+    private final static int FLOAT_ENCODING_LENGTH = Float.BYTES + 1;
+    private final static int DOUBLE_ENCODING_LENGTH = Double.BYTES + 1;
 
     @Test
     public void testPrimitiveEncode() {
 
-        byte[] encoded = new byte[ABIStreamingEncoder.BYTE_ENCODING_LENGTH];
+        byte[] encoded = new byte[ABIStreamingEncoderTest.BYTE_ENCODING_LENGTH];
         new ABIStreamingEncoder(encoded).encodeOneByte((byte) -1);
         Assert.assertArrayEquals(new byte[] {ABIToken.BYTE, -1}, encoded);
 
-        encoded = new byte[ABIStreamingEncoder.CHAR_ENCODING_LENGTH];
+        encoded = new byte[ABIStreamingEncoderTest.CHAR_ENCODING_LENGTH];
         new ABIStreamingEncoder(encoded).encodeOneCharacter('a');
         Assert.assertArrayEquals(new byte[] {ABIToken.CHAR, 0, 97}, encoded);
 
-        encoded = new byte[ABIStreamingEncoder.BOOLEAN_ENCODING_LENGTH];
+        encoded = new byte[ABIStreamingEncoderTest.BOOLEAN_ENCODING_LENGTH];
         new ABIStreamingEncoder(encoded).encodeOneBoolean(true);
         Assert.assertArrayEquals(new byte[] {ABIToken.BOOLEAN, 1}, encoded);
 
-        encoded = new byte[ABIStreamingEncoder.SHORT_ENCODING_LENGTH];
+        encoded = new byte[ABIStreamingEncoderTest.SHORT_ENCODING_LENGTH];
         new ABIStreamingEncoder(encoded).encodeOneShort((short) 1000);
         Assert.assertArrayEquals(new byte[] {ABIToken.SHORT, 3, -24}, encoded);
 
-        encoded = new byte[ABIStreamingEncoder.INT_ENCODING_LENGTH];
+        encoded = new byte[ABIStreamingEncoderTest.INT_ENCODING_LENGTH];
         new ABIStreamingEncoder(encoded).encodeOneInteger(1000);
         Assert.assertArrayEquals(new byte[] {ABIToken.INT, 0, 0, 3, -24}, encoded);
 
-        encoded = new byte[ABIStreamingEncoder.FLOAT_ENCODING_LENGTH];
+        encoded = new byte[ABIStreamingEncoderTest.FLOAT_ENCODING_LENGTH];
         new ABIStreamingEncoder(encoded).encodeOneFloat(1000);
         Assert.assertArrayEquals(new byte[] {ABIToken.FLOAT, 68, 122, 0, 0}, encoded);
 
-        encoded = new byte[ABIStreamingEncoder.LONG_ENCODING_LENGTH];
+        encoded = new byte[ABIStreamingEncoderTest.LONG_ENCODING_LENGTH];
         new ABIStreamingEncoder(encoded).encodeOneLong(1000);
         Assert.assertArrayEquals(new byte[] {ABIToken.LONG, 0, 0, 0, 0, 0, 0, 3, -24}, encoded);
 
-        encoded = new byte[ABIStreamingEncoder.DOUBLE_ENCODING_LENGTH];
+        encoded = new byte[ABIStreamingEncoderTest.DOUBLE_ENCODING_LENGTH];
         new ABIStreamingEncoder(encoded).encodeOneDouble(1000);
         Assert.assertArrayEquals(new byte[] {ABIToken.DOUBLE, 64, -113, 64, 0, 0, 0, 0, 0}, encoded);
     }
@@ -45,42 +53,42 @@ public class ABIStreamingEncoderTest {
     public void testPrimitiveSymmetry() {
 
         ABIDecoder decoder;
-        byte[] encoded = new byte[ABIStreamingEncoder.BYTE_ENCODING_LENGTH];
+        byte[] encoded = new byte[ABIStreamingEncoderTest.BYTE_ENCODING_LENGTH];
         new ABIStreamingEncoder(encoded).encodeOneByte((byte) -1);
         decoder = new ABIDecoder(encoded);
         Assert.assertEquals((byte)-1, decoder.decodeOneByte());
 
-        encoded = new byte[ABIStreamingEncoder.CHAR_ENCODING_LENGTH];
+        encoded = new byte[ABIStreamingEncoderTest.CHAR_ENCODING_LENGTH];
         new ABIStreamingEncoder(encoded).encodeOneCharacter('a');
         decoder = new ABIDecoder(encoded);
         Assert.assertEquals('a', decoder.decodeOneCharacter());
 
-        encoded = new byte[ABIStreamingEncoder.BOOLEAN_ENCODING_LENGTH];
+        encoded = new byte[ABIStreamingEncoderTest.BOOLEAN_ENCODING_LENGTH];
         new ABIStreamingEncoder(encoded).encodeOneBoolean(true);
         decoder = new ABIDecoder(encoded);
         Assert.assertEquals(true, decoder.decodeOneBoolean());
 
-        encoded = new byte[ABIStreamingEncoder.SHORT_ENCODING_LENGTH];
+        encoded = new byte[ABIStreamingEncoderTest.SHORT_ENCODING_LENGTH];
         new ABIStreamingEncoder(encoded).encodeOneShort((short) 1000);
         decoder = new ABIDecoder(encoded);
         Assert.assertEquals((short)1000, decoder.decodeOneShort());
 
-        encoded = new byte[ABIStreamingEncoder.INT_ENCODING_LENGTH];
+        encoded = new byte[ABIStreamingEncoderTest.INT_ENCODING_LENGTH];
         new ABIStreamingEncoder(encoded).encodeOneInteger(1000);
         decoder = new ABIDecoder(encoded);
         Assert.assertEquals(1000, decoder.decodeOneInteger());
 
-        encoded = new byte[ABIStreamingEncoder.FLOAT_ENCODING_LENGTH];
+        encoded = new byte[ABIStreamingEncoderTest.FLOAT_ENCODING_LENGTH];
         new ABIStreamingEncoder(encoded).encodeOneFloat(1000);
         decoder = new ABIDecoder(encoded);
         Assert.assertEquals(1000.0F, decoder.decodeOneFloat(), 0.1);
 
-        encoded = new byte[ABIStreamingEncoder.LONG_ENCODING_LENGTH];
+        encoded = new byte[ABIStreamingEncoderTest.LONG_ENCODING_LENGTH];
         new ABIStreamingEncoder(encoded).encodeOneLong(1000);
         decoder = new ABIDecoder(encoded);
         Assert.assertEquals(1000L, decoder.decodeOneLong());
 
-        encoded = new byte[ABIStreamingEncoder.DOUBLE_ENCODING_LENGTH];
+        encoded = new byte[ABIStreamingEncoderTest.DOUBLE_ENCODING_LENGTH];
         new ABIStreamingEncoder(encoded).encodeOneDouble(1000);
         decoder = new ABIDecoder(encoded);
         Assert.assertEquals(1000.0, decoder.decodeOneDouble(), 0.1);
