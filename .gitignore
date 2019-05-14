@@ -43,6 +43,7 @@ testreports/
 /dist/
 storage/
 out/
+org.aion.avm.api/bin/overview.html
 
 [master]
 org.aion.avm.microbenchmark/

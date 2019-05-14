@@ -87,6 +87,7 @@
                  author="true"
                  version="true"
                  use="true"
+                 overview="org.aion.avm.api/src/overview.html"
                  windowtitle="AVM Blockchain API">
             <arg value = "-html5"/>
             <fileset dir="org.aion.avm.api/src">
@@ -96,8 +97,6 @@
             <fileset dir="org.aion.avm.userlib/src">
                 <include name="**/*.java"/>
                 <exclude name="**/module-info.java"/>
-                <exclude name="**/AionPlainMap.java"/>
-                <exclude name="**/AionPlainSet.java"/>
             </fileset>
         </javadoc>
 
@@ -135,6 +134,7 @@
         <chmod perm="755" file="${dir.global.build}/dist/compile.sh"></chmod>
         <javac debug="true" debuglevel="source,lines,vars" includeantruntime="false" release="10"
                srcdir="${dir.global.workspace}/dist_test"
+               excludes="**/package-info.java"
             destdir="${dir.global.workspace}/dist_test" includes="**/*.java">
         </javac>
         <copy file="${dir.global.workspace}/dist_test/EmbedCli.class" todir="${dir.global.build}/dist"></copy>

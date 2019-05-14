@@ -35,6 +35,7 @@
         <mkdir dir="${dir.local.build.main}"/>
         <javac debug="true" debuglevel="source,lines,vars" includeantruntime="false" release="10"
                srcdir="${dir.local.src.main}"
+               excludes="**/package-info.java"
                destdir="${dir.local.build.main}" includes="**/*.java,module-info.java">
             <modulepath>
                 <pathelement location="${dir.global.lib}"/>
@@ -67,6 +68,7 @@
         <mkdir dir="${dir.local.build.test}"/>
         <javac debug="true" debuglevel="source,lines,vars" includeantruntime="false" release="10"
                srcdir="${dir.local.src.test}"
+               excludes="**/package-info.java"
                destdir="${dir.local.build.test}" includes="**/*.java,module-info.java">
             <classpath>
                 <pathelement location="${dir.global.lib}/junit-4.12.jar"/>
