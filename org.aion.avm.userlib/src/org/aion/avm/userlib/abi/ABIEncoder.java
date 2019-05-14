@@ -3,8 +3,10 @@ package org.aion.avm.userlib.abi;
 import avm.Address;
 
 /**
- * Utility class for AVM ABI encoding. This class contains static methods
- * for generating transaction data from method name and arguments.
+ * Utility class for AVM ABI encoding.
+ * 
+ * This class provides static helpers for encoding single data elements.
+ * It is typically more appropriate to use {@link ABIStreamingEncoder}.
  */
 public final class ABIEncoder {
     /**
@@ -15,8 +17,8 @@ public final class ABIEncoder {
     private static final int BYTE_MASK = 0xff;
 
     /**
-     * Encode one byte; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one byte
+     * Encodes one byte as a serialized extent.
+     * @param data one byte.
      * @return the byte array that contains the argument descriptor and the encoded data.
      */
     public static byte[] encodeOneByte(byte data) {
@@ -27,8 +29,8 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one boolean; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one boolean
+     * Encodes one boolean as a serialized extent.
+     * @param data one boolean.
      * @return the byte array that contains the argument descriptor and the encoded data.
      */
     public static byte[] encodeOneBoolean(boolean data) {
@@ -39,8 +41,8 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one character; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one character
+     * Encodes one character as a serialized extent.
+     * @param data one character.
      * @return the byte array that contains the argument descriptor and the encoded data.
      */
     public static byte[] encodeOneCharacter(char data) {
@@ -52,8 +54,8 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one short; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one short
+     * Encodes one short as a serialized extent.
+     * @param data one short.
      * @return the byte array that contains the argument descriptor and the encoded data.
      */
     public static byte[] encodeOneShort(short data) {
@@ -65,8 +67,8 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one integer; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one integer
+     * Encodes one integer as a serialized extent.
+     * @param data one integer.
      * @return the byte array that contains the argument descriptor and the encoded data.
      */
     public static byte[] encodeOneInteger(int data) {
@@ -80,8 +82,8 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one long; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one long
+     * Encodes one long as a serialized extent.
+     * @param data one long.
      * @return the byte array that contains the argument descriptor and the encoded data.
      */
     public static byte[] encodeOneLong(long data) {
@@ -99,8 +101,8 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one float; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one float
+     * Encodes float byte as a serialized extent.
+     * @param data one float.
      * @return the byte array that contains the argument descriptor and the encoded data.
      */
     public static byte[] encodeOneFloat(float data) {
@@ -115,8 +117,8 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one double; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one double
+     * Encodes one double as a serialized extent.
+     * @param data one double.
      * @return the byte array that contains the argument descriptor and the encoded data.
      */
     public static byte[] encodeOneDouble(double data) {
@@ -135,10 +137,10 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one byte array; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one byte array
+     * Encodes one byte array as a serialized extent.
+     * Null is encoded as the two identifiers: NULL, followed by A_BYTE.
+     * @param data one byte array.
      * @return the byte array that contains the argument descriptor and the encoded data.
-     * Null is encoded as the two identifiers: NULL, followed by A_BYTE
      */
     public static byte[] encodeOneByteArray(byte[] data) {
         byte[] result;
@@ -160,10 +162,10 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one boolean array; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one boolean array
+     * Encodes one boolean array as a serialized extent.
+     * Null is encoded as the two identifiers: NULL, followed by A_BOOLEAN.
+     * @param data one boolean array.
      * @return the byte array that contains the argument descriptor and the encoded data.
-     * Null is encoded as the two identifiers: NULL, followed by A_BOOLEAN
      */
     public static byte[] encodeOneBooleanArray(boolean[] data) {
         byte[] result;
@@ -187,10 +189,10 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one character array; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one character array
+     * Encodes one character array as a serialized extent.
+     * Null is encoded as the two identifiers: NULL, followed by A_CHAR.
+     * @param data one character array.
      * @return the byte array that contains the argument descriptor and the encoded data.
-     * Null is encoded as the two identifiers: NULL, followed by A_CHAR
      */
     public static byte[] encodeOneCharacterArray(char[] data) {
         byte[] result;
@@ -215,10 +217,10 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one short array; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one short array
+     * Encodes one short array as a serialized extent.
+     * Null is encoded as the two identifiers: NULL, followed by A_SHORT.
+     * @param data one short array.
      * @return the byte array that contains the argument descriptor and the encoded data.
-     * Null is encoded as the two identifiers: NULL, followed by A_SHORT
      */
     public static byte[] encodeOneShortArray(short[] data) {
         byte[] result;
@@ -243,10 +245,10 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one integer array; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one integer array
+     * Encodes one integer array as a serialized extent.
+     * Null is encoded as the two identifiers: NULL, followed by A_INT.
+     * @param data one integer array.
      * @return the byte array that contains the argument descriptor and the encoded data.
-     * Null is encoded as the two identifiers: NULL, followed by A_INT
      */
     public static byte[] encodeOneIntegerArray(int[] data) {
         byte[] result;
@@ -273,10 +275,10 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one long array; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one long array
+     * Encodes one long array as a serialized extent.
+     * Null is encoded as the two identifiers: NULL, followed by A_LONG.
+     * @param data one long array.
      * @return the byte array that contains the argument descriptor and the encoded data.
-     * Null is encoded as the two identifiers: NULL, followed by A_LONG
      */
     public static byte[] encodeOneLongArray(long[] data) {
         byte[] result;
@@ -307,10 +309,10 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one float array; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one float array
+     * Encodes one float array as a serialized extent.
+     * Null is encoded as the two identifiers: NULL, followed by A_FLOAT.
+     * @param data one float array.
      * @return the byte array that contains the argument descriptor and the encoded data.
-     * Null is encoded as the two identifiers: NULL, followed by A_FLOAT
      */
     public static byte[] encodeOneFloatArray(float[] data) {
         byte[] result;
@@ -338,10 +340,10 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one double array; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one double array
+     * Encodes one double array as a serialized extent.
+     * Null is encoded as the two identifiers: NULL, followed by A_DOUBLE.
+     * @param data one double array.
      * @return the byte array that contains the argument descriptor and the encoded data.
-     * Null is encoded as the two identifiers: NULL, followed by A_DOUBLE
      */
     public static byte[] encodeOneDoubleArray(double[] data) {
         byte[] result;
@@ -373,10 +375,10 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one string; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one string
+     * Encodes one String as a serialized extent.
+     * Null is encoded as the two identifiers: NULL, followed by STRING.
+     * @param data one string.
      * @return the byte array that contains the argument descriptor and the encoded data.
-     * Null is encoded as the two identifiers: NULL, followed by STRING
      */
     public static byte[] encodeOneString(String data) {
         byte[] result;
@@ -396,10 +398,10 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one address; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one address
+     * Encodes one Address as a serialized extent.
+     * Null is encoded as the two identifiers: NULL, followed by ADDRESS.
+     * @param data one address.
      * @return the byte array that contains the argument descriptor and the encoded data.
-     * Null is encoded as the two identifiers: NULL, followed by ADDRESS
      */
     public static byte[] encodeOneAddress(Address data) {
         byte[] result;
@@ -420,10 +422,10 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one 2D byte array; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one 2D byte array
+     * Encodes one 2D byte array as a serialized extent.
+     * Null is encoded as the three identifiers: NULL, followed by ARRAY, followed by A_BYTE.
+     * @param data one 2D byte array.
      * @return the byte array that contains the argument descriptor and the encoded data.
-     * Null is encoded as the three identifiers: NULL, followed by ARRAY, followed by A_BYTE
      */
     public static byte[] encodeOne2DByteArray(byte[][] data) {
         byte[] result;
@@ -445,10 +447,10 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one 2D boolean array; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one 2D boolean array
+     * Encodes one 2D boolean array as a serialized extent.
+     * Null is encoded as the three identifiers: NULL, followed by ARRAY, followed by A_BOOLEAN.
+     * @param data one 2D boolean array.
      * @return the byte array that contains the argument descriptor and the encoded data.
-     * Null is encoded as the three identifiers: NULL, followed by ARRAY, followed by A_BOOLEAN
      */
     public static byte[] encodeOne2DBooleanArray(boolean[][] data) {
         byte[] result;
@@ -470,10 +472,10 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one 2D character array; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one 2D character array
+     * Encodes one 2D character array as a serialized extent.
+     * Null is encoded as the three identifiers: NULL, followed by ARRAY, followed by A_CHAR.
+     * @param data one 2D character array.
      * @return the byte array that contains the argument descriptor and the encoded data.
-     * Null is encoded as the three identifiers: NULL, followed by ARRAY, followed by A_CHAR
      */
     public static byte[] encodeOne2DCharacterArray(char[][] data) {
         byte[] result;
@@ -495,10 +497,10 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one 2D short array; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one 2D short array
+     * Encodes one 2D short array as a serialized extent.
+     * Null is encoded as the three identifiers: NULL, followed by ARRAY, followed by A_SHORT.
+     * @param data one 2D short array.
      * @return the byte array that contains the argument descriptor and the encoded data.
-     * Null is encoded as the three identifiers: NULL, followed by ARRAY, followed by A_SHORT
      */
     public static byte[] encodeOne2DShortArray(short[][] data) {
         byte[] result;
@@ -520,10 +522,10 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one 2D integer array; generate the byte array that contains the descriptor and the encoded data.
+     * Encodes one 2D integer array as a serialized extent.
+     * Null is encoded as the three identifiers: NULL, followed by ARRAY, followed by A_INT.
      * @param data one 2D integer array
      * @return the byte array that contains the argument descriptor and the encoded data.
-     * Null is encoded as the three identifiers: NULL, followed by ARRAY, followed by A_INT
      */
     public static byte[] encodeOne2DIntegerArray(int[][] data) {
         byte[] result;
@@ -545,10 +547,10 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one 2D float array; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one 2D float array
+     * Encodes one 2D float array as a serialized extent.
+     * Null is encoded as the three identifiers: NULL, followed by ARRAY, followed by A_FLOAT.
+     * @param data one 2D float array.
      * @return the byte array that contains the argument descriptor and the encoded data.
-     * Null is encoded as the three identifiers: NULL, followed by ARRAY, followed by A_FLOAT
      */
     public static byte[] encodeOne2DFloatArray(float[][] data) {
         byte[] result;
@@ -570,10 +572,10 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one 2D long array; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one 2D long array
+     * Encodes one 2D long array as a serialized extent.
+     * Null is encoded as the three identifiers: NULL, followed by ARRAY, followed by A_LONG.
+     * @param data one 2D long array.
      * @return the byte array that contains the argument descriptor and the encoded data.
-     * Null is encoded as the three identifiers: NULL, followed by ARRAY, followed by A_LONG
      */
     public static byte[] encodeOne2DLongArray(long[][] data) {
         byte[] result;
@@ -595,10 +597,10 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one 2D double array; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one 2D double array
+     * Encodes one 2D double array as a serialized extent.
+     * Null is encoded as the three identifiers: NULL, followed by ARRAY, followed by A_DOUBLE.
+     * @param data one 2D double array.
      * @return the byte array that contains the argument descriptor and the encoded data.
-     * Null is encoded as the three identifiers: NULL, followed by ARRAY, followed by A_DOUBLE
      */
     public static byte[] encodeOne2DDoubleArray(double[][] data) {
         byte[] result;
@@ -620,10 +622,10 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one string array; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one string array
+     * Encodes one String array as a serialized extent.
+     * Null is encoded as the three identifiers: NULL, followed by ARRAY, followed by STRING.
+     * @param data one string array.
      * @return the byte array that contains the argument descriptor and the encoded data.
-     * Null is encoded as the three identifiers: NULL, followed by ARRAY, followed by STRING
      */
     public static byte[] encodeOneStringArray(String[] data) {
         byte[] result;
@@ -645,10 +647,10 @@ public final class ABIEncoder {
     }
 
     /**
-     * Encode one address array; generate the byte array that contains the descriptor and the encoded data.
-     * @param data one address array
+     * Encodes one Address array as a serialized extent.
+     * Null is encoded as the three identifiers: NULL, followed by ARRAY, followed by ADDRESS.
+     * @param data one address array.
      * @return the byte array that contains the argument descriptor and the encoded data.
-     * Null is encoded as the three identifiers: NULL, followed by ARRAY, followed by ADDRESS
      */
     public static byte[] encodeOneAddressArray(Address[] data) {
         byte[] result;

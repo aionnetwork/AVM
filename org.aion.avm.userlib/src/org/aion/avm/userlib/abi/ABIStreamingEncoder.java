@@ -4,8 +4,9 @@ import avm.Address;
 import org.aion.avm.userlib.AionBuffer;
 
 /**
- * Utility class for AVM ABI encoding. This class contains methods
- * for generating transaction data from method name and the supported ABI types.
+ * Utility class for AVM ABI encoding.
+ * 
+ * Instances of this class are stateful, allowing several pieces of data to be serialized into the same buffer.
  */
 public final class ABIStreamingEncoder {
 

@@ -4,6 +4,14 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
+
+/**
+ * A simple Set implementation.
+ * 
+ * <p>This implementation is build directly on top of {@link AionMap}.
+ * 
+ * @param <E> The type of elements within the set.
+ */
 public class AionSet<E> implements Set<E> {
 
     private AionMap<E,Object> map;

@@ -5,7 +5,7 @@ import java.util.*;
 /**
  * B+ Tree based implementation of the {@code Map} interface.
  *
- * This implementation provides all of the optional map operations, and permits {@code null} values.
+ * <p>This implementation provides all of the optional map operations, and permits {@code null} values.
  * {@code null} key will be rejected for this map.
  *
  * <p>This implementation provides log-time performance for the basic operations ({@code get} and {@code put}),
@@ -13,8 +13,11 @@ import java.util.*;
  * Iteration over collection views requires linear time.
  * If AionMap has more than {@code order} number of entries, it is at least half full.
  *
- * Instead of using key as router in internal node, AionMap use the hash code of the key as router to make its
+ * <p>Instead of using key as router in internal node, AionMap use the hash code of the key as router to make its
  * energy cost cheap on Aion blockchain.
+ * 
+ * @param <K> The type of keys within the map.
+ * @param <V> The type of values within the map.
  */
 
 public class AionMap<K, V> implements Map<K, V> {

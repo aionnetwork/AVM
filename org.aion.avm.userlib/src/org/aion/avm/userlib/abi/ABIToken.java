@@ -1,7 +1,7 @@
 package org.aion.avm.userlib.abi;
 
 /**
- * Identifiers of the tokens the ABI uses to describe extends of data in the stream.
+ * Identifiers of the tokens the ABI uses to describe extents of data in a serialized stream.
  */
 public final  class ABIToken {
     public static final byte BYTE = (byte) 0x01;

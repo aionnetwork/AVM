@@ -1,19 +1,14 @@
 package org.aion.avm.userlib;
 
-
 import java.util.*;
 
+
 /**
- * The first rough cut of the List-like abstraction we are providing to our user-space apps.
- * If we proceed with this direction, we will need to improve this implementation/interface significantly, as it only exists
- * to cover very basic uses, at the moment.
+ * A simple List implementation.
  * 
- * Note about userlib package:
- * This is an approach to implementing something analogous to the Java Collections purely in the "user-space" of the contract.
- * That is, these classes are transformed and accessible to contract code, without any special support from our VM.
- * We may expand, change, or remove this idea in favour of something else, as we proceed.  This solution isn't set in stone.
- *
- * We might also want to make the class into a constructor argument, so we can add more aggressive type safety to the internals.
+ * <p>This implementation is backed by a single Object[], starts at 5 elements and doubles when full.
+ * 
+ * @param <E> The type of elements within the set.
  */
 public class AionList<E> implements List<E> {
     private static final int DEFAULT_CAPACITY = 5;
