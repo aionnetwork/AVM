@@ -66,6 +66,11 @@ public class ByteBufferObjectSerializer implements IObjectSerializer {
     }
 
     @Override
+    public void writeByteArray(byte[] value) {
+        this.buffer.put(value);
+    }
+
+    @Override
     public void writeObject(Object value) {
         // Note that these need to be interpreted in a specific order, due to precedence of how difference kinds of immortal objects are resolved:
         // 1) Null - Since we can't proceed further with null

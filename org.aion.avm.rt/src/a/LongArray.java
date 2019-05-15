@@ -102,7 +102,6 @@ public class LongArray extends Array {
     public void deserializeSelf(java.lang.Class<?> firstRealImplementation, IObjectDeserializer deserializer) {
         super.deserializeSelf(LongArray.class, deserializer);
 
-        // TODO (AKI-118):  We probably want faster array copies.
         int length = deserializer.readInt();
         this.underlying = new long[length];
         for (int i = 0; i < length; ++i) {
@@ -113,7 +112,6 @@ public class LongArray extends Array {
     public void serializeSelf(java.lang.Class<?> firstRealImplementation, IObjectSerializer serializer) {
         super.serializeSelf(LongArray.class, serializer);
 
-        // TODO (AKI-118):  We probably want faster array copies.
         serializer.writeInt(this.underlying.length);
         for (int i = 0; i < this.underlying.length; ++i) {
             serializer.writeLong(this.underlying[i]);

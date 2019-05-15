@@ -14,6 +14,7 @@ public interface IObjectSerializer {
     void writeFloat(float value);
     void writeLong(long value);
     void writeDouble(double value);
+    void writeByteArray(byte[] value);
     void writeObject(Object value);
     void writeClassName(String internalClassName);
     void automaticallySerializeToRoot(Class<?> rootClass, Object instance);

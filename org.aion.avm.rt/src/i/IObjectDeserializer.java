@@ -14,6 +14,7 @@ public interface IObjectDeserializer {
     float readFloat();
     long readLong();
     double readDouble();
+    void readByteArray(byte[] result);
     Object readObject();
     String readClassName();
     void automaticallyDeserializeFromRoot(Class<?> rootClass, Object instance);

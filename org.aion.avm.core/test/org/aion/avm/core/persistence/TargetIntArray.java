@@ -29,4 +29,9 @@ public final class TargetIntArray extends TargetRoot {
             this.array[i] = deserializer.readInt();
         }
     }
+
+    public void serializeForTest(Class<?> stopBefore, TestObjectSerializer serializer) {
+        serializer.writeInt(this.array.length);
+        serializer.writeIntArray(this.array);
+    }
 }

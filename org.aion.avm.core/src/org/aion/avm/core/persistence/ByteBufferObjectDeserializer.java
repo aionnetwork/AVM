@@ -66,6 +66,11 @@ public class ByteBufferObjectDeserializer implements IObjectDeserializer {
     }
 
     @Override
+    public void readByteArray(byte[] result) {
+        this.buffer.get(result);
+    }
+
+    @Override
     public Object readObject() {
         // NOTE:  If the instance list is null, this is a pre-pass, meaning we shouldn't try to create/resolve the objects, since we will do this again.
         byte refType = this.buffer.get();
