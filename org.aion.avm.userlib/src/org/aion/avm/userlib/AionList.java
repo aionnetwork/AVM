@@ -25,12 +25,6 @@ public class AionList<E> implements List<E> {
         this.modCount = 0;
     }
 
-    private AionList(int storageCapacity, int size) {
-        this.storage = new Object[storageCapacity];
-        this.size = size;
-        this.modCount = 0;
-    }
-
     public void trimToSize() {
         if (size < storage.length) {
             Object[] tmp = this.storage;
@@ -66,8 +60,8 @@ public class AionList<E> implements List<E> {
         return null;
     }
 
-    @Override
     @SuppressWarnings("unchecked")
+    @Override
     public E get(int index) {
         E result = null;
         if (index < this.size) {
@@ -76,6 +70,7 @@ public class AionList<E> implements List<E> {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public E set(int index, E element) {
         E oldData = null;
@@ -127,6 +122,7 @@ public class AionList<E> implements List<E> {
     }
 
 
+    @SuppressWarnings("unchecked")
     @Override
     public E remove(int index) {
         rangeCheckForRemove(index);
@@ -298,6 +294,7 @@ public class AionList<E> implements List<E> {
         public boolean hasNext() {
             return this.nextIndex < AionList.this.size;
         }
+        @SuppressWarnings("unchecked")
         @Override
         public E next() {
             E elt = null;
@@ -314,6 +311,7 @@ public class AionList<E> implements List<E> {
         public boolean hasPrevious() {
             return this.nextIndex > 0;
         }
+        @SuppressWarnings("unchecked")
         @Override
         public E previous() {
             E elt = null;
@@ -590,18 +588,6 @@ public class AionList<E> implements List<E> {
          * Helpers
          */
 
-        private static void subListRangeCheck(int fromIndex, int toIndex, int size) {
-            if (fromIndex < 0) {
-                throw new IndexOutOfBoundsException("fromIndex = " + fromIndex);
-            }
-            if (toIndex > size) {
-                throw new IndexOutOfBoundsException("toIndex = " + toIndex);
-            }
-            if (fromIndex > toIndex) {
-                throw new IllegalArgumentException("fromIndex(" + fromIndex + ") > toIndex(" + toIndex + ")");
-            }
-        }
-
         private void checkForComodification() {
             if (root.modCount != modCount) {
                 throw new RuntimeException();
@@ -639,6 +625,7 @@ public class AionList<E> implements List<E> {
             public boolean hasNext() {
                 return this.nextIndex < AionSubList.this.size;
             }
+            @SuppressWarnings("unchecked")
             @Override
             public E next() {
                 E elt = null;
@@ -655,6 +642,7 @@ public class AionList<E> implements List<E> {
             public boolean hasPrevious() {
                 return this.nextIndex > 0;
             }
+            @SuppressWarnings("unchecked")
             @Override
             public E previous() {
                 E elt = null;

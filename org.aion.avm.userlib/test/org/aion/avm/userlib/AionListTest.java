@@ -278,7 +278,7 @@ public class AionListTest {
         }
         Assert.assertEquals(10, list.size());
 
-        Iterator iterator = list.iterator();
+        Iterator<String> iterator = list.iterator();
         for (int i = 0; i < 10; ++i) {
             iterator.next();
         }
@@ -303,7 +303,7 @@ public class AionListTest {
         }
         Assert.assertEquals(10, list.size());
 
-        AionList.AionListIterator iterator = (AionList.AionListIterator) list.listIterator(10);
+        AionList<String>.AionListIterator iterator = (AionList<String>.AionListIterator) list.listIterator(10);
 
         for (int i = 0; i < 10; ++i) {
             iterator.previous();

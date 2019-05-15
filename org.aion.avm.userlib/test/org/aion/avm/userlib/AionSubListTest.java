@@ -338,14 +338,14 @@ public class AionSubListTest {
         }
     }
 
-    private void checkListsEqual(List list1, List list2) {
+    private void checkListsEqual(List<?> list1, List<?> list2) {
         Assert.assertEquals(list1.size(), list2.size());
         for (int i = 0; i < list1.size(); i++) {
             Assert.assertEquals(list1.get(i), list2.get(i));
         }
     }
 
-    private void printList(List list) {
+    private void printList(List<?> list) {
         for (int i = 0; i < list.size(); i++) {
             if (i == 0) {
                 System.out.print("[");

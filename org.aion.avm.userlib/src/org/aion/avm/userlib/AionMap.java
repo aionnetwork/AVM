@@ -97,10 +97,11 @@ public class AionMap<K, V> implements Map<K, V> {
      * @return {@code true} if this map contains a mapping for the specified
      * key.
      */
+    @SuppressWarnings("unchecked")
     @Override
     public boolean containsKey(Object key) {
         keyNullCheck((K) key);
-        AionMapEntry entry = this.searchForLeaf((K)key).searchForEntry(key);
+        AionMapEntry entry = this.searchForLeaf((K)key).searchForEntry((K)key);
         return (null != entry);
     }
 
@@ -133,10 +134,11 @@ public class AionMap<K, V> implements Map<K, V> {
      * distinguish these two cases.
      *
      */
+    @SuppressWarnings("unchecked")
     @Override
     public V get(Object key) {
         keyNullCheck((K) key);
-        AionMapEntry entry = this.searchForLeaf((K)key).searchForEntry(key);
+        AionMapEntry entry = this.searchForLeaf((K)key).searchForEntry((K)key);
         return (null == entry) ? null : (V) entry.value;
     }
 
@@ -176,7 +178,7 @@ public class AionMap<K, V> implements Map<K, V> {
                 cur.setValue(value);
             }else{
                 // If entry is not present, add new entry as new head of the slot
-                AionMapEntry<K, V> newEntry = new AionMapEntry<>(key, value);
+                AionMapEntry newEntry = new AionMapEntry(key, value);
                 newEntry.next = leaf.entries[slotIdx];
                 leaf.entries[slotIdx] = newEntry;
                 size++;
@@ -194,10 +196,11 @@ public class AionMap<K, V> implements Map<K, V> {
      *         (A {@code null} return can also indicate that the map
      *         previously associated {@code null} with {@code key}.)
      */
+    @SuppressWarnings("unchecked")
     @Override
     public V remove(Object key) {
         keyNullCheck((K) key);
-        V ret = (V) root.delete(key);
+        V ret = (V) root.delete((K) key);
         if (null != ret){size--;}
         return ret;
     }
@@ -210,9 +213,10 @@ public class AionMap<K, V> implements Map<K, V> {
      * @param m mappings to be stored in this map
      * @throws NullPointerException if the specified map is null
      */
+    @SuppressWarnings("unchecked")
     @Override
     public void putAll(Map<? extends K, ? extends V> m) {
-        for (Entry e : m.entrySet()){
+        for (Entry<?, ?> e : m.entrySet()){
             this.put((K) e.getKey(), (V) e.getValue());
         }
     }
@@ -274,7 +278,7 @@ public class AionMap<K, V> implements Map<K, V> {
      * Abstract representation of a node of the BTree
      * It can be a {@link BInternalNode} or {@link BLeafNode}
      */
-    public abstract class BNode<K, V>{
+    public abstract class BNode {
         BNode parent;
 
         BNode next;
@@ -351,17 +355,18 @@ public class AionMap<K, V> implements Map<K, V> {
     /**
      * Internal node of the BTree
      */
-    public final class BInternalNode<K, V> extends BNode <K, V>{
+    public final class BInternalNode extends BNode {
         // Routers array for navigation
         private int[] routers;
 
         // The children of an internal node.
         // Children are either all internal nodes or all leaf nodes.
-        BNode<K, V>[] children;
+        BNode[] children;
 
+        @SuppressWarnings("unchecked")
         BInternalNode(){
             this.routers = new int[2 * order - 1];
-            this.children = new BNode[2 * order];
+            this.children = new AionMap.BNode[2 * order];
         }
 
         @Override
@@ -429,10 +434,10 @@ public class AionMap<K, V> implements Map<K, V> {
             return ret;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         void borrowFromLeft(){
             BInternalNode leftNode = (BInternalNode)this.pre;
-            BNode fChild = this.children[0];
 
             BInternalNode anchor = (BInternalNode) getAnchor(leftNode);
             int slot = findSlot(anchor, leftNode, this);
@@ -453,6 +458,7 @@ public class AionMap<K, V> implements Map<K, V> {
             leftNode.nodeSize--;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         void mergeToLeft(){
             BInternalNode leftNode = (BInternalNode)this.pre;
@@ -476,6 +482,7 @@ public class AionMap<K, V> implements Map<K, V> {
             leftNode.next = this.next;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         void borrowFromRight(){
             BInternalNode rightNode = (BInternalNode)this.next;
@@ -496,6 +503,7 @@ public class AionMap<K, V> implements Map<K, V> {
             rightNode.nodeSize--;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         void mergeToRight(){
             BInternalNode rightNode = (BInternalNode)this.next;
@@ -533,12 +541,13 @@ public class AionMap<K, V> implements Map<K, V> {
     /**
      * Leaf node of the BTree
      */
-    public final class BLeafNode<K, V> extends BNode <K, V>{
+    public final class BLeafNode extends BNode {
         // Entry array for data storage
-        AionMapEntry<K, V>[] entries;
+        AionMapEntry[] entries;
 
+        @SuppressWarnings("unchecked")
         BLeafNode(){
-            this.entries = new AionMapEntry[2 * order];
+            this.entries = new AionMap.AionMapEntry[2 * order];
         }
 
         public int searchForEntrySlot(K key){
@@ -606,8 +615,8 @@ public class AionMap<K, V> implements Map<K, V> {
 
             if (-1 == slotidx) {return ret;}
 
-            AionMapEntry<K, V> pre = entries[slotidx];
-            AionMapEntry<K, V> cur = pre.next;
+            AionMapEntry pre = entries[slotidx];
+            AionMapEntry cur = pre.next;
 
             if (pre.key.equals(key)){
                 ret = pre.value;
@@ -633,6 +642,7 @@ public class AionMap<K, V> implements Map<K, V> {
             return ret;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         void borrowFromLeft(){
             BLeafNode leftNode = (BLeafNode)this.pre;
@@ -652,6 +662,7 @@ public class AionMap<K, V> implements Map<K, V> {
             anchor.routers[slot] = this.entries[0].hashCode();
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         void mergeToLeft(){
             BLeafNode leftNode = (BLeafNode)this.pre;
@@ -664,6 +675,7 @@ public class AionMap<K, V> implements Map<K, V> {
             leftNode.next = this.next;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         void borrowFromRight(){
             BLeafNode rightNode = (BLeafNode)this.next;
@@ -681,6 +693,7 @@ public class AionMap<K, V> implements Map<K, V> {
             anchor.routers[slot] = rightNode.entries[0].hashCode();
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         void mergeToRight(){
             BLeafNode rightNode = (BLeafNode)this.next;
@@ -703,13 +716,13 @@ public class AionMap<K, V> implements Map<K, V> {
     /**
      * Entry (K V pair) of AionMap
      */
-    public class AionMapEntry<K, V> implements Map.Entry<K, V>{
+    public class AionMapEntry implements Map.Entry<K, V>{
 
         private K key;
 
         private V value;
 
-        public AionMapEntry<K, V> next;
+        public AionMapEntry next;
 
         public AionMapEntry(K key, V value){
             this.key = key;
@@ -912,14 +925,16 @@ public class AionMap<K, V> implements Map<K, V> {
             AionMap.this.clear();
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public final boolean contains(Object o) {
-            K key   = (K) ((Entry) o).getKey();
-            V value = (V) ((Entry) o).getValue();
+            K key   = (K) ((Entry<K, V>) o).getKey();
+            V value = (V) ((Entry<K, V>) o).getValue();
 
             return AionMap.this.containsKey(o) && AionMap.this.get(key).equals(value);
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public final boolean remove(Object ent) {
             Entry<K, V> entry = (Entry<K, V> ) ent;
@@ -947,8 +962,9 @@ public class AionMap<K, V> implements Map<K, V> {
             return (null != curEntry);
         }
 
-        public AionMapEntry<K, V> nextEntry() {
-            AionMapEntry<K, V> elt = null;
+        @SuppressWarnings("unchecked")
+        public AionMapEntry nextEntry() {
+            AionMapEntry elt = null;
 
             if (null != curEntry){
                 elt = curEntry;
@@ -984,7 +1000,7 @@ public class AionMap<K, V> implements Map<K, V> {
 
     public final class AionMapEntryIterator extends AionMapIterator implements Iterator<Entry<K, V>> {
         @Override
-        public AionMapEntry<K, V> next() {
+        public AionMapEntry next() {
             return nextEntry();
         }
     }
@@ -1010,18 +1026,20 @@ public class AionMap<K, V> implements Map<K, V> {
      *
      * @return the left most {@link BLeafNode} of the BTree.
      */
+    @SuppressWarnings("unchecked")
     BLeafNode getLeftMostLeaf(){
         BNode cur = this.root;
-        while (!(cur instanceof BLeafNode)){
+        while (!(cur instanceof AionMap.BLeafNode)) {
             cur = ((BInternalNode) cur).children[0];
         }
         return (BLeafNode)cur;
     }
 
+    @SuppressWarnings("unchecked")
     private BLeafNode searchForLeaf(K key){
         BNode cur = this.root;
 
-        while (!(cur instanceof BLeafNode)){
+        while (!(cur instanceof AionMap.BLeafNode)){
             BInternalNode tmp = (BInternalNode) cur;
 
             int i = tmp.nodeSize - 1;
@@ -1063,6 +1081,7 @@ public class AionMap<K, V> implements Map<K, V> {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void bSplitTreeChild(BInternalNode x, int i){
         // Left node
         BInternalNode y = (BInternalNode) x.children[i];
@@ -1105,6 +1124,7 @@ public class AionMap<K, V> implements Map<K, V> {
         x.nodeSize++;
     }
 
+    @SuppressWarnings("unchecked")
     private void bSplitLeafChild(BInternalNode x, int i){
         BLeafNode y = (BLeafNode) x.children[i];
         BLeafNode z = new BLeafNode();
