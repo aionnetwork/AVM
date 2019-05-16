@@ -7,8 +7,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
+
 import org.aion.avm.core.util.Helpers;
 import i.RuntimeAssertionError;
 import org.aion.avm.userlib.AionBuffer;
@@ -29,8 +32,11 @@ import org.aion.avm.userlib.abi.ABIToken;
  * would be complicated to communicate (streams are closed when reading the bytes, for example).
  */
 public class JarBuilder {
+    // AKI-135: We define this value as our fixed timestamp for tests (this number is similar to what we were using when the tests
+    // were written and some of them assume compressed size).
+    private static long FIXED_TIMESTAMP = 1_000_000_000_000L;
 
-    private static Class[] userlibClasses = new Class[] {ABIDecoder.class, ABIEncoder.class,
+    private static Class<?>[] userlibClasses = new Class[] {ABIDecoder.class, ABIEncoder.class,
         ABIStreamingEncoder.class, ABIException.class, ABIToken.class, AionBuffer.class, AionList.class, AionMap.class, AionSet.class};
 
     /**
@@ -178,7 +184,13 @@ public class JarBuilder {
         JarOutputStream stream = null;
         try {
             // We always write the manifest into the high-level JAR stream.
-            stream = new JarOutputStream(this.byteStream, manifest);
+            stream = new JarOutputStream(this.byteStream);
+            // AKI-135: We need to write the manifest, manually, to give it a deterministic timestamp.
+            ZipEntry manifestEntry = new ZipEntry(JarFile.MANIFEST_NAME);
+            manifestEntry.setTime(FIXED_TIMESTAMP);
+            stream.putNextEntry(manifestEntry);
+            manifest.write(stream);
+            stream.closeEntry();
         } catch (IOException e) {
             // We are using a byte array so this can't happen.
             throw RuntimeAssertionError.unexpected(e);
@@ -238,6 +250,8 @@ public class JarBuilder {
         String internalName = Helpers.fulllyQualifiedNameToInternalName(qualifiedClassName);
         RuntimeAssertionError.assertTrue(!this.entriesInJar.contains(internalName));
         JarEntry entry = new JarEntry(internalName + ".class");
+        // AKI-135: While we only use this utility in tests, it is still convenient if we force the timestamp for deterministic JAR creation.
+        entry.setTime(FIXED_TIMESTAMP);
         this.jarStream.putNextEntry(entry);
         this.jarStream.write(bytes);
         this.jarStream.closeEntry();

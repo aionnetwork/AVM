@@ -14,4 +14,15 @@ public class JarBuilderTest {
         LoadedJar jar = LoadedJar.fromBytes(bytes);
         Assert.assertEquals(JarBuilderTest.class.getName(), jar.mainClassName);
     }
+
+    /**
+     * Proves that we will create the same JAR file even if our local time changes by a few seconds.
+     */
+    @Test
+    public void testConsistencyOnCall() throws Exception {
+        byte[] bytes = JarBuilder.buildJarForMainAndClasses(JarBuilderTest.class);
+        Thread.sleep(2000);
+        byte[] bytes2 = JarBuilder.buildJarForMainAndClasses(JarBuilderTest.class);
+        Assert.assertArrayEquals(bytes, bytes2);
+    }
 }
