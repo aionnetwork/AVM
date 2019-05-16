@@ -2,6 +2,7 @@ package org.aion.kernel;
 
 import java.math.BigInteger;
 
+import i.RuntimeAssertionError;
 import org.aion.avm.core.BillingRules;
 import org.aion.avm.core.util.Helpers;
 import org.aion.types.Address;
@@ -11,76 +12,33 @@ import java.util.Objects;
 import org.aion.vm.api.interfaces.TransactionInterface;
 
 
-public class Transaction implements TransactionInterface {
+public final class Transaction implements TransactionInterface {
     public static Transaction create(Address from, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
-        return new Transaction(Type.CREATE, from, null, nonce, value, data, energyLimit, energyPrice);
+        return new Transaction(from, null, nonce, value, data, energyLimit, energyPrice);
     }
 
     public static Transaction call(Address from, Address to, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
-        return new Transaction(Type.CALL, from, to, nonce, value, data, energyLimit, energyPrice);
+        if(to == null) {
+            throw new IllegalArgumentException("The transaction to can't be NULL for non-CREATE");
+        }
+        return new Transaction(from, to, nonce, value, data, energyLimit, energyPrice);
     }
 
-    public enum Type {
-        /**
-         * The CREATE is used to deploy a new DApp.
-         */
-        CREATE(3),
-        /**
-         * The CALL is used when sending an invocation to an existing DApp.
-         */
-        CALL(0);
-
-        private int value;
-
-        Type(int value) {
-            this.value = value;
-        }
-
-        public int toInt() {
-            return this.value;
-        }
-
-        public byte toByte() {
-            return (byte) this.value;
-        }
-    }
-
-    Type type;
-
-    byte[] from;
-
-    byte[] to;
-
-    BigInteger nonce;
-
-    BigInteger value;
+    private final byte[] from;
+    private final byte[] to;
+    private final BigInteger nonce;
+    private final BigInteger value;
+    private final byte[] data;
+    private final long energyLimit;
+    private final long energyPrice;
+    private final byte[] transactionHash;
 
     long timestamp;
-
     byte[] timestampAsBytes;
 
-    byte[] data;
-
-    long energyLimit;
-
-    long energyPrice;
-
-    byte[] transactionHash;
-
-    byte vm;
-
-    protected Transaction(Type type, Address from, Address to, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
-        Objects.requireNonNull(type, "The transaction `type` can't be NULL");
+    private Transaction(Address from, Address to, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         Objects.requireNonNull(from, "The transaction `from` can't be NULL");
-        if (type == Type.CREATE) {
-           if (to != null) {
-               throw new IllegalArgumentException("The transaction `to` has to be NULL for CREATE");
-           }
-        } else {
-            Objects.requireNonNull(to, "The transaction `to`  can't be NULL for non-CREATE");
-        }
 
-        this.type = type;
         this.from = from.toBytes();
         this.to = (to == null) ? null : to.toBytes();
         this.nonce = nonce;
@@ -88,31 +46,7 @@ public class Transaction implements TransactionInterface {
         this.data = data;
         this.energyLimit = energyLimit;
         this.energyPrice = energyPrice;
-        //TODO (AKI-114): Make sure this constructor is only used for testing purpose. Kernel should always pass AVM the transaction hash.
-        //Note: This constructor is also used when constructing InternalTransactions.
         this.transactionHash = new byte[32];
-    }
-
-    protected Transaction(Type type, byte[] from, byte[] to, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice, byte[] transactionHash) {
-        Objects.requireNonNull(type, "The transaction `type` can't be NULL");
-        Objects.requireNonNull(from, "The transaction `from` can't be NULL");
-        if (type == Type.CREATE) {
-            if (to != null) {
-                throw new IllegalArgumentException("The transaction `to` has to be NULL for CREATE");
-            }
-        } else {
-            Objects.requireNonNull(to, "The transaction `to`  can't be NULL for non-CREATE");
-        }
-
-        this.type = type;
-        this.from = from;
-        this.to = to;
-        this.nonce = nonce;
-        this.value = value;
-        this.data = data;
-        this.energyLimit = energyLimit;
-        this.energyPrice = energyPrice;
-        this.transactionHash = transactionHash;
     }
 
     @Override
@@ -123,10 +57,6 @@ public class Transaction implements TransactionInterface {
         return this.timestampAsBytes;
     }
 
-    long getTimestampAsLong() {
-        return timestamp;
-    }
-
     /**
      * Returns the {@link org.aion.vm.api.interfaces.VirtualMachine} that this transaction must be
      * executed by in the case of a contract creation.
@@ -135,15 +65,9 @@ public class Transaction implements TransactionInterface {
      */
     @Override
     public byte getTargetVM() {
-        return this.vm;
+        throw RuntimeAssertionError.unreachable("getTargetVM is not expected in vm transaction.");
     }
 
-    /**
-     * Returns the type of transactional logic that this transaction will cause to be executed.
-     */
-    public Type getType() {
-        return type;
-    }
 
     @Override
     public Address getSenderAddress() {
@@ -158,7 +82,7 @@ public class Transaction implements TransactionInterface {
 
     @Override
     public Address getContractAddress() {
-        throw new AssertionError("Did not expect this to be called.");
+        throw RuntimeAssertionError.unreachable("getContractAddress is not expected in vm transaction.");
     }
 
     @Override
@@ -166,17 +90,9 @@ public class Transaction implements TransactionInterface {
         return this.nonce.toByteArray();
     }
 
-    long getNonceAsLong() {
-        return nonce.longValue();
-    }
-
     @Override
     public byte[] getValue() {
         return this.value.toByteArray();
-    }
-
-    BigInteger getValueAsBigInteger() {
-        return value;
     }
 
     @Override
@@ -215,13 +131,13 @@ public class Transaction implements TransactionInterface {
 
     @Override
     public byte getKind() {
-        return type.toByte();
+        throw RuntimeAssertionError.unreachable("getKind is not expected in vm transaction.");
     }
 
     @Override
     public String toString() {
         return "Transaction{" +
-                "type=" + type +
+                "type=" + (this.isContractCreationTransaction()? "CREATE" :"CALL" ) +
                 ", from=" + Helpers.bytesToHexString(Arrays.copyOf(from, 4)) +
                 ", to=" + Helpers.bytesToHexString(Arrays.copyOf(to, 4)) +
                 ", value=" + value +

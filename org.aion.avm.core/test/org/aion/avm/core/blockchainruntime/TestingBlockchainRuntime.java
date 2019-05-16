@@ -18,9 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import org.aion.kernel.Transaction.Type;
 import org.aion.vm.api.interfaces.KernelInterface;
-import org.aion.vm.api.interfaces.TransactionContext;
 
 
 /**
@@ -50,22 +48,6 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
 
     public TestingBlockchainRuntime(IExternalCapabilities capabilities) {
         this.capabilities = capabilities;
-    }
-
-    public TestingBlockchainRuntime(IExternalCapabilities capabilities, TransactionContext ctx) {
-        this.capabilities = capabilities;
-        this.address = (ctx.getTransactionKind() == Type.CREATE.toInt())
-            ? capabilities.generateContractAddress(ctx.getTransaction())
-            : ctx.getDestinationAddress();
-        this.caller = ctx.getSenderAddress();
-        this.origin = ctx.getOriginAddress();
-        this.value = new BigInteger(ctx.getTransferValue());
-        this.data = this.address.toBytes();
-        this.energyLimit = ctx.getTransaction().getEnergyLimit();
-        this.energyPrice = ctx.getTransactionEnergyPrice();
-        this.blockNumber = ctx.getBlockNumber();
-        this.blockTimstamp = ctx.getBlockTimestamp();
-        this.blockDifficulty = java.math.BigInteger.valueOf(ctx.getBlockDifficulty());
     }
 
     public TestingBlockchainRuntime withAddress(byte[] address) {

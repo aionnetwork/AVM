@@ -19,9 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import org.aion.kernel.Transaction.Type;
 import org.aion.vm.api.interfaces.KernelInterface;
-import org.aion.vm.api.interfaces.TransactionContext;
 
 
 /**
@@ -49,21 +47,6 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     private Map<java.lang.String, Integer> eventCounter = new HashMap<>();
 
     public TestingBlockchainRuntime() {
-    }
-
-    public TestingBlockchainRuntime(TransactionContext ctx) {
-        this.address = (ctx.getTransactionKind() == Type.CREATE.toInt())
-            ? AddressUtil.generateContractAddress(ctx.getTransaction())
-            : ctx.getDestinationAddress();
-        this.caller = ctx.getSenderAddress();
-        this.origin = ctx.getOriginAddress();
-        this.value = new BigInteger(ctx.getTransferValue());
-        this.data = this.address.toBytes();
-        this.energyLimit = ctx.getTransaction().getEnergyLimit();
-        this.energyPrice = ctx.getTransactionEnergyPrice();
-        this.blockNumber = ctx.getBlockNumber();
-        this.blockTimstamp = ctx.getBlockTimestamp();
-        this.blockDifficulty = java.math.BigInteger.valueOf(ctx.getBlockDifficulty());
     }
 
     public TestingBlockchainRuntime withAddress(byte[] address) {

@@ -9,7 +9,6 @@ import a.ByteArray;
 import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.LogSizeUtils;
 import org.aion.kernel.*;
-import org.aion.kernel.Transaction.Type;
 import org.aion.parallel.TransactionTask;
 
 import java.util.List;
@@ -237,7 +236,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         }
 
         // construct the internal transaction
-        InternalTransaction internalTx = new InternalTransaction(Type.CALL,
+        InternalTransaction internalTx = InternalTransaction.buildTransactionOfTypeCall(
                 internalSender,
                 target,
                 this.kernel.getNonce(internalSender),
@@ -267,9 +266,8 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         }
 
         // construct the internal transaction
-        InternalTransaction internalTx = new InternalTransaction(Type.CREATE,
+        InternalTransaction internalTx = InternalTransaction.buildTransactionOfTypeCreate(
                 internalSender,
-                null,
                 this.kernel.getNonce(internalSender),
                 underlyingValue,
                 data.getUnderlying(),
