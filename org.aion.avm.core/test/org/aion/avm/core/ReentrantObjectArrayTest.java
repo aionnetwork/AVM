@@ -10,9 +10,9 @@ import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.AvmTransactionResult.Code;
-import org.aion.kernel.Block;
+import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
-import org.aion.kernel.Transaction;
+import org.aion.kernel.TestingTransaction;
 import org.aion.types.Address;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.After;
@@ -26,7 +26,7 @@ public class ReentrantObjectArrayTest {
     private long energyPrice = 1L;
 
     // block
-    private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+    private TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
     // kernel & vm
     private TestingKernel kernel;
@@ -41,8 +41,8 @@ public class ReentrantObjectArrayTest {
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(ReentrantObjectArrayTestResource.class);
-        Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TestingTransaction tx = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, energyPrice);
+        TransactionResult txResult = avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         dappAddress = Address.wrap(txResult.getReturnData());
     }
@@ -55,8 +55,8 @@ public class ReentrantObjectArrayTest {
     @Test
     public void testReentrantStringArray() {
         byte[] data = ABIUtil.encodeMethodArguments("testString");
-        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
         assertEquals(Code.SUCCESS, txResult.getResultCode());
     }

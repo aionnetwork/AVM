@@ -91,8 +91,8 @@ public class CryptoUtilMethodFeeBenchmarkTest {
 
         this.kernel = new TestingKernel();
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
-        Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        dappAddress = org.aion.types.Address.wrap(avm.run(this.kernel, new Transaction[] {tx})[0].get().getReturnData());
+        TestingTransaction tx = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        dappAddress = org.aion.types.Address.wrap(avm.run(this.kernel, new TestingTransaction[] {tx})[0].get().getReturnData());
         Assert.assertNotNull(dappAddress);
     }
 
@@ -313,10 +313,10 @@ public class CryptoUtilMethodFeeBenchmarkTest {
     private long getCallTime(String methodName, Object... arguments) {
         long st;
         long et;
-        Transaction tx = setupTransaction(methodName, arguments);
+        TestingTransaction tx = setupTransaction(methodName, arguments);
 
         st = System.nanoTime();
-        TransactionResult result = avm.run(this.kernel, new Transaction[]{tx})[0].get();
+        TransactionResult result = avm.run(this.kernel, new TestingTransaction[]{tx})[0].get();
         et = System.nanoTime();
 
         Assert.assertEquals(Code.SUCCESS, result.getResultCode());
@@ -324,9 +324,9 @@ public class CryptoUtilMethodFeeBenchmarkTest {
         return et - st;
     }
 
-    private Transaction setupTransaction(String methodName, java.lang.Object... arguments){
+    private TestingTransaction setupTransaction(String methodName, java.lang.Object... arguments){
         byte[] txData = ABIUtil.encodeMethodArguments(methodName, arguments);
-        return Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        return TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
     }
 
     private String[] generateListOfStrings(int count){

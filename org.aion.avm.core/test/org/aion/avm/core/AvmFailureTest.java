@@ -7,9 +7,9 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.Block;
+import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
-import org.aion.kernel.Transaction;
+import org.aion.kernel.TestingTransaction;
 import org.aion.types.Address;
 import org.aion.vm.api.interfaces.InternalTransactionInterface;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -29,7 +29,7 @@ public class AvmFailureTest {
     private long energyPrice = 1L;
 
     // block
-    private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+    private TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
     // kernel & vm
     private TestingKernel kernel;
@@ -45,8 +45,8 @@ public class AvmFailureTest {
         
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(AvmFailureTestResource.class);
         byte[] arguments = null;
-        Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TestingTransaction tx = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
+        TransactionResult txResult = avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
         dappAddress = Address.wrap(txResult.getReturnData());
         assertTrue(null != dappAddress);
@@ -60,8 +60,8 @@ public class AvmFailureTest {
     @Test
     public void testFailedTransaction() {
         byte[] data = ABIUtil.encodeMethodArguments("reentrantCall", 5);
-        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
         assertEquals(AvmTransactionResult.Code.FAILED_REVERT, txResult.getResultCode());
         assertEquals(5, txResult.getSideEffects().getInternalTransactions().size());
@@ -75,8 +75,8 @@ public class AvmFailureTest {
     @Test
     public void testOutOfEnergy() {
         byte[] data = ABIUtil.encodeMethodArguments("testOutOfEnergy");
-        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        TransactionResult txResult = avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
         assertEquals(AvmTransactionResult.Code.FAILED_OUT_OF_ENERGY, txResult.getResultCode());
     }
@@ -84,8 +84,8 @@ public class AvmFailureTest {
     @Test
     public void testOutOfStack() {
         byte[] data = ABIUtil.encodeMethodArguments("testOutOfStack");
-        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        TransactionResult txResult = avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
         assertEquals(AvmTransactionResult.Code.FAILED_OUT_OF_STACK, txResult.getResultCode());
     }
@@ -93,8 +93,8 @@ public class AvmFailureTest {
     @Test
     public void testRevert() {
         byte[] data = ABIUtil.encodeMethodArguments("testRevert");
-        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
         assertEquals(AvmTransactionResult.Code.FAILED_REVERT, txResult.getResultCode());
         assertNotEquals(energyLimit, txResult.getEnergyUsed());
@@ -104,8 +104,8 @@ public class AvmFailureTest {
     @Test
     public void testInvalid() {
         byte[] data = ABIUtil.encodeMethodArguments("testInvalid");
-        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
         assertEquals(AvmTransactionResult.Code.FAILED_INVALID, txResult.getResultCode());
         assertEquals(energyLimit, txResult.getEnergyUsed());
@@ -115,8 +115,8 @@ public class AvmFailureTest {
     @Test
     public void testUncaughtException() {
         byte[] data = ABIUtil.encodeMethodArguments("testUncaughtException");
-        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
         assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, txResult.getResultCode());
         assertTrue(txResult.getUncaughtException() instanceof RuntimeException);
@@ -126,11 +126,11 @@ public class AvmFailureTest {
     public void testInvalidTransaction() {
         // We will encode a transaction with invalid data (null data).
         byte[] data = null;
-        Transaction falingTransaction = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        TestingTransaction falingTransaction = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
         boolean didFail = false;
         // This next call should fail with IllegalArgumentException so catch it.
         try {
-            avm.run(this.kernel, new Transaction[] {falingTransaction})[0].get();
+            avm.run(this.kernel, new TestingTransaction[] {falingTransaction})[0].get();
         } catch (IllegalArgumentException e) {
             didFail = true;
         }
@@ -139,8 +139,8 @@ public class AvmFailureTest {
         // Make sure that we haven't corrupted the system and can still deploy new things
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(AvmFailureTestResource.class);
         byte[] arguments = null;
-        Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TestingTransaction tx = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
+        TransactionResult txResult = avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult.getResultCode());
         Assert.assertNotNull(Address.wrap(txResult.getReturnData()));
     }

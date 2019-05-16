@@ -19,7 +19,7 @@ import org.junit.Test;
 public class AionCollectionPerfTest {
 
     private org.aion.types.Address from = TestingKernel.PREMINED_ADDRESS;
-    private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+    private TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
     private long energyLimit = 100_000_000L;
     private long energyPrice = 1;
 
@@ -39,8 +39,8 @@ public class AionCollectionPerfTest {
 
 
         byte[] testWalletArguments = new byte[0];
-        Transaction createTransaction = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new Transaction[] {createTransaction})[0].get();
+        TestingTransaction createTransaction = TestingTransaction.create(from, kernel.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
+        TransactionResult createResult = avm.run(kernel, new TestingTransaction[] {createTransaction})[0].get();
 
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
 
@@ -49,8 +49,8 @@ public class AionCollectionPerfTest {
 
 
     private TransactionResult call(KernelInterface kernel, AvmImpl avm, org.aion.types.Address contract, org.aion.types.Address sender, byte[] args) {
-        Transaction callTransaction = Transaction.call(sender, contract, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1l);
-        TransactionResult callResult = avm.run(kernel, new Transaction[] {callTransaction})[0].get();
+        TestingTransaction callTransaction = TestingTransaction.call(sender, contract, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1l);
+        TransactionResult callResult = avm.run(kernel, new TestingTransaction[] {callTransaction})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
         return callResult;
     }

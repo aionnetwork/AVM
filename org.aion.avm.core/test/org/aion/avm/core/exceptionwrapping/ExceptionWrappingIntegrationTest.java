@@ -30,7 +30,7 @@ public class ExceptionWrappingIntegrationTest {
     private final int attackExceptionHandlingTargetDeploymentEnergyCalls = 100;
     @Test
     public void testExceptionPersistence() throws Exception {
-        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new TestingKernel(block);
@@ -39,8 +39,8 @@ public class ExceptionWrappingIntegrationTest {
         // Deploy.
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
-        Transaction create = Transaction.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new Transaction[] {create})[0].get();
+        TestingTransaction create = TestingTransaction.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
+        TransactionResult createResult = avm.run(kernel, new TestingTransaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddr = new Address(createResult.getReturnData());
         
@@ -62,7 +62,7 @@ public class ExceptionWrappingIntegrationTest {
 
     @Test
     public void testOutOfEnergy() throws Exception {
-        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new TestingKernel(block);
@@ -71,8 +71,8 @@ public class ExceptionWrappingIntegrationTest {
         // Deploy.
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
-        Transaction create = Transaction.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new Transaction[] {create})[0].get();
+        TestingTransaction create = TestingTransaction.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
+        TransactionResult createResult = avm.run(kernel, new TestingTransaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddr = new Address(createResult.getReturnData());
         
@@ -84,7 +84,7 @@ public class ExceptionWrappingIntegrationTest {
 
     @Test
     public void testNullPointerException() throws Exception {
-        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new TestingKernel(block);
@@ -93,8 +93,8 @@ public class ExceptionWrappingIntegrationTest {
         // Deploy.
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
-        Transaction create = Transaction.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new Transaction[] {create})[0].get();
+        TestingTransaction create = TestingTransaction.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
+        TransactionResult createResult = avm.run(kernel, new TestingTransaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddr = new Address(createResult.getReturnData());
         
@@ -106,7 +106,7 @@ public class ExceptionWrappingIntegrationTest {
 
     @Test
     public void testOutOfMemoryError() throws Exception {
-        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(AttackExceptionHandlingTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new TestingKernel(block);
@@ -115,8 +115,8 @@ public class ExceptionWrappingIntegrationTest {
         // Deploy.
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
-        Transaction create = Transaction.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new Transaction[] {create})[0].get();
+        TestingTransaction create = TestingTransaction.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
+        TransactionResult createResult = avm.run(kernel, new TestingTransaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddr = new Address(createResult.getReturnData());
         
@@ -144,7 +144,7 @@ public class ExceptionWrappingIntegrationTest {
 
     @Test
     public void testOutOfMemoryErrorReentrant() throws Exception {
-        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(AttackExceptionHandlingTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         KernelInterface kernel = new TestingKernel(block);
@@ -153,8 +153,8 @@ public class ExceptionWrappingIntegrationTest {
         // Deploy.
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
-        Transaction create = Transaction.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new Transaction[] {create})[0].get();
+        TestingTransaction create = TestingTransaction.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
+        TransactionResult createResult = avm.run(kernel, new TestingTransaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddr = new Address(createResult.getReturnData());
         // The next call will spin in a loop, thus triggering our failure.
@@ -180,24 +180,24 @@ public class ExceptionWrappingIntegrationTest {
     }
 
 
-    private Object callStatic(Block block, KernelInterface kernel,  AvmImpl avm, Address contractAddr, String methodName) {
+    private Object callStatic(TestingBlock block, KernelInterface kernel, AvmImpl avm, Address contractAddr, String methodName) {
         TransactionResult result = commonCallStatic(block, kernel, avm, contractAddr, methodName);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         return ABIUtil.decodeOneObject(result.getReturnData());
     }
 
-    private ResultCode callStaticStatus(Block block, KernelInterface kernel,  AvmImpl avm, Address contractAddr, String methodName) {
+    private ResultCode callStaticStatus(TestingBlock block, KernelInterface kernel, AvmImpl avm, Address contractAddr, String methodName) {
         TransactionResult result = commonCallStatic(block, kernel, avm, contractAddr, methodName);
         return result.getResultCode();
     }
 
-    private TransactionResult commonCallStatic(Block block, KernelInterface kernel, AvmImpl avm, Address contractAddr, String methodName) {
+    private TransactionResult commonCallStatic(TestingBlock block, KernelInterface kernel, AvmImpl avm, Address contractAddr, String methodName) {
         org.aion.types.Address from = TestingKernel.PREMINED_ADDRESS;
         long energyLimit = 1_000_000l;
         byte[] argData = (null != methodName)
                 ? ABIUtil.encodeMethodArguments(methodName)
                 : new byte[0];
-        Transaction call = Transaction.call(from, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(from), BigInteger.ZERO, argData, energyLimit, 1l);
-        return avm.run(kernel, new Transaction[] {call})[0].get();
+        TestingTransaction call = TestingTransaction.call(from, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(from), BigInteger.ZERO, argData, energyLimit, 1l);
+        return avm.run(kernel, new TestingTransaction[] {call})[0].get();
     }
 }

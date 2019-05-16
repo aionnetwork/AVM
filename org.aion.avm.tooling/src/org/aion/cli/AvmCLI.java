@@ -24,9 +24,9 @@ import org.aion.vm.api.interfaces.TransactionResult;
 
 
 public class AvmCLI {
-    static Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+    static TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
-    public static Transaction setupOneDeploy(IEnvironment env, String storagePath, String jarPath, org.aion.types.Address sender, long energyLimit, BigInteger balance) {
+    public static TestingTransaction setupOneDeploy(IEnvironment env, String storagePath, String jarPath, org.aion.types.Address sender, long energyLimit, BigInteger balance) {
 
         reportDeployRequest(env, storagePath, jarPath, sender);
 
@@ -46,7 +46,7 @@ public class AvmCLI {
             throw env.fail("deploy : Invalid location of Dapp jar");
         }
 
-        return Transaction.create(sender, kernel.getNonce(sender), balance, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, 1L);
+        return TestingTransaction.create(sender, kernel.getNonce(sender), balance, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, 1L);
     }
 
     public static void reportDeployRequest(IEnvironment env, String storagePath, String jarPath, org.aion.types.Address sender) {
@@ -68,20 +68,20 @@ public class AvmCLI {
         env.logLine("Energy cost  : " + ((AvmTransactionResult) createResult).getEnergyUsed());
     }
 
-    public static Transaction setupOneCall(IEnvironment env, String storagePath, org.aion.types.Address contract, org.aion.types.Address sender, String method, Object[] args, long energyLimit, long nonceBias, BigInteger balance) {
+    public static TestingTransaction setupOneCall(IEnvironment env, String storagePath, org.aion.types.Address contract, org.aion.types.Address sender, String method, Object[] args, long energyLimit, long nonceBias, BigInteger balance) {
         reportCallRequest(env, storagePath, contract, sender, method, args);
 
         byte[] arguments = ABIUtil.encodeMethodArguments(method, args);
         return commonSetupTransaction(env, storagePath, contract, sender, arguments, energyLimit, nonceBias, balance);
     }
 
-    public static Transaction setupOneTransfer(IEnvironment env, String storagePath, org.aion.types.Address recipient, org.aion.types.Address sender, long energyLimit, long nonceBias, BigInteger balance) {
+    public static TestingTransaction setupOneTransfer(IEnvironment env, String storagePath, org.aion.types.Address recipient, org.aion.types.Address sender, long energyLimit, long nonceBias, BigInteger balance) {
         reportTransferRequest(env, storagePath, recipient, sender, balance);
 
         return commonSetupTransaction(env, storagePath, recipient, sender, new byte[0], energyLimit, nonceBias, balance);
     }
 
-    private static Transaction commonSetupTransaction(IEnvironment env, String storagePath, org.aion.types.Address target, org.aion.types.Address sender, byte[] data, long energyLimit, long nonceBias, BigInteger balance) {
+    private static TestingTransaction commonSetupTransaction(IEnvironment env, String storagePath, org.aion.types.Address target, org.aion.types.Address sender, byte[] data, long energyLimit, long nonceBias, BigInteger balance) {
 
         if (target.toBytes().length != Address.LENGTH){
             throw env.fail("call : Invalid Dapp address ");
@@ -97,7 +97,7 @@ public class AvmCLI {
 
         // Note that we can remove this bias when/if we change this to no longer send all transactions from the same account.
         BigInteger biasedNonce = kernel.getNonce(sender).add(BigInteger.valueOf(nonceBias));
-        return Transaction.call(sender, target, biasedNonce, balance, data, energyLimit, 1L);
+        return TestingTransaction.call(sender, target, biasedNonce, balance, data, energyLimit, 1L);
     }
 
     private static void reportCallRequest(IEnvironment env, String storagePath, org.aion.types.Address contract, org.aion.types.Address sender, String method, Object[] args){
@@ -256,7 +256,7 @@ public class AvmCLI {
                 }
             } else {
                 // Setup the transactions.
-                Transaction[] transactions = new Transaction[invocation.commands.size()];
+                TestingTransaction[] transactions = new TestingTransaction[invocation.commands.size()];
                 for (int i = 0; i < invocation.commands.size(); ++i) {
                     ArgumentParser.Command command = invocation.commands.get(i);
                     switch (command.action) {

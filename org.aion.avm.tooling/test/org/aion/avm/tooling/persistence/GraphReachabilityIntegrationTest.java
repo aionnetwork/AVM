@@ -35,7 +35,7 @@ public class GraphReachabilityIntegrationTest {
      */
     @Test
     public void test249_direct() throws Exception {
-        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         Address contractAddr = doInitialDeploymentAndSetup(block);
         
         // Verify before.
@@ -66,7 +66,7 @@ public class GraphReachabilityIntegrationTest {
      */
     @Test
     public void test249_notLoaded() throws Exception {
-        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         Address contractAddr = doInitialDeploymentAndSetup(block);
         
         // Verify before.
@@ -103,7 +103,7 @@ public class GraphReachabilityIntegrationTest {
      */
     @Test
     public void test249_loaded() throws Exception {
-        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         Address contractAddr = doInitialDeploymentAndSetup(block);
         
         // Verify before.
@@ -139,7 +139,7 @@ public class GraphReachabilityIntegrationTest {
      */
     @Test
     public void testNewObjectWritebackViaUnreachablePath() throws Exception {
-        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         Address contractAddr = doInitialDeploymentAndSetup(block);
         
         // Run test.
@@ -180,7 +180,7 @@ public class GraphReachabilityIntegrationTest {
      */
     @Test
     public void testNewObjectWritebackViaUnreachablePath2() throws Exception {
-        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         Address contractAddr = doInitialDeploymentAndSetup(block);
         
         // Run test.
@@ -220,7 +220,7 @@ public class GraphReachabilityIntegrationTest {
     }
 
 
-    private Address doInitialDeploymentAndSetup(Block block) {
+    private Address doInitialDeploymentAndSetup(TestingBlock block) {
         // The assertions in this method depends on the gas charged, which in turn depends on the exact size of the jar file.
         // The AvmRule invokes the ABICompiler on all input jars.
         // As a result, we have to run the ABICompiler on the input jar to get the correct expected gas values.
@@ -262,7 +262,7 @@ public class GraphReachabilityIntegrationTest {
         return contractAddr;
     }
 
-    private Object callStatic(Block block, Address contractAddr, long expectedCost, String methodName, Object... args) {
+    private Object callStatic(TestingBlock block, Address contractAddr, long expectedCost, String methodName, Object... args) {
         long energyLimit = 1_000_000l;
         byte[] argData = ABIUtil.encodeMethodArguments(methodName, args);
         AvmTransactionResult result = (AvmTransactionResult) avmRule.call(deployer, contractAddr, BigInteger.ZERO, argData, energyLimit, 1l).getTransactionResult();

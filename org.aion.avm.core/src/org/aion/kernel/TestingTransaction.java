@@ -12,16 +12,16 @@ import java.util.Objects;
 import org.aion.vm.api.interfaces.TransactionInterface;
 
 
-public final class Transaction implements TransactionInterface {
-    public static Transaction create(Address from, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
-        return new Transaction(from, null, nonce, value, data, energyLimit, energyPrice);
+public final class TestingTransaction implements TransactionInterface {
+    public static TestingTransaction create(Address from, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
+        return new TestingTransaction(from, null, nonce, value, data, energyLimit, energyPrice);
     }
 
-    public static Transaction call(Address from, Address to, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
+    public static TestingTransaction call(Address from, Address to, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         if(to == null) {
             throw new IllegalArgumentException("The transaction to can't be NULL for non-CREATE");
         }
-        return new Transaction(from, to, nonce, value, data, energyLimit, energyPrice);
+        return new TestingTransaction(from, to, nonce, value, data, energyLimit, energyPrice);
     }
 
     private final byte[] from;
@@ -36,7 +36,7 @@ public final class Transaction implements TransactionInterface {
     long timestamp;
     byte[] timestampAsBytes;
 
-    private Transaction(Address from, Address to, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
+    private TestingTransaction(Address from, Address to, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         Objects.requireNonNull(from, "The transaction `from` can't be NULL");
 
         this.from = from.toBytes();

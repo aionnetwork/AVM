@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.math.BigInteger;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionBuffer;
@@ -15,9 +16,10 @@ import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.userlib.abi.ABIException;
 import org.aion.avm.userlib.abi.ABIToken;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.Block;
+import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
-import org.aion.kernel.Transaction;
+
+import org.aion.kernel.TestingTransaction;
 import org.aion.types.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionInterface;
@@ -27,7 +29,7 @@ import org.junit.Test;
 
 public class PersistanceNameMappingTest {
     private static Address deployer = TestingKernel.PREMINED_ADDRESS;
-    private static Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+    private static TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
     private static KernelInterface kernel = new TestingKernel(block);
     private static AvmConfiguration configurationWithDebugEnabled;
     private static AvmConfiguration configurationWithDebugDisabled;
@@ -72,7 +74,7 @@ public class PersistanceNameMappingTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(PersistanceNameMappingTestTarget.class, ABIDecoder.class, ABIException.class, ABIToken.class, AionBuffer.class, AionSet.class, AionMap.class);
         byte[] data = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
-        Transaction createTransaction = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, data, 5_000_000L, 1L);
+        TestingTransaction createTransaction = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, data, 5_000_000L, 1L);
         TransactionResult result = avm.run(kernel, new TransactionInterface[]{ createTransaction })[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
 
@@ -81,7 +83,7 @@ public class PersistanceNameMappingTest {
 
     private void callContract(AvmImpl avm, KernelInterface kernel, Address contract, String method) {
         byte[] data = ABIEncoder.encodeOneString(method);
-        Transaction callTransaction = Transaction.call(deployer, contract, kernel.getNonce(deployer), BigInteger.ZERO, data, 2_000_000L, 1L);
+        TestingTransaction callTransaction = TestingTransaction.call(deployer, contract, kernel.getNonce(deployer), BigInteger.ZERO, data, 2_000_000L, 1L);
         TransactionResult result = avm.run(kernel, new TransactionInterface[]{ callTransaction })[0].get();
 
         // The tests will REVERT if what we want to test does not occur!

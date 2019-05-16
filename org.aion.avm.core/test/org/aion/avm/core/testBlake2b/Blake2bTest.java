@@ -22,7 +22,7 @@ public class Blake2bTest {
 
     private long energyLimit = 10_000_000L;
     private long energyPrice = 1L;
-    private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+    private TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
     private org.aion.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
     private org.aion.types.Address dappAddress;
@@ -37,8 +37,8 @@ public class Blake2bTest {
         
         byte[] jar = JarBuilder.buildJarForMainAndClasses(Main.class, Blake2b.class);
         byte[] arguments = null;
-        Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TestingTransaction tx = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
+        TransactionResult txResult = avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
         System.out.println(txResult);
 
         dappAddress = org.aion.types.Address.wrap(txResult.getReturnData());
@@ -55,8 +55,8 @@ public class Blake2bTest {
         Blake2b mac = Blake2b.Mac.newInstance("key".getBytes());
         byte[] hash = mac.digest("input".getBytes());
 
-        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
-        TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
+        TransactionResult txResult = avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
         System.out.println(txResult);
 
         assertArrayEquals(hash, txResult.getReturnData());

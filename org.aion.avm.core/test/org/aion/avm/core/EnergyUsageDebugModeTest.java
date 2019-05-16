@@ -20,14 +20,14 @@ import static org.junit.Assert.assertTrue;
  * Difference of energy consumption explained more in issue-345
  */
 public class EnergyUsageDebugModeTest {
-    private Block block;
+    private TestingBlock block;
     private TestingKernel kernel;
     private org.aion.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
 
 
     @Before
     public void setup (){
-        block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         this.kernel = new TestingKernel(block);
     }
 
@@ -64,15 +64,15 @@ public class EnergyUsageDebugModeTest {
         long energyPrice = 1l;
 
         //deploy in debugMode Mode
-        Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, 10_000_000l, energyPrice);
-        TransactionResult createResult = avmDebugMode.run(this.kernel, new Transaction[] {create})[0].get();
+        TestingTransaction create = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, 10_000_000l, energyPrice);
+        TransactionResult createResult = avmDebugMode.run(this.kernel, new TestingTransaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddressDebug = new Address(createResult.getReturnData());
 
         long energyLimit = 1_000_000l;
         byte[] argData = ABIUtil.encodeMethodArguments(methodName, args);
-        Transaction call = Transaction.call(deployer, org.aion.types.Address.wrap(contractAddressDebug.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
-        TransactionResult result = avmDebugMode.run(this.kernel, new Transaction[] {call})[0].get();
+        TestingTransaction call = TestingTransaction.call(deployer, org.aion.types.Address.wrap(contractAddressDebug.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
+        TransactionResult result = avmDebugMode.run(this.kernel, new TestingTransaction[] {call})[0].get();
 
         long energyUsed = energyLimit - result.getEnergyRemaining();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
@@ -91,14 +91,14 @@ public class EnergyUsageDebugModeTest {
         long energyPrice = 1l;
 
         //deploy in normal Mode
-        Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, 10_000_000l, energyPrice);
-        TransactionResult createResult = avmNormalMode.run(this.kernel, new Transaction[] {create})[0].get();
+        TestingTransaction create = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, 10_000_000l, energyPrice);
+        TransactionResult createResult = avmNormalMode.run(this.kernel, new TestingTransaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddressNormal = new Address(createResult.getReturnData());
 
         byte[] argData = ABIUtil.encodeMethodArguments(methodName, args);
-        Transaction call = Transaction.call(deployer, org.aion.types.Address.wrap(contractAddressNormal.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
-        TransactionResult result = avmNormalMode.run(this.kernel, new Transaction[] {call})[0].get();
+        TestingTransaction call = TestingTransaction.call(deployer, org.aion.types.Address.wrap(contractAddressNormal.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
+        TransactionResult result = avmNormalMode.run(this.kernel, new TestingTransaction[] {call})[0].get();
         long energyUsed = energyLimit - result.getEnergyRemaining();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         Assert.assertEquals(111, new BigInteger(result.getReturnData()).intValue());

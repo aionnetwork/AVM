@@ -10,9 +10,9 @@ import org.aion.avm.tooling.poc.AionBufferPerfContract;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.Block;
+import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
-import org.aion.kernel.Transaction;
+import org.aion.kernel.TestingTransaction;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
@@ -23,7 +23,7 @@ public class AionBufferPerfTest {
     private org.aion.types.Address from = TestingKernel.PREMINED_ADDRESS;
     private long energyLimit = 100_000_000L;
     private long energyPrice = 1;
-    private Block block = new Block(new byte[32], 1, Helpers.randomAddress(),
+    private TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(),
         System.currentTimeMillis(), new byte[0]);
 
     private byte[] buildBufferPerfJar() {
@@ -32,16 +32,16 @@ public class AionBufferPerfTest {
 
     private TransactionResult deploy(KernelInterface kernel, AvmImpl avm, byte[] testJar){
         byte[] testWalletArguments = new byte[0];
-        Transaction createTransaction = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new Transaction[] {createTransaction})[0].get();
+        TestingTransaction createTransaction = TestingTransaction.create(from, kernel.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
+        TransactionResult createResult = avm.run(kernel, new TestingTransaction[] {createTransaction})[0].get();
 
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         return createResult;
     }
 
     private TransactionResult call(KernelInterface kernel, AvmImpl avm, org.aion.types.Address contract, org.aion.types.Address sender, byte[] args) {
-        Transaction callTransaction = Transaction.call(sender, contract, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1L);
-        TransactionResult callResult = avm.run(kernel, new Transaction[] {callTransaction})[0].get();
+        TestingTransaction callTransaction = TestingTransaction.call(sender, contract, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1L);
+        TransactionResult callResult = avm.run(kernel, new TestingTransaction[] {callTransaction})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
         return callResult;
     }

@@ -23,7 +23,7 @@ import java.math.BigInteger;
 public class PerformanceTest {
     private TestingKernel kernel;
     private AvmImpl avm;
-    Block block;
+    TestingBlock block;
 
     private static final int transactionBlockSize = 10;
     private static final int contextNum = 3;
@@ -40,7 +40,7 @@ public class PerformanceTest {
     @Before
     public void setup() {
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
-        block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         this.kernel = new TestingKernel(block);
         deploy();
     }
@@ -65,8 +65,8 @@ public class PerformanceTest {
             userAddrs[i] = userAddress;
 
             //deploying dapp
-            Transaction create = Transaction.create(userAddress, kernel.getNonce(userAddress), BigInteger.ZERO, txData, energyLimit, energyPrice);
-            AvmTransactionResult createResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[]{create})[0].get();
+            TestingTransaction create = TestingTransaction.create(userAddress, kernel.getNonce(userAddress), BigInteger.ZERO, txData, energyLimit, energyPrice);
+            AvmTransactionResult createResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[]{create})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
             Address contractAddr = new Address(createResult.getReturnData());
             contractAddrs[i] = contractAddr;
@@ -114,10 +114,10 @@ public class PerformanceTest {
         System.out.printf("%s: %d ms\n", testName, timeElapsed);
     }
 
-    private void callSingle(org.aion.types.Address sender, Block block, Address contractAddr, String methodName) {
+    private void callSingle(org.aion.types.Address sender, TestingBlock block, Address contractAddr, String methodName) {
         byte[] argData = ABIUtil.encodeMethodArguments(methodName);
-        Transaction call = Transaction.call(sender, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {call})[0].get();
+        TestingTransaction call = TestingTransaction.call(sender, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
+        AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {call})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
     }
 
@@ -154,14 +154,14 @@ public class PerformanceTest {
         System.out.printf("%s: %d ms\n", testName, timeElapsed);
     }
 
-    public void callBatch(String methodName, Block block, boolean Nto1){
+    public void callBatch(String methodName, TestingBlock block, boolean Nto1){
         byte[] argData = ABIUtil.encodeMethodArguments(methodName);
         for(int j = 0; j < contextNum; ++j) {
-            Transaction[] transactionArray = new Transaction[transactionBlockSize];
+            TestingTransaction[] transactionArray = new TestingTransaction[transactionBlockSize];
             for (int i = 0; i < transactionBlockSize; ++i) {
                 org.aion.types.Address sender = userAddrs[i];
                 Address contractAddr = Nto1 ? contractAddrs[0] : contractAddrs[i];
-                transactionArray[i] = Transaction.call(sender, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
+                transactionArray[i] = TestingTransaction.call(sender, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
             }
             SimpleFuture<TransactionResult>[] futures = avm.run(this.kernel, transactionArray);
             for (SimpleFuture<TransactionResult> future : futures) {

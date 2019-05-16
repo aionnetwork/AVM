@@ -21,13 +21,13 @@ public class FunctionShadowTest {
     private static final long ERNGY_PRICE = 1L;
     private static final org.aion.types.Address FROM = TestingKernel.PREMINED_ADDRESS;
 
-    private Block block;
+    private TestingBlock block;
     private TestingKernel kernel;
     private AvmImpl avm;
 
     @Before
     public void setup() {
-        this.block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        this.block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         this.kernel = new TestingKernel(this.block);
         AvmConfiguration config = new AvmConfiguration();
         config.enableVerboseContractErrors = true;
@@ -152,16 +152,16 @@ public class FunctionShadowTest {
     private org.aion.types.Address deployTest(Class<?> testClass) {
         byte[] testJar = JarBuilder.buildJarForMainAndClassesAndUserlib(testClass);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
-        Transaction tx = Transaction.create(FROM, this.kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ERNGY_PRICE);
-        byte[] returnData = this.avm.run(this.kernel, new Transaction[] {tx})[0].get().getReturnData();
+        TestingTransaction tx = TestingTransaction.create(FROM, this.kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ERNGY_PRICE);
+        byte[] returnData = this.avm.run(this.kernel, new TestingTransaction[] {tx})[0].get().getReturnData();
         return (null != returnData)
                 ? org.aion.types.Address.wrap(returnData)
                 : null;
     }
 
     private void oneCall(org.aion.types.Address dappAddr, int transactionNumber) {
-        Transaction tx = Transaction.call(FROM, dappAddr, this.kernel.getNonce(FROM), BigInteger.ZERO, new byte[] {(byte)transactionNumber}, ENERGY_LIMIT, ERNGY_PRICE);
-        AvmTransactionResult result = (AvmTransactionResult) this.avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TestingTransaction tx = TestingTransaction.call(FROM, dappAddr, this.kernel.getNonce(FROM), BigInteger.ZERO, new byte[] {(byte)transactionNumber}, ENERGY_LIMIT, ERNGY_PRICE);
+        AvmTransactionResult result = (AvmTransactionResult) this.avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
     }
 }

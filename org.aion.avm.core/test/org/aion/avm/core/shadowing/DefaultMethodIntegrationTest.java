@@ -28,7 +28,7 @@ public class DefaultMethodIntegrationTest {
 
     @Before
     public void setup() {
-        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         this.kernel = new TestingKernel(block);
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
@@ -46,33 +46,33 @@ public class DefaultMethodIntegrationTest {
         // Deploy.
         long energyLimit = 2_000_000l;
         long energyPrice = 1l;
-        Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        TestingTransaction create = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
         
         // The NoSuchMethodError triggers a "FAILED_EXCEPTION" state.
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {create})[0].get();
+        AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
     }
 
     @Test
     public void testMissingDefaultInMain() throws Exception {
-        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClasses(TestDefaultMethodInMainResource.class, AionMap.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         
         // Deploy.
         long energyLimit = 2_000_000l;
         long energyPrice = 1l;
-        Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        AvmTransactionResult createResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {create})[0].get();
+        TestingTransaction create = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        AvmTransactionResult createResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddr = new Address(createResult.getReturnData());
         
         // Setup the call (parameters are currently ignored).
         byte[] argData = new byte[0];
-        Transaction call = Transaction.call(deployer, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
+        TestingTransaction call = TestingTransaction.call(deployer, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
         
         // The NoSuchMethodError triggers a "FAILED_EXCEPTION" state.
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {call})[0].get();
+        AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {call})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
     }
 }

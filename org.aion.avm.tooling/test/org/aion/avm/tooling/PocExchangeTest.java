@@ -28,7 +28,7 @@ public class PocExchangeTest {
 
     @Before
     public void setup() {
-        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         this.kernel = new TestingKernel(block);
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         
@@ -70,8 +70,8 @@ public class PocExchangeTest {
         }
 
         private org.aion.types.Address initCoin(byte[] jar, byte[] arguments){
-            Transaction createTransaction = Transaction.create(minter, kernel.getNonce(minter), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1L);
-            TransactionResult createResult = avm.run(PocExchangeTest.this.kernel, new Transaction[] {createTransaction})[0].get();
+            TestingTransaction createTransaction = TestingTransaction.create(minter, kernel.getNonce(minter), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1L);
+            TransactionResult createResult = avm.run(PocExchangeTest.this.kernel, new TestingTransaction[] {createTransaction})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
             return org.aion.types.Address.wrap(createResult.getReturnData());
         }
@@ -112,8 +112,8 @@ public class PocExchangeTest {
         }
 
         private TransactionResult call(org.aion.types.Address sender, byte[] args) {
-            Transaction callTransaction = Transaction.call(sender, addr, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1l);
-            TransactionResult callResult = avm.run(PocExchangeTest.this.kernel, new Transaction[] {callTransaction})[0].get();
+            TestingTransaction callTransaction = TestingTransaction.call(sender, addr, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1l);
+            TransactionResult callResult = avm.run(PocExchangeTest.this.kernel, new TestingTransaction[] {callTransaction})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
             return callResult;
         }
@@ -130,8 +130,8 @@ public class PocExchangeTest {
         }
 
         private org.aion.types.Address initExchange(byte[] jar, byte[] arguments){
-            Transaction createTransaction = Transaction.create(owner, kernel.getNonce(owner), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1L);
-            TransactionResult createResult = avm.run(PocExchangeTest.this.kernel, new Transaction[] {createTransaction})[0].get();
+            TestingTransaction createTransaction = TestingTransaction.create(owner, kernel.getNonce(owner), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1L);
+            TransactionResult createResult = avm.run(PocExchangeTest.this.kernel, new TestingTransaction[] {createTransaction})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
             return org.aion.types.Address.wrap(createResult.getReturnData());
         }
@@ -152,8 +152,8 @@ public class PocExchangeTest {
         }
 
         private TransactionResult call(org.aion.types.Address sender, byte[] args) {
-            Transaction callTransaction = Transaction.call(sender, addr, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1l);
-            TransactionResult callResult = avm.run(PocExchangeTest.this.kernel, new Transaction[] {callTransaction})[0].get();
+            TestingTransaction callTransaction = TestingTransaction.call(sender, addr, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1l);
+            TransactionResult callResult = avm.run(PocExchangeTest.this.kernel, new TestingTransaction[] {callTransaction})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
             return callResult;
         }

@@ -2,11 +2,9 @@ package org.aion.avm.tooling.blockchainruntime;
 
 import org.aion.avm.core.util.ABIUtil;
 import avm.Address;
-import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.tooling.AvmRule;
-import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.tooling.AddressUtil;
-import org.aion.kernel.Transaction;
+import org.aion.kernel.TestingTransaction;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -124,9 +122,9 @@ public class InternalCallClinitAddressesTest {
         Address[] contracts = new Address[numContractsToDeploy];
         for (int i = 0; i < numContractsToDeploy; i++) {
             // Create a "fake" transaction so we can use the common helper to precompute the target contract address.
-            Transaction fakeTransaction = (0 == i)
-                    ? Transaction.create(org.aion.types.Address.wrap(contract.toByteArray()), BigInteger.valueOf(nonce + i), BigInteger.ZERO, new byte[0], energyLimit, energyPrice)
-                    : Transaction.create(org.aion.types.Address.wrap(contracts[i - 1].toByteArray()), BigInteger.ZERO, BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
+            TestingTransaction fakeTransaction = (0 == i)
+                    ? TestingTransaction.create(org.aion.types.Address.wrap(contract.toByteArray()), BigInteger.valueOf(nonce + i), BigInteger.ZERO, new byte[0], energyLimit, energyPrice)
+                    : TestingTransaction.create(org.aion.types.Address.wrap(contracts[i - 1].toByteArray()), BigInteger.ZERO, BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
             contracts[i] = new Address(AddressUtil.generateContractAddress(fakeTransaction).toBytes());
         }
         return contracts;

@@ -1,6 +1,8 @@
 package org.aion.avm.core.testCall;
 
 import java.math.BigInteger;
+
+import org.aion.kernel.TestingTransaction;
 import p.avm.Address;
 import p.avm.Result;
 import a.ByteArray;
@@ -11,7 +13,6 @@ import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.Helpers;
 import i.RuntimeAssertionError;
-import org.aion.kernel.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,12 +54,12 @@ public class ParallelExecution {
     private static final int NUM_THREADS = 4;
     private static ExecutorService threadPool = Executors.newFixedThreadPool(NUM_THREADS);
 
-    private List<Transaction> transactions;
+    private List<TestingTransaction> transactions;
     private State initState;
     private int parallelism;
     private int startFrom;
 
-    public ParallelExecution(List<Transaction> transactions, State initState, int parallelism) {
+    public ParallelExecution(List<TestingTransaction> transactions, State initState, int parallelism) {
         this.transactions = transactions;
         this.initState = initState;
         this.parallelism = parallelism;
@@ -89,7 +90,7 @@ public class ParallelExecution {
                 // detect conflicts
                 Set<String> accounts = new HashSet<>();
                 for (Future<TransactionResult> f : futures) {
-                    Transaction tx = transactions.get(startFrom);
+                    TestingTransaction tx = transactions.get(startFrom);
                     TransactionResult r = f.get();
 
                     Set<String> set = new HashSet<>();
@@ -124,11 +125,11 @@ public class ParallelExecution {
      */
     private static class Worker implements Callable<TransactionResult> {
 
-        private Transaction tx;
+        private TestingTransaction tx;
         private State track;
         private boolean preserveDebuggability = false;
 
-        public Worker(Transaction tx, State track) {
+        public Worker(TestingTransaction tx, State track) {
             this.tx = tx;
             this.track = track;
         }
@@ -190,9 +191,9 @@ public class ParallelExecution {
     //============
 
     public static void simpleCall() {
-        Transaction tx1 = Transaction.call(Helpers.address(1), Helpers.address(2), BigInteger.ZERO, BigInteger.ZERO, Helpers.address(3).toBytes(), 1000000, 1);
-        Transaction tx2 = Transaction.call(Helpers.address(3), Helpers.address(4), BigInteger.ZERO, BigInteger.ZERO, Helpers.address(1).toBytes(), 1000000, 1);
-        Transaction tx3 = Transaction.call(Helpers.address(3), Helpers.address(5), BigInteger.ZERO, BigInteger.ZERO, new byte[0], 1000000, 1);
+        TestingTransaction tx1 = TestingTransaction.call(Helpers.address(1), Helpers.address(2), BigInteger.ZERO, BigInteger.ZERO, Helpers.address(3).toBytes(), 1000000, 1);
+        TestingTransaction tx2 = TestingTransaction.call(Helpers.address(3), Helpers.address(4), BigInteger.ZERO, BigInteger.ZERO, Helpers.address(1).toBytes(), 1000000, 1);
+        TestingTransaction tx3 = TestingTransaction.call(Helpers.address(3), Helpers.address(5), BigInteger.ZERO, BigInteger.ZERO, new byte[0], 1000000, 1);
 
         ParallelExecution exec = new ParallelExecution(List.of(tx1, tx2, tx3), new State(), NUM_THREADS);
         exec.execute();
@@ -204,14 +205,14 @@ public class ParallelExecution {
         threadPool.shutdown();
         threadPool = Executors.newFixedThreadPool(numThreads);
 
-        List<Transaction> transactions = new ArrayList<>();
+        List<TestingTransaction> transactions = new ArrayList<>();
         Random r = new Random();
         for (int i = 0; i < numTransactions; i++) {
             int from = r.nextInt(numAccounts);
             int to = r.nextInt(numAccounts);
             int callee = r.nextInt(numAccounts);
 
-            Transaction tx = Transaction.call(Helpers.address(from), Helpers.address(to), BigInteger.ZERO, BigInteger.ZERO, Helpers.address(callee).toBytes(), 1000000, 1);
+            TestingTransaction tx = TestingTransaction.call(Helpers.address(from), Helpers.address(to), BigInteger.ZERO, BigInteger.ZERO, Helpers.address(callee).toBytes(), 1000000, 1);
             transactions.add(tx);
         }
 

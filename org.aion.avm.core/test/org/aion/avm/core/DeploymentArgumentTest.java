@@ -7,9 +7,9 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.Block;
+import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
-import org.aion.kernel.Transaction;
+import org.aion.kernel.TestingTransaction;
 
 import java.math.BigInteger;
 
@@ -36,7 +36,7 @@ public class DeploymentArgumentTest {
 
     @Before
     public void setup() {
-        Block block = new Block(new byte[32], 1, Helpers.randomAddress(),
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(),
             System.currentTimeMillis(), new byte[0]);
         this.kernel = new TestingKernel(block);
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
@@ -90,14 +90,14 @@ public class DeploymentArgumentTest {
     private AvmTransactionResult deployContract(Object... arguments) {
         byte[] args = ABIUtil.encodeDeploymentArguments(arguments);
         byte[] payload = new CodeAndArguments(JAR, args).encodeToBytes();
-        Transaction create = Transaction.create(DEPLOYER, this.kernel.getNonce(DEPLOYER), BigInteger.ZERO, payload, ENERGY_LIMIT, ENERGY_PRICE);
-        return (AvmTransactionResult)this.avm.run(this.kernel, new Transaction[] {create})[0].get();
+        TestingTransaction create = TestingTransaction.create(DEPLOYER, this.kernel.getNonce(DEPLOYER), BigInteger.ZERO, payload, ENERGY_LIMIT, ENERGY_PRICE);
+        return (AvmTransactionResult)this.avm.run(this.kernel, new TestingTransaction[] {create})[0].get();
     }
 
     private AvmTransactionResult callContract(org.aion.types.Address target, String methodName) {
         byte[] argData = ABIUtil.encodeMethodArguments(methodName);
-        Transaction call = Transaction.call(DEPLOYER, target, kernel.getNonce(DEPLOYER), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {call})[0].get();
+        TestingTransaction call = TestingTransaction.call(DEPLOYER, target, kernel.getNonce(DEPLOYER), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
+        AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {call})[0].get();
         return result;
     }
 }

@@ -54,7 +54,7 @@ public class TestingKernel implements KernelInterface {
     /**
      * Creates an instance of the interface which is backed by in-memory structures, only.
      */
-    public TestingKernel(Block block) {
+    public TestingKernel(TestingBlock block) {
         this.dataStore = new MemoryBackedDataStore();
         IAccountStore premined = this.dataStore.createAccount(PREMINED_ADDRESS.toBytes());
         premined.setBalance(PREMINED_AMOUNT);
@@ -73,7 +73,7 @@ public class TestingKernel implements KernelInterface {
      * @param onDiskRoot The root directory which this implementation will use for persistence.
      * @param block The top block of the current state of this kernel.
      */
-    public TestingKernel(File onDiskRoot, Block block) {
+    public TestingKernel(File onDiskRoot, TestingBlock block) {
         this.dataStore = new DirectoryBackedDataStore(onDiskRoot);
         // Try to open the account, creating it if doesn't exist.
         IAccountStore premined = this.dataStore.openAccount(PREMINED_ADDRESS.toBytes());
@@ -110,7 +110,6 @@ public class TestingKernel implements KernelInterface {
 
     @Override
     public void removeStorage(Address address, byte[] key) {
-        IAccountStore account = this.dataStore.openAccount(address.toBytes());
         lazyCreateAccount(address.toBytes()).removeData(key);
     }
 

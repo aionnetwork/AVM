@@ -6,7 +6,7 @@ import java.io.IOException;
 import avm.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
-import org.aion.kernel.Block;
+import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -196,7 +196,7 @@ public class AvmCLIIntegrationTest {
         final int transferBalance = 5000;
         String storagePath = "./storage";
         File storageFile = new File(storagePath);
-        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         TestingKernel kernelInterface = new TestingKernel(storageFile, block);
         java.math.BigInteger contractBalance;
 
@@ -232,7 +232,7 @@ public class AvmCLIIntegrationTest {
     public void testDeployAndCallWithNoTransfer() throws IOException {
         String storagePath = "./storage";
         File storageFile = new File(storagePath);
-        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         TestingKernel kernelInterface = new TestingKernel(storageFile, block);
 
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(SimpleStackDemo.class);
@@ -267,7 +267,7 @@ public class AvmCLIIntegrationTest {
     public void testDeployTransfer() throws IOException {
         final int deployBalance = 100000;
         File storageFile = this.folder.newFolder();
-        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         TestingKernel kernelInterface = new TestingKernel(storageFile, block);
 
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(SimpleStackDemo.class);
@@ -304,7 +304,7 @@ public class AvmCLIIntegrationTest {
         final int transferBalance = 20000;
         String storagePath = "./storage";
         File storageFile = new File(storagePath);
-        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         TestingKernel kernelInterface = new TestingKernel(storageFile, block);
 
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(SimpleStackDemo.class);
@@ -339,7 +339,7 @@ public class AvmCLIIntegrationTest {
         final int transferBalance = 20000;
         String storagePath = "./storage";
         File storageFile = new File(storagePath);
-        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         TestingKernel kernelInterface = new TestingKernel(storageFile, block);
 
         org.aion.types.Address address = Helpers.randomAddress();

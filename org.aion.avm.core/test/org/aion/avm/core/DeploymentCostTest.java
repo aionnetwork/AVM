@@ -17,9 +17,9 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import i.RuntimeAssertionError;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.Block;
+import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
-import org.aion.kernel.Transaction;
+import org.aion.kernel.TestingTransaction;
 import org.aion.types.Address;
 import org.aion.vm.api.interfaces.TransactionResult;
 
@@ -44,13 +44,13 @@ public class DeploymentCostTest {
     private static final long ENERGY_PRICE = 1L;
     private static final Address DEPLOYER = TestingKernel.PREMINED_ADDRESS;
 
-    private Block block;
+    private TestingBlock block;
     private TestingKernel kernel;
     private AvmImpl avm;
 
     @Before
     public void setup() {
-        this.block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        this.block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         this.kernel = new TestingKernel(this.block);
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
@@ -141,8 +141,8 @@ public class DeploymentCostTest {
         byte[] jar = getDeploymentJarBytesForContract(contract);
 
         //deploy in normal Mode
-        Transaction create = Transaction.create(DEPLOYER, this.kernel.getNonce(DEPLOYER), BigInteger.ZERO, jar, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult createResult = this.avm.run(this.kernel, new Transaction[] {create})[0].get();
+        TestingTransaction create = TestingTransaction.create(DEPLOYER, this.kernel.getNonce(DEPLOYER), BigInteger.ZERO, jar, ENERGY_LIMIT, ENERGY_PRICE);
+        TransactionResult createResult = this.avm.run(this.kernel, new TestingTransaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         return (AvmTransactionResult)createResult;
     }

@@ -5,24 +5,25 @@ import java.math.BigInteger;
 import org.aion.types.Address;
 
 
-public class Block {
+public final class TestingBlock {
 
-    private byte[] prevHash;
+    private final byte[] prevHash;
+    private final long number;
+    private final Address coinbase;
+    private final long timestamp;
+    private final byte[] data;
+    private final long energyLimit;
+    private final BigInteger difficulty;
 
-    private long number;
 
-    private Address coinbase;
-
-    private long timestamp;
-
-    private byte[] data;
-
-    public Block(byte[] prevHash, long number, Address coinbase, long timestamp, byte[] data) {
+    public TestingBlock(byte[] prevHash, long number, Address coinbase, long timestamp, byte[] data) {
         this.prevHash = prevHash;
         this.number = number;
         this.coinbase = coinbase;
         this.timestamp = timestamp;
         this.data = data;
+        this.energyLimit = 10_000_000L;
+        this.difficulty = BigInteger.valueOf(10_000_000L);
     }
 
     public byte[] getPrevHash() {
@@ -45,12 +46,11 @@ public class Block {
         return data;
     }
 
-    // TODO (AKI-114): consider adding the following fields into constructor
     public long getEnergyLimit() {
-        return 10_000_000L;
+        return energyLimit;
     }
 
     public BigInteger getDifficulty() {
-        return BigInteger.valueOf(10_000_000L);
+        return difficulty;
     }
 }

@@ -1,12 +1,10 @@
 package org.aion.avm.tooling;
 
 import java.math.BigInteger;
-import i.RuntimeAssertionError;
-import org.aion.avm.tooling.arraywrapping.TestResource.B;
+
 import org.aion.avm.userlib.abi.ABIDecoder;
 import avm.Blockchain;
 import org.aion.avm.userlib.abi.ABIEncoder;
-import org.aion.kernel.Block;
 
 public class LoggingTarget {
     public static final byte[] TOPIC1 = new byte[]{ 0xf, 0xe, 0xd, 0xc, 0xb, 0xa };

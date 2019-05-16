@@ -9,9 +9,9 @@ import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.Block;
+import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
-import org.aion.kernel.Transaction;
+import org.aion.kernel.TestingTransaction;
 import avm.Address;
 import org.junit.After;
 import org.junit.Assert;
@@ -27,11 +27,11 @@ public class HashCodeIntegrationTest {
     private TestingKernel kernel;
     private AvmImpl avm;
 
-    Block block;
+    TestingBlock block;
 
     @Before
     public void setup() {
-        block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         this.kernel = new TestingKernel(block);
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
@@ -49,8 +49,8 @@ public class HashCodeIntegrationTest {
         // Deploy.
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
-        Transaction create = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        AvmTransactionResult createResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {create})[0].get();
+        TestingTransaction create = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        AvmTransactionResult createResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
 
         Address contractAddr = new Address(createResult.getReturnData());
@@ -64,11 +64,11 @@ public class HashCodeIntegrationTest {
     }
 
 
-    private int callStatic(Block block, Address contractAddr, String methodName) {
+    private int callStatic(TestingBlock block, Address contractAddr, String methodName) {
         long energyLimit = 1_000_000l;
         byte[] argData = ABIUtil.encodeMethodArguments(methodName);
-        Transaction call = Transaction.call(deployer, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {call})[0].get();
+        TestingTransaction call = TestingTransaction.call(deployer, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
+        AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {call})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         ABIDecoder decoder = new ABIDecoder(result.getReturnData());
         return decoder.decodeOneInteger();

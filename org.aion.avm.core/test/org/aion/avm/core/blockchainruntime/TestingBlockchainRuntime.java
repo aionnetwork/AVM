@@ -11,7 +11,7 @@ import i.RevertException;
 import i.RuntimeAssertionError;
 import s.java.lang.String;
 import s.java.math.BigInteger;
-import org.aion.kernel.Block;
+import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
 
 import java.nio.charset.StandardCharsets;
@@ -41,7 +41,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     private long blockEnergyLimit = 10_000_000L;
     private java.math.BigInteger blockDifficulty = java.math.BigInteger.valueOf(1000L);
 
-    private Block block = new Block(new byte[32], blockNumber, blockCoinbase, blockTimstamp, new byte[0]);
+    private TestingBlock block = new TestingBlock(new byte[32], blockNumber, blockCoinbase, blockTimstamp, new byte[0]);
 
     private KernelInterface kernel = new TestingKernel(block);
     private Map<java.lang.String, Integer> eventCounter = new HashMap<>();

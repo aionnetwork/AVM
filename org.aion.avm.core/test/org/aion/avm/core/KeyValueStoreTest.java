@@ -13,9 +13,9 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.AvmTransactionResult.Code;
-import org.aion.kernel.Block;
+import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
-import org.aion.kernel.Transaction;
+import org.aion.kernel.TestingTransaction;
 import org.aion.types.Address;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.After;
@@ -28,7 +28,7 @@ public class KeyValueStoreTest {
     private long energyPrice = 1L;
 
     // block
-    private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+    private TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
     // kernel & vm
     private TestingKernel kernel;
@@ -46,8 +46,8 @@ public class KeyValueStoreTest {
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), avmConfig);
 
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(KeyValueStoreTestTarget.class);
-        Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TestingTransaction tx = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, energyPrice);
+        TransactionResult txResult = avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         dappAddress = Address.wrap(txResult.getReturnData());
     }
@@ -61,8 +61,8 @@ public class KeyValueStoreTest {
     public void testGetStorageKeyNotExist() {
         byte[] key = Helpers.randomBytes(32);
         byte[] data = ABIUtil.encodeMethodArguments("testAvmGetStorage", key);
-        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         assertArrayEquals(null, txResult.getReturnData());
@@ -72,8 +72,8 @@ public class KeyValueStoreTest {
     public void testGetStorageWrongSizeKey() {
         byte[] key = Helpers.randomBytes(33);
         byte[] data = ABIUtil.encodeMethodArguments("testAvmGetStorage", key);
-        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
         assertEquals(Code.FAILED_EXCEPTION, txResult.getResultCode());
     }
@@ -84,8 +84,8 @@ public class KeyValueStoreTest {
         byte[] value = Helpers.randomBytes(32);
 
         byte[] data = ABIUtil.encodeMethodArguments("testAvmPutStorage", key, value);
-        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
         assertEquals(Code.FAILED_EXCEPTION, txResult.getResultCode());
     }
@@ -96,15 +96,15 @@ public class KeyValueStoreTest {
         byte[] value = Helpers.randomBytes(32);
 
         byte[] data = ABIUtil.encodeMethodArguments("testAvmPutStorage", key, value);
-        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         assertArrayEquals(new byte[0], txResult.getReturnData());
 
         data = ABIUtil.encodeMethodArguments("testAvmGetStorage", key);
-        tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        txResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         assertArrayEquals(value, txResult.getReturnData());
@@ -116,30 +116,30 @@ public class KeyValueStoreTest {
         byte[] value = Helpers.randomBytes(32);
 
         byte[] data = ABIUtil.encodeMethodArguments("testAvmPutStorage", key, value);
-        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         assertArrayEquals(new byte[0], txResult.getReturnData());
 
         data = ABIUtil.encodeMethodArguments("testAvmGetStorage", key);
-        tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        txResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         assertArrayEquals(value, txResult.getReturnData());
 
         // put null to delete
         data = ABIUtil.encodeMethodArguments("testAvmPutStorageNullValue", key);
-        tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        txResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         assertArrayEquals(new byte[0], txResult.getReturnData());
 
         data = ABIUtil.encodeMethodArguments("testAvmGetStorage", key);
-        tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        txResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         assertArrayEquals(null, txResult.getReturnData());
@@ -152,8 +152,8 @@ public class KeyValueStoreTest {
 
         // zero -> zero
         byte[] data = ABIUtil.encodeMethodArguments("testAvmPutStorageNullValue", key);
-        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         assertArrayEquals(new byte[0], txResult.getReturnData());
         long deleteZeroCost = txResult.getEnergyUsed();
@@ -161,8 +161,8 @@ public class KeyValueStoreTest {
 
         // zero -> nonzero
         data = ABIUtil.encodeMethodArguments("testAvmPutStorage", key, value);
-        tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        txResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         assertArrayEquals(new byte[0], txResult.getReturnData());
         long setStorageCost = txResult.getEnergyUsed();
@@ -170,8 +170,8 @@ public class KeyValueStoreTest {
 
         // nonzero -> nonzero
         data = ABIUtil.encodeMethodArguments("testAvmPutStorage", key, value);
-        tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        txResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         assertArrayEquals(new byte[0], txResult.getReturnData());
         long modifyStorageCost = txResult.getEnergyUsed();
@@ -181,16 +181,16 @@ public class KeyValueStoreTest {
 
         // get nonzero
         data = ABIUtil.encodeMethodArguments("testAvmGetStorage", key);
-        tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        txResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         long getStorageCost = txResult.getEnergyUsed();
         assertEquals(49283L + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_getStorage + StorageFees.READ_PRICE_PER_BYTE * value.length, getStorageCost);
 
         // nonzero -> zero
         data = ABIUtil.encodeMethodArguments("testAvmPutStorageNullValue", key);
-        tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        txResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         assertArrayEquals(new byte[0], txResult.getReturnData());
         long deleteStorageCost = txResult.getEnergyUsed();
@@ -200,8 +200,8 @@ public class KeyValueStoreTest {
 
         // get zero
         data = ABIUtil.encodeMethodArguments("testAvmGetStorage", key);
-        tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        txResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
+        txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         assertArrayEquals(null, txResult.getReturnData());
         long getZeroCost = txResult.getEnergyUsed();

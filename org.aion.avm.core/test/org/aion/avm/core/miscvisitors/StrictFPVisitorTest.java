@@ -10,9 +10,9 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import org.aion.kernel.Block;
+import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
-import org.aion.kernel.Transaction;
+import org.aion.kernel.TestingTransaction;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.After;
 import org.junit.Before;
@@ -30,7 +30,7 @@ public class StrictFPVisitorTest {
     private long energyPrice = 1L;
 
     // block
-    private Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+    private TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
     private org.aion.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
     private org.aion.types.Address dappAddress;
@@ -45,8 +45,8 @@ public class StrictFPVisitorTest {
         
         byte[] jar = JarBuilder.buildJarForMainAndClasses(StrictFPVisitorTestResource.class);
         byte[] arguments = null;
-        Transaction tx = Transaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TestingTransaction tx = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
+        TransactionResult txResult = avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
         dappAddress = org.aion.types.Address.wrap(txResult.getReturnData());
         assertTrue(null != dappAddress);
@@ -70,8 +70,8 @@ public class StrictFPVisitorTest {
 
     @Test
     public void testFp() {
-        Transaction tx = Transaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
-        TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
+        TransactionResult txResult = avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
     }
 }
