@@ -5,8 +5,8 @@ import avm.Address;
 /**
  * Utility class for AVM ABI encoding.
  * 
- * This class provides static helpers for encoding single data elements.
- * It is typically more appropriate to use {@link ABIStreamingEncoder}.
+ * <p>This class provides static helpers for encoding single data elements.
+ * <p>It is typically more appropriate to use {@link ABIStreamingEncoder}.
  */
 public final class ABIEncoder {
     /**

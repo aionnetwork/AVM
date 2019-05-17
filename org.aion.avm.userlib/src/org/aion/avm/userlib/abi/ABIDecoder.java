@@ -3,12 +3,16 @@ package org.aion.avm.userlib.abi;
 import avm.Address;
 
 /**
- * Utility class for AVM ABI decoding. This class contains static methods
- * for parsing transaction data and invoking corresponding methods.
+ * Utility class for AVM ABI decoding.
+ * 
+ * <p>Creates a stateful decoder object, on top of input transaction data, for converting this binary stream into
+ * a stream of primitives or high-level objects.
+ * <p>This is typically used for decoding arguments passed into a contract or a value returned from one.
  */
 public class ABIDecoder {
     /**
-     * Creates a new decoder, and sets the data field.
+     * Creates a new decoder, initialized to point to the beginning of the input data.
+     * 
      * @param data Subsequent calls to functions like decodeAByte() will read from this byte array.
      */
     public ABIDecoder(byte[] data){
@@ -25,7 +29,11 @@ public class ABIDecoder {
     /**
      * Decode a method name from the data field. If the decoding fails, we assume no methodName was supplied,
      * such as the balance transfer case.
-     * @return the decoded method name.
+     * <p>Note that this is the same as {@link decodeOneString()} except that it handles failure differently, as
+     * is required by some cases covered by the ABI Compiler's generated code.  In general, calling that other
+     * method is more appropriate.
+     * 
+     * @return the decoded method name (null if there was no data to decode).
      */
     public String decodeMethodName() {
         String methodName;
