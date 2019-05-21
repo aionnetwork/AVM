@@ -13,8 +13,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class AvmDetails {
-    private static List<Class<?>> omittedClasses = new ArrayList<>(
-            Arrays.asList(s.java.lang.invoke.LambdaMetafactory.class, s.java.lang.invoke.StringConcatFactory.class));
+    // this classes are omitted since no one can reference them
+    private static List<String> omittedClassNames = new ArrayList<>(Arrays.asList(
+            "java/lang/invoke/MethodHandles",
+            "java/lang/invoke/MethodHandle",
+            "java/lang/invoke/MethodType",
+            "java/lang/invoke/CallSite",
+            "java/lang/invoke/MethodHandles$Lookup",
+            "java/lang/invoke/LambdaMetafactory",
+            "java/lang/invoke/StringConcatFactory"));
 
     /**
      * @return Map of supported Class objects to a list of supported methods.
@@ -38,9 +45,17 @@ public class AvmDetails {
         return classDeclaredMethodMap;
     }
 
-    private static List<Class<?>> getCallableShadowClasses() {
-        List<Class<?>> shadowClasses = new ArrayList<>(NodeEnvironment.singleton.getShadowClasses());
-        shadowClasses.removeAll(omittedClasses);
+    private static List<Class<?>> getCallableShadowClasses() throws ClassNotFoundException {
+        List<Class<?>> shadowClasses = new ArrayList<>();
+
+        List<String> jclClassNames = NodeEnvironment.singleton.getJclSlashClassNames();
+        jclClassNames.removeAll(omittedClassNames);
+        jclClassNames.replaceAll(s -> PackageConstants.kShadowSlashPrefix + s);
+
+        for (String className : jclClassNames) {
+            shadowClasses.add(NodeEnvironment.singleton.loadSharedClass(Helpers.internalNameToFulllyQualifiedName(className)));
+        }
+
         return shadowClasses;
     }
 
@@ -82,7 +97,10 @@ public class AvmDetails {
 
     private static String mapMethodName(Executable method) {
         if (method instanceof Constructor) {
-            return Modifier.isStatic(method.getModifiers()) ? "<clinit>" : "<init>";
+            if (Modifier.isStatic(method.getModifiers())) {
+                throw new AssertionError("Static constructor should not exist.");
+            }
+            return "<init>";
         } else {
             return method.getName().substring("avm_".length());
         }
@@ -117,7 +135,8 @@ public class AvmDetails {
 
     private static boolean isSupportedExecutable(Executable method) {
         if (method instanceof Constructor) {
-            return Modifier.isPublic(method.getModifiers());
+            //Enum has protected modifier
+            return Modifier.isPublic(method.getModifiers()) || Modifier.isProtected(method.getModifiers());
         } else
             return method.getName().startsWith("avm_");
     }
