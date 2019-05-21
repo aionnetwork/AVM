@@ -4,12 +4,8 @@ import org.aion.avm.core.classgeneration.CommonGenerators;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.classloading.AvmSharedClassLoader;
 import org.aion.avm.core.dappreading.LoadedJar;
-import org.aion.avm.core.types.ClassHierarchy;
-import org.aion.avm.core.types.ClassInfo;
-import org.aion.avm.core.types.Forest;
-import org.aion.avm.core.types.ClassInformation;
-import org.aion.avm.core.types.ClassInformationFactory;
-import org.aion.avm.core.types.ClassHierarchyBuilder;
+import org.aion.avm.core.types.*;
+import org.aion.avm.core.util.MethodDescriptorCollector;
 import org.aion.avm.core.util.Helpers;
 import i.*;
 
@@ -39,9 +35,11 @@ public class NodeEnvironment {
     private final Map<Integer, s.java.lang.Object> constantMap;
 
     private Class<?>[] shadowApiClasses;
+    // contains all the shadow classes except the exception classes that are generated automatically; used for computing runtime object sizes
     private Class<?>[] shadowClasses;
     private Class<?>[] arraywrapperClasses;
     private Class<?>[] exceptionwrapperClasses;
+    // contains all the supported jcl class names (slash type)
     private Set<String> jclClassNames;
 
     public final Map<String, Integer> shadowObjectSizeMap;  // pre-rename; shadow objects and exceptions
@@ -49,6 +47,7 @@ public class NodeEnvironment {
     public final Map<String, Integer> preRenameRuntimeObjectSizeMap;     // pre-rename; runtime objects including shadow objects, exceptions and API objects
     public final Map<String, Integer> postRenameRuntimeObjectSizeMap;    // post-rename; runtime objects including shadow objects, exceptions and API objects
 
+    public final Map<String, List<String>> shadowClassSlashNameMethodDescriptorMap;
     // The full class hierarchy; we only ever give away deep copies of this object!
     private ClassHierarchy classHierarchy;
 
@@ -196,6 +195,8 @@ public class NodeEnvironment {
         });
         this.preRenameRuntimeObjectSizeMap.putAll(shadowObjectSizeMap);
         this.postRenameRuntimeObjectSizeMap.putAll(apiObjectSizeMap);
+
+        this.shadowClassSlashNameMethodDescriptorMap = Collections.unmodifiableMap(getShadowClassSlashNameMethodDescriptorMap());
     }
 
     // This is an example of the more "factory-like" nature of the NodeEnvironment.
@@ -224,6 +225,10 @@ public class NodeEnvironment {
         return this.jclClassNames.contains(classNameSlash);
     }
 
+    public List<String> getJclSlashClassNames() {
+        List<String> jclClassNamesCopy = new ArrayList<>(this.jclClassNames);
+        return jclClassNamesCopy;
+    }
 
     /**
      * Returns the API classes.
@@ -459,4 +464,13 @@ public class NodeEnvironment {
         rootObjectSizes.put("java/lang/Throwable", 40);
         return DAppCreator.computeUserObjectSizes(rtClassesForest, rootObjectSizes);
     }
+
+    private Map<String, List<String>> getShadowClassSlashNameMethodDescriptorMap(){
+        try {
+            return MethodDescriptorCollector.getClassNameMethodDescriptorMap(getJclSlashClassNames(), this.sharedClassLoader);
+        } catch (ClassNotFoundException e) {
+            throw RuntimeAssertionError.unexpected(e);
+        }
+    }
+
 }
