@@ -90,10 +90,9 @@ public final class ClassHierarchyForest extends Forest<String, ClassInfo> {
             super(Opcodes.ASM6);
         }
 
-        // todo check nested parent
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-            // todo parent may be null if the class is java.lang.Object. Add unit test for such a case
+            // if the parent is null, DApp deployment will fail due to corrupted JAR data
             parentQualifiedName = toQualifiedName(superName);
             isInterface = Opcodes.ACC_INTERFACE == (access & Opcodes.ACC_INTERFACE);
         }
