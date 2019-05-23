@@ -119,7 +119,9 @@ public class AvmTransactionResult implements TransactionResult {
 
         @Override
         public boolean isRevert() {
-            //TODO (AKI-113): confirm whether or not we want the same REVERT behaviour as the fvm.
+            // This is set to false, since it will be called by the kernel and the refund for a reverted Avm transaction will be handled by the Avm.
+            // This differs from Fvm where the kernel handles the refund based on the transaction result category.
+            // Additionally, the underlying the reason for a failed transaction is not exposed in the transaction receipt.
             return false;
         }
 

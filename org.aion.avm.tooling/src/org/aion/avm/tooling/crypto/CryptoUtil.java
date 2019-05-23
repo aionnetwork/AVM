@@ -8,7 +8,8 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
 public class CryptoUtil {
-    // TODO (AKI-119):  Determine if we want to impose a maximum on the data size for signatures.
+    // Note: In reality this limit will not be reached due to byte array initialization cost (3 nrg per byte).
+    // The maximum limit of around 600k for the data was tested. Even though it performs much slower than the libsodium version, it should not cause any problems.
     private static final int VERIFY_EDDSA_MAX_MESSAGE_LENGTH = Integer.MAX_VALUE;
 
     /**

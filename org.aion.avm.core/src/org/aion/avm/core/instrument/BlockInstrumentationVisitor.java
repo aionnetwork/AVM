@@ -23,8 +23,7 @@ import org.objectweb.asm.Opcodes;
  * -multianewarray - call to special static helpers, requires pushing the associated class constant onto the stack
  * Only anewarray is done without argument introspection.  Note that multianewarray can be called for any [2..255]
  * dimension array.
- * TODO (AKI-102): Impose a more concrete restriction on this size.
- * 
+ * A maximum limit of 3 will be imposed later on arrays (in ArrayWrappingClassGenerator)
  * Note that this was adapted from the ClassRewriter.MethodInstrumentationVisitor.
  */
 public class BlockInstrumentationVisitor extends MethodVisitor {

@@ -57,7 +57,10 @@ public class RawDappModule {
         } catch (RejectedClassException e) {
             throw e;
         } catch (Throwable t) {
-            // TODO (AKI-111):  Find the right place to log or right way to re-throw this once we see if it happens in unexpected places.
+            // Since this can fail for myriad of reasons, we do not re-throw exceptions here.
+            // null will be interpreted as a malformed dapp jar by DappCreator and an FAILED_INVALID_DATA exception will be thrown.
+            System.err.println("Reading dapp jar bytes failed.");
+            t.printStackTrace(System.err);
             return null;
         }
     }

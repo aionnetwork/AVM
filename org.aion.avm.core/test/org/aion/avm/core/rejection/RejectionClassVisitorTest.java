@@ -95,7 +95,6 @@ public class RejectionClassVisitorTest {
         commonFilterClass("TestClassTemplate","test/resources/TestClassTemplate_jsr.class");
     }
 
-    // TODO (AKI-116):  We probably want to handle these RuntimeExceptions from ASM in a more general way.  For now, we just get whatever it failed on.
     @Test(expected=ArrayIndexOutOfBoundsException.class)
     public void testRejection_corrupt() throws Exception {
         // Load the bytes we saved (normal TestClassTemplate I over-wrote a random byte in the bytecode).

@@ -132,12 +132,11 @@ public class MethodDescriptorCollector {
             builder.append(DescriptorParser.ARRAY);
             writeClass(builder, clazz.getComponentType());
         } else if (!clazz.isPrimitive()) {
-            // TODO (AKI-109):  Move the explicit IObject->Object special-case into the NamespaceMapper if we can generalize the descriptor case (since,
-            // in general, this mapping should not be applied but it is something we need to do for method descriptors, specifically).
             String className = clazz.getName();
             if (className.startsWith(PackageConstants.kArrayWrapperDotPrefix)) {
                 builder.append(ArrayNameMapper.getOriginalNameOf(Helpers.fulllyQualifiedNameToInternalName(className)));
             } else if ((PackageConstants.kInternalDotPrefix + "IObject").equals(className)) {
+                // Explicitly map IObject to shadow Object, since this method is only building the descriptor for shadow class method parameter types.
                 builder.append(DescriptorParser.OBJECT_START);
                 builder.append(PackageConstants.kShadowSlashPrefix + "java/lang/Object");
                 builder.append(DescriptorParser.OBJECT_END);
