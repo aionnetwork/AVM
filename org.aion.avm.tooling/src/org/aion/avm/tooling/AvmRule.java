@@ -10,6 +10,7 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.abi.ABICompiler;
 import org.aion.avm.tooling.deploy.JarOptimizer;
+import org.aion.avm.tooling.deploy.eliminator.UnreachableMethodRemover;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.*;
 import org.junit.rules.TestRule;
@@ -28,6 +29,7 @@ public final class AvmRule implements TestRule {
 
     private boolean debugMode;
     private final JarOptimizer jarOptimizer;
+    private final UnreachableMethodRemover unreachableMethodRemover;
     public TestingKernel kernel;
     public AvmImpl avm;
 
@@ -38,6 +40,7 @@ public final class AvmRule implements TestRule {
         this.debugMode = debugMode;
         this.kernel = new TestingKernel();
         jarOptimizer = new JarOptimizer(debugMode);
+        unreachableMethodRemover = new UnreachableMethodRemover();
     }
 
     @Override
@@ -71,7 +74,25 @@ public final class AvmRule implements TestRule {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(mainClass, otherClasses);
         ABICompiler compiler = ABICompiler.compileJarBytes(jar);
         byte[] optimizedDappBytes = jarOptimizer.optimize(compiler.getJarFileBytes());
+        try {
+            optimizedDappBytes = UnreachableMethodRemover.optimize(optimizedDappBytes);
+        } catch (Exception exception) {
+            System.err.println("UnreachableMethodRemover crashed, packaging code without this optimization");
+        }
         return new CodeAndArguments(optimizedDappBytes, arguments).encodeToBytes();
+    }
+
+    /**
+     * Retrieves bytes corresponding to the in-memory representation of Dapp jar.
+     * @param mainClass Main class of the Dapp to include and list in manifest (can be null).
+     * @param arguments Constructor arguments
+     * @param otherClasses Other classes to include (main is already included).
+     * @return Byte array corresponding to the deployable Dapp jar and arguments.
+     */
+    public byte[] getDappBytesWithoutOptimization(Class<?> mainClass, byte[] arguments, Class<?>... otherClasses) {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(mainClass, otherClasses);
+        ABICompiler compiler = ABICompiler.compileJarBytes(jar);
+        return new CodeAndArguments(compiler.getJarFileBytes(), arguments).encodeToBytes();
     }
 
     /**

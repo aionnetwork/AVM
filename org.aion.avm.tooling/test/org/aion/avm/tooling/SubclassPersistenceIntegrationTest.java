@@ -120,7 +120,7 @@ public class SubclassPersistenceIntegrationTest {
     }
 
     private void failedInstall(Class<?> testClass) {
-        byte[] txData = avmRule.getDappBytes(testClass, new byte[0]);
+        byte[] txData = avmRule.getDappBytesWithoutOptimization(testClass, new byte[0]);
 
         // Deploy.
         TransactionResult createResult = avmRule.deploy(avmRule.getPreminedAccount(), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();

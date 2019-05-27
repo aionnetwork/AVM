@@ -10,6 +10,7 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.abi.ABICompiler;
 import org.aion.avm.tooling.deploy.JarOptimizer;
+import org.aion.avm.tooling.deploy.eliminator.UnreachableMethodRemover;
 import org.aion.kernel.*;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -52,7 +53,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -28176;
+        long userlibCost = -42080L;
         callStatic(block, contractAddr, modify_basicCost + modify_miscCharges + modify_storageCharges + userlibCost, "modify249");
         
         // Verify after.
@@ -88,7 +89,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -74826;
+        long userlibCost = -102634L;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + userlibCost, "run249_reentrant_notLoaded");
         
@@ -125,7 +126,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -74105;
+        long userlibCost = -101913;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + userlibCost, "run249_reentrant_loaded");
         
@@ -158,7 +159,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long run_userlibCost = -72126;
+        long run_userlibCost = -99934L;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + run_userlibCost, "runNewInstance_reentrant");
         
@@ -169,7 +170,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long check_userlibCost = -29009;
+        long check_userlibCost = -42913L;
 
         int value = (Integer) callStatic(block, contractAddr, check_basicCost + check_miscCharges + check_storageCharges + check_userlibCost, "checkNewInstance");
         Assert.assertEquals(5, value);
@@ -201,7 +202,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long run_userlibCost = -116296;
+        long run_userlibCost = -158008;
 
         callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + run_userlibCost, "runNewInstance_reentrant2");
         
@@ -213,20 +214,22 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long check_userlibCost = -29009;
+        long check_userlibCost = -42913;
 
         int value = (Integer) callStatic(block, contractAddr, check_basicCost + check_miscCharges + check_storageCharges + check_userlibCost, "checkNewInstance");
         Assert.assertEquals(5, value);
     }
 
 
-    private Address doInitialDeploymentAndSetup(TestingBlock block) {
+    private Address doInitialDeploymentAndSetup(TestingBlock block) throws Exception {
         // The assertions in this method depends on the gas charged, which in turn depends on the exact size of the jar file.
         // The AvmRule invokes the ABICompiler on all input jars.
         // As a result, we have to run the ABICompiler on the input jar to get the correct expected gas values.
         JarOptimizer optimizer = new JarOptimizer(false);
+        UnreachableMethodRemover unreachableMethodRemover = new UnreachableMethodRemover();
         ABICompiler compiler = ABICompiler.compileJarBytes(JarBuilder.buildJarForMainAndClasses(GraphReachabilityIntegrationTestTarget.class));
         byte[] optimizedJar = optimizer.optimize(compiler.getJarFileBytes());
+        optimizedJar = UnreachableMethodRemover.optimize(optimizedJar);
         byte[] txData = new CodeAndArguments(optimizedJar, new byte[0]).encodeToBytes();
 
         // Deploy.
@@ -250,7 +253,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -7023L;
+        long userlibCost = -17451L;
 
         long totalExpectedCost = miscCharges + storageCharges + userlibCost;
 
@@ -289,7 +292,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -31831;
+        long userlibCost = -45735L;
         return basicCost + miscCharges + storageCharges + userlibCost;
     }
 
@@ -305,7 +308,7 @@ public class GraphReachabilityIntegrationTest {
 
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -33141;
+        long userlibCost = -47045L;
 
         return basicCost + miscCharges + storageCharges + userlibCost;
     }

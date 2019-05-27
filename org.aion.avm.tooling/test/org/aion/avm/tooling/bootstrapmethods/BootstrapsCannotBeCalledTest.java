@@ -34,7 +34,7 @@ public class BootstrapsCannotBeCalledTest {
     }
 
     private TransactionResult deployContract(Class<?> contract) {
-        return avmRule.deploy(deployer, BigInteger.ZERO, avmRule.getDappBytes(contract, null)).getTransactionResult();
+        return avmRule.deploy(deployer, BigInteger.ZERO, avmRule.getDappBytesWithoutOptimization(contract, null)).getTransactionResult();
     }
 
 }
