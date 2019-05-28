@@ -265,11 +265,19 @@ public class DAppCreator {
 
             long refund = 0;
             long energyUsed = tx.energyLimit - threadInstrumentation.energyLeft();
-            if(task.getTransactionStackDepth() == 0 && task.getSelfDestructAddressCount() > 0) {
-                // refund is calculated for the transaction if it included a selfdestruct operation
-                // it is capped at half the energy used for the whole transaction
-                long selfDestructRefund = task.getSelfDestructAddressCount() * RuntimeMethodFeeSchedule.BlockchainRuntime_avm_selfDestruct_refund;
-                refund = Math.min(energyUsed / 2, selfDestructRefund);
+            if (task.getTransactionStackDepth() == 0) {
+                // refund is calculated for the transaction if it included a selfdestruct operation or it set the storage value from nonzero to zero
+                long selfDestructRefund = 0l;
+                long resetStorageRefund = 0l;
+
+                if (task.getSelfDestructAddressCount() > 0) {
+                    selfDestructRefund = task.getSelfDestructAddressCount() * RuntimeMethodFeeSchedule.BlockchainRuntime_avm_selfDestruct_refund;
+                }
+                if (task.getResetStorageKeyCount() > 0) {
+                    resetStorageRefund = task.getResetStorageKeyCount() * RuntimeMethodFeeSchedule.BlockchainRuntime_avm_deleteStorage_refund;
+                }
+                // refund is capped at half the energy used for the whole transaction
+                refund = Math.min(energyUsed / 2, selfDestructRefund + resetStorageRefund);
             }
 
             // Return data of a CREATE transaction is the new DApp address.

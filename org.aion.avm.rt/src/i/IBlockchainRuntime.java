@@ -100,7 +100,7 @@ public interface IBlockchainRuntime {
      * @param key key of the key-value data pair
      * @param value value of the key-value data pair
      */
-     void avm_putStorage(ByteArray key, ByteArray value) throws IllegalArgumentException;
+     void avm_putStorage(ByteArray key, ByteArray value, boolean requiresRefund) throws IllegalArgumentException;
 
     /**
      * Returns the storage value.

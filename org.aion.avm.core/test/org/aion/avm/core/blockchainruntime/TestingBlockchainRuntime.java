@@ -159,7 +159,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     }
 
     @Override
-    public void avm_putStorage(ByteArray key, ByteArray value) {
+    public void avm_putStorage(ByteArray key, ByteArray value, boolean requiresRefund) {
         Objects.requireNonNull(address);
         if (value == null) {
             kernel.removeStorage(address, key.getUnderlying());

@@ -153,7 +153,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     @Override
-    public void avm_putStorage(ByteArray key, ByteArray value) {
+    public void avm_putStorage(ByteArray key, ByteArray value, boolean requiresRefund) {
         require(key != null, "Key can't be NULL");
         require(key.getUnderlying().length == 32, "Key must be 32 bytes");
 
@@ -165,6 +165,9 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
             kernel.removeStorage(contractAddress, keyCopy);
         } else {
             kernel.putStorage(contractAddress, keyCopy, valueCopy);
+        }
+        if(requiresRefund){
+            task.addResetStoragekey(contractAddress, keyCopy);
         }
     }
 
