@@ -1,5 +1,6 @@
 package org.aion.parallel;
 
+import a.ByteArray;
 import avm.Address;
 
 import java.util.HashSet;
@@ -8,6 +9,8 @@ import java.util.Stack;
 
 import org.aion.avm.core.AvmTransaction;
 import org.aion.avm.core.ReentrantDAppStack;
+import org.aion.avm.core.types.Pair;
+import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.Helpers;
 import i.IInstrumentation;
 import i.RuntimeAssertionError;
@@ -35,6 +38,8 @@ public class TransactionTask implements Comparable<TransactionTask>{
     private Address origin;
     private int depth;
     private Set<org.aion.types.Address> selfDestructedAddresses;
+    private Set<Pair<org.aion.types.Address, ByteArrayWrapper>> resetStorageKeys;
+
 
     public TransactionTask(KernelInterface parentKernel, AvmTransaction tx, int index, org.aion.types.Address origin){
         this.parentKernel = parentKernel;
@@ -49,6 +54,7 @@ public class TransactionTask implements Comparable<TransactionTask>{
         this.sideEffectsStack = new Stack<>();
         this.sideEffectsStack.push(new SideEffects());
         this.selfDestructedAddresses = new HashSet<>();
+        this.resetStorageKeys = new HashSet<>();
     }
 
     public void startNewTransaction() {
@@ -178,6 +184,10 @@ public class TransactionTask implements Comparable<TransactionTask>{
     public void addSelfDestructAddress(org.aion.types.Address address){ selfDestructedAddresses.add(address); }
 
     public int getSelfDestructAddressCount(){ return selfDestructedAddresses.size(); }
+
+    public void addResetStoragekey(org.aion.types.Address address, byte[] key){ resetStorageKeys.add(Pair.of(address, new ByteArrayWrapper(key))); }
+
+    public int getResetStorageKeyCount(){ return resetStorageKeys.size(); }
 
     void outputFlush(){
         if (this.outBuffer.length() > 0) {

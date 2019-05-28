@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import org.aion.avm.core.types.Pair;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.types.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
@@ -25,6 +26,8 @@ public class TransactionalKernel implements KernelInterface {
     private final List<Consumer<KernelInterface>> writeLog;
     private final Set<ByteArrayWrapper> deletedAccountProjection;
     private final Set<ByteArrayWrapper> cachedAccountBalances;
+    private final Set<Pair<Address, ByteArrayWrapper>> deletedStorageKeys;
+
 
     private long blockDifficulty;
     private long blockNumber;
@@ -43,6 +46,7 @@ public class TransactionalKernel implements KernelInterface {
         this.blockTimestamp = parent.getBlockTimestamp();
         this.blockNrgLimit = parent.getBlockEnergyLimit();
         this.blockCoinbase = parent.getMinerAddress();
+        this.deletedStorageKeys = new HashSet<>();
     }
 
     @Override
@@ -161,6 +165,9 @@ public class TransactionalKernel implements KernelInterface {
         Consumer<KernelInterface> write = (kernel) -> {
             kernel.putStorage(address, key, value);
         };
+        if(deletedStorageKeys.contains(Pair.of(address, new ByteArrayWrapper(key)))){
+            deletedStorageKeys.remove(Pair.of(address, new ByteArrayWrapper(key)));
+        }
         write.accept(writeCache);
         writeLog.add(write);
     }
@@ -170,7 +177,8 @@ public class TransactionalKernel implements KernelInterface {
         // We issue these requests from the given address, only, so it is safe for us to decide that we permit reads after deletes.
         // The direct reason why this happens is that DApps which are already running are permitted to continue running but may need to lazyLoad.
         byte[] result = this.writeCache.getStorage(address, key);
-        if (null == result) {
+        // check if the key has not been deleted
+        if (null == result && !deletedStorageKeys.contains(Pair.of(address, new ByteArrayWrapper(key)))) {
             result = this.parent.getStorage(address, key);
         }
         return result;
@@ -300,6 +308,7 @@ public class TransactionalKernel implements KernelInterface {
         Consumer<KernelInterface> write = (kernel) -> {
             kernel.removeStorage(address, key);
         };
+        deletedStorageKeys.add(Pair.of(address, new ByteArrayWrapper(key)));
         write.accept(writeCache);
         writeLog.add(write);
     }
