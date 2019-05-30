@@ -2,6 +2,7 @@ package org.aion.avm.tooling.blockchainruntime;
 
 import avm.Address;
 import org.aion.avm.RuntimeMethodFeeSchedule;
+import org.aion.avm.core.BillingRules;
 import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
 import org.junit.Assert;
@@ -162,10 +163,15 @@ public class StorageEnergyTest {
         byte[] jar = avmRule.getDappBytes(StorageEnergyClinitTarget.class, new byte[0]);
         AvmRule.ResultWrapper resultWrapper = avmRule.deploy(from, BigInteger.ZERO, jar, energyLimit, energyPrice);
         Assert.assertTrue(resultWrapper.getReceiptStatus().isSuccess());
-        Assert.assertEquals(269827 +
-                3 * RuntimeMethodFeeSchedule.BlockchainRuntime_avm_setStorage +
-                3 * RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage -
-                RuntimeMethodFeeSchedule.BlockchainRuntime_avm_deleteStorage_refund, energyLimit - resultWrapper.getTransactionResult().getEnergyRemaining());
+        long basicTransactionCost = BillingRules.getBasicTransactionCost(jar);
+        
+        long deploymentCost = BillingRules.getDeploymentFee(1, jar.length);
+        long totalCost = basicTransactionCost + deploymentCost + 1097;
+
+        Assert.assertEquals(totalCost +
+            3 * RuntimeMethodFeeSchedule.BlockchainRuntime_avm_setStorage +
+            3 * RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage -
+            RuntimeMethodFeeSchedule.BlockchainRuntime_avm_deleteStorage_refund, energyLimit - resultWrapper.getTransactionResult().getEnergyRemaining());
     }
 
     private Address deploy() {
