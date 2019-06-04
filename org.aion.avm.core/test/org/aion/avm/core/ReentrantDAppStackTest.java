@@ -1,6 +1,6 @@
 package org.aion.avm.core;
 
-import org.aion.vm.api.types.Address;
+import org.aion.types.AionAddress;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -88,9 +88,9 @@ public class ReentrantDAppStackTest {
     }
 
 
-    private static Address getNewAddress(int leadingByte) {
-        byte[] address = new byte[Address.SIZE];
+    private static AionAddress getNewAddress(int leadingByte) {
+        byte[] address = new byte[AionAddress.LENGTH];
         address[0] = (byte) leadingByte;
-        return Address.wrap(address);
+        return new AionAddress(address);
     }
 }

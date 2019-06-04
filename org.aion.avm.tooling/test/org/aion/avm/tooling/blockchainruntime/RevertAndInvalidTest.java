@@ -1,6 +1,7 @@
 package org.aion.avm.tooling.blockchainruntime;
 
 import avm.Address;
+import org.aion.types.AionAddress;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.kernel.AvmTransactionResult;
 import org.junit.*;
@@ -41,7 +42,7 @@ public class RevertAndInvalidTest {
         assertTrue(0 < txResult.getEnergyRemaining());
 
         // Next hash code is 1 and the value is unchanged at 0.
-        assertArrayEquals(new byte[]{0,0,0,1, 0,0,0,0}, avmRule.kernel.getObjectGraph(org.aion.vm.api.types.Address.wrap(dappAddress.toByteArray())));
+        assertArrayEquals(new byte[]{0,0,0,1, 0,0,0,0}, avmRule.kernel.getObjectGraph(new AionAddress(dappAddress.toByteArray())));
     }
 
     @Test
@@ -53,6 +54,6 @@ public class RevertAndInvalidTest {
         assertEquals(0, txResult.getEnergyRemaining());
 
         // Next hash code is 1 and the value is unchanged at 0.
-        assertArrayEquals(new byte[]{0,0,0,1, 0,0,0,0}, avmRule.kernel.getObjectGraph(org.aion.vm.api.types.Address.wrap(dappAddress.toByteArray())));
+        assertArrayEquals(new byte[]{0,0,0,1, 0,0,0,0}, avmRule.kernel.getObjectGraph(new AionAddress(dappAddress.toByteArray())));
     }
 }

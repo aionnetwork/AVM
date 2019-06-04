@@ -137,7 +137,7 @@ public class IntegTest {
         ret = callStaticString(dapp, "returnEcho", "Code meets world");
         assertEquals("Code meets world", ret);
 
-        Address addr = new Address(Helpers.randomAddress().toBytes());
+        Address addr = new Address(Helpers.randomAddress().toByteArray());
 
         Address retAddr = new ABIDecoder(callStaticResult(dapp, "returnEchoAddress", addr)).decodeOneAddress();
         assertEquals(addr, retAddr);

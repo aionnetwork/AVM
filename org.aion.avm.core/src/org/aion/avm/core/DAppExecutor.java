@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.types.AionAddress;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 import org.aion.avm.StorageFees;
 import org.aion.avm.core.persistence.LoadedDApp;
@@ -8,7 +9,6 @@ import org.aion.avm.core.util.Helpers;
 import i.*;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.parallel.TransactionTask;
-import org.aion.vm.api.types.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +21,7 @@ public class DAppExecutor {
     public static void call(IExternalCapabilities capabilities, KernelInterface kernel, AvmInternal avm, LoadedDApp dapp,
                             ReentrantDAppStack.ReentrantState stateToResume, TransactionTask task,
                             AvmTransaction tx, AvmTransactionResult result, boolean verboseErrors) {
-        Address dappAddress = tx.destinationAddress;
+        AionAddress dappAddress = tx.destinationAddress;
         
         // If this is a reentrant call, we need to serialize the graph of the parent frame.  This is required to both copy-back our changes but also
         // is required in case we want to revert the state.

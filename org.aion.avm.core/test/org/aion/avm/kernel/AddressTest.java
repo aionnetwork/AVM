@@ -1,88 +1,86 @@
 package org.aion.avm.kernel;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
+import org.aion.types.AionAddress;
 import org.aion.avm.core.util.Helpers;
-import org.aion.vm.api.types.Address;
 import org.junit.Test;
 
 public class AddressTest {
 
     @Test(expected = NullPointerException.class)
     public void testUnderlyingByteArrayIsNull() {
-        new Address((byte[])null);
+        new AionAddress((byte[])null);
     }
 
     @Test(expected = NullPointerException.class)
     public void testWrappingNullByteArray() {
-        Address.wrap((byte[])null);
+        new AionAddress((byte[])null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testUnderlyingByteArrayIsLengthZero() {
-        new Address(new byte[0]);
+        new AionAddress(new byte[0]);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testWrappingZeroLengthByteArray() {
-        Address.wrap(new byte[0]);
+        new AionAddress(new byte[0]);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testUnderlyingByteArrayLessThanRequiredSize() {
-        new Address(Helpers.randomBytes(Address.SIZE - 1));
+        new AionAddress(Helpers.randomBytes(AionAddress.LENGTH - 1));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testWrappingTooShortByteArray() {
-        Address.wrap(Helpers.randomBytes(Address.SIZE - 1));
+        new AionAddress(Helpers.randomBytes(AionAddress.LENGTH - 1));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testUnderlyingByteArrayLargerThanRequiredSize() {
-        new Address(Helpers.randomBytes(Address.SIZE + 1));
+        new AionAddress(Helpers.randomBytes(AionAddress.LENGTH + 1));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testWrappingTooLargeByteArray() {
-        Address.wrap(Helpers.randomBytes(Address.SIZE + 1));
+        new AionAddress(Helpers.randomBytes(AionAddress.LENGTH + 1));
     }
 
     @Test
     public void testIsZero() {
-        byte[] zeroBytes = new byte[Address.SIZE];
-        assertTrue(new Address(zeroBytes).isZeroAddress());
+        byte[] zeroBytes = new byte[AionAddress.LENGTH];
+        assertEquals(new AionAddress(zeroBytes), Helpers.ZERO_ADDRESS);
         zeroBytes[0] = 0x1;
-        assertFalse(new Address(zeroBytes).isZeroAddress());
+        assertNotEquals(new AionAddress(zeroBytes), Helpers.ZERO_ADDRESS);
     }
 
     @Test
     public void testEquivalenceOfConstructorAndWrap() {
-        byte[] underlying = Helpers.randomBytes(Address.SIZE);
-        Address addressByConstructor = new Address(underlying);
-        Address addressByWrap = Address.wrap(underlying);
+        byte[] underlying = Helpers.randomBytes(AionAddress.LENGTH);
+        AionAddress addressByConstructor = new AionAddress(underlying);
+        AionAddress addressByWrap = new AionAddress(underlying);
         assertEquals(addressByConstructor, addressByWrap);
     }
 
     @Test
     public void testEquivalenceOfToBytes() {
-        byte[] underlying = Helpers.randomBytes(Address.SIZE);
-        Address address = new Address(underlying);
-        Address addressFromToBytes = Address.wrap(address.toBytes());
+        byte[] underlying = Helpers.randomBytes(AionAddress.LENGTH);
+        AionAddress address = new AionAddress(underlying);
+        AionAddress addressFromToBytes = new AionAddress(address.toByteArray());
         assertEquals(address, addressFromToBytes);
     }
 
     @Test
     public void testEqualsOnTwoUnequalAddresses() {
-        byte[] underlying1 = Helpers.randomBytes(Address.SIZE);
+        byte[] underlying1 = Helpers.randomBytes(AionAddress.LENGTH);
         byte[] underlying2 = Arrays.copyOf(underlying1, underlying1.length);
         underlying2[0] = (byte) (((int) underlying2[0]) + 1);
-        Address address1 = new Address(underlying1);
-        Address address2 = new Address(underlying2);
+        AionAddress address1 = new AionAddress(underlying1);
+        AionAddress address2 = new AionAddress(underlying2);
         assertNotEquals(address1, address2);
     }
 

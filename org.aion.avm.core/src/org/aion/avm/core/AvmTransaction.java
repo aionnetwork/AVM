@@ -2,7 +2,7 @@ package org.aion.avm.core;
 
 import java.math.BigInteger;
 
-import org.aion.vm.api.types.Address;
+import org.aion.types.AionAddress;
 import org.aion.vm.api.interfaces.TransactionInterface;
 
 
@@ -23,8 +23,8 @@ public class AvmTransaction {
     public static AvmTransaction from(IExternalCapabilities capabilities, TransactionInterface external) throws IllegalArgumentException {
         boolean isCreate = external.isContractCreationTransaction();
         
-        Address senderAddress = external.getSenderAddress();
-        Address destinationAddress = isCreate
+        AionAddress senderAddress = external.getSenderAddress();
+        AionAddress destinationAddress = isCreate
                 ? capabilities.generateContractAddress(external)
                 : external.getDestinationAddress();
         byte[] transactionHash = external.getTransactionHash();
@@ -46,8 +46,8 @@ public class AvmTransaction {
     }
 
 
-    public final Address senderAddress;
-    public final Address destinationAddress;
+    public final AionAddress senderAddress;
+    public final AionAddress destinationAddress;
     public final byte[] transactionHash;
     public final BigInteger value;
     public final BigInteger nonce;
@@ -56,8 +56,8 @@ public class AvmTransaction {
     public final boolean isCreate;
     public final byte[] data;
 
-    private AvmTransaction(Address senderAddress
-            , Address destinationAddress
+    private AvmTransaction(AionAddress senderAddress
+            , AionAddress destinationAddress
             , byte[] transactionHash
             , BigInteger value
             , BigInteger nonce

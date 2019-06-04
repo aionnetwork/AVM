@@ -1,12 +1,12 @@
 package org.aion.parallel;
 
-import a.ByteArray;
 import avm.Address;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
 
+import org.aion.types.AionAddress;
 import org.aion.avm.core.AvmTransaction;
 import org.aion.avm.core.ReentrantDAppStack;
 import org.aion.avm.core.types.Pair;
@@ -37,11 +37,11 @@ public class TransactionTask implements Comparable<TransactionTask>{
     private Stack<SideEffects> sideEffectsStack;
     private Address origin;
     private int depth;
-    private Set<org.aion.vm.api.types.Address> selfDestructedAddresses;
-    private Set<Pair<org.aion.vm.api.types.Address, ByteArrayWrapper>> resetStorageKeys;
+    private Set<AionAddress> selfDestructedAddresses;
+    private Set<Pair<AionAddress, ByteArrayWrapper>> resetStorageKeys;
 
 
-    public TransactionTask(KernelInterface parentKernel, AvmTransaction tx, int index, org.aion.vm.api.types.Address origin){
+    public TransactionTask(KernelInterface parentKernel, AvmTransaction tx, int index, AionAddress origin){
         this.parentKernel = parentKernel;
         this.externalTransaction = tx;
         this.index = index;
@@ -49,7 +49,7 @@ public class TransactionTask implements Comparable<TransactionTask>{
         this.threadOwningTask = null;
         this.reentrantDAppStack = new ReentrantDAppStack();
         this.outBuffer = new StringBuffer();
-        this.origin = new Address(origin.toBytes());
+        this.origin = new Address(origin.toByteArray());
         this.depth = 0;
         this.sideEffectsStack = new Stack<>();
         this.sideEffectsStack.push(new SideEffects());
@@ -181,11 +181,11 @@ public class TransactionTask implements Comparable<TransactionTask>{
         depth--;
     }
 
-    public void addSelfDestructAddress(org.aion.vm.api.types.Address address){ selfDestructedAddresses.add(address); }
+    public void addSelfDestructAddress(AionAddress address){ selfDestructedAddresses.add(address); }
 
     public int getSelfDestructAddressCount(){ return selfDestructedAddresses.size(); }
 
-    public void addResetStoragekey(org.aion.vm.api.types.Address address, byte[] key){ resetStorageKeys.add(Pair.of(address, new ByteArrayWrapper(key))); }
+    public void addResetStoragekey(AionAddress address, byte[] key){ resetStorageKeys.add(Pair.of(address, new ByteArrayWrapper(key))); }
 
     public int getResetStorageKeyCount(){ return resetStorageKeys.size(); }
 

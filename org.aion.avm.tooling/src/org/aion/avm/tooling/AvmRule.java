@@ -1,6 +1,7 @@
 package org.aion.avm.tooling;
 
 import avm.Address;
+import org.aion.types.AionAddress;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -159,7 +160,7 @@ public final class AvmRule implements TestRule {
      * @return Result of the operation
      */
     public ResultWrapper balanceTransfer(Address from, Address to, BigInteger value, long energyLimit, long energyPrice) {
-        TestingTransaction tx = TestingTransaction.call(org.aion.vm.api.types.Address.wrap(from.toByteArray()), org.aion.vm.api.types.Address.wrap(to.toByteArray()), kernel.getNonce(org.aion.vm.api.types.Address.wrap(from.toByteArray())), value, new byte[0], energyLimit, energyPrice);
+        TestingTransaction tx = TestingTransaction.call(new AionAddress(from.toByteArray()), new AionAddress(to.toByteArray()), kernel.getNonce(new AionAddress(from.toByteArray())), value, new byte[0], energyLimit, energyPrice);
 
         return new ResultWrapper(avm.run(this.kernel, new TestingTransaction[]{tx})[0].get());
     }
@@ -170,16 +171,16 @@ public final class AvmRule implements TestRule {
      * @return Address of the newly created account
      */
     public Address getRandomAddress(BigInteger initialBalance) {
-        org.aion.vm.api.types.Address account = Helpers.randomAddress();
-        kernel.adjustBalance(account, initialBalance);
-        return new Address(account.toBytes());
+        AionAddress account = Helpers.randomAddress();
+        kernel.adjustBalance(new AionAddress(account.toByteArray()), initialBalance);
+        return new Address(account.toByteArray());
     }
 
     /**
      * @return Address of the account with initial (pre-mined) balance in the kernel
      */
     public Address getPreminedAccount() {
-        return new Address(TestingKernel.PREMINED_ADDRESS.toBytes());
+        return new Address(TestingKernel.PREMINED_ADDRESS.toByteArray());
     }
 
     /**
@@ -192,16 +193,14 @@ public final class AvmRule implements TestRule {
     private ResultWrapper callDapp(Address from, Address dappAddress, BigInteger value, byte[] transactionData, long energyLimit, long energyPrice) {
         if (automaticBlockGenerationEnabled) {
             this.kernel.generateBlock();
-        }
-        TestingTransaction tx = TestingTransaction.call(org.aion.vm.api.types.Address.wrap(from.toByteArray()), org.aion.vm.api.types.Address.wrap(dappAddress.toByteArray()), kernel.getNonce(org.aion.vm.api.types.Address.wrap(from.toByteArray())), value, transactionData, energyLimit, energyPrice);
+        }TestingTransaction tx = TestingTransaction.call(new AionAddress(from.toByteArray()), new AionAddress(dappAddress.toByteArray()), kernel.getNonce(new AionAddress(from.toByteArray())), value, transactionData, energyLimit, energyPrice);
         return new ResultWrapper(avm.run(this.kernel, new TestingTransaction[]{tx})[0].get());
     }
 
     private ResultWrapper deployDapp(Address from, BigInteger value, byte[] dappBytes, long energyLimit, long energyPrice) {
         if (automaticBlockGenerationEnabled) {
             this.kernel.generateBlock();
-        }
-        TestingTransaction tx = TestingTransaction.create(org.aion.vm.api.types.Address.wrap(from.toByteArray()), kernel.getNonce(org.aion.vm.api.types.Address.wrap(from.toByteArray())), value, dappBytes, energyLimit, energyPrice);
+        }TestingTransaction tx = TestingTransaction.create(new AionAddress(from.toByteArray()), kernel.getNonce(new AionAddress(from.toByteArray())), value, dappBytes, energyLimit, energyPrice);
         return new ResultWrapper(avm.run(this.kernel, new TestingTransaction[]{tx})[0].get());
     }
 

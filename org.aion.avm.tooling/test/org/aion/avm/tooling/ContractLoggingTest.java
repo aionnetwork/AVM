@@ -8,6 +8,7 @@ import static org.junit.Assert.fail;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import org.aion.types.AionAddress;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -18,7 +19,6 @@ import org.aion.avm.core.util.LogSizeUtils;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TestingTransaction;
-import org.aion.vm.api.types.Address;
 import org.aion.vm.api.interfaces.IExecutionLog;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.aion.vm.api.interfaces.TransactionSideEffects;
@@ -29,13 +29,13 @@ import org.junit.Test;
 public class ContractLoggingTest {
     private static final int NUM_LOGS = 5;
 
-    private static Address from = TestingKernel.PREMINED_ADDRESS;
+    private static AionAddress from = TestingKernel.PREMINED_ADDRESS;
     private static long energyLimit = 5_000_000L;
     private static long energyPrice = 1;
 
     private static TestingKernel kernel;
     private static AvmImpl avm;
-    private static Address contract;
+    private static AionAddress contract;
 
     private List<Integer> counts = new ArrayList<>();
 
@@ -178,7 +178,7 @@ public class ContractLoggingTest {
         TransactionResult result = avm.run(ContractLoggingTest.kernel, new TestingTransaction[] {transaction})[0].get();
 
         assertTrue(result.getResultCode().isSuccess());
-        contract = Address.wrap(result.getReturnData());
+        contract = new AionAddress(result.getReturnData());
     }
 
     private TransactionResult runTransaction(TestingTransaction tx) {

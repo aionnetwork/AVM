@@ -1,6 +1,7 @@
 package org.aion.avm.tooling;
 
-import org.aion.vm.api.types.Address;
+import avm.Address;
+import org.aion.types.AionAddress;
 import org.aion.avm.tooling.poc.TRS;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionMap;
@@ -20,8 +21,8 @@ public class TrsTest {
     @ClassRule
     public static AvmRule avmRule = new AvmRule(true);
 
-    private static Address DEPLOYER;
-    private static avm.Address DEPLOYER_API;
+    private static AionAddress DEPLOYER;
+    private static Address DEPLOYER_API;
     private static final long ENERGY_LIMIT = 100_000_000_000L;
     private static final long ENERGY_PRICE = 1;
     private static final int NUM_PERIODS = 12;
@@ -31,11 +32,11 @@ public class TrsTest {
     @BeforeClass
     public static void setup() {
         DEPLOYER_API = avmRule.getPreminedAccount();
-        DEPLOYER = new Address(DEPLOYER_API.toByteArray());
+        DEPLOYER = new AionAddress(DEPLOYER_API.toByteArray());
         kernel = avmRule.kernel;
     }
 
-    private Address contract;
+    private AionAddress contract;
 
     @Test
     public void testDeployTrs() {
@@ -57,7 +58,7 @@ public class TrsTest {
     public void testTrs() {
         BigInteger basicBalance = BigInteger.valueOf(1_000_000_000_000L);
         BigInteger trsFunds = BigInteger.valueOf(100_000);
-        Address account = Helpers.randomAddress();
+        AionAddress account = Helpers.randomAddress();
 
         // Deploy and initialize the contract.
         assertTrue(deployContract().getResultCode().isSuccess());
@@ -119,17 +120,17 @@ public class TrsTest {
         return sendFundsTo(contract, amount);
     }
 
-    private TransactionResult sendFundsTo(Address recipient, BigInteger amount) {
-        avm.Address recipientAddress = new avm.Address(recipient.toBytes());
+    private TransactionResult sendFundsTo(AionAddress recipient, BigInteger amount) {
+        Address recipientAddress = new Address(recipient.toByteArray());
         AvmRule.ResultWrapper result = avmRule.balanceTransfer(DEPLOYER_API, recipientAddress, amount, ENERGY_LIMIT, ENERGY_PRICE);
         return result.getTransactionResult();
     }
 
-    private TransactionResult mintAccountToTrs(Address account, BigInteger amount) {
-        return callContract("mint", new avm.Address(account.toBytes()), amount.longValue());
+    private TransactionResult mintAccountToTrs(AionAddress account, BigInteger amount) {
+        return callContract("mint", new Address(account.toByteArray()), amount.longValue());
     }
 
-    private TransactionResult withdrawFromTrs(Address recipient) {
+    private TransactionResult withdrawFromTrs(AionAddress recipient) {
         return callContract(recipient, "withdraw");
     }
 
@@ -149,10 +150,10 @@ public class TrsTest {
         return callContract(DEPLOYER, method, parameters);
     }
 
-    private TransactionResult callContract(Address sender, String method, Object... parameters) {
+    private TransactionResult callContract(AionAddress sender, String method, Object... parameters) {
         byte[] callData = ABIUtil.encodeMethodArguments(method, parameters);
-        avm.Address contractAddress = new avm.Address(contract.toBytes());
-        avm.Address senderAddress = new avm.Address(sender.toBytes());
+        Address contractAddress = new Address(contract.toByteArray());
+        Address senderAddress = new Address(sender.toByteArray());
         AvmRule.ResultWrapper result = avmRule.call(senderAddress, contractAddress, BigInteger.ZERO, callData, ENERGY_LIMIT, ENERGY_PRICE);
         assertTrue(result.getReceiptStatus().isSuccess());
         return result.getTransactionResult();
@@ -164,7 +165,7 @@ public class TrsTest {
 
         AvmRule.ResultWrapper result = avmRule.deploy(DEPLOYER_API, BigInteger.ZERO, jarBytes, ENERGY_LIMIT, ENERGY_PRICE);
         assertTrue(result.getReceiptStatus().isSuccess());
-        contract = new Address(result.getDappAddress().toByteArray());
+        contract = new AionAddress(result.getDappAddress().toByteArray());
         return result.getTransactionResult();
     }
 

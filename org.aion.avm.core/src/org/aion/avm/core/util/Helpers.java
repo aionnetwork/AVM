@@ -1,7 +1,7 @@
 package org.aion.avm.core.util;
 
+import org.aion.types.AionAddress;
 import p.avm.Blockchain;
-import org.aion.vm.api.types.Address;
 import i.IBlockchainRuntime;
 import i.IRuntimeSetup;
 import org.aion.avm.core.ClassToolchain;
@@ -33,6 +33,7 @@ import java.util.Set;
 public class Helpers {
 
     private static final char[] hexArray = "0123456789abcdef".toCharArray();
+    public static final AionAddress ZERO_ADDRESS = address(0);
 
     /**
      * Converts byte array into its hex string representation.
@@ -135,10 +136,10 @@ public class Helpers {
 
     private static SecureRandom secureRandom = new SecureRandom();
 
-    public static Address randomAddress() {
-        byte[] bytes = new byte[Address.SIZE];
+    public static AionAddress randomAddress() {
+        byte[] bytes = new byte[AionAddress.LENGTH];
         secureRandom.nextBytes(bytes);
-        return Address.wrap(bytes);
+        return new AionAddress(bytes);
     }
 
     /**
@@ -242,12 +243,12 @@ public class Helpers {
     }
 
     // for test suites only
-    public static Address address(int n) {
+    public static AionAddress address(int n) {
         byte[] arr = new byte[32];
         for (int i = 0; i < arr.length; i++) {
             arr[i] = (byte) n;
         }
-        return Address.wrap(arr);
+        return new AionAddress(arr);
     }
 
     public static byte[] merge(byte[]...arrays) {

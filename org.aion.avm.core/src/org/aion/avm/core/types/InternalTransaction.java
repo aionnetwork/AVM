@@ -1,7 +1,7 @@
 package org.aion.avm.core.types;
 
 import i.RuntimeAssertionError;
-import org.aion.vm.api.types.Address;
+import org.aion.types.AionAddress;
 import org.aion.vm.api.interfaces.InternalTransactionInterface;
 
 import java.math.BigInteger;
@@ -13,6 +13,7 @@ public final class InternalTransaction implements InternalTransactionInterface {
 
     private boolean rejected;
 
+    // TODO: We should probably change these to just be AionAddress
     private final byte[] from;
     private final byte[] to;
     private final BigInteger nonce;
@@ -22,25 +23,25 @@ public final class InternalTransaction implements InternalTransactionInterface {
     private final long energyPrice;
     private final byte[] transactionHash;
 
-    public static InternalTransaction buildTransactionOfTypeCreate(Address from, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice){
+    public static InternalTransaction buildTransactionOfTypeCreate(AionAddress from, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice){
         return new InternalTransaction(from, null, nonce, value, data, energyLimit, energyPrice);
     }
 
-    public static InternalTransaction buildTransactionOfTypeCall(Address from, Address to, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice){
+    public static InternalTransaction buildTransactionOfTypeCall(AionAddress from, AionAddress to, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice){
         if(to == null)  {
             throw new IllegalArgumentException("The transaction to can't be NULL for non-CREATE");
         }
         return new InternalTransaction(from, to, nonce, value, data, energyLimit, energyPrice);
     }
 
-    public InternalTransaction(Address from, Address to, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
+    public InternalTransaction(AionAddress from, AionAddress to, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         require(from != null, "The transaction from can't be NULL");
         require(nonce != null, "The transaction nonce can't be NULL");
         require(data != null, "The transaction data can't be NULL");
         require(value != null, "The transaction value can't be NULL");
 
-        this.from = from.toBytes();
-        this.to = (to == null) ? null : to.toBytes();
+        this.from = from.toByteArray();
+        this.to = (to == null) ? null : to.toByteArray();
         this.nonce = nonce;
         this.value = value;
         this.data = data;
@@ -56,18 +57,18 @@ public final class InternalTransaction implements InternalTransactionInterface {
     }
 
     @Override
-    public Address getSenderAddress() {
-        return org.aion.vm.api.types.Address.wrap(from);
+    public AionAddress getSenderAddress() {
+        return new AionAddress(from);
     }
 
     @Override
-    public Address getDestinationAddress() {
+    public AionAddress getDestinationAddress() {
         // The destination can be null in the case of contract creation.
-        return (to == null) ? null : org.aion.vm.api.types.Address.wrap(to);
+        return (to == null) ? null : new AionAddress(to);
     }
 
     @Override
-    public Address getContractAddress() {
+    public AionAddress getContractAddress() {
         throw RuntimeAssertionError.unreachable("getContractAddress is not expected in internal transaction.");
     }
 

@@ -6,9 +6,10 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
 import i.RuntimeAssertionError;
+import org.aion.types.AionAddress;
+import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.parallel.TransactionTask;
-import org.aion.vm.api.types.Address;
 import org.aion.vm.api.interfaces.SimpleFuture;
 import org.aion.vm.api.interfaces.TransactionInterface;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -238,17 +239,17 @@ public class HandoffMonitorTest {
         }
 
         @Override
-        public Address getSenderAddress() {
-            return Address.ZERO_ADDRESS();
+        public AionAddress getSenderAddress() {
+            return Helpers.ZERO_ADDRESS;
         }
 
         @Override
-        public Address getDestinationAddress() {
-            return Address.ZERO_ADDRESS();
+        public AionAddress getDestinationAddress() {
+            return Helpers.ZERO_ADDRESS;
         }
 
         @Override
-        public Address getContractAddress() {
+        public AionAddress getContractAddress() {
             throw new AssertionError("No calls expected");
         }
 
@@ -308,7 +309,7 @@ public class HandoffMonitorTest {
         // (we don't consult the capabilities since there is no creation)
         IExternalCapabilities capabilities = null;
         for (int i = 0; i < transactions.length; ++i) {
-            tasks[i] = new TransactionTask(null, AvmTransaction.from(capabilities, transactions[i]), i, Address.ZERO_ADDRESS());
+            tasks[i] = new TransactionTask(null, AvmTransaction.from(capabilities, transactions[i]), i, Helpers.ZERO_ADDRESS);
         }
         return tasks;
     }

@@ -3,9 +3,9 @@ package org.aion.avm.core;
 import static org.junit.Assert.assertEquals;
 
 import java.math.BigInteger;
+import org.aion.types.AionAddress;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.types.InternalTransaction;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionBuffer;
@@ -20,7 +20,6 @@ import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
 
 import org.aion.kernel.TestingTransaction;
-import org.aion.vm.api.types.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionInterface;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -28,7 +27,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class PersistanceNameMappingTest {
-    private static Address deployer = TestingKernel.PREMINED_ADDRESS;
+    private static AionAddress deployer = TestingKernel.PREMINED_ADDRESS;
     private static TestingKernel kernel;
     private static AvmConfiguration configurationWithDebugEnabled;
     private static AvmConfiguration configurationWithDebugDisabled;
@@ -63,7 +62,7 @@ public class PersistanceNameMappingTest {
     private void runTestLogic(AvmImpl avm) {
         kernel.generateBlock();
         // Deploy the contract.
-        Address contract = deployContract(avm, kernel);
+        AionAddress contract = deployContract(avm, kernel);
         kernel.generateBlock();
 
         // Set all the persistant fields.
@@ -74,7 +73,7 @@ public class PersistanceNameMappingTest {
         callContract(avm, kernel, contract, "verifyFields");
     }
 
-    private Address deployContract(AvmImpl avm, KernelInterface kernel) {
+    private AionAddress deployContract(AvmImpl avm, KernelInterface kernel) {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(PersistanceNameMappingTestTarget.class, ABIDecoder.class, ABIException.class, ABIToken.class, AionBuffer.class, AionSet.class, AionMap.class);
         byte[] data = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
@@ -82,10 +81,10 @@ public class PersistanceNameMappingTest {
         TransactionResult result = avm.run(kernel, new TransactionInterface[]{ createTransaction })[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
 
-        return new Address(result.getReturnData());
+        return new AionAddress(result.getReturnData());
     }
 
-    private void callContract(AvmImpl avm, KernelInterface kernel, Address contract, String method) {
+    private void callContract(AvmImpl avm, KernelInterface kernel, AionAddress contract, String method) {
         byte[] data = ABIEncoder.encodeOneString(method);
         TestingTransaction callTransaction = TestingTransaction.call(deployer, contract, kernel.getNonce(deployer), BigInteger.ZERO, data, 2_000_000L, 1L);
         TransactionResult result = avm.run(kernel, new TransactionInterface[]{ callTransaction })[0].get();

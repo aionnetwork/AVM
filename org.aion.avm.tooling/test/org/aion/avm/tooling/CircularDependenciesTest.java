@@ -4,16 +4,17 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import static org.objectweb.asm.Opcodes.*;
 
+import avm.Address;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import org.aion.types.AionAddress;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.vm.api.types.Address;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -27,27 +28,27 @@ public class CircularDependenciesTest {
     @ClassRule
     public static AvmRule avmRule = new AvmRule(true);
 
-    private static Address DEPLOYER;
-    private static avm.Address DEPLOYER_API;
+    private static AionAddress DEPLOYER;
+    private static Address DEPLOYER_API;
     private static final long ENERGY_LIMIT = 100_000_000_000L;
     private static final long ENERGY_PRICE = 1;
 
-    Address contract;
+    AionAddress contract;
 
     @BeforeClass
     public static void setup() {
         DEPLOYER_API = avmRule.getPreminedAccount();
-        DEPLOYER = new Address(DEPLOYER_API.toByteArray());
+        DEPLOYER = new AionAddress(DEPLOYER_API.toByteArray());
     }
 
     private TransactionResult callContract(String method, Object... parameters) {
         return callContract(DEPLOYER, method, parameters);
     }
 
-    private TransactionResult callContract(Address sender, String method, Object... parameters) {
+    private TransactionResult callContract(AionAddress sender, String method, Object... parameters) {
         byte[] callData = ABIUtil.encodeMethodArguments(method, parameters);
-        avm.Address contractAddress = new avm.Address(contract.toBytes());
-        avm.Address senderAddress = new avm.Address(sender.toBytes());
+        Address contractAddress = new Address(contract.toByteArray());
+        Address senderAddress = new Address(sender.toByteArray());
         AvmRule.ResultWrapper result = avmRule.call(senderAddress, contractAddress, BigInteger.ZERO, callData, ENERGY_LIMIT, ENERGY_PRICE);
         assertTrue(result.getReceiptStatus().isSuccess());
         return result.getTransactionResult();
@@ -63,7 +64,7 @@ public class CircularDependenciesTest {
         byte[] jarBytes = avmRule.getDappBytes(CircularDependencyATarget.class, null, CircularDependencyBTarget.class);
         AvmRule.ResultWrapper result = avmRule.deploy(DEPLOYER_API, BigInteger.ZERO, jarBytes, ENERGY_LIMIT, ENERGY_PRICE);
         assertTrue(result.getReceiptStatus().isSuccess());
-        contract = new Address(result.getDappAddress().toByteArray());
+        contract = new AionAddress(result.getDappAddress().toByteArray());
 
         callContract("getValue");
     }

@@ -3,6 +3,7 @@ package org.aion.avm.core;
 import static org.junit.Assert.assertEquals;
 
 import java.math.BigInteger;
+import org.aion.types.AionAddress;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.instrument.BytecodeFeeScheduler;
@@ -12,14 +13,13 @@ import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TestingTransaction;
-import org.aion.vm.api.types.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Test;
 import org.objectweb.asm.Opcodes;
 
 public class ConstantBillingTest {
-    private static Address deployer = TestingKernel.PREMINED_ADDRESS;
+    private static AionAddress deployer = TestingKernel.PREMINED_ADDRESS;
     private static long energyLimit = 1_000_000;
 
     @Test

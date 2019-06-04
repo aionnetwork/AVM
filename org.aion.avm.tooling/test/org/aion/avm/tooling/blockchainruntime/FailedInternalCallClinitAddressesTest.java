@@ -1,5 +1,6 @@
 package org.aion.avm.tooling.blockchainruntime;
 
+import org.aion.types.AionAddress;
 import avm.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.userlib.abi.ABIDecoder;
@@ -73,7 +74,7 @@ public class FailedInternalCallClinitAddressesTest {
         printTestContext("verifyRunningInternalCallsFromDappIntoOtherDapps", numInternalTransactionsToSpawn, recurseFirst);
 
         Address contract = deployInternalCallClinitAddressTrackerContract();
-        Address[] deployedContracts = generateTheAddressesOfTheContractsThatWillBeCreated(numInternalTransactionsToSpawn, contract, avmRule.kernel.getNonce(org.aion.vm.api.types.Address.wrap(contract.toByteArray())).longValue());
+        Address[] deployedContracts = generateTheAddressesOfTheContractsThatWillBeCreated(numInternalTransactionsToSpawn, contract, avmRule.kernel.getNonce(new AionAddress(contract.toByteArray())).longValue());
         printOrderOfContractCalls(contract, deployedContracts);
 
         // Grab the 'report', the batch of all addresses that were tracked by the contract.
@@ -132,9 +133,9 @@ public class FailedInternalCallClinitAddressesTest {
         for (int i = 0; i < numContractsToDeploy; i++) {
             // Create a "fake" transaction so we can use the common helper to precompute the target contract address.
             TestingTransaction fakeTransaction = (0 == i)
-                    ? TestingTransaction.create(org.aion.vm.api.types.Address.wrap(contract.toByteArray()), BigInteger.valueOf(nonce + i), BigInteger.ZERO, new byte[0], energyLimit, energyPrice)
-                    : TestingTransaction.create(org.aion.vm.api.types.Address.wrap(contracts[i - 1].toByteArray()), BigInteger.ZERO, BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
-            contracts[i] = new Address(AddressUtil.generateContractAddress(fakeTransaction).toBytes());
+                    ? TestingTransaction.create(new AionAddress(contract.toByteArray()), BigInteger.valueOf(nonce + i), BigInteger.ZERO, new byte[0], energyLimit, energyPrice)
+                    : TestingTransaction.create(new AionAddress(contracts[i - 1].toByteArray()), BigInteger.ZERO, BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
+            contracts[i] = new Address(AddressUtil.generateContractAddress(fakeTransaction).toByteArray());
         }
         return contracts;
     }

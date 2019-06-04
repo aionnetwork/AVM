@@ -4,8 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import i.RuntimeAssertionError;
-import org.aion.vm.api.types.Address;
+import org.aion.types.AionAddress;
 import org.aion.vm.api.interfaces.IExecutionLog;
 import org.aion.vm.api.interfaces.InternalTransactionInterface;
 import org.aion.vm.api.interfaces.TransactionSideEffects;
@@ -54,12 +53,12 @@ public class SideEffects implements TransactionSideEffects {
     }
 
     @Override
-    public void addToDeletedAddresses(Address address) {
+    public void addToDeletedAddresses(AionAddress address) {
         throw new AssertionError("We shouldn't be adding and deleted addresses in the AVM");
     }
 
     @Override
-    public void addAllToDeletedAddresses(Collection<Address> addresses) {
+    public void addAllToDeletedAddresses(Collection<AionAddress> addresses) {
         throw new AssertionError("We shouldn't be adding and deleted addresses in the AVM");
     }
 
@@ -79,7 +78,7 @@ public class SideEffects implements TransactionSideEffects {
     }
 
     @Override
-    public List<Address> getAddressesToBeDeleted() {
+    public List<AionAddress> getAddressesToBeDeleted() {
         return new ArrayList<>();
     }
 

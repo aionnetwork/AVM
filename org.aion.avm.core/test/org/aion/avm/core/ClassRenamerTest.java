@@ -2,6 +2,7 @@ package org.aion.avm.core;
 
 import static org.junit.Assert.assertEquals;
 
+import avm.Address;
 import i.PackageConstants;
 import i.RuntimeAssertionError;
 import java.util.HashSet;
@@ -100,7 +101,7 @@ public class ClassRenamerTest {
     public void testApiDotNameRenaming() {
         String blockchain = avm.Blockchain.class.getName();
         String result = avm.Result.class.getName();
-        String address = avm.Address.class.getName();
+        String address = Address.class.getName();
 
         String expectedBlockchain = p.avm.Blockchain.class.getName();
         String expectedResult = p.avm.Result.class.getName();
@@ -115,7 +116,7 @@ public class ClassRenamerTest {
     public void testApiSlashNameRenaming() {
         String blockchain = avm.Blockchain.class.getName().replaceAll("\\.", "/");
         String result = avm.Result.class.getName().replaceAll("\\.", "/");
-        String address = avm.Address.class.getName().replaceAll("\\.", "/");
+        String address = Address.class.getName().replaceAll("\\.", "/");
 
         String expectedBlockchain = p.avm.Blockchain.class.getName().replaceAll("\\.", "/");
         String expectedResult = p.avm.Result.class.getName().replaceAll("\\.", "/");

@@ -3,6 +3,7 @@ package org.aion.avm.tooling;
 import legacy_examples.deployAndRunTest.DeployAndRunTarget;
 import legacy_examples.helloworld.HelloWorld;
 import avm.Address;
+import org.aion.types.AionAddress;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingKernel;
@@ -141,14 +142,14 @@ public class AvmImplDeployAndRunTest {
 
     @Test
     public void testBalanceTransfer() {
-        assertEquals(TestingKernel.PREMINED_AMOUNT, avmRule.kernel.getBalance(org.aion.vm.api.types.Address.wrap(from.toByteArray())));
+        assertEquals(TestingKernel.PREMINED_AMOUNT, avmRule.kernel.getBalance(new AionAddress(from.toByteArray())));
 
         // account1 get 10000
         Address account1 = avmRule.getRandomAddress(BigInteger.ZERO);
         TransactionResult result = avmRule.balanceTransfer(from, account1, BigInteger.valueOf(100000L), 21000, energyPrice).getTransactionResult();
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        assertEquals(BigInteger.valueOf(100000L), avmRule.kernel.getBalance(org.aion.vm.api.types.Address.wrap(account1.toByteArray())));
+        assertEquals(BigInteger.valueOf(100000L), avmRule.kernel.getBalance(new AionAddress(account1.toByteArray())));
 
         // account1 transfers 1000 to account2
         Address account2 = avmRule.getRandomAddress(BigInteger.ZERO);
@@ -156,39 +157,39 @@ public class AvmImplDeployAndRunTest {
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         long basicCost = 21000L;
-        assertEquals(BigInteger.valueOf(100000L - 1000L - energyPrice * basicCost), avmRule.kernel.getBalance(org.aion.vm.api.types.Address.wrap(account1.toByteArray())));
-        assertEquals(BigInteger.valueOf(1000L), avmRule.kernel.getBalance(org.aion.vm.api.types.Address.wrap(account2.toByteArray())));
+        assertEquals(BigInteger.valueOf(100000L - 1000L - energyPrice * basicCost), avmRule.kernel.getBalance(new AionAddress(account1.toByteArray())));
+        assertEquals(BigInteger.valueOf(1000L), avmRule.kernel.getBalance(new AionAddress(account2.toByteArray())));
     }
 
     @Test
     public void testBalanceTransferUpperBound() {
-        org.aion.vm.api.types.Address from = TestingKernel.BIG_PREMINED_ADDRESS;
+        AionAddress from = TestingKernel.BIG_PREMINED_ADDRESS;
         assertEquals(TestingKernel.PREMINED_BIG_AMOUNT, avmRule.kernel.getBalance(from));
 
         Address account1 = avmRule.getRandomAddress(BigInteger.ZERO);
         long maxEnergyPrice = Long.MAX_VALUE;
-        TransactionResult result = avmRule.balanceTransfer(new Address(from.toBytes()), account1, BigInteger.valueOf(100_000L), 21_000L, maxEnergyPrice).getTransactionResult();
+        TransactionResult result = avmRule.balanceTransfer(new Address(from.toByteArray()), account1, BigInteger.valueOf(100_000L), 21_000L, maxEnergyPrice).getTransactionResult();
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        assertEquals(BigInteger.valueOf(100000L), avmRule.kernel.getBalance(org.aion.vm.api.types.Address.wrap(account1.toByteArray())));
+        assertEquals(BigInteger.valueOf(100000L), avmRule.kernel.getBalance(new AionAddress(account1.toByteArray())));
         BigInteger preminedAmountRemained = TestingKernel.PREMINED_BIG_AMOUNT.subtract(BigInteger.valueOf(100_000L)).subtract(BigInteger.valueOf(21_000L).multiply(BigInteger.valueOf(maxEnergyPrice)));
-        assertEquals(preminedAmountRemained , avmRule.kernel.getBalance(from));
+        assertEquals(preminedAmountRemained , avmRule.kernel.getBalance(new AionAddress(from.toByteArray())));
 
     }
 
     @Test
     public void testBalanceTransferUpperBoundRefund() {
-        org.aion.vm.api.types.Address from = TestingKernel.BIG_PREMINED_ADDRESS;
+        AionAddress from = TestingKernel.BIG_PREMINED_ADDRESS;
         assertEquals(TestingKernel.PREMINED_BIG_AMOUNT, avmRule.kernel.getBalance(from));
 
         Address account1 = avmRule.getRandomAddress(BigInteger.ZERO);
         long maxEnergyPrice = Long.MAX_VALUE;
-        TransactionResult result = avmRule.balanceTransfer(new Address(from.toBytes()), account1, BigInteger.valueOf(100_000L), 2_000_000L, maxEnergyPrice).getTransactionResult();
+        TransactionResult result = avmRule.balanceTransfer(new Address(from.toByteArray()), account1, BigInteger.valueOf(100_000L), 2_000_000L, maxEnergyPrice).getTransactionResult();
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        assertEquals(BigInteger.valueOf(100_000L), avmRule.kernel.getBalance(org.aion.vm.api.types.Address.wrap(account1.toByteArray())));
+        assertEquals(BigInteger.valueOf(100_000L), avmRule.kernel.getBalance(new AionAddress(account1.toByteArray())));
         BigInteger preminedAmountRemained = TestingKernel.PREMINED_BIG_AMOUNT.subtract(BigInteger.valueOf(100_000L)).subtract(BigInteger.valueOf(21_000L).multiply(BigInteger.valueOf(maxEnergyPrice)));
-        assertEquals(preminedAmountRemained , avmRule.kernel.getBalance(from));
+        assertEquals(preminedAmountRemained , avmRule.kernel.getBalance(new AionAddress(from.toByteArray())));
 
     }
 
@@ -198,7 +199,7 @@ public class AvmImplDeployAndRunTest {
         byte[] txData = avmRule.getDappBytes(DeployAndRunTarget.class, null);
         TransactionResult deployResult = avmRule.deploy(from, BigInteger.valueOf(100000L), txData, energyLimit, energyPrice).getTransactionResult();
         assertEquals(AvmTransactionResult.Code.SUCCESS, deployResult.getResultCode());
-        assertEquals(BigInteger.valueOf(100000L), avmRule.kernel.getBalance(org.aion.vm.api.types.Address.wrap(deployResult.getReturnData())));
+        assertEquals(BigInteger.valueOf(100000L), avmRule.kernel.getBalance(new AionAddress(deployResult.getReturnData())));
 
         // account1 get 1000000; pure balance transfer
         BigInteger accountBalance = BigInteger.valueOf(1000000L);
@@ -207,7 +208,7 @@ public class AvmImplDeployAndRunTest {
         TransactionResult result = avmRule.balanceTransfer(from, account1, accountBalance, 21000, energyPrice).getTransactionResult();
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        assertEquals(accountBalance, avmRule.kernel.getBalance(org.aion.vm.api.types.Address.wrap(account1.toByteArray())));
+        assertEquals(accountBalance, avmRule.kernel.getBalance(new AionAddress(account1.toByteArray())));
 
         // account1 to call the Dapp and transfer 50000 to it; call with balance transfer
         long energyLimit = 500_000L;
@@ -219,8 +220,8 @@ public class AvmImplDeployAndRunTest {
         BigInteger accountBalanceAfterValueTransfer = accountBalance.subtract(value);
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        assertEquals(BigInteger.valueOf(150000L), avmRule.kernel.getBalance(org.aion.vm.api.types.Address.wrap(deployResult.getReturnData())));
-        assertEquals(accountBalanceAfterValueTransfer.subtract(BigInteger.valueOf(((AvmTransactionResult) result).getEnergyUsed())), avmRule.kernel.getBalance(org.aion.vm.api.types.Address.wrap(account1.toByteArray())));
-        assertEquals(accountBalanceAfterValueTransfer.subtract(BigInteger.valueOf(energyLimit - result.getEnergyRemaining())), avmRule.kernel.getBalance(org.aion.vm.api.types.Address.wrap(account1.toByteArray())));
+        assertEquals(BigInteger.valueOf(150000L), avmRule.kernel.getBalance(new AionAddress(deployResult.getReturnData())));
+        assertEquals(accountBalanceAfterValueTransfer.subtract(BigInteger.valueOf(((AvmTransactionResult) result).getEnergyUsed())), avmRule.kernel.getBalance(new AionAddress(account1.toByteArray())));
+        assertEquals(accountBalanceAfterValueTransfer.subtract(BigInteger.valueOf(energyLimit - result.getEnergyRemaining())), avmRule.kernel.getBalance(new AionAddress(account1.toByteArray())));
     }
 }

@@ -1,5 +1,6 @@
 package org.aion.avm.core.rejection.errors;
 
+import org.aion.types.AionAddress;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -11,7 +12,6 @@ import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TestingTransaction;
-import org.aion.vm.api.types.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.AfterClass;
@@ -31,7 +31,7 @@ import java.math.BigInteger;
  * since Throwable can be caught, but none of the VirtualMachineError instances should actually appear there.
  */
 public class RejectVirtualMachineErrorIntegrationTest {
-    private static Address FROM = TestingKernel.PREMINED_ADDRESS;
+    private static AionAddress FROM = TestingKernel.PREMINED_ADDRESS;
     private static long ENERGY_LIMIT = 5_000_000L;
     private static long ENERGY_PRICE = 1L;
 

@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.types.AionAddress;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
 
@@ -21,7 +22,6 @@ import i.RuntimeAssertionError;
 import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.parallel.AddressResourceMonitor;
 import org.aion.parallel.TransactionTask;
-import org.aion.vm.api.types.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.SimpleFuture;
 import org.aion.vm.api.interfaces.TransactionInterface;
@@ -216,11 +216,11 @@ public class AvmImpl implements AvmInternal {
         }
 
         // Acquire both sender and target resources
-        Address sender = tx.senderAddress;
-        Address target = tx.destinationAddress;
+        AionAddress sender = tx.senderAddress;
+        AionAddress target = tx.destinationAddress;
 
-        this.resourceMonitor.acquire(sender.toBytes(), task);
-        this.resourceMonitor.acquire(target.toBytes(), task);
+        this.resourceMonitor.acquire(sender.toByteArray(), task);
+        this.resourceMonitor.acquire(target.toByteArray(), task);
 
         // nonce check
         if (!task.getThisTransactionalKernel().accountNonceEquals(sender, tx.nonce)) {
@@ -303,7 +303,7 @@ public class AvmImpl implements AvmInternal {
 
         // Sanity checks around energy pricing and nonce are done in the caller.
         // balance check
-        Address sender = tx.senderAddress;
+        AionAddress sender = tx.senderAddress;
         long energyPrice = tx.energyPrice;
         BigInteger value = tx.value;
         BigInteger transactionCost = BigInteger.valueOf(tx.energyLimit).multiply(BigInteger.valueOf(energyPrice)).add(value);
@@ -359,7 +359,7 @@ public class AvmImpl implements AvmInternal {
         AvmTransactionResult result = new AvmTransactionResult(tx.energyLimit, transactionBaseCost);
 
         // grab the recipient address as either the new contract address or the given account address.
-        Address recipient = tx.destinationAddress;
+        AionAddress recipient = tx.destinationAddress;
 
         // conduct value transfer
         BigInteger value = tx.value;
@@ -386,7 +386,7 @@ public class AvmImpl implements AvmInternal {
                 DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, tx, result, this.enableVerboseContractErrors);
             } else {
                 // If we didn't find it there (that is only for reentrant calls so it is rarely found in the stack), try the hot DApp cache.
-                ByteArrayWrapper addressWrapper = new ByteArrayWrapper(recipient.toBytes());
+                ByteArrayWrapper addressWrapper = new ByteArrayWrapper(recipient.toByteArray());
                 LoadedDApp dappInHotCache = this.hotCache.checkout(addressWrapper);
                 //'parentKernel.getTransformedCode(recipient) != null' means this recipient's DApp is not self-destructed.
                 if (thisTransactionKernel.getTransformedCode(recipient) != null) {

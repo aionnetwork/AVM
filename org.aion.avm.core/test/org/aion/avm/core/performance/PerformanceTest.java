@@ -1,6 +1,6 @@
 package org.aion.avm.core.performance;
 
-import avm.Address;
+import org.aion.types.AionAddress;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -33,8 +33,8 @@ public class PerformanceTest {
     private static long energyLimit = 1_000_000_000_000_000l;
     private static long energyPrice = 1l;
 
-    private org.aion.vm.api.types.Address[] userAddrs = new org.aion.vm.api.types.Address[userDappNum];
-    private Address[] contractAddrs = new Address[userDappNum];
+    private AionAddress[] userAddrs = new AionAddress[userDappNum];
+    private AionAddress[] contractAddrs = new AionAddress[userDappNum];
 
     @Before
     public void setup() {
@@ -58,7 +58,7 @@ public class PerformanceTest {
         // Deploy
         for(int i = 0; i < userDappNum; ++i) {
             //creating users
-            org.aion.vm.api.types.Address userAddress = Helpers.randomAddress();
+            AionAddress userAddress = Helpers.randomAddress();
             kernel.createAccount(userAddress);
             kernel.adjustBalance(userAddress, BigInteger.TEN.pow(18));
             userAddrs[i] = userAddress;
@@ -67,7 +67,7 @@ public class PerformanceTest {
             TestingTransaction create = TestingTransaction.create(userAddress, kernel.getNonce(userAddress), BigInteger.ZERO, txData, energyLimit, energyPrice);
             AvmTransactionResult createResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[]{create})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
-            Address contractAddr = new Address(createResult.getReturnData());
+            AionAddress contractAddr = new AionAddress(createResult.getReturnData());
             contractAddrs[i] = contractAddr;
         }
 
@@ -113,9 +113,9 @@ public class PerformanceTest {
         System.out.printf("%s: %d ms\n", testName, timeElapsed);
     }
 
-    private void callSingle(org.aion.vm.api.types.Address sender, Address contractAddr, String methodName) {
+    private void callSingle(AionAddress sender, AionAddress contractAddr, String methodName) {
         byte[] argData = new ABIStreamingEncoder().encodeOneString(methodName).toBytes();
-        TestingTransaction call = TestingTransaction.call(sender, org.aion.vm.api.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
+        TestingTransaction call = TestingTransaction.call(sender, contractAddr, kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
         AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {call})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
     }
@@ -158,9 +158,9 @@ public class PerformanceTest {
         for(int j = 0; j < contextNum; ++j) {
             TestingTransaction[] transactionArray = new TestingTransaction[transactionBlockSize];
             for (int i = 0; i < transactionBlockSize; ++i) {
-                org.aion.vm.api.types.Address sender = userAddrs[i];
-                Address contractAddr = Nto1 ? contractAddrs[0] : contractAddrs[i];
-                transactionArray[i] = TestingTransaction.call(sender, org.aion.vm.api.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
+                AionAddress sender = userAddrs[i];
+                AionAddress contractAddr = Nto1 ? contractAddrs[0] : contractAddrs[i];
+                transactionArray[i] = TestingTransaction.call(sender, contractAddr, kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
             }
             SimpleFuture<TransactionResult>[] futures = avm.run(this.kernel, transactionArray);
             for (SimpleFuture<TransactionResult> future : futures) {

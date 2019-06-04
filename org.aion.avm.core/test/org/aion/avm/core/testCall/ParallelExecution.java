@@ -2,6 +2,7 @@ package org.aion.avm.core.testCall;
 
 import java.math.BigInteger;
 
+import org.aion.types.AionAddress;
 import org.aion.kernel.TestingTransaction;
 import p.avm.Address;
 import p.avm.Result;
@@ -94,11 +95,11 @@ public class ParallelExecution {
                     TransactionResult r = f.get();
 
                     Set<String> set = new HashSet<>();
-                    set.add(Helpers.bytesToHexString(tx.getSenderAddress().toBytes()));
-                    set.add(Helpers.bytesToHexString(tx.getDestinationAddress().toBytes()));
+                    set.add(Helpers.bytesToHexString(tx.getSenderAddress().toByteArray()));
+                    set.add(Helpers.bytesToHexString(tx.getDestinationAddress().toByteArray()));
                     for (InternalTransaction it : r.internalTransactions) {
-                        set.add(Helpers.bytesToHexString(it.getSenderAddress().toBytes()));
-                        set.add(Helpers.bytesToHexString(it.getDestinationAddress().toBytes()));
+                        set.add(Helpers.bytesToHexString(it.getSenderAddress().toByteArray()));
+                        set.add(Helpers.bytesToHexString(it.getDestinationAddress().toByteArray()));
                     }
 
                     if (set.stream().anyMatch(k -> accounts.contains(k))) {
@@ -148,8 +149,8 @@ public class ParallelExecution {
                 @Override
                 public Result avm_call(Address targetAddress, s.java.math.BigInteger value, ByteArray payload, long energyLimit) {
                     InternalTransaction internalTx = InternalTransaction.buildTransactionOfTypeCall(
-                            tx.getDestinationAddress(),
-                            org.aion.vm.api.types.Address.wrap(targetAddress.toByteArray()),
+                            new AionAddress(tx.getDestinationAddress().toByteArray()),
+                            new AionAddress(targetAddress.toByteArray()),
                             BigInteger.ZERO,
                             value.getUnderlying(),
                             payload.getUnderlying(),
@@ -159,7 +160,7 @@ public class ParallelExecution {
 
                     return new Result(true, new ByteArray(new byte[0]));
                 }
-            }.withCaller(tx.getSenderAddress().toBytes()).withAddress(tx.getDestinationAddress().toBytes()).withEnergyLimit(tx.getEnergyLimit()).withData(tx.getData()));
+            }.withCaller(tx.getSenderAddress().toByteArray()).withAddress(tx.getDestinationAddress().toByteArray()).withEnergyLimit(tx.getEnergyLimit()).withData(tx.getData()));
             try {
                 Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(Contract.class.getName(), this.preserveDebuggability);
                 clazz.getMethod(NamespaceMapper.mapMethodName("main")).invoke(null);
@@ -191,8 +192,8 @@ public class ParallelExecution {
     //============
 
     public static void simpleCall() {
-        TestingTransaction tx1 = TestingTransaction.call(Helpers.address(1), Helpers.address(2), BigInteger.ZERO, BigInteger.ZERO, Helpers.address(3).toBytes(), 1000000, 1);
-        TestingTransaction tx2 = TestingTransaction.call(Helpers.address(3), Helpers.address(4), BigInteger.ZERO, BigInteger.ZERO, Helpers.address(1).toBytes(), 1000000, 1);
+        TestingTransaction tx1 = TestingTransaction.call(Helpers.address(1), Helpers.address(2), BigInteger.ZERO, BigInteger.ZERO, Helpers.address(3).toByteArray(), 1000000, 1);
+        TestingTransaction tx2 = TestingTransaction.call(Helpers.address(3), Helpers.address(4), BigInteger.ZERO, BigInteger.ZERO, Helpers.address(1).toByteArray(), 1000000, 1);
         TestingTransaction tx3 = TestingTransaction.call(Helpers.address(3), Helpers.address(5), BigInteger.ZERO, BigInteger.ZERO, new byte[0], 1000000, 1);
 
         ParallelExecution exec = new ParallelExecution(List.of(tx1, tx2, tx3), new State(), NUM_THREADS);
@@ -212,7 +213,7 @@ public class ParallelExecution {
             int to = r.nextInt(numAccounts);
             int callee = r.nextInt(numAccounts);
 
-            TestingTransaction tx = TestingTransaction.call(Helpers.address(from), Helpers.address(to), BigInteger.ZERO, BigInteger.ZERO, Helpers.address(callee).toBytes(), 1000000, 1);
+            TestingTransaction tx = TestingTransaction.call(Helpers.address(from), Helpers.address(to), BigInteger.ZERO, BigInteger.ZERO, Helpers.address(callee).toByteArray(), 1000000, 1);
             transactions.add(tx);
         }
 

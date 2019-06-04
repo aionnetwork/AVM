@@ -1,6 +1,6 @@
 package org.aion.avm.core;
 
-import org.aion.vm.api.types.Address;
+import org.aion.types.AionAddress;
 import org.aion.vm.api.interfaces.TransactionInterface;
 
 
@@ -51,5 +51,5 @@ public interface IExternalCapabilities {
      * @param tx The transaction performing the creation.
      * @return The address of the new contract this transaction would create.
      */
-    Address generateContractAddress(TransactionInterface tx);
+    AionAddress generateContractAddress(TransactionInterface tx);
 }

@@ -1,6 +1,6 @@
 package org.aion.avm.core;
 
-import org.aion.avm.NameStyle;
+import org.aion.types.AionAddress;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 import org.aion.avm.StorageFees;
 import org.aion.avm.core.ClassRenamer.ArrayType;
@@ -27,7 +27,6 @@ import org.aion.avm.core.shadowing.InvokedynamicShadower;
 import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.types.ClassHierarchy;
 import org.aion.avm.core.types.ClassInfo;
-import org.aion.avm.core.types.CommonType;
 import org.aion.avm.core.types.Forest;
 import org.aion.avm.core.types.GeneratedClassConsumer;
 import org.aion.avm.core.types.ImmortalDappModule;
@@ -40,7 +39,6 @@ import org.aion.avm.core.verification.Verifier;
 import i.*;
 import org.aion.kernel.*;
 import org.aion.parallel.TransactionTask;
-import org.aion.vm.api.types.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -183,7 +181,7 @@ public class DAppCreator {
         LoadedDApp dapp = null;
         try {
             // read dapp module
-            Address dappAddress = tx.destinationAddress;
+            AionAddress dappAddress = tx.destinationAddress;
             CodeAndArguments codeAndArguments = CodeAndArguments.decodeFromBytes(tx.data);
             if (codeAndArguments == null) {
                 if (verboseErrors) {
@@ -283,7 +281,7 @@ public class DAppCreator {
             // Return data of a CREATE transaction is the new DApp address.
             result.setResultCode(AvmTransactionResult.Code.SUCCESS);
             result.setEnergyUsed(energyUsed - refund);
-            result.setReturnData(dappAddress.toBytes());
+            result.setReturnData(dappAddress.toByteArray());
         } catch (OutOfEnergyException e) {
             if (verboseErrors) {
                 System.err.println("DApp deployment failed due to Out-of-Energy EXCEPTION: \"" + e.getMessage() + "\"");

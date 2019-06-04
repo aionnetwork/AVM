@@ -11,8 +11,8 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
 import java.util.zip.ZipEntry;
+import org.aion.types.AionAddress;
 import org.aion.avm.core.dappreading.LoadedJar;
-import org.aion.vm.api.types.Address;
 
 
 /**
@@ -59,7 +59,7 @@ public class ImmortalDappModule {
     /**
      * Create the in-memory JAR containing all the classes in this module.
      */
-    public byte[] createJar(Address address, long blockTimeStamp) throws IOException {
+    public byte[] createJar(AionAddress address, long blockTimeStamp) throws IOException {
         // set jar file timestamp to block timestamp so the whole network is in agreement over this.
         FileTime timestamp = FileTime.fromMillis(blockTimeStamp);
 

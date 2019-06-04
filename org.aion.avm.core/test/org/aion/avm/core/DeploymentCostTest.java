@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.types.AionAddress;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.testBlake2b.Blake2b;
@@ -20,7 +21,6 @@ import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TestingTransaction;
-import org.aion.vm.api.types.Address;
 import org.aion.vm.api.interfaces.TransactionResult;
 
 import java.math.BigInteger;
@@ -42,7 +42,7 @@ import org.junit.Test;
 public class DeploymentCostTest {
     private static final long ENERGY_LIMIT = 100_000_000_000L;
     private static final long ENERGY_PRICE = 1L;
-    private static final Address DEPLOYER = TestingKernel.PREMINED_ADDRESS;
+    private static final AionAddress DEPLOYER = TestingKernel.PREMINED_ADDRESS;
 
     private TestingKernel kernel;
     private AvmImpl avm;

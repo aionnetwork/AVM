@@ -3,9 +3,9 @@ package org.aion.kernel;
 import java.math.BigInteger;
 
 import i.RuntimeAssertionError;
+import org.aion.types.AionAddress;
 import org.aion.avm.core.BillingRules;
 import org.aion.avm.core.util.Helpers;
-import org.aion.vm.api.types.Address;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -13,17 +13,18 @@ import org.aion.vm.api.interfaces.TransactionInterface;
 
 
 public final class TestingTransaction implements TransactionInterface {
-    public static TestingTransaction create(Address from, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
+    public static TestingTransaction create(AionAddress from, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         return new TestingTransaction(from, null, nonce, value, data, energyLimit, energyPrice);
     }
 
-    public static TestingTransaction call(Address from, Address to, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
+    public static TestingTransaction call(AionAddress from, AionAddress to, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         if(to == null) {
             throw new IllegalArgumentException("The transaction to can't be NULL for non-CREATE");
         }
         return new TestingTransaction(from, to, nonce, value, data, energyLimit, energyPrice);
     }
 
+    //TODO: These should probably just be NewAddresses
     private final byte[] from;
     private final byte[] to;
     private final BigInteger nonce;
@@ -36,11 +37,11 @@ public final class TestingTransaction implements TransactionInterface {
     long timestamp;
     byte[] timestampAsBytes;
 
-    private TestingTransaction(Address from, Address to, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
+    private TestingTransaction(AionAddress from, AionAddress to, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
         Objects.requireNonNull(from, "The transaction `from` can't be NULL");
 
-        this.from = from.toBytes();
-        this.to = (to == null) ? null : to.toBytes();
+        this.from = from.toByteArray();
+        this.to = (to == null) ? null : to.toByteArray();
         this.nonce = nonce;
         this.value = value;
         this.data = data;
@@ -70,18 +71,18 @@ public final class TestingTransaction implements TransactionInterface {
 
 
     @Override
-    public Address getSenderAddress() {
-        return org.aion.vm.api.types.Address.wrap(from);
+    public AionAddress getSenderAddress() {
+        return new AionAddress(from);
     }
 
     @Override
-    public Address getDestinationAddress() {
+    public AionAddress getDestinationAddress() {
         // The destination can be null in the case of contract creation.
-        return (to == null) ? null : org.aion.vm.api.types.Address.wrap(to);
+        return (to == null) ? null : new AionAddress(to);
     }
 
     @Override
-    public Address getContractAddress() {
+    public AionAddress getContractAddress() {
         throw RuntimeAssertionError.unreachable("getContractAddress is not expected in vm transaction.");
     }
 

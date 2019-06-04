@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import avm.Address;
 import avm.Blockchain;
 import java.io.Serializable;
 import java.math.BigInteger;
@@ -31,7 +32,7 @@ public class PersistanceNameMappingTestTarget {
     private static org.aion.avm.userlib.AionSet set;
 
     // The api classes.
-    private static avm.Address address;
+    private static Address address;
 
     // The arrays.
     private static int[] primitiveArray1D;
@@ -119,7 +120,7 @@ public class PersistanceNameMappingTestTarget {
     }
 
     private static void setApiFields() {
-        address = new avm.Address(new byte[avm.Address.LENGTH]);
+        address = new Address(new byte[Address.LENGTH]);
     }
 
     private static void setArrayFields() {
@@ -185,7 +186,7 @@ public class PersistanceNameMappingTestTarget {
 
     private static void verifyApiFields() {
         Blockchain.require(address != null);
-        Blockchain.require(address.toByteArray().length == avm.Address.LENGTH);
+        Blockchain.require(address.toByteArray().length == Address.LENGTH);
     }
 
     private static void verifyArrayFields() {

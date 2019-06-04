@@ -1,12 +1,12 @@
 package org.aion.kernel;
 
 import java.math.BigInteger;
+import org.aion.types.AionAddress;
 import org.aion.avm.core.util.Helpers;
 import org.aion.data.DirectoryBackedDataStore;
 import org.aion.data.IAccountStore;
 import org.aion.data.IDataStore;
 import org.aion.data.MemoryBackedDataStore;
-import org.aion.vm.api.types.Address;
 
 import java.io.File;
 import org.aion.vm.api.interfaces.KernelInterface;
@@ -21,8 +21,8 @@ public class TestingKernel implements KernelInterface {
      */
     public static final byte AVM_CONTRACT_PREFIX = 0x0b;
 
-    public static final Address PREMINED_ADDRESS = Address.wrap(Helpers.hexStringToBytes("a025f4fd54064e869f158c1b4eb0ed34820f67e60ee80a53b469f725efc06378"));
-    public static final Address BIG_PREMINED_ADDRESS = Address.wrap(Helpers.hexStringToBytes("a035f4fd54064e869f158c1b4eb0ed34820f67e60ee80a53b469f725efc06378"));
+    public static final AionAddress PREMINED_ADDRESS = new AionAddress(Helpers.hexStringToBytes("a025f4fd54064e869f158c1b4eb0ed34820f67e60ee80a53b469f725efc06378"));
+    public static final AionAddress BIG_PREMINED_ADDRESS = new AionAddress(Helpers.hexStringToBytes("a035f4fd54064e869f158c1b4eb0ed34820f67e60ee80a53b469f725efc06378"));
     public static final BigInteger PREMINED_AMOUNT = BigInteger.TEN.pow(20);
     public static final BigInteger PREMINED_BIG_AMOUNT = BigInteger.valueOf(465000000).multiply(PREMINED_AMOUNT);
     public static long blockTimeMillis = 10_000L;
@@ -31,7 +31,7 @@ public class TestingKernel implements KernelInterface {
     private long blockNumber;
     private long blockTimestamp;
     private long blockNrgLimit;
-    private Address blockCoinbase;
+    private AionAddress blockCoinbase;
 
     private final IDataStore dataStore;
 
@@ -40,9 +40,9 @@ public class TestingKernel implements KernelInterface {
      */
     public TestingKernel() {
         this.dataStore = new MemoryBackedDataStore();
-        IAccountStore premined = this.dataStore.createAccount(PREMINED_ADDRESS.toBytes());
+        IAccountStore premined = this.dataStore.createAccount(PREMINED_ADDRESS.toByteArray());
         premined.setBalance(PREMINED_AMOUNT);
-        premined = this.dataStore.createAccount(BIG_PREMINED_ADDRESS.toBytes());
+        premined = this.dataStore.createAccount(BIG_PREMINED_ADDRESS.toByteArray());
         premined.setBalance(PREMINED_BIG_AMOUNT);
         this.blockDifficulty = BigInteger.valueOf(10_000_000L);
         this.blockNumber = 1;
@@ -56,9 +56,9 @@ public class TestingKernel implements KernelInterface {
      */
     public TestingKernel(TestingBlock block) {
         this.dataStore = new MemoryBackedDataStore();
-        IAccountStore premined = this.dataStore.createAccount(PREMINED_ADDRESS.toBytes());
+        IAccountStore premined = this.dataStore.createAccount(PREMINED_ADDRESS.toByteArray());
         premined.setBalance(PREMINED_AMOUNT);
-        premined = this.dataStore.createAccount(BIG_PREMINED_ADDRESS.toBytes());
+        premined = this.dataStore.createAccount(BIG_PREMINED_ADDRESS.toByteArray());
         premined.setBalance(PREMINED_BIG_AMOUNT);
         this.blockDifficulty = block.getDifficulty();
         this.blockNumber = block.getNumber();
@@ -76,9 +76,9 @@ public class TestingKernel implements KernelInterface {
     public TestingKernel(File onDiskRoot, TestingBlock block) {
         this.dataStore = new DirectoryBackedDataStore(onDiskRoot);
         // Try to open the account, creating it if doesn't exist.
-        IAccountStore premined = this.dataStore.openAccount(PREMINED_ADDRESS.toBytes());
+        IAccountStore premined = this.dataStore.openAccount(PREMINED_ADDRESS.toByteArray());
         if (null == premined) {
-            premined = this.dataStore.createAccount(PREMINED_ADDRESS.toBytes());
+            premined = this.dataStore.createAccount(PREMINED_ADDRESS.toByteArray());
         }
         premined.setBalance(PREMINED_AMOUNT);
         this.blockDifficulty = block.getDifficulty();
@@ -109,106 +109,106 @@ public class TestingKernel implements KernelInterface {
     }
 
     @Override
-    public void removeStorage(Address address, byte[] key) {
-        lazyCreateAccount(address.toBytes()).removeData(key);
+    public void removeStorage(AionAddress address, byte[] key) {
+        lazyCreateAccount(address.toByteArray()).removeData(key);
     }
 
     @Override
-    public void createAccount(Address address) {
-        this.dataStore.createAccount(address.toBytes());
+    public void createAccount(AionAddress address) {
+        this.dataStore.createAccount(address.toByteArray());
     }
 
     @Override
-    public boolean hasAccountState(Address address) {
-        return this.dataStore.openAccount(address.toBytes()) != null;
+    public boolean hasAccountState(AionAddress address) {
+        return this.dataStore.openAccount(address.toByteArray()) != null;
     }
 
     @Override
-    public byte[] getCode(Address address) {
-        IAccountStore account = this.dataStore.openAccount(address.toBytes());
+    public byte[] getCode(AionAddress address) {
+        IAccountStore account = this.dataStore.openAccount(address.toByteArray());
         return (null != account)
             ? account.getCode()
             : null;
     }
 
     @Override
-    public void putCode(Address address, byte[] code) {
-        lazyCreateAccount(address.toBytes()).setCode(code);
+    public void putCode(AionAddress address, byte[] code) {
+        lazyCreateAccount(address.toByteArray()).setCode(code);
     }
 
     @Override
-    public byte[] getTransformedCode(Address address) {
+    public byte[] getTransformedCode(AionAddress address) {
         return internalGetTransformedCode(address);
     }
 
     @Override
-    public void setTransformedCode(Address address, byte[] bytes) {
-        lazyCreateAccount(address.toBytes()).setTransformedCode(bytes);
+    public void setTransformedCode(AionAddress address, byte[] bytes) {
+        lazyCreateAccount(address.toByteArray()).setTransformedCode(bytes);
     }
 
     @Override
-    public void putObjectGraph(Address address, byte[] bytes) {
-        lazyCreateAccount(address.toBytes()).setObjectGraph(bytes);
+    public void putObjectGraph(AionAddress address, byte[] bytes) {
+        lazyCreateAccount(address.toByteArray()).setObjectGraph(bytes);
     }
 
     @Override
-    public byte[] getObjectGraph(Address address) {
-        return lazyCreateAccount(address.toBytes()).getObjectGraph();
+    public byte[] getObjectGraph(AionAddress address) {
+        return lazyCreateAccount(address.toByteArray()).getObjectGraph();
     }
 
     @Override
-    public void putStorage(Address address, byte[] key, byte[] value) {
-        lazyCreateAccount(address.toBytes()).setData(key, value);
+    public void putStorage(AionAddress address, byte[] key, byte[] value) {
+        lazyCreateAccount(address.toByteArray()).setData(key, value);
     }
 
     @Override
-    public byte[] getStorage(Address address, byte[] key) {
-        IAccountStore account = this.dataStore.openAccount(address.toBytes());
+    public byte[] getStorage(AionAddress address, byte[] key) {
+        IAccountStore account = this.dataStore.openAccount(address.toByteArray());
         return (null != account)
                 ? account.getData(key)
                 : null;
     }
 
     @Override
-    public void deleteAccount(Address address) {
-        this.dataStore.deleteAccount(address.toBytes());
+    public void deleteAccount(AionAddress address) {
+        this.dataStore.deleteAccount(address.toByteArray());
     }
 
     @Override
-    public BigInteger getBalance(Address address) {
-        IAccountStore account = this.dataStore.openAccount(address.toBytes());
+    public BigInteger getBalance(AionAddress address) {
+        IAccountStore account = this.dataStore.openAccount(address.toByteArray());
         return (null != account)
                 ? account.getBalance()
                 : BigInteger.ZERO;
     }
 
     @Override
-    public void adjustBalance(Address address, BigInteger delta) {
+    public void adjustBalance(AionAddress address, BigInteger delta) {
         internalAdjustBalance(address, delta);
     }
 
     @Override
-    public BigInteger getNonce(Address address) {
-        IAccountStore account = this.dataStore.openAccount(address.toBytes());
+    public BigInteger getNonce(AionAddress address) {
+        IAccountStore account = this.dataStore.openAccount(address.toByteArray());
         return (null != account)
                 ? BigInteger.valueOf(account.getNonce())
                 : BigInteger.ZERO;
     }
 
     @Override
-    public void incrementNonce(Address address) {
-        IAccountStore account = lazyCreateAccount(address.toBytes());
+    public void incrementNonce(AionAddress address) {
+        IAccountStore account = lazyCreateAccount(address.toByteArray());
         long start = account.getNonce();
         account.setNonce(start + 1);
     }
 
     @Override
-    public boolean accountNonceEquals(Address address, BigInteger nonce) {
+    public boolean accountNonceEquals(AionAddress address, BigInteger nonce) {
         return nonce.compareTo(this.getNonce(address)) == 0;
     }
 
     @Override
-    public boolean accountBalanceIsAtLeast(Address address, BigInteger amount) {
+    public boolean accountBalanceIsAtLeast(AionAddress address, BigInteger amount) {
         return this.getBalance(address).compareTo(amount) >= 0;
     }
 
@@ -231,11 +231,11 @@ public class TestingKernel implements KernelInterface {
     }
 
     @Override
-    public boolean destinationAddressIsSafeForThisVM(Address address) {
+    public boolean destinationAddressIsSafeForThisVM(AionAddress address) {
         // This implementation knows about contract address prefixes (just used by tests - real kernel stores out-of-band meta-data).
         // So, it is valid to use any regular address or AVM contract address.
         byte[] code = internalGetTransformedCode(address);
-        return (code == null) || (address.toBytes()[0] == TestingKernel.AVM_CONTRACT_PREFIX);
+        return (code == null) || (address.toByteArray()[0] == TestingKernel.AVM_CONTRACT_PREFIX);
     }
 
     @Override
@@ -259,24 +259,24 @@ public class TestingKernel implements KernelInterface {
     }
 
     @Override
-    public Address getMinerAddress() {
-        return blockCoinbase;
+    public AionAddress getMinerAddress() {
+        return new AionAddress(blockCoinbase.toByteArray());
     }
 
     @Override
-    public void refundAccount(Address address, BigInteger amount) {
+    public void refundAccount(AionAddress address, BigInteger amount) {
         // This method may have special logic in the kernel. Here it is just adjustBalance.
         internalAdjustBalance(address, amount);
     }
 
     @Override
-    public void deductEnergyCost(Address address, BigInteger cost) {
+    public void deductEnergyCost(AionAddress address, BigInteger cost) {
         // This method may have special logic in the kernel. Here it is just adjustBalance.
         internalAdjustBalance(address, cost);
     }
 
     @Override
-    public void payMiningFee(Address address, BigInteger fee) {
+    public void payMiningFee(AionAddress address, BigInteger fee) {
         // This method may have special logic in the kernel. Here it is just adjustBalance.
         internalAdjustBalance(address, fee);
     }
@@ -286,14 +286,14 @@ public class TestingKernel implements KernelInterface {
         this.blockTimestamp += blockTimeMillis;
     }
 
-    private void internalAdjustBalance(Address address, BigInteger delta) {
-        IAccountStore account = lazyCreateAccount(address.toBytes());
+    private void internalAdjustBalance(AionAddress address, BigInteger delta) {
+        IAccountStore account = lazyCreateAccount(address.toByteArray());
         BigInteger start = account.getBalance();
         account.setBalance(start.add(delta));
     }
 
-    private byte[] internalGetTransformedCode(Address address) {
-        IAccountStore account = this.dataStore.openAccount(address.toBytes());
+    private byte[] internalGetTransformedCode(AionAddress address) {
+        IAccountStore account = this.dataStore.openAccount(address.toByteArray());
         return (null != account)
                 ? account.getTransformedCode()
                 : null;

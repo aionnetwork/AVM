@@ -21,10 +21,8 @@ public class ManipulateCreateAndCallResultsTest {
     private Address deployer = avmRule.getPreminedAccount();
 
     /**
-     * NOTE: this test shows that it is possible to create a dApp with an external transaction and
-     * then to modify the dApp address using the returned array. This is fine, because the only person
-     * who can do this is the one directly embedding it, and if they are doing so they probably have
-     * a reason to.
+     * NOTE: this test shows that it is not possible to create a dApp with an external transaction and
+     * then to modify the dApp address using the returned array.
      */
     @Test
     public void testManipulateDeployResult() {
@@ -37,13 +35,22 @@ public class ManipulateCreateAndCallResultsTest {
 
         // Modify the returned byte array.
         result.getReturnData()[0] = (byte) ~result.getReturnData()[0];
+        byte[] manipulatedAddress = result.getReturnData();
 
         avmRule.kernel.generateBlock();
 
         Address contract = new Address(originalAddress);
+        Address manipulatedContract = new Address(manipulatedAddress);
 
+        // The contract is found at the original address
         byte[] data = ABIUtil.encodeMethodArguments("getAddress");
         result = avmRule.call(deployer, contract, BigInteger.ZERO, data, 2_000_000, 1).getTransactionResult();
+        assertEquals(Code.SUCCESS, result.getResultCode());
+        assertArrayEquals(originalAddress, new ABIDecoder(result.getReturnData()).decodeOneByteArray());
+
+        // No such contract is found at the manipulated address
+        data = ABIUtil.encodeMethodArguments("getAddress");
+        result = avmRule.call(deployer, manipulatedContract, BigInteger.ZERO, data, 2_000_000, 1).getTransactionResult();
         assertEquals(Code.SUCCESS, result.getResultCode());
         assertNull(result.getReturnData());
     }

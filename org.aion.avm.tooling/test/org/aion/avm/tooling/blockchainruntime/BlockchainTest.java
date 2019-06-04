@@ -2,12 +2,12 @@ package org.aion.avm.tooling.blockchainruntime;
 
 import java.math.BigInteger;
 import avm.Address;
+import org.aion.types.AionAddress;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.tooling.hash.HashUtils;
 import org.aion.avm.userlib.AionBuffer;
-import org.aion.kernel.*;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -60,7 +60,7 @@ public class BlockchainTest {
     public void testAVMContractCodeDistinguish() {
         byte[] jar = avmRule.getDappBytes(BlockchainTestResource.class, new byte[0], AionBuffer.class);
         Address dappAddress = installJarAsDApp(jar);
-        org.aion.vm.api.types.Address dappAddressApi = new org.aion.vm.api.types.Address(dappAddress.toByteArray());
+        AionAddress dappAddressApi = new AionAddress(dappAddress.toByteArray());
 
         CodeAndArguments decodeFromBytes = CodeAndArguments.decodeFromBytes(jar);
         assertEquals(decodeFromBytes.code.length, avmRule.kernel.getCode(dappAddressApi).length);
@@ -83,7 +83,7 @@ public class BlockchainTest {
     }
 
     private ByteBuffer getReturnData(Address dappAddress, byte[] txData) {
-        org.aion.vm.api.types.Address dappAddressApi = new org.aion.vm.api.types.Address(dappAddress.toByteArray());
+        AionAddress dappAddressApi = new AionAddress(dappAddress.toByteArray());
 
         ByteBuffer buffer = ByteBuffer.allocate(1024);
         buffer.put(dappAddress.toByteArray());
@@ -96,10 +96,10 @@ public class BlockchainTest {
         buffer.putLong(avmRule.kernel.getBlockTimestamp());
         buffer.putLong(avmRule.kernel.getBlockNumber());
         buffer.putLong(avmRule.kernel.getBlockEnergyLimit());
-        buffer.put(avmRule.kernel.getMinerAddress().toBytes());
+        buffer.put(avmRule.kernel.getMinerAddress().toByteArray());
         buffer.put(BigInteger.valueOf(avmRule.kernel.getBlockDifficulty()).toByteArray());
         buffer.put("value".getBytes());
-        buffer.putLong(avmRule.kernel.getBalance(org.aion.vm.api.types.Address.wrap(new byte[32])).longValue());
+        buffer.putLong(avmRule.kernel.getBalance(new AionAddress(new byte[32])).longValue());
         buffer.putLong(avmRule.kernel.getCode(dappAddressApi).length);
         buffer.put(HashUtils.blake2b("blake2b-message".getBytes()));
         buffer.put(HashUtils.sha256("sha256-message".getBytes()));

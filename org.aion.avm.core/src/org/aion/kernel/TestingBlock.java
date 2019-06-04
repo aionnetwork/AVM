@@ -2,21 +2,21 @@ package org.aion.kernel;
 
 import java.math.BigInteger;
 
-import org.aion.vm.api.types.Address;
+import org.aion.types.AionAddress;
 
 
 public final class TestingBlock {
 
     private final byte[] prevHash;
     private final long number;
-    private final Address coinbase;
+    private final AionAddress coinbase;
     private final long timestamp;
     private final byte[] data;
     private final long energyLimit;
     private final BigInteger difficulty;
 
 
-    public TestingBlock(byte[] prevHash, long number, Address coinbase, long timestamp, byte[] data) {
+    public TestingBlock(byte[] prevHash, long number, AionAddress coinbase, long timestamp, byte[] data) {
         this.prevHash = prevHash;
         this.number = number;
         this.coinbase = coinbase;
@@ -34,7 +34,7 @@ public final class TestingBlock {
         return number;
     }
 
-    public Address getCoinbase() {
+    public AionAddress getCoinbase() {
         return coinbase;
     }
 

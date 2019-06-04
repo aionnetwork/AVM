@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import avm.Address;
+import org.aion.types.AionAddress;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.TestingBlock;
@@ -211,7 +212,7 @@ public class AvmCLIIntegrationTest {
         String dappAddress = deployEnv.capturedAddress;
 
         // check that contract has been deployed and balance has been transferred
-        contractBalance = kernelInterface.getBalance(org.aion.vm.api.types.Address.wrap(Helpers.hexStringToBytes(dappAddress)));
+        contractBalance = kernelInterface.getBalance(new AionAddress(Helpers.hexStringToBytes(dappAddress)));
         System.out.println("new balance after deploy with transfer: " + contractBalance);
         Assert.assertEquals(deployBalance, contractBalance.intValue());
 
@@ -221,7 +222,7 @@ public class AvmCLIIntegrationTest {
         Assert.assertTrue(callEnv.didScrapeString);
 
         // check that the call was successful and more balance has been added to the contract
-        contractBalance = kernelInterface.getBalance(org.aion.vm.api.types.Address.wrap(Helpers.hexStringToBytes(dappAddress)));
+        contractBalance = kernelInterface.getBalance(new AionAddress(Helpers.hexStringToBytes(dappAddress)));
         System.out.println("new balance after call with transfer: " + contractBalance);
         Assert.assertEquals(deployBalance + transferBalance, contractBalance.intValue());
 
@@ -246,7 +247,7 @@ public class AvmCLIIntegrationTest {
         String dappAddress = deployEnv.capturedAddress;
 
         // check for balance of 0
-        java.math.BigInteger contractBalance = kernelInterface.getBalance(org.aion.vm.api.types.Address.wrap(Helpers.hexStringToBytes(dappAddress)));
+        java.math.BigInteger contractBalance = kernelInterface.getBalance(new AionAddress(Helpers.hexStringToBytes(dappAddress)));
         System.out.println("Contract balance: " + contractBalance);
         Assert.assertEquals(0,contractBalance.intValue());
 
@@ -256,7 +257,7 @@ public class AvmCLIIntegrationTest {
         Assert.assertTrue(callEnv.didScrapeString);
 
         // check that the call was successful and more balance has been added to the contract
-        contractBalance = kernelInterface.getBalance(org.aion.vm.api.types.Address.wrap(Helpers.hexStringToBytes(dappAddress)));
+        contractBalance = kernelInterface.getBalance(new AionAddress(Helpers.hexStringToBytes(dappAddress)));
         System.out.println("new balance after call with transfer: " + contractBalance);
         Assert.assertEquals(0, contractBalance.intValue());
 
@@ -281,7 +282,7 @@ public class AvmCLIIntegrationTest {
         String dappAddress = deployEnv.capturedAddress;
 
         // check for balance of deployBalance
-        java.math.BigInteger contractBalance = kernelInterface.getBalance(org.aion.vm.api.types.Address.wrap(Helpers.hexStringToBytes(dappAddress)));
+        java.math.BigInteger contractBalance = kernelInterface.getBalance(new AionAddress(Helpers.hexStringToBytes(dappAddress)));
         System.out.println("Contract balance: " + contractBalance);
         Assert.assertEquals(deployBalance,contractBalance.intValue());
     }
@@ -319,7 +320,7 @@ public class AvmCLIIntegrationTest {
         String dappAddress = deployEnv.capturedAddress;
 
         // check for balance of 0
-        java.math.BigInteger contractBalance = kernelInterface.getBalance(org.aion.vm.api.types.Address.wrap(Helpers.hexStringToBytes(dappAddress)));
+        java.math.BigInteger contractBalance = kernelInterface.getBalance(new AionAddress(Helpers.hexStringToBytes(dappAddress)));
         System.out.println("Contract balance: " + contractBalance);
         Assert.assertEquals(0,contractBalance.intValue());
 
@@ -329,7 +330,7 @@ public class AvmCLIIntegrationTest {
         Assert.assertTrue(callEnv.didScrapeString);
 
         // check for balance of transferBalance
-        contractBalance = kernelInterface.getBalance(org.aion.vm.api.types.Address.wrap(Helpers.hexStringToBytes(dappAddress)));
+        contractBalance = kernelInterface.getBalance(new AionAddress(Helpers.hexStringToBytes(dappAddress)));
         System.out.println("Contract balance: " + contractBalance);
         Assert.assertEquals(transferBalance,contractBalance.intValue());
     }
@@ -342,7 +343,7 @@ public class AvmCLIIntegrationTest {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         TestingKernel kernelInterface = new TestingKernel(storageFile, block);
 
-        org.aion.vm.api.types.Address address = Helpers.randomAddress();
+        AionAddress address = Helpers.randomAddress();
         kernelInterface.createAccount(address);
 
         // do transfer only
@@ -351,7 +352,7 @@ public class AvmCLIIntegrationTest {
         Assert.assertTrue(callEnv.didScrapeString);
 
         // check for balance of transferBalance
-        java.math.BigInteger contractBalance = kernelInterface.getBalance(org.aion.vm.api.types.Address.wrap(Helpers.hexStringToBytes(address.toString())));
+        java.math.BigInteger contractBalance = kernelInterface.getBalance(new AionAddress(Helpers.hexStringToBytes(address.toString())));
         System.out.println("Contract balance: " + contractBalance);
         Assert.assertEquals(transferBalance,contractBalance.intValue());
     }

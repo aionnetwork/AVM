@@ -3,10 +3,10 @@ package org.aion.avm.core;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+import org.aion.types.AionAddress;
 import org.aion.avm.core.persistence.LoadedDApp;
 import i.InternedClasses;
 import i.RuntimeAssertionError;
-import org.aion.vm.api.types.Address;
 
 
 /**
@@ -36,7 +36,7 @@ public class ReentrantDAppStack {
      * @param address The address of the state we wish to find.
      * @return The first state found with the given address.
      */
-    public ReentrantState tryShareState(Address address) {
+    public ReentrantState tryShareState(AionAddress address) {
         RuntimeAssertionError.assertTrue(null != address);
         ReentrantState foundState = null;
         for (ReentrantState state : this.stack) {
@@ -64,12 +64,12 @@ public class ReentrantDAppStack {
 
 
     public static class ReentrantState {
-        public final Address address;
+        public final AionAddress address;
         public final LoadedDApp dApp;
         private int nextHashCode;
         private InternedClasses internedClassWrappers;
 
-        public ReentrantState(Address address, LoadedDApp dApp, int nextHashCode, InternedClasses internedClassWrappers) {
+        public ReentrantState(AionAddress address, LoadedDApp dApp, int nextHashCode, InternedClasses internedClassWrappers) {
             this.address = address;
             this.dApp = dApp;
             this.nextHashCode = nextHashCode;
