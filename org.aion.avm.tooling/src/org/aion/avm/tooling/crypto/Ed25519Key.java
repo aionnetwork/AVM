@@ -5,7 +5,6 @@ import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
 import net.i2p.crypto.eddsa.spec.EdDSAParameterSpec;
 
 import org.aion.avm.core.util.Helpers;
-import i.RuntimeAssertionError;
 
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
@@ -131,7 +130,8 @@ public class Ed25519Key {
             engine = new EdDSAEngine(MessageDigest.getInstance(spec.getHashAlgorithm()));
         } catch (NoSuchAlgorithmException e) {
             // If we see this exception, it means the AVM isn't properly installed.
-            throw RuntimeAssertionError.unexpected(e);
+            // This is just used in tests so we don't expect a failure.
+            throw new AssertionError(e);
         }
         return engine;
     }

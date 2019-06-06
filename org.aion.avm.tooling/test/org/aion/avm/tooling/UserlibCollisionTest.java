@@ -4,7 +4,6 @@ import avm.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import i.RuntimeAssertionError;
 import org.aion.avm.tooling.abi.ABICompiler;
 import org.aion.avm.tooling.deploy.JarOptimizer;
 import org.junit.Assert;
@@ -137,14 +136,14 @@ public class UserlibCollisionTest {
         try {
             stream = new JarOutputStream(byteStream, manifest);
         } catch (IOException e) {
-            throw RuntimeAssertionError.unexpected(e);
+            throw unexpected(e);
         }
         JarOutputStream jarStream = stream;
         Set<String> entriesInJar = new HashSet<>();
 
         try {
             String internalName = Helpers.fulllyQualifiedNameToInternalName(mainClassName);
-            RuntimeAssertionError.assertTrue(!entriesInJar.contains(internalName));
+            assertTrue(!entriesInJar.contains(internalName));
             JarEntry entry = new JarEntry(internalName + ".class");
             jarStream.putNextEntry(entry);
             jarStream.write(mainClassBytes);
@@ -155,11 +154,23 @@ public class UserlibCollisionTest {
             jarStream.close();
             byteStream.close();
         } catch (IOException e) {
-            RuntimeAssertionError.unexpected(e);
+            throw unexpected(e);
         }
 
         return byteStream.toByteArray();
     }
+
+    private static void assertTrue(boolean flag) {
+        // We use a private helper to manage the assertions since the JDK default disables them.
+        if (!flag) {
+            throw new AssertionError("Case must be true");
+        }
+    }
+
+    private static AssertionError unexpected(IOException e) throws AssertionError {
+        throw new AssertionError("Unexpected exception", e);
+    }
+
 
     public class SingleLoader extends ClassLoader {
         public Class<?> loadClassFromByteCode(String name, byte[] bytecode) {

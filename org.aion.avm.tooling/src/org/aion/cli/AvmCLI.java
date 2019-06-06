@@ -9,7 +9,6 @@ import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.IExternalCapabilities;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
-import i.RuntimeAssertionError;
 import org.aion.avm.tooling.StandardCapabilities;
 import org.aion.cli.ArgumentParser.Action;
 import org.aion.kernel.*;
@@ -208,7 +207,7 @@ public class AvmCLI {
 
         if (null == invocation.errorString) {
             // There must be at least one command or there should have been a parse error (usually just defaulting to usage).
-            RuntimeAssertionError.assertTrue(invocation.commands.size() > 0);
+            assertTrue(invocation.commands.size() > 0);
 
             if (!invocation.commands.get(0).action.equals(Action.BYTES) && !invocation.commands.get(0).action.equals(Action.ENCODE_CALL)) {
                 // This logging line is largely just for test verification so it might be removed in the future.
@@ -230,7 +229,7 @@ public class AvmCLI {
                 case DEPLOY:
                 case TRANSFER:
                     // This should be in the batching path.
-                    RuntimeAssertionError.unreachable("This should be in the batching path");
+                    unreachable("This should be in the batching path");
                     break;
                 case OPEN:
                     openAccount(env, invocation.storagePath, org.aion.types.Address.wrap(Helpers.hexStringToBytes(command.contractAddress)));
@@ -296,7 +295,7 @@ public class AvmCLI {
                         break;
                     case OPEN:
                         // This should be in the non-batching path.
-                        RuntimeAssertionError.unreachable("This should be in the batching path");
+                        unreachable("This should be in the batching path");
                         break;
                     default:
                         throw new AssertionError("Unknown option");
@@ -329,7 +328,7 @@ public class AvmCLI {
                         break;
                     case OPEN:
                         // This should be in the non-batching path.
-                        RuntimeAssertionError.unreachable("This should be in the batching path");
+                        unreachable("This should be in the batching path");
                         break;
                     default:
                         throw new AssertionError("Unknown option");
@@ -351,5 +350,16 @@ public class AvmCLI {
                 throw env.fail("Failed to create storage root: \"" + storageRoot + "\"");
             }
         }
+    }
+
+    private static void assertTrue(boolean flag) {
+        // We use a private helper to manage the assertions since the JDK default disables them.
+        if (!flag) {
+            throw new AssertionError("Case must be true");
+        }
+    }
+
+    private static void unreachable(String message) {
+        throw new AssertionError(message);
     }
 }

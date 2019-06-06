@@ -2,7 +2,6 @@ package org.aion.avm.tooling.blockchainruntime;
 
 import p.avm.Address;
 import p.avm.Result;
-import org.aion.avm.tooling.AddressUtil;
 import org.aion.avm.tooling.crypto.CryptoUtil;
 import org.aion.avm.tooling.hash.HashUtils;
 import i.IBlockchainRuntime;
@@ -10,7 +9,6 @@ import a.ByteArray;
 import org.aion.avm.core.util.Helpers;
 import i.InvalidException;
 import i.RevertException;
-import i.RuntimeAssertionError;
 import s.java.lang.String;
 import s.java.math.BigInteger;
 import org.aion.kernel.TestingKernel;
@@ -116,7 +114,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
 
     @Override
     public void avm_selfDestruct(Address beneficiary) {
-        throw RuntimeAssertionError.unimplemented("avm_selfDestruct");
+        throw new AssertionError("avm_selfDestruct");
     }
 
     @Override
@@ -183,7 +181,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
 
     @Override
     public long avm_getRemainingEnergy() {
-        throw RuntimeAssertionError.unimplemented("avm_getRemainingEnergy");
+        throw new AssertionError("avm_getRemainingEnergy");
     }
 
     @Override

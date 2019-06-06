@@ -7,7 +7,6 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.tooling.poc.AionBufferPerfContract;
 import org.aion.avm.tooling.poc.TRS;
 import org.aion.avm.tooling.testExchange.*;
-import i.RuntimeAssertionError;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
@@ -140,7 +139,7 @@ public class DeploymentCostTest {
                     TRS.class,
                     AionMap.class);
                 break;
-            default: RuntimeAssertionError.unreachable("This should never be reached.");
+            default: throw new AssertionError("This should never be reached.");
         }
 
         System.out.println("\tSize of dApp = " + NumberFormat.getNumberInstance().format(jarBytes.length) + " bytes");

@@ -1,7 +1,6 @@
 package org.aion.avm.tooling.deploy;
 
 import org.aion.avm.core.dappreading.JarBuilder;
-import i.RuntimeAssertionError;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -36,8 +35,7 @@ public class JarOptimizer {
         //remove debug information when the tool is run
         JarOptimizer optimizer = new JarOptimizer(false);
 
-        try {
-            FileInputStream fileInputStream = new FileInputStream(args[0]);
+        try (FileInputStream fileInputStream = new FileInputStream(args[0])) {
             byte[] optimizedJarBytes = optimizer.optimize(fileInputStream.readAllBytes());
 
             int pathLength = args[0].lastIndexOf("/") + 1;
@@ -157,7 +155,7 @@ public class JarOptimizer {
         }
 
         classMap.entrySet().removeIf(e -> !visitedClasses.contains(e.getKey()));
-        RuntimeAssertionError.assertTrue(classMap.entrySet().size() == visitedClasses.size());
+        assertTrue(classMap.entrySet().size() == visitedClasses.size());
 
         byte[] mainClassBytes = classMap.get(mainClassName);
         classMap.remove(mainClassName, mainClassBytes);
@@ -176,5 +174,11 @@ public class JarOptimizer {
         System.out.println("Successfully created jar. \n" + jarName);
     }
 
+    private static void assertTrue(boolean flag) {
+        // We use a private helper to manage the assertions since the JDK default disables them.
+        if (!flag) {
+            throw new AssertionError("Case must be true");
+        }
+    }
 }
 

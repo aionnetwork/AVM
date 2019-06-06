@@ -1,7 +1,6 @@
 package org.aion.avm.tooling.crypto;
 
 import org.aion.avm.core.util.Helpers;
-import i.RuntimeAssertionError;
 
 import java.security.InvalidKeyException;
 import java.security.SignatureException;
@@ -60,7 +59,8 @@ public class CryptoUtil {
         try {
             return Ed25519Key.sign(data, privateKey);
         } catch (InvalidKeyException | InvalidKeySpecException | SignatureException e) {
-            throw RuntimeAssertionError.unexpected(e);
+            // This is just used in tests so we don't expect a failure.
+            throw new AssertionError(e);
         }
     }
 
@@ -85,7 +85,8 @@ public class CryptoUtil {
         try {
             return Ed25519Key.verify(data, signature, publicKey);
         } catch (InvalidKeyException | InvalidKeySpecException | SignatureException e) {
-            throw RuntimeAssertionError.unexpected(e);
+            // This is just used in tests so we don't expect a failure.
+            throw new AssertionError(e);
         }
     }
 }
