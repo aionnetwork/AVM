@@ -12,6 +12,8 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.userlib.abi.ABIDecoder;
+
 import i.OutOfEnergyException;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.*;
@@ -45,16 +47,16 @@ public class ExceptionWrappingIntegrationTest {
         Address contractAddr = new Address(createResult.getReturnData());
         
         // Store the exceptions.
-        int systemHash = ((Integer)callStatic(block, kernel, avm, contractAddr, "storeSystem")).intValue();
+        int systemHash = callReturnInt(block, kernel, avm, contractAddr, "storeSystem");
         // We know that this is currently 67 but that may change in the future
         Assert.assertEquals(67, systemHash);
-        byte[] user = (byte[])callStatic(block, kernel, avm, contractAddr, "storeUser");
+        byte[] user = callReturnByteArray(block, kernel, avm, contractAddr, "storeUser");
         Assert.assertEquals("MESSAGE", new String(user));
-        byte[] second = (byte[])callStatic(block, kernel, avm, contractAddr, "getSecond");
+        byte[] second = callReturnByteArray(block, kernel, avm, contractAddr, "getSecond");
         Assert.assertEquals("Second message", new String(second));
-        int loadSystemHash = ((Integer)callStatic(block, kernel, avm, contractAddr, "loadSystem")).intValue();
+        int loadSystemHash = callReturnInt(block, kernel, avm, contractAddr, "loadSystem");
         Assert.assertEquals(systemHash, loadSystemHash);
-        byte[] loadUser = (byte[])callStatic(block, kernel, avm, contractAddr, "loadUser");
+        byte[] loadUser = callReturnByteArray(block, kernel, avm, contractAddr, "loadUser");
         Assert.assertEquals("MESSAGE", new String(loadUser));
         
         avm.shutdown();
@@ -180,10 +182,20 @@ public class ExceptionWrappingIntegrationTest {
     }
 
 
-    private Object callStatic(TestingBlock block, KernelInterface kernel, AvmImpl avm, Address contractAddr, String methodName) {
+    private int callReturnInt(TestingBlock block, KernelInterface kernel, AvmImpl avm, Address contractAddr, String methodName) {
+        byte[] result = commonSuccessCall(block, kernel, avm, contractAddr, methodName);
+        return new ABIDecoder(result).decodeOneInteger();
+    }
+
+    private byte[] callReturnByteArray(TestingBlock block, KernelInterface kernel, AvmImpl avm, Address contractAddr, String methodName) {
+        byte[] result = commonSuccessCall(block, kernel, avm, contractAddr, methodName);
+        return new ABIDecoder(result).decodeOneByteArray();
+    }
+
+    private byte[] commonSuccessCall(TestingBlock block, KernelInterface kernel, AvmImpl avm, Address contractAddr, String methodName) {
         TransactionResult result = commonCallStatic(block, kernel, avm, contractAddr, methodName);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        return ABIUtil.decodeOneObject(result.getReturnData());
+        return result.getReturnData();
     }
 
     private ResultCode callStaticStatus(TestingBlock block, KernelInterface kernel, AvmImpl avm, Address contractAddr, String methodName) {

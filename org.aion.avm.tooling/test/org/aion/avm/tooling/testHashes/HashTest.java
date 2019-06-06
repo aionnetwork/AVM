@@ -4,6 +4,7 @@ import avm.Address;
 import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.tooling.hash.HashUtils;
+import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -44,7 +45,7 @@ public class HashTest {
         TransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult.getResultCode());
-        Assert.assertEquals(true, (ABIUtil.decodeOneObject(txResult.getReturnData())));
+        Assert.assertEquals(true, new ABIDecoder(txResult.getReturnData()).decodeOneBoolean());
 
         // Retrieve hash
         byte[] txData2 = ABIUtil.encodeMethodArguments("getHashedVal");
@@ -52,7 +53,7 @@ public class HashTest {
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult2.getResultCode());
 
         // check hash correctness
-        byte[] hash = (byte[]) ABIUtil.decodeOneObject(txResult2.getReturnData());
+        byte[] hash = new ABIDecoder(txResult2.getReturnData()).decodeOneByteArray();
         String decodedHash = Helpers.bytesToHexString(hash);
 
         // check decoded
@@ -71,7 +72,7 @@ public class HashTest {
         TransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult.getResultCode());
-        Assert.assertEquals(true, (ABIUtil.decodeOneObject(txResult.getReturnData())));
+        Assert.assertEquals(true, new ABIDecoder(txResult.getReturnData()).decodeOneBoolean());
 
         // Retrieve hash
         byte[] txData2 = ABIUtil.encodeMethodArguments("getHashedVal");
@@ -80,7 +81,7 @@ public class HashTest {
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult2.getResultCode());
 
         // check hash correctness
-        byte[] hash = (byte[]) ABIUtil.decodeOneObject(txResult2.getReturnData());
+        byte[] hash = new ABIDecoder(txResult2.getReturnData()).decodeOneByteArray();
         String decodedHash = Helpers.bytesToHexString(hash);
 
         // check decoded
@@ -99,7 +100,7 @@ public class HashTest {
         TransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult.getResultCode());
-        Assert.assertEquals(true, (ABIUtil.decodeOneObject(txResult.getReturnData())));
+        Assert.assertEquals(true, new ABIDecoder(txResult.getReturnData()).decodeOneBoolean());
 
         // Retrieve hash
         byte[] txData2 = ABIUtil.encodeMethodArguments("getHashedVal");
@@ -108,7 +109,7 @@ public class HashTest {
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult2.getResultCode());
 
         // check hash correctness
-        byte[] hash = (byte[]) ABIUtil.decodeOneObject(txResult2.getReturnData());
+        byte[] hash = new ABIDecoder(txResult2.getReturnData()).decodeOneByteArray();
         String decodedHash = Helpers.bytesToHexString(hash);
 
         // check decoded

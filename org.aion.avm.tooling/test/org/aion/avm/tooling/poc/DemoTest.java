@@ -9,6 +9,7 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.tooling.StandardCapabilities;
 import org.aion.avm.tooling.testExchange.CoinController;
 import org.aion.avm.tooling.testExchange.ERC20Token;
+import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
@@ -22,8 +23,6 @@ import static org.junit.Assert.assertTrue;
 
 
 public class DemoTest {
-
-    private TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
     private long energyLimit = 5_000_0000;
     private long energyPrice = 1;
 
@@ -78,19 +77,19 @@ public class DemoTest {
         tx = TestingTransaction.call(pepeMinter, org.aion.types.Address.wrap(tokenDapp.toByteArray()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txResult = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println("\n>> PEPE Mint to deliver 5000 tokens to the wallet: " + ABIUtil.decodeOneObject(txResult.getReturnData()));
+        System.out.println("\n>> PEPE Mint to deliver 5000 tokens to the wallet: " + new ABIDecoder(txResult.getReturnData()).decodeOneBoolean());
 
         arguments = ABIUtil.encodeMethodArguments("balanceOf", walletDapp);
         tx = TestingTransaction.call(pepeMinter, org.aion.types.Address.wrap(tokenDapp.toByteArray()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txResult = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println(">> balance of wallet: " + ABIUtil.decodeOneObject(txResult.getReturnData()));
+        System.out.println(">> balance of wallet: " + new ABIDecoder(txResult.getReturnData()).decodeOneLong());
 
         arguments = ABIUtil.encodeMethodArguments("balanceOf", new Address(receiver.toBytes()));
         tx = TestingTransaction.call(pepeMinter, org.aion.types.Address.wrap(tokenDapp.toByteArray()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txResult = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println(">> balance of receiver: " + ABIUtil.decodeOneObject(txResult.getReturnData()));
+        System.out.println(">> balance of receiver: " + new ABIDecoder(txResult.getReturnData()).decodeOneLong());
 
         //================
         // PROPOSE
@@ -100,8 +99,8 @@ public class DemoTest {
         tx = TestingTransaction.call(deployer, org.aion.types.Address.wrap(walletDapp.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, arguments, 2_000_000L, energyPrice);
         txResult = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println("\n>> Deployer to propose a transaction of 3000 PEPE tokens to Receiver. (Tx ID " + Helpers.bytesToHexString((byte[]) ABIUtil.decodeOneObject(txResult.getReturnData())) + ")");
-        byte[] pendingTx = (byte[]) ABIUtil.decodeOneObject(txResult.getReturnData());
+        byte[] pendingTx = new ABIDecoder(txResult.getReturnData()).decodeOneByteArray();
+        System.out.println("\n>> Deployer to propose a transaction of 3000 PEPE tokens to Receiver. (Tx ID " + Helpers.bytesToHexString(pendingTx) + ")");
 
         //================
         // CONFIRM #1
@@ -110,7 +109,7 @@ public class DemoTest {
         tx = TestingTransaction.call(owner1, org.aion.types.Address.wrap(walletDapp.toByteArray()), kernel.getNonce(owner1), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txResult = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println(">> Transaction confirmed by Owner 1: " + ABIUtil.decodeOneObject(txResult.getReturnData()));
+        System.out.println(">> Transaction confirmed by Owner 1: " + new ABIDecoder(txResult.getReturnData()).decodeOneBoolean());
 
         //================
         // CONFIRM #2
@@ -119,7 +118,7 @@ public class DemoTest {
         tx = TestingTransaction.call(owner2, org.aion.types.Address.wrap(walletDapp.toByteArray()), kernel.getNonce(owner2), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txResult = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println(">> Transaction confirmed by Owner 2: " + ABIUtil.decodeOneObject(txResult.getReturnData()));
+        System.out.println(">> Transaction confirmed by Owner 2: " + new ABIDecoder(txResult.getReturnData()).decodeOneBoolean());
 
         System.out.println("\n>> Number of confirmations reach to " + confirmationsRequired + ". Transaction is processed.");
 
@@ -130,13 +129,13 @@ public class DemoTest {
         tx = TestingTransaction.call(pepeMinter, org.aion.types.Address.wrap(tokenDapp.toByteArray()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txResult = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println("\n>> balance of wallet: " + ABIUtil.decodeOneObject(txResult.getReturnData()));
+        System.out.println("\n>> balance of wallet: " + new ABIDecoder(txResult.getReturnData()).decodeOneLong());
 
         arguments = ABIUtil.encodeMethodArguments("balanceOf", new Address(receiver.toBytes()));
         tx = TestingTransaction.call(pepeMinter, org.aion.types.Address.wrap(tokenDapp.toByteArray()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txResult = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
-        System.out.println(">> balance of receiver: " + ABIUtil.decodeOneObject(txResult.getReturnData()));
+        System.out.println(">> balance of receiver: " + new ABIDecoder(txResult.getReturnData()).decodeOneLong());
         avm.shutdown();
     }
 }

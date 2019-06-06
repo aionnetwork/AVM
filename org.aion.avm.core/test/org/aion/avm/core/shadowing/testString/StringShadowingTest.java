@@ -10,6 +10,7 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.SimpleFuture;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -37,43 +38,42 @@ public class StringShadowingTest {
         txData = ABIUtil.encodeMethodArguments("singleStringReturnInt");
         tx = TestingTransaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionResult result = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
-        Assert.assertTrue(java.util.Arrays.equals(new int[]{96354, 3, 1, -1}, (int[]) ABIUtil.decodeOneObject(result.getReturnData())));
+        Assert.assertTrue(java.util.Arrays.equals(new int[]{96354, 3, 1, -1}, new ABIDecoder(result.getReturnData()).decodeOneIntegerArray()));
 
         txData = ABIUtil.encodeMethodArguments("singleStringReturnBoolean");
         tx = TestingTransaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         result = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
-        //Assert.assertTrue(java.util.Arrays.equals(new byte[]{1, 0, 1, 0, 1, 0, 0}, (byte[]) ABIUtil.decodeOneObject(result.getReturnData())));
-        Assert.assertTrue(java.util.Arrays.equals(new boolean[]{true, false, true, false, true, false, false}, (boolean[]) ABIUtil.decodeOneObject(result.getReturnData())));
+        Assert.assertTrue(java.util.Arrays.equals(new boolean[]{true, false, true, false, true, false, false}, new ABIDecoder(result.getReturnData()).decodeOneBooleanArray()));
 
         txData = ABIUtil.encodeMethodArguments("singleStringReturnChar");
         tx = TestingTransaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         result = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
-        Assert.assertEquals('a', ABIUtil.decodeOneObject(result.getReturnData()));
+        Assert.assertEquals('a', new ABIDecoder(result.getReturnData()).decodeOneCharacter());
 
         txData = ABIUtil.encodeMethodArguments("singleStringReturnBytes");
         tx = TestingTransaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         result = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
-        Assert.assertTrue(java.util.Arrays.equals(new byte[]{'a', 'b', 'c'}, (byte[]) ABIUtil.decodeOneObject(result.getReturnData())));
+        Assert.assertTrue(java.util.Arrays.equals(new byte[]{'a', 'b', 'c'}, new ABIDecoder(result.getReturnData()).decodeOneByteArray()));
 
         txData = ABIUtil.encodeMethodArguments("singleStringReturnLowerCase");
         tx = TestingTransaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         result = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
-        Assert.assertEquals("abc", ABIUtil.decodeOneObject(result.getReturnData()));
+        Assert.assertEquals("abc", new ABIDecoder(result.getReturnData()).decodeOneString());
 
         txData = ABIUtil.encodeMethodArguments("singleStringReturnUpperCase");
         tx = TestingTransaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         result = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
-        Assert.assertEquals("ABC", ABIUtil.decodeOneObject(result.getReturnData()));
+        Assert.assertEquals("ABC", new ABIDecoder(result.getReturnData()).decodeOneString());
 
         txData = ABIUtil.encodeMethodArguments("stringReturnSubSequence");
         tx = TestingTransaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         result = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
-        Assert.assertEquals("Sub", ABIUtil.decodeOneObject(result.getReturnData()));
+        Assert.assertEquals("Sub", new ABIDecoder(result.getReturnData()).decodeOneString());
 
         txData = ABIUtil.encodeMethodArguments("equalsIgnoreCase");
         tx = TestingTransaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         result = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
-        Assert.assertEquals(false, ABIUtil.decodeOneObject(result.getReturnData()));
+        Assert.assertEquals(false, new ABIDecoder(result.getReturnData()).decodeOneBoolean());
 
         avm.shutdown();
     }
@@ -122,12 +122,12 @@ public class StringShadowingTest {
         SimpleFuture<TransactionResult>[] results = avm.run(kernel, batch);
         
         // Now, process the results.
-        Assert.assertTrue(java.util.Arrays.equals(new int[]{96354, 3, 1, -1}, (int[]) ABIUtil.decodeOneObject(results[0].get().getReturnData())));
-        Assert.assertTrue(java.util.Arrays.equals(new boolean[]{true, false, true, false, true, false, false}, (boolean[]) ABIUtil.decodeOneObject(results[1].get().getReturnData())));
-        Assert.assertEquals('a', ABIUtil.decodeOneObject(results[2].get().getReturnData()));
-        Assert.assertTrue(java.util.Arrays.equals(new byte[]{'a', 'b', 'c'}, (byte[]) ABIUtil.decodeOneObject(results[3].get().getReturnData())));
-        Assert.assertEquals("abc", ABIUtil.decodeOneObject(results[4].get().getReturnData()));
-        Assert.assertEquals("ABC", ABIUtil.decodeOneObject(results[5].get().getReturnData()));
+        Assert.assertArrayEquals(new int[]{96354, 3, 1, -1}, new ABIDecoder(results[0].get().getReturnData()).decodeOneIntegerArray());
+        Assert.assertArrayEquals(new boolean[]{true, false, true, false, true, false, false}, new ABIDecoder(results[1].get().getReturnData()).decodeOneBooleanArray());
+        Assert.assertEquals('a', new ABIDecoder(results[2].get().getReturnData()).decodeOneCharacter());
+        Assert.assertArrayEquals(new byte[]{'a', 'b', 'c'}, new ABIDecoder(results[3].get().getReturnData()).decodeOneByteArray());
+        Assert.assertEquals("abc", new ABIDecoder(results[4].get().getReturnData()).decodeOneString());
+        Assert.assertEquals("ABC", new ABIDecoder(results[5].get().getReturnData()).decodeOneString());
         
         avm.shutdown();
     }

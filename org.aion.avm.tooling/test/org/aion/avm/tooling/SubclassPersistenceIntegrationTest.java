@@ -1,6 +1,8 @@
 package org.aion.avm.tooling;
 
 import org.aion.avm.core.util.ABIUtil;
+import org.aion.avm.userlib.abi.ABIDecoder;
+
 import avm.Address;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -116,7 +118,7 @@ public class SubclassPersistenceIntegrationTest {
         byte[] argData = ABIUtil.encodeMethodArguments(methodName);
         TransactionResult result = avmRule.call(avmRule.getPreminedAccount(), dapp, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        return ((Integer) ABIUtil.decodeOneObject(result.getReturnData())).intValue();
+        return new ABIDecoder(result.getReturnData()).decodeOneInteger();
     }
 
     private void failedInstall(Class<?> testClass) {

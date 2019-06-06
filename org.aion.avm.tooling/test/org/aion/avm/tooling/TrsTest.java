@@ -5,6 +5,7 @@ import org.aion.types.Address;
 import org.aion.avm.tooling.poc.TRS;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionMap;
+import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.BeforeClass;
@@ -88,7 +89,7 @@ public class TrsTest {
             assertTrue(result.getResultCode().isSuccess());
 
             // Check the return value is true, indicating a non-zero withdrawal amount.
-            assertTrue((boolean) ABIUtil.decodeOneObject(result.getReturnData()));
+            assertTrue(new ABIDecoder(result.getReturnData()).decodeOneBoolean());
 
             // Update the account balance by deducting the transaction cost from the previous balance.
             long callCost = ((AvmTransactionResult) result).getEnergyUsed() * ENERGY_PRICE;

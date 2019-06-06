@@ -167,7 +167,8 @@ public class PerformanceTest {
             for (SimpleFuture<TransactionResult> future : futures) {
                 AvmTransactionResult result = (AvmTransactionResult) future.get();
                 Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-                ABIUtil.decodeOneObject(result.getReturnData());
+                // These should all return an empty byte[] (void).
+                Assert.assertEquals(0, result.getReturnData().length);
             }
         }
     }

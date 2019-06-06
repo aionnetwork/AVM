@@ -4,6 +4,8 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.tooling.deploy.JarOptimizer;
+import org.aion.avm.userlib.abi.ABIDecoder;
+
 import avm.Address;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -228,7 +230,7 @@ public class ShadowSerializationTest {
         byte[] argData = ABIUtil.encodeMethodArguments("populate_" + segmentName);
         TransactionResult result  = avmRule.call(deployer, contractAddr, BigInteger.ZERO,  argData, energyLimit, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        return ((Integer) ABIUtil.decodeOneObject(result.getReturnData())).intValue();
+        return new ABIDecoder(result.getReturnData()).decodeOneInteger();
     }
 
     private int getHash(Address contractAddr, String segmentName) {
@@ -236,14 +238,14 @@ public class ShadowSerializationTest {
         byte[] argData = ABIUtil.encodeMethodArguments("getHash_" + segmentName);
         TransactionResult result  = avmRule.call(deployer, contractAddr, BigInteger.ZERO,  argData, energyLimit, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        return ((Integer)ABIUtil.decodeOneObject(result.getReturnData())).intValue();
+        return new ABIDecoder(result.getReturnData()).decodeOneInteger();
     }
 
     private int getHashSuccessWithLimit(Address contractAddr, String segmentName, long energyLimit) {
         byte[] argData = ABIUtil.encodeMethodArguments("getHash_" + segmentName);
         TransactionResult result  = avmRule.call(deployer, contractAddr, BigInteger.ZERO,  argData, energyLimit, ENERGY_PRICE).getTransactionResult();
         return (AvmTransactionResult.Code.SUCCESS == result.getResultCode())
-                ? ((Integer)ABIUtil.decodeOneObject(result.getReturnData())).intValue()
+                ? new ABIDecoder(result.getReturnData()).decodeOneInteger()
                 : 0;
     }
 
@@ -252,7 +254,7 @@ public class ShadowSerializationTest {
         byte[] argData = ABIUtil.encodeMethodArguments("verifyReentrantChange_" + segmentName);
         TransactionResult result  = avmRule.call(deployer, contractAddr, BigInteger.ZERO,  argData, energyLimit, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        Assert.assertTrue((Boolean)ABIUtil.decodeOneObject(result.getReturnData()));
+        Assert.assertTrue(new ABIDecoder(result.getReturnData()).decodeOneBoolean());
     }
 
     private byte[] getDappBytesWithUserlib(Class<?> mainClass, byte[] arguments, Class<?>... otherClasses) {

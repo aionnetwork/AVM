@@ -11,6 +11,7 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.abi.ABICompiler;
 import org.aion.avm.tooling.deploy.JarOptimizer;
 import org.aion.avm.tooling.deploy.eliminator.UnreachableMethodRemover;
+import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.*;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -40,7 +41,7 @@ public class GraphReachabilityIntegrationTest {
         Address contractAddr = doInitialDeploymentAndSetup(block);
         
         // Verify before.
-        callStatic(block, contractAddr, getCost_check249(true), "check249", 4);
+        callStaticVoid(block, contractAddr, getCost_check249(true), "check249", 4);
         
         // Run test.
         long modify_basicCost = adjustBasicCost(21708L);
@@ -54,10 +55,10 @@ public class GraphReachabilityIntegrationTest {
         // This number is an adjustment factor for the cost changes associated with the various ABI improvements
         // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
         long userlibCost = -42080L;
-        callStatic(block, contractAddr, modify_basicCost + modify_miscCharges + modify_storageCharges + userlibCost, "modify249");
+        callStaticVoid(block, contractAddr, modify_basicCost + modify_miscCharges + modify_storageCharges + userlibCost, "modify249");
         
         // Verify after.
-        callStatic(block, contractAddr, getCost_check249(false), "check249", 5);
+        callStaticVoid(block, contractAddr, getCost_check249(false), "check249", 5);
     }
 
     /**
@@ -71,7 +72,7 @@ public class GraphReachabilityIntegrationTest {
         Address contractAddr = doInitialDeploymentAndSetup(block);
         
         // Verify before.
-        callStatic(block, contractAddr, getCost_check249(true), "check249", 4);
+        callStaticVoid(block, contractAddr, getCost_check249(true), "check249", 4);
         
         // Run test.
         long run_basicCost = adjustBasicCost(22796L);
@@ -91,10 +92,10 @@ public class GraphReachabilityIntegrationTest {
         // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
         long userlibCost = -102634L;
 
-        callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + userlibCost, "run249_reentrant_notLoaded");
+        callStaticVoid(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + userlibCost, "run249_reentrant_notLoaded");
         
         // Verify after.
-        callStatic(block, contractAddr, getCost_check249(false), "check249", 5);
+        callStaticVoid(block, contractAddr, getCost_check249(false), "check249", 5);
     }
 
     /**
@@ -108,7 +109,7 @@ public class GraphReachabilityIntegrationTest {
         Address contractAddr = doInitialDeploymentAndSetup(block);
         
         // Verify before.
-        callStatic(block, contractAddr, getCost_check249(true), "check249", 4);
+        callStaticVoid(block, contractAddr, getCost_check249(true), "check249", 4);
         
         // Run test.
         long run_basicCost = adjustBasicCost(22604L);
@@ -128,10 +129,10 @@ public class GraphReachabilityIntegrationTest {
         // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
         long userlibCost = -101913;
 
-        callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + userlibCost, "run249_reentrant_loaded");
+        callStaticVoid(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + userlibCost, "run249_reentrant_loaded");
         
         // Verify after.
-        callStatic(block, contractAddr, getCost_check249(false), "check249", 5);
+        callStaticVoid(block, contractAddr, getCost_check249(false), "check249", 5);
     }
 
     /**
@@ -161,7 +162,7 @@ public class GraphReachabilityIntegrationTest {
         // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
         long run_userlibCost = -99934L;
 
-        callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + run_userlibCost, "runNewInstance_reentrant");
+        callStaticVoid(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + run_userlibCost, "runNewInstance_reentrant");
         
         // Verify result.
         long check_basicCost = adjustBasicCost(22156L);
@@ -172,7 +173,7 @@ public class GraphReachabilityIntegrationTest {
         // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
         long check_userlibCost = -42913L;
 
-        int value = (Integer) callStatic(block, contractAddr, check_basicCost + check_miscCharges + check_storageCharges + check_userlibCost, "checkNewInstance");
+        int value = callStaticInt(block, contractAddr, check_basicCost + check_miscCharges + check_storageCharges + check_userlibCost, "checkNewInstance");
         Assert.assertEquals(5, value);
     }
 
@@ -204,7 +205,7 @@ public class GraphReachabilityIntegrationTest {
         // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
         long run_userlibCost = -158008;
 
-        callStatic(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + run_userlibCost, "runNewInstance_reentrant2");
+        callStaticVoid(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + run_userlibCost, "runNewInstance_reentrant2");
         
         // Verify result.
         long check_basicCost = adjustBasicCost(22156L);
@@ -216,7 +217,7 @@ public class GraphReachabilityIntegrationTest {
         // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
         long check_userlibCost = -42913;
 
-        int value = (Integer) callStatic(block, contractAddr, check_basicCost + check_miscCharges + check_storageCharges + check_userlibCost, "checkNewInstance");
+        int value = callStaticInt(block, contractAddr, check_basicCost + check_miscCharges + check_storageCharges + check_userlibCost, "checkNewInstance");
         Assert.assertEquals(5, value);
     }
 
@@ -226,7 +227,6 @@ public class GraphReachabilityIntegrationTest {
         // The AvmRule invokes the ABICompiler on all input jars.
         // As a result, we have to run the ABICompiler on the input jar to get the correct expected gas values.
         JarOptimizer optimizer = new JarOptimizer(false);
-        UnreachableMethodRemover unreachableMethodRemover = new UnreachableMethodRemover();
         ABICompiler compiler = ABICompiler.compileJarBytes(JarBuilder.buildJarForMainAndClasses(GraphReachabilityIntegrationTestTarget.class));
         byte[] optimizedJar = optimizer.optimize(compiler.getJarFileBytes());
         optimizedJar = UnreachableMethodRemover.optimize(optimizedJar);
@@ -261,18 +261,28 @@ public class GraphReachabilityIntegrationTest {
         Assert.assertEquals(energyLimit - totalExpectedCost, createResult.getEnergyRemaining());
         
         // Setup test.
-        callStatic(block, contractAddr, getCost_setup249(), "setup249");
+        callStaticVoid(block, contractAddr, getCost_setup249(), "setup249");
         return contractAddr;
     }
 
-    private Object callStatic(TestingBlock block, Address contractAddr, long expectedCost, String methodName, Object... args) {
+    private int callStaticInt(TestingBlock block, Address contractAddr, long expectedCost, String methodName, Object... args) {
+        byte[] result = callStaticSuccess(block, contractAddr, expectedCost, methodName, args);
+        return new ABIDecoder(result).decodeOneInteger();
+    }
+
+    private void callStaticVoid(TestingBlock block, Address contractAddr, long expectedCost, String methodName, Object... args) {
+        byte[] result = callStaticSuccess(block, contractAddr, expectedCost, methodName, args);
+        Assert.assertArrayEquals(new byte[0], result);
+    }
+
+    private byte[] callStaticSuccess(TestingBlock block, Address contractAddr, long expectedCost, String methodName, Object... args) {
         long energyLimit = 1_000_000l;
         byte[] argData = ABIUtil.encodeMethodArguments(methodName, args);
         AvmTransactionResult result = (AvmTransactionResult) avmRule.call(deployer, contractAddr, BigInteger.ZERO, argData, energyLimit, 1l).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         Assert.assertEquals(expectedCost, result.getEnergyUsed());
         Assert.assertEquals(energyLimit - expectedCost, result.getEnergyRemaining());
-        return ABIUtil.decodeOneObject(result.getReturnData());
+        return result.getReturnData();
     }
 
     private static long getCost_check249(boolean before) {

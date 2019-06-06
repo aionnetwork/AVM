@@ -13,6 +13,7 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TestingTransaction;
@@ -114,7 +115,7 @@ public class ContractBalanceTest {
         TestingTransaction transaction = TestingTransaction.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
         TransactionResult result = avm.run(ContractBalanceTest.kernel, new TestingTransaction[] {transaction})[0].get();
         assertTrue(result.getResultCode().isSuccess());
-        return new BigInteger((byte[]) ABIUtil.decodeOneObject(result.getReturnData()));
+        return new BigInteger(new ABIDecoder(result.getReturnData()).decodeOneByteArray());
     }
 
     private BigInteger callContractToGetClinitBalance(Address contract) {
@@ -122,7 +123,7 @@ public class ContractBalanceTest {
         TestingTransaction transaction = TestingTransaction.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
         TransactionResult result = avm.run(ContractBalanceTest.kernel, new TestingTransaction[] {transaction})[0].get();
         assertTrue(result.getResultCode().isSuccess());
-        return new BigInteger((byte[]) ABIUtil.decodeOneObject(result.getReturnData()));
+        return new BigInteger(new ABIDecoder(result.getReturnData()).decodeOneByteArray());
     }
 
     private Address deployRedirectContract() {
@@ -146,7 +147,7 @@ public class ContractBalanceTest {
         TestingTransaction transaction = TestingTransaction.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
         TransactionResult result = avm.run(ContractBalanceTest.kernel, new TestingTransaction[] {transaction})[0].get();
         assertTrue(result.getResultCode().isSuccess());
-        return new BigInteger((byte[]) ABIUtil.decodeOneObject(result.getReturnData()));
+        return new BigInteger(new ABIDecoder(result.getReturnData()).decodeOneByteArray());
     }
 
     private avm.Address getContractAsAbiAddress(Address contract) {

@@ -1,6 +1,8 @@
 package org.aion.avm.tooling;
 
 import org.aion.avm.core.util.ABIUtil;
+import org.aion.avm.userlib.abi.ABIDecoder;
+
 import avm.Address;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -30,11 +32,11 @@ public class AssertKeywordIntegrationTest {
         Address dapp = installTestDApp(AssertKeywordIntegrationTestTarget.class);
         
         // Do the call.
-        int length = ((Integer)callStatic(dapp, "runEmptyCheck")).intValue();
+        int length = callStaticInteger(dapp, "runEmptyCheck");
         // -1 is pass.
         Assert.assertEquals(-1, length);
         // Make sure that we checked (same as Class#avm_desiredAssertionStatus()).
-        Assert.assertEquals(ASSERTIONS_ENABLED, ((Boolean)callStatic(dapp, "getAndClearState")).booleanValue());
+        Assert.assertEquals(ASSERTIONS_ENABLED, callStaticBoolean(dapp, "getAndClearState"));
     }
 
     @Test
@@ -42,11 +44,11 @@ public class AssertKeywordIntegrationTest {
         Address dapp = installTestDApp(AssertKeywordIntegrationTestTarget.class);
         
         // Do the call.
-        int length = ((Integer)callStatic(dapp, "runIntCheck", 5)).intValue();
+        int length = callStaticInteger(dapp, "runIntCheck", 5);
         // -1 is pass.
         Assert.assertEquals(-1, length);
         // Make sure that we checked (same as Class#avm_desiredAssertionStatus()).
-        Assert.assertEquals(ASSERTIONS_ENABLED, ((Boolean)callStatic(dapp, "getAndClearState")).booleanValue());
+        Assert.assertEquals(ASSERTIONS_ENABLED, callStaticBoolean(dapp, "getAndClearState"));
     }
 
     @Test
@@ -54,15 +56,15 @@ public class AssertKeywordIntegrationTest {
         Address dapp = installTestDApp(AssertKeywordIntegrationTestTarget.class);
         
         // Setup failure.
-        boolean wasFail = ((Boolean)callStatic(dapp, "setShouldFail", true)).booleanValue();
+        boolean wasFail = callStaticBoolean(dapp, "setShouldFail", true);
         Assert.assertFalse(wasFail);
         
         // Do the call.
-        int length = ((Integer)callStatic(dapp, "runEmptyCheck")).intValue();
+        int length = callStaticInteger(dapp, "runEmptyCheck");
         // Empty cause so this is a 0-length message.
         Assert.assertEquals(0, length);
         // Make sure that we checked (same as Class#avm_desiredAssertionStatus()).
-        Assert.assertEquals(ASSERTIONS_ENABLED, ((Boolean)callStatic(dapp, "getAndClearState")).booleanValue());
+        Assert.assertEquals(ASSERTIONS_ENABLED, callStaticBoolean(dapp, "getAndClearState"));
     }
 
     @Test
@@ -70,15 +72,15 @@ public class AssertKeywordIntegrationTest {
         Address dapp = installTestDApp(AssertKeywordIntegrationTestTarget.class);
         
         // Setup failure.
-        boolean wasFail = ((Boolean)callStatic(dapp, "setShouldFail", true)).booleanValue();
+        boolean wasFail = callStaticBoolean(dapp, "setShouldFail", true);
         Assert.assertFalse(wasFail);
         
         // Do the call.
-        int length = ((Integer)callStatic(dapp, "runIntCheck", 5)).intValue();
+        int length = callStaticInteger(dapp, "runIntCheck", 5);
         // The cause will be the string of "5", so 1.
         Assert.assertEquals(1, length);
         // Make sure that we checked (same as Class#avm_desiredAssertionStatus()).
-        Assert.assertEquals(ASSERTIONS_ENABLED, ((Boolean)callStatic(dapp, "getAndClearState")).booleanValue());
+        Assert.assertEquals(ASSERTIONS_ENABLED, callStaticBoolean(dapp, "getAndClearState"));
     }
 
 
@@ -91,10 +93,20 @@ public class AssertKeywordIntegrationTest {
         return new Address(createResult.getReturnData());
     }
 
-    private Object callStatic(Address dapp, String methodName, Object... arguments) {
+    private int callStaticInteger(Address dapp, String methodName, Object... arguments) {
+        byte[] result = callStaticResult(dapp, methodName, arguments);
+        return new ABIDecoder(result).decodeOneInteger();
+    }
+
+    private boolean callStaticBoolean(Address dapp, String methodName, Object... arguments) {
+        byte[] result = callStaticResult(dapp, methodName, arguments);
+        return new ABIDecoder(result).decodeOneBoolean();
+    }
+
+    private byte[] callStaticResult(Address dapp, String methodName, Object... arguments) {
         byte[] argData = ABIUtil.encodeMethodArguments(methodName, arguments);
         TransactionResult result = avmRule.call(avmRule.getPreminedAccount(), dapp, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        return ABIUtil.decodeOneObject(result.getReturnData());
+        return result.getReturnData();
     }
 }

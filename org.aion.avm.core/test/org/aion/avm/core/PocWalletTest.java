@@ -18,6 +18,7 @@ import org.aion.avm.core.testWallet.Wallet;
 import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -139,7 +140,7 @@ public class PocWalletTest {
         TestingTransaction executeTransaction = TestingTransaction.call(from, contractAddress, kernel.getNonce(from), BigInteger.ZERO, execArgs, energyLimit, energyPrice);
         TransactionResult executeResult = avm.run(this.kernel, new TestingTransaction[] {executeTransaction})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, executeResult.getResultCode());
-        byte[] toConfirm = (byte[]) ABIUtil.decodeOneObject(executeResult.getReturnData());
+        byte[] toConfirm = new ABIDecoder(executeResult.getReturnData()).decodeOneByteArray();
 
         // Now, confirm as one of the other owners to observe we can instantiate the Transaction instance, from storage.
         kernel.adjustBalance(extra1, BigInteger.valueOf(1_000_000_000_000L));

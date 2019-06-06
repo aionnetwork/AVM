@@ -4,6 +4,7 @@ import avm.Blockchain;
 import org.aion.avm.core.util.ABIUtil;
 import avm.Address;
 import org.aion.avm.tooling.AvmRule;
+import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -262,7 +263,7 @@ public class FailedInternalCallAddressesTest {
 
         TransactionResult result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
-        return (Address[]) ABIUtil.decodeOneObject(result.getReturnData());
+        return new ABIDecoder(result.getReturnData()).decodeOneAddressArray();
     }
 
     private static Address deployFailedInternalCallAddressTrackerContract() {

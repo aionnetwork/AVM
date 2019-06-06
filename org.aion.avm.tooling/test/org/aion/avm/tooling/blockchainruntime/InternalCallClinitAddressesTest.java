@@ -3,6 +3,7 @@ package org.aion.avm.tooling.blockchainruntime;
 import org.aion.avm.core.util.ABIUtil;
 import avm.Address;
 import org.aion.avm.tooling.AvmRule;
+import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.tooling.AddressUtil;
 import org.aion.kernel.TestingTransaction;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -148,7 +149,7 @@ public class InternalCallClinitAddressesTest {
 
         TransactionResult result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
-        return (Address[]) ABIUtil.decodeOneObject(result.getReturnData());
+        return new ABIDecoder(result.getReturnData()).decodeOneAddressArray();
     }
 
     private static byte[] getDappBytes() {

@@ -1,6 +1,8 @@
 package org.aion.avm.tooling;
 
 import org.aion.avm.core.util.ABIUtil;
+import org.aion.avm.userlib.abi.ABIDecoder;
+
 import avm.Address;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -120,7 +122,7 @@ public class AssertionErrorIntegrationTest {
         if(null == resultData) {
             return null;
         }
-        byte[] utf8 = (byte[])ABIUtil.decodeOneObject(result.getReturnData());
+        byte[] utf8 = new ABIDecoder(result.getReturnData()).decodeOneByteArray();
         return (null != utf8)
                 ? new String(utf8)
                 : null;

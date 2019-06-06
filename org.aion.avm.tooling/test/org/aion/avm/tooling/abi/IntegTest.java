@@ -10,6 +10,7 @@ import avm.Address;
 import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.AvmRule;
+import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -39,7 +40,27 @@ public class IntegTest {
         return new Address(createResult.getReturnData());
     }
 
-    private Object callStatic(Address dapp, String methodName, Object... arguments) {
+    private boolean callStaticBoolean(Address dapp, String methodName, Object... arguments) {
+        byte[] result = callStaticResult(dapp, methodName, arguments);
+        return new ABIDecoder(result).decodeOneBoolean();
+    }
+
+    private int callStaticInteger(Address dapp, String methodName, Object... arguments) {
+        byte[] result = callStaticResult(dapp, methodName, arguments);
+        return new ABIDecoder(result).decodeOneInteger();
+    }
+
+    private String callStaticString(Address dapp, String methodName, Object... arguments) {
+        byte[] result = callStaticResult(dapp, methodName, arguments);
+        return new ABIDecoder(result).decodeOneString();
+    }
+
+    private void callStaticVoid(Address dapp, String methodName, Object... arguments) {
+        byte[] result = callStaticResult(dapp, methodName, arguments);
+        assertArrayEquals(new byte[0], result);
+    }
+
+    private byte[] callStaticResult(Address dapp, String methodName, Object... arguments) {
         byte[] argData = ABIUtil.encodeMethodArguments(methodName, arguments);
         TransactionResult result =
                 avmRule.call(
@@ -51,11 +72,7 @@ public class IntegTest {
                         ENERGY_PRICE)
                         .getTransactionResult();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        if (result.getReturnData() != null) {
-            return ABIUtil.decodeOneObject(result.getReturnData());
-        } else {
-            return null;
-        }
+        return result.getReturnData();
     }
 
     private void balanceTransfer(Address dapp) {
@@ -79,10 +96,10 @@ public class IntegTest {
         byte[] jar = avmRule.getDappBytes(DAppNoMainWithFallbackTarget.class, new byte[0]);
         Address dapp = installTestDApp(jar);
 
-        boolean ret = (Boolean) callStatic(dapp, "test1", true);
+        boolean ret = callStaticBoolean(dapp, "test1", true);
         assertTrue(ret);
 
-        ret = (Boolean) callStatic(dapp, "test2", 1, "test2", new long[]{1, 2, 3});
+        ret = callStaticBoolean(dapp, "test2", 1, "test2", new long[]{1, 2, 3});
         assertTrue(ret);
 
         balanceTransfer(dapp);
@@ -96,9 +113,9 @@ public class IntegTest {
                 avmRule.getDappBytes(ChattyCalculatorTarget.class, new byte[0], SilentCalculatorTarget.class);
         Address dapp = installTestDApp(jar);
 
-        String ret = (String) callStatic(dapp, "amIGreater", 3, 4);
+        String ret = callStaticString(dapp, "amIGreater", 3, 4);
         assertEquals("No, 3, you are NOT greater than 4", ret);
-        ret = (String) callStatic(dapp, "amIGreater", 5, 4);
+        ret = callStaticString(dapp, "amIGreater", 5, 4);
         assertEquals("Yes, 5, you are greater than 4", ret);
     }
 
@@ -110,46 +127,46 @@ public class IntegTest {
 
         Address dapp = installTestDApp(jar);
 
-        String ret = (String) callStatic(dapp, "returnHelloWorld");
+        String ret = callStaticString(dapp, "returnHelloWorld");
         assertEquals("Hello world", ret);
 
-        ret = (String) callStatic(dapp, "returnGoodbyeWorld");
+        ret = callStaticString(dapp, "returnGoodbyeWorld");
         assertEquals("Goodbye world", ret);
 
-        ret = (String) callStatic(dapp, "returnEcho", "Code meets world");
+        ret = callStaticString(dapp, "returnEcho", "Code meets world");
         assertEquals("Code meets world", ret);
 
         Address addr = new Address(Helpers.randomAddress().toBytes());
 
-        Address retAddr = (Address) callStatic(dapp, "returnEchoAddress", addr);
+        Address retAddr = new ABIDecoder(callStaticResult(dapp, "returnEchoAddress", addr)).decodeOneAddress();
         assertEquals(addr, retAddr);
 
-        ret = (String) callStatic(dapp, "returnAppended", "alpha", "bet");
+        ret = callStaticString(dapp, "returnAppended", "alpha", "bet");
         assertEquals("alphabet", ret);
 
-        ret = (String) callStatic(dapp, "returnAppendedMultiTypes", "alpha", "bet", false, 123);
+        ret = callStaticString(dapp, "returnAppendedMultiTypes", "alpha", "bet", false, 123);
         assertEquals("alphabetfalse123", ret);
 
         int[] expectedArray = new int[] {1,2,3};
 
-        int[] intArray = (int[]) callStatic(dapp, "returnArrayOfInt", 1, 2, 3);
+        int[] intArray = new ABIDecoder(callStaticResult(dapp, "returnArrayOfInt", 1, 2, 3)).decodeOneIntegerArray();
         assertArrayEquals(expectedArray, intArray);
 
-        intArray = (int[]) callStatic(dapp, "returnArrayOfIntEcho", expectedArray);
+        intArray = new ABIDecoder(callStaticResult(dapp, "returnArrayOfIntEcho", expectedArray)).decodeOneIntegerArray();
         assertArrayEquals(expectedArray, intArray);
 
         int[][] expectedArray2D = new int[][]{{1, 2},{3, 4}};
 
-        int[][] intArray2D = (int[][]) callStatic(dapp, "returnArrayOfInt2D", 1, 2, 3, 4);
+        int[][] intArray2D = new ABIDecoder(callStaticResult(dapp, "returnArrayOfInt2D", 1, 2, 3, 4)).decodeOne2DIntegerArray();
         assertArrayEquals(expectedArray2D, intArray2D);
 
-        intArray2D = (int[][]) callStatic(dapp, "returnArrayOfInt2DEcho", new Object[]{intArray2D});
+        intArray2D = new ABIDecoder(callStaticResult(dapp, "returnArrayOfInt2DEcho", new Object[]{intArray2D})).decodeOne2DIntegerArray();
         assertArrayEquals(expectedArray2D, intArray2D);
 
-        String[] strArray = (String[]) callStatic(dapp, "returnArrayOfString", "hello", "world", "!");
+        String[] strArray = new ABIDecoder(callStaticResult(dapp, "returnArrayOfString", "hello", "world", "!")).decodeOneStringArray();
         assertArrayEquals(new String[]{"hello", "world", "!"}, strArray);
 
-        callStatic(dapp, "doNothing");
+        callStaticVoid(dapp, "doNothing");
     }
 
     @Test
@@ -159,14 +176,14 @@ public class IntegTest {
 
         Address dapp = installTestDApp(jar);
 
-        int oldVal = (Integer) callStatic(dapp, "getValue");
-        callStatic(dapp, "garbageMethod", 7);
-        int newVal = (Integer) callStatic(dapp, "getValue");
+        int oldVal = callStaticInteger(dapp, "getValue");
+        callStaticVoid(dapp, "garbageMethod", 7);
+        int newVal = callStaticInteger(dapp, "getValue");
 
         assertEquals(oldVal + 10, newVal);
-        callStatic(dapp, "", 7);
+        callStaticVoid(dapp, "", 7);
 
-        newVal = (Integer) callStatic(dapp, "getValue");
+        newVal = callStaticInteger(dapp, "getValue");
         assertEquals(oldVal + 20, newVal);
     }
 
@@ -199,10 +216,10 @@ public class IntegTest {
 
         Address dapp = installTestDApp(jar);
 
-        int intResult = (Integer) callStatic(dapp, "getInt");
+        int intResult = callStaticInteger(dapp, "getInt");
         assertEquals(5, intResult);
 
-        String stringResult = (String) callStatic(dapp, "getString");
+        String stringResult = callStaticString(dapp, "getString");
         assertEquals("hello", stringResult);
 
         jar =
@@ -210,11 +227,11 @@ public class IntegTest {
 
         dapp = installTestDApp(jar);
 
-        intResult = (Integer) callStatic(dapp, "getInt");
+        intResult = callStaticInteger(dapp, "getInt");
         // this value should be 10, since the class's static initializer should override the deployment arg
         assertEquals(10, intResult);
 
-        stringResult = (String) callStatic(dapp, "getString");
+        stringResult = callStaticString(dapp, "getString");
         assertEquals("hello", stringResult);
     }
 
