@@ -4,8 +4,8 @@ import avm.Address;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
-import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
@@ -49,25 +49,45 @@ public class DeploymentArgumentTest {
 
     @Test
     public void testCorrectArguments() {
-        AvmTransactionResult result = deployContract("string", new Address[] {new Address(DEPLOYER.toBytes())}, (int)5, (double)6.7, SMALL_JAR);
+        byte[] encodedArguments = new ABIStreamingEncoder()
+                .encodeOneString("string")
+                .encodeOneAddressArray(new Address[] {new Address(DEPLOYER.toBytes())})
+                .encodeOneInteger(5)
+                .encodeOneDouble(6.7)
+                .encodeOneByteArray(SMALL_JAR)
+                .toBytes();
+        AvmTransactionResult result = deployContract(encodedArguments);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
     }
 
     @Test
     public void testIncorrectArguments() {
-        AvmTransactionResult result = deployContract(new String[] {"string", "wrong"}, new Address[] {new Address(DEPLOYER.toBytes())}, (int)5, (double)6.7);
+        byte[] encodedArguments = new ABIStreamingEncoder()
+                .encodeOneStringArray(new String[] {"string", "wrong"})
+                .encodeOneAddressArray(new Address[] {new Address(DEPLOYER.toBytes())})
+                .encodeOneInteger(5)
+                .encodeOneDouble(6.7)
+                .toBytes();
+        AvmTransactionResult result = deployContract(encodedArguments);
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
     }
 
     @Test
     public void testMissingArguments() {
-        AvmTransactionResult result = deployContract();
+        AvmTransactionResult result = deployContract(new byte[0]);
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
     }
 
     @Test
     public void testCorrectSubDeployment() {
-        AvmTransactionResult result = deployContract("string", new Address[] {new Address(DEPLOYER.toBytes())}, (int)5, (double)6.7, SMALL_JAR);
+        byte[] encodedArguments = new ABIStreamingEncoder()
+                .encodeOneString("string")
+                .encodeOneAddressArray(new Address[] {new Address(DEPLOYER.toBytes())})
+                .encodeOneInteger(5)
+                .encodeOneDouble(6.7)
+                .encodeOneByteArray(SMALL_JAR)
+                .toBytes();
+        AvmTransactionResult result = deployContract(encodedArguments);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         
         org.aion.types.Address target = new org.aion.types.Address(result.getReturnData());
@@ -77,7 +97,14 @@ public class DeploymentArgumentTest {
 
     @Test
     public void testIncorrectSubDeployment() {
-        AvmTransactionResult result = deployContract("string", new Address[] {new Address(DEPLOYER.toBytes())}, (int)5, (double)6.7, SMALL_JAR);
+        byte[] encodedArguments = new ABIStreamingEncoder()
+                .encodeOneString("string")
+                .encodeOneAddressArray(new Address[] {new Address(DEPLOYER.toBytes())})
+                .encodeOneInteger(5)
+                .encodeOneDouble(6.7)
+                .encodeOneByteArray(SMALL_JAR)
+                .toBytes();
+        AvmTransactionResult result = deployContract(encodedArguments);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         
         org.aion.types.Address target = new org.aion.types.Address(result.getReturnData());
@@ -87,15 +114,14 @@ public class DeploymentArgumentTest {
     }
 
 
-    private AvmTransactionResult deployContract(Object... arguments) {
-        byte[] args = ABIUtil.encodeDeploymentArguments(arguments);
+    private AvmTransactionResult deployContract(byte[] args) {
         byte[] payload = new CodeAndArguments(JAR, args).encodeToBytes();
         TestingTransaction create = TestingTransaction.create(DEPLOYER, this.kernel.getNonce(DEPLOYER), BigInteger.ZERO, payload, ENERGY_LIMIT, ENERGY_PRICE);
         return (AvmTransactionResult)this.avm.run(this.kernel, new TestingTransaction[] {create})[0].get();
     }
 
     private AvmTransactionResult callContract(org.aion.types.Address target, String methodName) {
-        byte[] argData = ABIUtil.encodeMethodArguments(methodName);
+        byte[] argData = new ABIStreamingEncoder().encodeOneString(methodName).toBytes();
         TestingTransaction call = TestingTransaction.call(DEPLOYER, target, kernel.getNonce(DEPLOYER), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
         AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {call})[0].get();
         return result;

@@ -4,8 +4,8 @@ import java.math.BigInteger;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
-import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
@@ -59,7 +59,10 @@ public class AvmFailureTest {
 
     @Test
     public void testFailedTransaction() {
-        byte[] data = ABIUtil.encodeMethodArguments("reentrantCall", 5);
+        byte[] data = new ABIStreamingEncoder()
+                .encodeOneString("reentrantCall")
+                .encodeOneInteger(5)
+                .toBytes();
         TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
         AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
@@ -74,7 +77,7 @@ public class AvmFailureTest {
 
     @Test
     public void testOutOfEnergy() {
-        byte[] data = ABIUtil.encodeMethodArguments("testOutOfEnergy");
+        byte[] data = encodeNoArgCall("testOutOfEnergy");
         TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
         TransactionResult txResult = avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
@@ -83,7 +86,7 @@ public class AvmFailureTest {
 
     @Test
     public void testOutOfStack() {
-        byte[] data = ABIUtil.encodeMethodArguments("testOutOfStack");
+        byte[] data = encodeNoArgCall("testOutOfStack");
         TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
         TransactionResult txResult = avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
@@ -92,7 +95,7 @@ public class AvmFailureTest {
 
     @Test
     public void testRevert() {
-        byte[] data = ABIUtil.encodeMethodArguments("testRevert");
+        byte[] data = encodeNoArgCall("testRevert");
         TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
         AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
@@ -103,7 +106,7 @@ public class AvmFailureTest {
 
     @Test
     public void testInvalid() {
-        byte[] data = ABIUtil.encodeMethodArguments("testInvalid");
+        byte[] data = encodeNoArgCall("testInvalid");
         TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
         AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
@@ -114,7 +117,7 @@ public class AvmFailureTest {
 
     @Test
     public void testUncaughtException() {
-        byte[] data = ABIUtil.encodeMethodArguments("testUncaughtException");
+        byte[] data = encodeNoArgCall("testUncaughtException");
         TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
         AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
@@ -143,5 +146,12 @@ public class AvmFailureTest {
         TransactionResult txResult = avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult.getResultCode());
         Assert.assertNotNull(Address.wrap(txResult.getReturnData()));
+    }
+
+
+    private static byte[] encodeNoArgCall(String methodName) {
+        return new ABIStreamingEncoder()
+                .encodeOneString(methodName)
+                .toBytes();
     }
 }

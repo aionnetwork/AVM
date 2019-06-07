@@ -7,9 +7,9 @@ import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
-import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.SimpleFuture;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -115,7 +115,7 @@ public class PerformanceTest {
     }
 
     private void callSingle(org.aion.types.Address sender, TestingBlock block, Address contractAddr, String methodName) {
-        byte[] argData = ABIUtil.encodeMethodArguments(methodName);
+        byte[] argData = new ABIStreamingEncoder().encodeOneString(methodName).toBytes();
         TestingTransaction call = TestingTransaction.call(sender, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
         AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {call})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
@@ -155,7 +155,7 @@ public class PerformanceTest {
     }
 
     public void callBatch(String methodName, TestingBlock block, boolean Nto1){
-        byte[] argData = ABIUtil.encodeMethodArguments(methodName);
+        byte[] argData = new ABIStreamingEncoder().encodeOneString(methodName).toBytes();
         for(int j = 0; j < contextNum; ++j) {
             TestingTransaction[] transactionArray = new TestingTransaction[transactionBlockSize];
             for (int i = 0; i < transactionBlockSize; ++i) {

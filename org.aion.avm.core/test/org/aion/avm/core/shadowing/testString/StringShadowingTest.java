@@ -8,9 +8,9 @@ import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
-import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.SimpleFuture;
 import org.aion.vm.api.interfaces.TransactionResult;
@@ -35,42 +35,42 @@ public class StringShadowingTest {
         org.aion.types.Address dappAddr = org.aion.types.Address.wrap(avm.run(kernel, new TestingTransaction[] {tx})[0].get().getReturnData());
 
         // call transactions and validate the results
-        txData = ABIUtil.encodeMethodArguments("singleStringReturnInt");
+        txData = encodeNoArgsMethodCall("singleStringReturnInt");
         tx = TestingTransaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         TransactionResult result = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
         Assert.assertTrue(java.util.Arrays.equals(new int[]{96354, 3, 1, -1}, new ABIDecoder(result.getReturnData()).decodeOneIntegerArray()));
 
-        txData = ABIUtil.encodeMethodArguments("singleStringReturnBoolean");
+        txData = encodeNoArgsMethodCall("singleStringReturnBoolean");
         tx = TestingTransaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         result = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
         Assert.assertTrue(java.util.Arrays.equals(new boolean[]{true, false, true, false, true, false, false}, new ABIDecoder(result.getReturnData()).decodeOneBooleanArray()));
 
-        txData = ABIUtil.encodeMethodArguments("singleStringReturnChar");
+        txData = encodeNoArgsMethodCall("singleStringReturnChar");
         tx = TestingTransaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         result = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
         Assert.assertEquals('a', new ABIDecoder(result.getReturnData()).decodeOneCharacter());
 
-        txData = ABIUtil.encodeMethodArguments("singleStringReturnBytes");
+        txData = encodeNoArgsMethodCall("singleStringReturnBytes");
         tx = TestingTransaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         result = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
         Assert.assertTrue(java.util.Arrays.equals(new byte[]{'a', 'b', 'c'}, new ABIDecoder(result.getReturnData()).decodeOneByteArray()));
 
-        txData = ABIUtil.encodeMethodArguments("singleStringReturnLowerCase");
+        txData = encodeNoArgsMethodCall("singleStringReturnLowerCase");
         tx = TestingTransaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         result = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
         Assert.assertEquals("abc", new ABIDecoder(result.getReturnData()).decodeOneString());
 
-        txData = ABIUtil.encodeMethodArguments("singleStringReturnUpperCase");
+        txData = encodeNoArgsMethodCall("singleStringReturnUpperCase");
         tx = TestingTransaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         result = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
         Assert.assertEquals("ABC", new ABIDecoder(result.getReturnData()).decodeOneString());
 
-        txData = ABIUtil.encodeMethodArguments("stringReturnSubSequence");
+        txData = encodeNoArgsMethodCall("stringReturnSubSequence");
         tx = TestingTransaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         result = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
         Assert.assertEquals("Sub", new ABIDecoder(result.getReturnData()).decodeOneString());
 
-        txData = ABIUtil.encodeMethodArguments("equalsIgnoreCase");
+        txData = encodeNoArgsMethodCall("equalsIgnoreCase");
         tx = TestingTransaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         result = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
         Assert.assertEquals(false, new ABIDecoder(result.getReturnData()).decodeOneBoolean());
@@ -100,22 +100,22 @@ public class StringShadowingTest {
         // Now, batch the other 6 transactions together and verify that the result is the same (note that the nonces are artificially incremented since these all have the same sender).
         TestingTransaction[] batch = new TestingTransaction[6];
         
-        txData = ABIUtil.encodeMethodArguments("singleStringReturnInt");
+        txData = encodeNoArgsMethodCall("singleStringReturnInt");
         batch[0] = TestingTransaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
 
-        txData = ABIUtil.encodeMethodArguments("singleStringReturnBoolean");
+        txData = encodeNoArgsMethodCall("singleStringReturnBoolean");
         batch[1] = TestingTransaction.call(from, dappAddr, kernel.getNonce(from) .add(BigInteger.ONE), BigInteger.ZERO, txData, energyLimit, energyPrice);
 
-        txData = ABIUtil.encodeMethodArguments("singleStringReturnChar");
+        txData = encodeNoArgsMethodCall("singleStringReturnChar");
         batch[2] = TestingTransaction.call(from, dappAddr, kernel.getNonce(from).add(BigInteger.TWO), BigInteger.ZERO, txData, energyLimit, energyPrice);
 
-        txData = ABIUtil.encodeMethodArguments("singleStringReturnBytes");
+        txData = encodeNoArgsMethodCall("singleStringReturnBytes");
         batch[3] = TestingTransaction.call(from, dappAddr, kernel.getNonce(from).add(BigInteger.valueOf(3)), BigInteger.ZERO, txData, energyLimit, energyPrice);
 
-        txData = ABIUtil.encodeMethodArguments("singleStringReturnLowerCase");
+        txData = encodeNoArgsMethodCall("singleStringReturnLowerCase");
         batch[4] = TestingTransaction.call(from, dappAddr, kernel.getNonce(from).add(BigInteger.valueOf(4)), BigInteger.ZERO, txData, energyLimit, energyPrice);
 
-        txData = ABIUtil.encodeMethodArguments("singleStringReturnUpperCase");
+        txData = encodeNoArgsMethodCall("singleStringReturnUpperCase");
         batch[5] = TestingTransaction.call(from, dappAddr, kernel.getNonce(from).add(BigInteger.valueOf(5)), BigInteger.ZERO, txData, energyLimit, energyPrice);
 
         // Send the batch.
@@ -130,5 +130,12 @@ public class StringShadowingTest {
         Assert.assertEquals("ABC", new ABIDecoder(results[5].get().getReturnData()).decodeOneString());
         
         avm.shutdown();
+    }
+
+
+    private static byte[] encodeNoArgsMethodCall(String methodName) {
+        return new ABIStreamingEncoder()
+                .encodeOneString(methodName)
+                .toBytes();
     }
 }

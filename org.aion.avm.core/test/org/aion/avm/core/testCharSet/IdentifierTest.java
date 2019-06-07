@@ -9,9 +9,9 @@ import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TestingTransaction;
@@ -55,7 +55,7 @@ public class IdentifierTest {
         dappAddress = org.aion.types.Address.wrap(txResult.getReturnData());
         assertNotNull(dappAddress);
 
-        byte[] argData = ABIUtil.encodeMethodArguments("sayHelloEN");
+        byte[] argData = encodeNoArgsMethodCall("sayHelloEN");
 
         tx = TestingTransaction
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
@@ -63,7 +63,7 @@ public class IdentifierTest {
         txResult = avm.run(this.kernel, new TestingTransaction[]{tx})[0].get();
         assertArrayEquals("Hello!".getBytes(), txResult.getReturnData());
 
-        argData = ABIUtil.encodeMethodArguments("sayHelloTC");
+        argData = encodeNoArgsMethodCall("sayHelloTC");
 
         tx = TestingTransaction
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
@@ -71,7 +71,7 @@ public class IdentifierTest {
         txResult = avm.run(this.kernel, new TestingTransaction[]{tx})[0].get();
         assertArrayEquals("哈囉!".getBytes(), txResult.getReturnData());
 
-        argData = ABIUtil.encodeMethodArguments("sayHelloExtendChar");
+        argData = encodeNoArgsMethodCall("sayHelloExtendChar");
 
         tx = TestingTransaction
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
@@ -81,7 +81,7 @@ public class IdentifierTest {
         char[] charArray = new char[]{'n', 'i', '\\', '3', '6', '1', 'o', '!'};
         assertArrayEquals(String.valueOf(charArray).getBytes(), txResult.getReturnData());
 
-        argData = ABIUtil.encodeMethodArguments("sayHelloExtendChar2");
+        argData = encodeNoArgsMethodCall("sayHelloExtendChar2");
 
         tx = TestingTransaction
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
@@ -89,7 +89,7 @@ public class IdentifierTest {
         txResult = avm.run(this.kernel, new TestingTransaction[]{tx})[0].get();
         assertArrayEquals("����!".getBytes(), txResult.getReturnData());
 
-        argData = ABIUtil.encodeMethodArguments("sayHelloExtendChar3");
+        argData = encodeNoArgsMethodCall("sayHelloExtendChar3");
 
         tx = TestingTransaction
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
@@ -97,7 +97,7 @@ public class IdentifierTest {
         txResult = avm.run(this.kernel, new TestingTransaction[]{tx})[0].get();
         assertArrayEquals("sayHelloÿ!".getBytes(), txResult.getReturnData());
 
-        argData = ABIUtil.encodeMethodArguments("ÿ");
+        argData = encodeNoArgsMethodCall("ÿ");
 
         tx = TestingTransaction
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
@@ -105,7 +105,7 @@ public class IdentifierTest {
         txResult = avm.run(this.kernel, new TestingTransaction[]{tx})[0].get();
         assertArrayEquals("ÿÿÿÿ!".getBytes(), txResult.getReturnData());
 
-        argData = ABIUtil.encodeMethodArguments("哈囉");
+        argData = encodeNoArgsMethodCall("哈囉");
 
         tx = TestingTransaction
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
@@ -125,7 +125,7 @@ public class IdentifierTest {
         dappAddress = org.aion.types.Address.wrap(txResult.getReturnData());
         assertNotNull(dappAddress);
 
-        byte[] argData = ABIUtil.encodeMethodArguments("callInnerClass1");
+        byte[] argData = encodeNoArgsMethodCall("callInnerClass1");
 
         tx = TestingTransaction
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
@@ -133,7 +133,7 @@ public class IdentifierTest {
         txResult = avm.run(this.kernel, new TestingTransaction[]{tx})[0].get();
         assertArrayEquals("哈囉!".getBytes(), txResult.getReturnData());
 
-        argData = ABIUtil.encodeMethodArguments("callInnerClass2");
+        argData = encodeNoArgsMethodCall("callInnerClass2");
 
         tx = TestingTransaction
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
@@ -157,7 +157,7 @@ public class IdentifierTest {
 
         String methodName = new String(invalidCode);
 
-        byte[] argData = ABIUtil.encodeMethodArguments(methodName);
+        byte[] argData = encodeNoArgsMethodCall(methodName);
 
         tx = TestingTransaction
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
@@ -170,12 +170,19 @@ public class IdentifierTest {
 
         methodName = new String(invalidCode);
 
-        argData = ABIUtil.encodeMethodArguments(methodName);
+        argData = encodeNoArgsMethodCall(methodName);
 
         tx = TestingTransaction
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
                 energyLimit, energyPrice);
         txResult = avm.run(this.kernel, new TestingTransaction[]{tx})[0].get();
         assertArrayEquals("Invalid method name!".getBytes(), txResult.getReturnData());
+    }
+
+
+    private static byte[] encodeNoArgsMethodCall(String methodName) {
+        return new ABIStreamingEncoder()
+                .encodeOneString(methodName)
+                .toBytes();
     }
 }

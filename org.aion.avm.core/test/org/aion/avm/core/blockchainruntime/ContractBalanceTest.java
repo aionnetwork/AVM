@@ -11,9 +11,9 @@ import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.RedirectContract;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
-import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TestingTransaction;
@@ -111,7 +111,9 @@ public class ContractBalanceTest {
     }
 
     private BigInteger callContractToGetItsBalance(Address contract) {
-        byte[] callData = ABIUtil.encodeMethodArguments("getBalanceOfThisContract");
+        byte[] callData = new ABIStreamingEncoder()
+                .encodeOneString("getBalanceOfThisContract")
+                .toBytes();
         TestingTransaction transaction = TestingTransaction.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
         TransactionResult result = avm.run(ContractBalanceTest.kernel, new TestingTransaction[] {transaction})[0].get();
         assertTrue(result.getResultCode().isSuccess());
@@ -119,7 +121,9 @@ public class ContractBalanceTest {
     }
 
     private BigInteger callContractToGetClinitBalance(Address contract) {
-        byte[] callData = ABIUtil.encodeMethodArguments("getBalanceOfThisContractDuringClinit");
+        byte[] callData = new ABIStreamingEncoder()
+                .encodeOneString("getBalanceOfThisContractDuringClinit")
+                .toBytes();
         TestingTransaction transaction = TestingTransaction.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
         TransactionResult result = avm.run(ContractBalanceTest.kernel, new TestingTransaction[] {transaction})[0].get();
         assertTrue(result.getResultCode().isSuccess());
@@ -138,8 +142,15 @@ public class ContractBalanceTest {
 
     private BigInteger callContractToGetItsBalanceViaRedirectContract(Address redirectContract, Address balanceContract) {
         avm.Address contract = getContractAsAbiAddress(balanceContract);
-        byte[] args = ABIUtil.encodeMethodArguments("getBalanceOfThisContract");
-        byte[] callData = ABIUtil.encodeMethodArguments("callOtherContractAndRequireItIsSuccess", contract, 0L, args);
+        byte[] args = new ABIStreamingEncoder()
+                .encodeOneString("getBalanceOfThisContract")
+                .toBytes();
+        byte[] callData = new ABIStreamingEncoder()
+                .encodeOneString("callOtherContractAndRequireItIsSuccess")
+                .encodeOneAddress(contract)
+                .encodeOneLong(0L)
+                .encodeOneByteArray(args)
+                .toBytes();
         return runTransactionAndInterpretOutputAsBigInteger(redirectContract, callData);
     }
 

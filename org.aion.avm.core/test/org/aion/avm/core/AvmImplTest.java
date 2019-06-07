@@ -7,10 +7,10 @@ import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.types.RawDappModule;
-import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 
 import i.AvmThrowable;
 import i.CommonInstrumentation;
@@ -322,7 +322,7 @@ public class AvmImplTest {
         Address contractAddr = createDApp(kernel, avm, txData);
         
         // Call the callSelfForNull entry-point and it should return null to us.
-        byte[] argData = ABIUtil.encodeMethodArguments("callSelfForNull");
+        byte[] argData = encodeNoArgCall("callSelfForNull");
         callDAppVoid(kernel, avm, contractAddr, argData);
         avm.shutdown();
     }
@@ -422,7 +422,7 @@ public class AvmImplTest {
         Address contractAddr = createDApp(kernel, avm, txData);
         
         // Cause the failure.
-        byte[] nearData = ABIUtil.encodeMethodArguments("localFailAfterReentrant");
+        byte[] nearData = encodeNoArgCall("localFailAfterReentrant");
         TestingTransaction tx = TestingTransaction.call(deployer, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, nearData, energyLimit, 1L);
         TransactionResult result2 = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
         assertEquals(AvmTransactionResult.Code.FAILED_OUT_OF_ENERGY, result2.getResultCode());
@@ -453,7 +453,7 @@ public class AvmImplTest {
         // WARNING:  This test is very sensitive to storage billing configuration so the energy limit likely needs to be updated when that changes.
         // The write-back of the callee attempts to write statics and 2 instances.  We want it to fail at 1 instance (14_400L seems to do this).
         long failingLimit = 14_400L;
-        byte[] callData = ABIUtil.encodeMethodArguments("getFarWithEnergy", failingLimit);
+        byte[] callData = encodeCallLong("getFarWithEnergy", failingLimit);
         boolean result = callDAppBoolean(kernel, avm, contractAddr, callData);
 
         
@@ -479,7 +479,7 @@ public class AvmImplTest {
         // We just want to call our special getFar helper with a constrained energy.
         // WARNING:  This test is very sensitive to storage billing configuration so the energy limit likely needs to be updated when that changes.
         // The write-back of the callee attempts to write statics and 2 instances.  We want it to fail at 1 instance (20_000L seems to do this).
-        byte[] callData = ABIUtil.encodeMethodArguments("recursiveChangeNested", 0, 5);
+        byte[] callData = encodeCallIntInt("recursiveChangeNested", 0, 5);
         int result = callDAppInteger(kernel, avm, contractAddr, callData);
         
         // We don't want to depend on a specific hashcode (appears to be 19) but just the idea that it needs to be non-zero.
@@ -503,7 +503,7 @@ public class AvmImplTest {
         Address contractAddr = createDApp(kernel, avm, txData);
 
         // Verify the internal call depth limit is in effect.
-        byte[] callData = ABIUtil.encodeMethodArguments("recursiveChangeNested", 0, 10);
+        byte[] callData = encodeCallIntInt("recursiveChangeNested", 0, 10);
         TestingTransaction tx = TestingTransaction.call(deployer, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, callData, 20_000_000l, 1L);
         TransactionResult result2 = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
         assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result2.getResultCode());
@@ -529,8 +529,8 @@ public class AvmImplTest {
         
         // CALL to create and invoke the incrementor.
         byte[] input = new byte[] {1,2,3,4,5};
-        byte[] incrementorCallData = ABIUtil.encodeMethodArguments("incrementArray", input);
-        byte[] spawnerCallData = ABIUtil.encodeMethodArguments("spawnAndCall", incrementorCallData);
+        byte[] incrementorCallData = encodeCallByteArray("incrementArray", input);
+        byte[] spawnerCallData = encodeCallByteArray("spawnAndCall", incrementorCallData);
         byte[] incrementorResult = callDAppByteArray(kernel, avm, spawnerAddress, spawnerCallData);
         // We double-encoded the arguments, so double-decode the response.
         byte[] spawnerResult = new ABIDecoder(incrementorResult).decodeOneByteArray();
@@ -559,12 +559,12 @@ public class AvmImplTest {
         
         // CALL to create and invoke the incrementor.
         boolean shouldFail = false;
-        byte[] spawnerCallData = ABIUtil.encodeMethodArguments("spawnOnly", shouldFail);
+        byte[] spawnerCallData = encodeCallBool("spawnOnly", shouldFail);
         Address incrementorAddress = callDAppAddress(kernel, avm, spawnerAddress, spawnerCallData);
         
         // Call the incrementor, directly.
         byte[] input = new byte[] {1,2,3,4,5};
-        byte[] incrementorCallData = ABIUtil.encodeMethodArguments("incrementArray", input);
+        byte[] incrementorCallData = encodeCallByteArray("incrementArray", input);
         
         byte[] incrementorResult = callDAppByteArray(kernel, avm, incrementorAddress, incrementorCallData);
         assertEquals(input.length, incrementorResult.length);
@@ -592,7 +592,7 @@ public class AvmImplTest {
         
         // CALL to create and invoke the incrementor.
         boolean shouldFail = true;
-        byte[] spawnerCallData = ABIUtil.encodeMethodArguments("spawnOnly", shouldFail);
+        byte[] spawnerCallData = encodeCallBool("spawnOnly", shouldFail);
         long energyLimit = 1_000_000l;
         TestingTransaction tx = TestingTransaction.call(TestingKernel.PREMINED_ADDRESS, org.aion.types.Address.wrap(spawnerAddress.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, spawnerCallData, energyLimit, 1L);
         TransactionResult result2 = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
@@ -624,7 +624,7 @@ public class AvmImplTest {
         
         // CALL to create and invoke the incrementor. Expect 4 accounts because: deployer, contract1, contract2, coinbase
         boolean shouldFail = false;
-        byte[] spawnerCallData = ABIUtil.encodeMethodArguments("spawnOnly", shouldFail);
+        byte[] spawnerCallData = encodeCallBool("spawnOnly", shouldFail);
         Address incrementorAddress = callDAppAddress(kernel, avm, spawnerAddress, spawnerCallData);
         assertEquals(4, directory.listFiles().length);
         
@@ -635,7 +635,7 @@ public class AvmImplTest {
         
         // Call the incrementor, directly.
         byte[] input = new byte[] {1,2,3,4,5};
-        byte[] incrementorCallData = ABIUtil.encodeMethodArguments("incrementArray", input);
+        byte[] incrementorCallData = encodeCallByteArray("incrementArray", input);
         
         byte[] incrementorResult = callDAppByteArray(kernel, avm, incrementorAddress, incrementorCallData);
         assertEquals(input.length, incrementorResult.length);
@@ -723,7 +723,7 @@ public class AvmImplTest {
 
 
     private int callRecursiveHash(KernelInterface kernel, AvmImpl avm, long energyLimit, Address contractAddr, int depth) {
-        byte[] argData = ABIUtil.encodeMethodArguments("getRecursiveHashCode", depth);
+        byte[] argData = encodeCallInt("getRecursiveHashCode", depth);
         TestingTransaction call = TestingTransaction.call(deployer, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1L);
         TransactionResult result = avm.run(kernel, new TestingTransaction[] {call})[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
@@ -731,7 +731,7 @@ public class AvmImplTest {
     }
 
     private int callReentrantAccess(KernelInterface kernel, AvmImpl avm, Address contractAddr, String methodName, boolean shouldFail) {
-        byte[] nearData = ABIUtil.encodeMethodArguments(methodName, shouldFail);
+        byte[] nearData = encodeCallBool(methodName, shouldFail);
         return callDAppInteger(kernel, avm, contractAddr, nearData);
     }
 
@@ -799,5 +799,47 @@ public class AvmImplTest {
                 : new byte[0];
         byte[] recursiveSpawner = JarBuilder.buildJarForMainAndClasses(RecursiveSpawnerResource.class);
         return new CodeAndArguments(recursiveSpawner, args).encodeToBytes();
+    }
+
+    private static byte[] encodeNoArgCall(String methodName) {
+        return new ABIStreamingEncoder()
+                .encodeOneString(methodName)
+                .toBytes();
+    }
+
+    private static byte[] encodeCallBool(String methodName, boolean arg) {
+        return new ABIStreamingEncoder()
+                .encodeOneString(methodName)
+                .encodeOneBoolean(arg)
+                .toBytes();
+    }
+
+    private static byte[] encodeCallByteArray(String methodName, byte[] arg) {
+        return new ABIStreamingEncoder()
+                .encodeOneString(methodName)
+                .encodeOneByteArray(arg)
+                .toBytes();
+    }
+
+    private static byte[] encodeCallLong(String methodName, long arg) {
+        return new ABIStreamingEncoder()
+                .encodeOneString(methodName)
+                .encodeOneLong(arg)
+                .toBytes();
+    }
+
+    private static byte[] encodeCallInt(String methodName, int arg) {
+        return new ABIStreamingEncoder()
+                .encodeOneString(methodName)
+                .encodeOneInteger(arg)
+                .toBytes();
+    }
+
+    private static byte[] encodeCallIntInt(String methodName, int arg1, int arg2) {
+        return new ABIStreamingEncoder()
+                .encodeOneString(methodName)
+                .encodeOneInteger(arg1)
+                .encodeOneInteger(arg2)
+                .toBytes();
     }
 }

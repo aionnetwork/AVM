@@ -7,8 +7,8 @@ import java.math.BigInteger;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
-import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
@@ -243,7 +243,7 @@ public class TransactionAccountBalanceTest {
     }
 
     private TransactionResult callContract(Address contract, BigInteger value) {
-        byte[] callData = ABIUtil.encodeMethodArguments("allocateObjectArray");
+        byte[] callData = new ABIStreamingEncoder().encodeOneString("allocateObjectArray").toBytes();
         TestingTransaction transaction = TestingTransaction.call(from, contract, kernel.getNonce(from), value, callData, energyLimit, energyPrice);
         return avm.run(TransactionAccountBalanceTest.kernel, new TestingTransaction[] {transaction})[0].get();
     }

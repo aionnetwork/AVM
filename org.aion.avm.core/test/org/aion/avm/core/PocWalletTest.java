@@ -15,7 +15,6 @@ import org.aion.avm.core.testWallet.Multiowned;
 import org.aion.avm.core.testWallet.Operation;
 import org.aion.avm.core.testWallet.RequireFailedException;
 import org.aion.avm.core.testWallet.Wallet;
-import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.abi.ABIDecoder;

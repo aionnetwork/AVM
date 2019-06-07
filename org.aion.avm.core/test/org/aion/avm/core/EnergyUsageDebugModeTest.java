@@ -4,8 +4,8 @@ import avm.Address;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
-import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
@@ -36,8 +36,8 @@ public class EnergyUsageDebugModeTest {
      */
     @Test
     public void testEnergyConsumptionDivisionFunction(){
-        long debugEnergyUsageDivision = testEnergyUsedInDebugMode("tryToDivideInteger", 10, 0);
-        long normalEnergyUsageDivision = testEnergyUsedInNormalMode("tryToDivideInteger", 10, 0);
+        long debugEnergyUsageDivision = testEnergyUsedInDebugMode(10, 0);
+        long normalEnergyUsageDivision = testEnergyUsedInNormalMode(10, 0);
         assertTrue(debugEnergyUsageDivision < normalEnergyUsageDivision);
     }
 
@@ -47,13 +47,13 @@ public class EnergyUsageDebugModeTest {
      */
     @Test
     public void testEnergyConsumptionInDebug(){
-        long debugEnergyUsageFailEarly = testEnergyUsedInDebugMode("tryToDivideInteger", 10, 0);
-        long debugEnergyUsageFailLate = testEnergyUsedInDebugMode("tryToDivideInteger", 0, 10);
+        long debugEnergyUsageFailEarly = testEnergyUsedInDebugMode(10, 0);
+        long debugEnergyUsageFailLate = testEnergyUsedInDebugMode(0, 10);
 
         assertTrue(debugEnergyUsageFailEarly < debugEnergyUsageFailLate);
     }
 
-    private long testEnergyUsedInDebugMode(String methodName, Object ... args){
+    private long testEnergyUsedInDebugMode(int a, int b){
         AvmConfiguration config = new AvmConfiguration();
         config.preserveDebuggability = true;
         config.enableVerboseContractErrors = true;
@@ -70,7 +70,7 @@ public class EnergyUsageDebugModeTest {
         Address contractAddressDebug = new Address(createResult.getReturnData());
 
         long energyLimit = 1_000_000l;
-        byte[] argData = ABIUtil.encodeMethodArguments(methodName, args);
+        byte[] argData = encodeTryToDivideInteger(a, b);
         TestingTransaction call = TestingTransaction.call(deployer, org.aion.types.Address.wrap(contractAddressDebug.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
         TransactionResult result = avmDebugMode.run(this.kernel, new TestingTransaction[] {call})[0].get();
 
@@ -82,7 +82,7 @@ public class EnergyUsageDebugModeTest {
         return energyUsed;
     }
 
-    private long testEnergyUsedInNormalMode(String methodName, Object ... args){
+    private long testEnergyUsedInNormalMode(int a, int b){
 
         AvmImpl avmNormalMode = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(EnergyUsageDebugModeTarget.class);
@@ -96,7 +96,7 @@ public class EnergyUsageDebugModeTest {
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddressNormal = new Address(createResult.getReturnData());
 
-        byte[] argData = ABIUtil.encodeMethodArguments(methodName, args);
+        byte[] argData = encodeTryToDivideInteger(a, b);
         TestingTransaction call = TestingTransaction.call(deployer, org.aion.types.Address.wrap(contractAddressNormal.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
         TransactionResult result = avmNormalMode.run(this.kernel, new TestingTransaction[] {call})[0].get();
         long energyUsed = energyLimit - result.getEnergyRemaining();
@@ -104,5 +104,13 @@ public class EnergyUsageDebugModeTest {
         Assert.assertEquals(111, new BigInteger(result.getReturnData()).intValue());
         avmNormalMode.shutdown();
         return energyUsed;
+    }
+
+    private static byte[] encodeTryToDivideInteger(int a, int b) {
+        return new ABIStreamingEncoder()
+                .encodeOneString("tryToDivideInteger")
+                .encodeOneInteger(a)
+                .encodeOneInteger(b)
+                .toBytes();
     }
 }

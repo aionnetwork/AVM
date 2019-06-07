@@ -5,9 +5,9 @@ import java.math.BigInteger;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
-import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
@@ -66,7 +66,7 @@ public class HashCodeIntegrationTest {
 
     private int callStatic(TestingBlock block, Address contractAddr, String methodName) {
         long energyLimit = 1_000_000l;
-        byte[] argData = ABIUtil.encodeMethodArguments(methodName);
+        byte[] argData = new ABIStreamingEncoder().encodeOneString(methodName).toBytes();
         TestingTransaction call = TestingTransaction.call(deployer, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
         AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {call})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());

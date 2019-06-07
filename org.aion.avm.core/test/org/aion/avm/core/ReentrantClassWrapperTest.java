@@ -6,8 +6,8 @@ import java.math.BigInteger;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
-import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.kernel.TestingBlock;
@@ -54,7 +54,7 @@ public class ReentrantClassWrapperTest {
 
     @Test
     public void testReentrantClass() {
-        byte[] data = ABIUtil.encodeMethodArguments("testStringClass");
+        byte[] data = new ABIStreamingEncoder().encodeOneString("testStringClass").toBytes();
         TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
         AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 

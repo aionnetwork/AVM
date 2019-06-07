@@ -1,7 +1,6 @@
 package org.aion.avm.core.performance;
 
 import org.aion.avm.core.util.CodeAndArguments;
-import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.Helpers;
 
 import java.io.BufferedReader;
@@ -19,6 +18,7 @@ import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.aion.avm.userlib.abi.ABIEncoder;
+import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 
 public class TestNetCli {
     private static final int maxValueForParam = 10000;
@@ -373,7 +373,8 @@ public class TestNetCli {
 
     private ArrayList<String> callDapps(int accountNum, ArrayList<String> accounts, String password, ArrayList<String> dapps, ExecutorService pool) {
         ArrayList<String> callReceipts = new ArrayList<>();
-        final String callEncoding = Helpers.bytesToHexString(ABIUtil.encodeMethodArguments("cpuHeavy"));
+        byte[] argData = new ABIStreamingEncoder().encodeOneString("cpuHeavy").toBytes();
+        final String callEncoding = Helpers.bytesToHexString(argData);
         ArrayList<Future<String>> results = new ArrayList<>();
         for (int i = 0; i < accountNum; ++i) {
             final String account = accounts.get(i);

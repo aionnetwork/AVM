@@ -1,7 +1,7 @@
 package org.aion.avm.core.testWallet;
 
 import avm.Address;
-import org.aion.avm.core.util.ABIUtil;
+import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 
 
 /**
@@ -10,33 +10,70 @@ import org.aion.avm.core.util.ABIUtil;
  */
 public class CallEncoder {
     public static byte[] init(Address extra1, Address extra2, int requiredVotes, long dailyLimit) {
-        return ABIUtil.encodeMethodArguments("initWrapper", extra1, extra2, requiredVotes, dailyLimit);
+        return new ABIStreamingEncoder()
+                .encodeOneString("initWrapper")
+                .encodeOneAddress(extra1)
+                .encodeOneAddress(extra2)
+                .encodeOneInteger(requiredVotes)
+                .encodeOneLong(dailyLimit)
+                .toBytes();
     }
     public static byte[] payable(Address from, long value) {
-        return ABIUtil.encodeMethodArguments("payable", from, value);
+        return new ABIStreamingEncoder()
+                .encodeOneString("payable")
+                .encodeOneAddress(from)
+                .encodeOneLong(value)
+                .toBytes();
     }
     public static byte[] addOwner(Address owner) {
-        return ABIUtil.encodeMethodArguments("addOwner", owner);
+        return new ABIStreamingEncoder()
+                .encodeOneString("addOwner")
+                .encodeOneAddress(owner)
+                .toBytes();
     }
     public static byte[] execute(Address to, long value, byte[] data) {
-        return ABIUtil.encodeMethodArguments("execute", to, value, data);
+        return new ABIStreamingEncoder()
+                .encodeOneString("execute")
+                .encodeOneAddress(to)
+                .encodeOneLong(value)
+                .encodeOneByteArray(data)
+                .toBytes();
     }
     public static byte[] confirm(byte[] data) {
-        return ABIUtil.encodeMethodArguments("confirm", data);
+        return new ABIStreamingEncoder()
+                .encodeOneString("confirm")
+                .encodeOneByteArray(data)
+                .toBytes();
     }
     public static byte[] changeRequirement(int newRequired) {
-        return ABIUtil.encodeMethodArguments("changeRequirement", newRequired);
+        return new ABIStreamingEncoder()
+                .encodeOneString("changeRequirement")
+                .encodeOneInteger(newRequired)
+                .toBytes();
     }
     public static byte[] getOwner(int ownerIndex) {
-        return ABIUtil.encodeMethodArguments("getOwner", ownerIndex);
+        return new ABIStreamingEncoder()
+                .encodeOneString("getOwner")
+                .encodeOneInteger(ownerIndex)
+                .toBytes();
     }
     public static byte[] changeOwner(Address from, Address to) {
-        return ABIUtil.encodeMethodArguments("changeOwner", from, to);
+        return new ABIStreamingEncoder()
+                .encodeOneString("changeOwner")
+                .encodeOneAddress(from)
+                .encodeOneAddress(to)
+                .toBytes();
     }
     public static byte[] removeOwner(Address owner) {
-        return ABIUtil.encodeMethodArguments("removeOwner", owner);
+        return new ABIStreamingEncoder()
+                .encodeOneString("removeOwner")
+                .encodeOneAddress(owner)
+                .toBytes();
     }
     public static byte[] revoke(byte[] transactionBytes) {
-        return ABIUtil.encodeMethodArguments("revoke", transactionBytes);
+        return new ABIStreamingEncoder()
+                .encodeOneString("revoke")
+                .encodeOneByteArray(transactionBytes)
+                .toBytes();
     }
 }
