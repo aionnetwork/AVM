@@ -1,7 +1,8 @@
 package org.aion.avm.tooling.shadowing.testClass;
 
 import avm.Address;
-import org.aion.avm.core.util.ABIUtil;
+
+import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;

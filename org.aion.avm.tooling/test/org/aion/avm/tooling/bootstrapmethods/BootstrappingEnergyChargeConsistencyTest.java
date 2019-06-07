@@ -1,7 +1,8 @@
 package org.aion.avm.tooling.bootstrapmethods;
 
-import org.aion.avm.core.util.ABIUtil;
 import avm.Address;
+
+import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.AvmTransactionResult.Code;

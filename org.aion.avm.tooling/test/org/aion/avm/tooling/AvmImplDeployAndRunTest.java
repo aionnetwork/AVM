@@ -3,7 +3,6 @@ package org.aion.avm.tooling;
 import legacy_examples.deployAndRunTest.DeployAndRunTarget;
 import legacy_examples.helloworld.HelloWorld;
 import avm.Address;
-import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingKernel;

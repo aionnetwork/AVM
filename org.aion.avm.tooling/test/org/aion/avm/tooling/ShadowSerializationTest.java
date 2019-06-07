@@ -2,7 +2,6 @@ package org.aion.avm.tooling;
 
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
-import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.tooling.deploy.JarOptimizer;
 import org.aion.avm.userlib.abi.ABIDecoder;
 

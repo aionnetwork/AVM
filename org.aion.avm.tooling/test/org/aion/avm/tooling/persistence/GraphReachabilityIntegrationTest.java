@@ -4,7 +4,7 @@ import avm.Address;
 import org.aion.avm.StorageFees;
 import org.aion.avm.core.BillingRules;
 import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.ABIUtil;
+import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;

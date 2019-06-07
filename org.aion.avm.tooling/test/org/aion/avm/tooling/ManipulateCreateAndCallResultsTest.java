@@ -7,7 +7,6 @@ import static org.junit.Assert.assertNull;
 import avm.Address;
 import java.math.BigInteger;
 import java.util.Arrays;
-import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.vm.api.interfaces.TransactionResult;

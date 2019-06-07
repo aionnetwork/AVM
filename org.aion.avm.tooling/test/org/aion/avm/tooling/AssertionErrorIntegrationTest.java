@@ -1,6 +1,5 @@
 package org.aion.avm.tooling;
 
-import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.userlib.abi.ABIDecoder;
 
 import avm.Address;

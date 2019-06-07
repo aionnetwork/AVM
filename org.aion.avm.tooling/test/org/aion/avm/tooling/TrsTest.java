@@ -1,6 +1,5 @@
 package org.aion.avm.tooling;
 
-import org.aion.avm.core.util.ABIUtil;
 import org.aion.types.Address;
 import org.aion.avm.tooling.poc.TRS;
 import org.aion.avm.core.util.Helpers;

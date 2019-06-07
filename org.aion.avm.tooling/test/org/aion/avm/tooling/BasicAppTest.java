@@ -1,6 +1,5 @@
 package org.aion.avm.tooling;
 
-import org.aion.avm.core.util.ABIUtil;
 import avm.Address;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;

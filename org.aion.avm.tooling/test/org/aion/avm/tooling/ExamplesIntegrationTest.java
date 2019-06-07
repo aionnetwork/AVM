@@ -4,7 +4,6 @@ import examples.BetaMapEvents;
 import examples.HelloWorld;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
-import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.tooling.deploy.JarOptimizer;
 import avm.Address;
 import org.aion.avm.userlib.AionMap;

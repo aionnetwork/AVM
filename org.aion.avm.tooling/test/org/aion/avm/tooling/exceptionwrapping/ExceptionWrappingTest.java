@@ -1,7 +1,8 @@
 package org.aion.avm.tooling.exceptionwrapping;
 
-import org.aion.avm.core.util.ABIUtil;
 import avm.Address;
+
+import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
 import i.PackageConstants;
 import org.aion.kernel.AvmTransactionResult;

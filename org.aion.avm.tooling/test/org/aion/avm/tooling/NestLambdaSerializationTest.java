@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import avm.Address;
 import java.math.BigInteger;
-import org.aion.avm.core.util.ABIUtil;
 import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Rule;

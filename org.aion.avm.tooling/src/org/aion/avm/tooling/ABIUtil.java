@@ -1,4 +1,4 @@
-package org.aion.avm.core.util;
+package org.aion.avm.tooling;
 
 import avm.Address;
 import java.nio.ByteBuffer;

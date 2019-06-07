@@ -1,7 +1,8 @@
 package org.aion.avm.tooling.blockchainruntime;
 
 import avm.Address;
-import org.aion.avm.core.util.ABIUtil;
+
+import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
 import org.junit.Assert;
 import org.junit.BeforeClass;

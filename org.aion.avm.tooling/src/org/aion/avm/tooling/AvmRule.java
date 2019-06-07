@@ -5,7 +5,6 @@ import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.abi.ABICompiler;
@@ -29,7 +28,6 @@ public final class AvmRule implements TestRule {
 
     private boolean debugMode;
     private final JarOptimizer jarOptimizer;
-    private final UnreachableMethodRemover unreachableMethodRemover;
     public TestingKernel kernel;
     public AvmImpl avm;
 
@@ -40,7 +38,6 @@ public final class AvmRule implements TestRule {
         this.debugMode = debugMode;
         this.kernel = new TestingKernel();
         jarOptimizer = new JarOptimizer(debugMode);
-        unreachableMethodRemover = new UnreachableMethodRemover();
     }
 
     @Override

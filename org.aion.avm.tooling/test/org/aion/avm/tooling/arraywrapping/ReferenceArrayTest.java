@@ -1,7 +1,8 @@
 package org.aion.avm.tooling.arraywrapping;
 
-import org.aion.avm.core.util.ABIUtil;
 import avm.Address;
+
+import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.*;

@@ -1,11 +1,11 @@
 package org.aion.avm.tooling.poc;
 
-import org.aion.avm.core.util.ABIUtil;
 import avm.Address;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.StandardCapabilities;
 import org.aion.avm.tooling.testExchange.CoinController;
 import org.aion.avm.tooling.testExchange.ERC20Token;

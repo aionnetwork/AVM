@@ -11,7 +11,6 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.types.Address;

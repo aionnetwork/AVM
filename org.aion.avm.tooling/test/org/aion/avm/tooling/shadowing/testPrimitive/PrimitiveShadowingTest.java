@@ -2,7 +2,8 @@ package org.aion.avm.tooling.shadowing.testPrimitive;
 
 import avm.Address;
 import java.math.BigInteger;
-import org.aion.avm.core.util.ABIUtil;
+
+import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.tooling.AvmRule.ResultWrapper;
 import org.junit.Assert;

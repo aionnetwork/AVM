@@ -2,7 +2,6 @@ package org.aion.avm.tooling;
 
 import net.i2p.crypto.eddsa.Utils;
 import avm.Address;
-import org.aion.avm.core.util.ABIUtil;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;

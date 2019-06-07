@@ -1,4 +1,4 @@
-package org.aion.avm.core.util;
+package org.aion.avm.tooling;
 
 import org.aion.avm.userlib.abi.ABIToken;
 import org.junit.Assert;
