@@ -13,10 +13,7 @@ import org.aion.kernel.TestingTransaction;
 
 import java.math.BigInteger;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 
 /**
@@ -31,20 +28,20 @@ public class DeploymentArgumentTest {
     private static final byte[] JAR = JarBuilder.buildJarForMainAndClassesAndUserlib(DeploymentArgumentTarget.class);
     private static final byte[] SMALL_JAR = JarBuilder.buildJarForMainAndClasses(DeploymentArgumentSmallTarget.class);
 
-    private TestingKernel kernel;
-    private AvmImpl avm;
+    private static TestingKernel kernel;
+    private static AvmImpl avm;
 
-    @Before
-    public void setup() {
+    @BeforeClass
+    public static void setup() {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(),
             System.currentTimeMillis(), new byte[0]);
-        this.kernel = new TestingKernel(block);
-        this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
+        kernel = new TestingKernel(block);
+        avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
 
-    @After
-    public void tearDown() {
-        this.avm.shutdown();
+    @AfterClass
+    public static void tearDown() {
+        avm.shutdown();
     }
 
     @Test
@@ -116,14 +113,14 @@ public class DeploymentArgumentTest {
 
     private AvmTransactionResult deployContract(byte[] args) {
         byte[] payload = new CodeAndArguments(JAR, args).encodeToBytes();
-        TestingTransaction create = TestingTransaction.create(DEPLOYER, this.kernel.getNonce(DEPLOYER), BigInteger.ZERO, payload, ENERGY_LIMIT, ENERGY_PRICE);
-        return (AvmTransactionResult)this.avm.run(this.kernel, new TestingTransaction[] {create})[0].get();
+        TestingTransaction create = TestingTransaction.create(DEPLOYER, kernel.getNonce(DEPLOYER), BigInteger.ZERO, payload, ENERGY_LIMIT, ENERGY_PRICE);
+        return (AvmTransactionResult)avm.run(kernel, new TestingTransaction[] {create})[0].get();
     }
 
     private AvmTransactionResult callContract(org.aion.types.Address target, String methodName) {
         byte[] argData = new ABIStreamingEncoder().encodeOneString(methodName).toBytes();
         TestingTransaction call = TestingTransaction.call(DEPLOYER, target, kernel.getNonce(DEPLOYER), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {call})[0].get();
+        AvmTransactionResult result = (AvmTransactionResult) avm.run(kernel, new TestingTransaction[] {call})[0].get();
         return result;
     }
 }

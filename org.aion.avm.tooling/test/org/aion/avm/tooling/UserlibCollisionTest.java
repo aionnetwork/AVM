@@ -7,7 +7,7 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.abi.ABICompiler;
 import org.aion.avm.tooling.deploy.JarOptimizer;
 import org.junit.Assert;
-import org.junit.Rule;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
@@ -26,8 +26,8 @@ import java.util.jar.Manifest;
 import static org.objectweb.asm.Opcodes.*;
 
 public class UserlibCollisionTest {
-    @Rule
-    public AvmRule avmRule = new AvmRule(false);
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(false);
 
     @Test
     public void testJavaLangPackageContract() {

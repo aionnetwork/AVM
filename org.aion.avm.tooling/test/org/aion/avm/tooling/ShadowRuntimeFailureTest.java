@@ -9,6 +9,7 @@ import avm.Address;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -19,10 +20,10 @@ import java.math.BigInteger;
  * Verifies that shadow box type constructors cannot be called.
  */
 public class ShadowRuntimeFailureTest {
-    private boolean preserveDebugInfo = false;
+    private static boolean preserveDebugInfo = false;
 
-    @Rule
-    public AvmRule avmRule = new AvmRule(preserveDebugInfo);
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(preserveDebugInfo);
 
     private static final long ENERGY_LIMIT = 10_000_000L;
     private static final long ENERGY_PRICE = 1L;

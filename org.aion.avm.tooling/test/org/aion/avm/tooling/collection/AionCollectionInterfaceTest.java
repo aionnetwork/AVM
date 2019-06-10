@@ -12,13 +12,14 @@ import org.aion.avm.userlib.AionSet;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
 public class AionCollectionInterfaceTest {
 
-    @Rule
-    public AvmRule avmRule = new AvmRule(false);
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(false);
     private Address from = avmRule.getPreminedAccount();
     private long energyLimit = 10_000_000L;
     private long energyPrice = 1;

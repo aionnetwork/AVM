@@ -5,23 +5,20 @@ import avm.Result;
 
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 
 import java.math.BigInteger;
 
 
 public class ResultIntegrationTest {
-    @Rule
-    public AvmRule avmRule = new AvmRule(false);
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(false);
 
-    private Address from = avmRule.getPreminedAccount();
-    private Address dappAddr;
+    private static Address from = avmRule.getPreminedAccount();
+    private static Address dappAddr;
 
-    @Before
-    public void setUp() {
+    @BeforeClass
+    public static void setUp() {
         byte[] jar = avmRule.getDappBytes(ResultTestTarget.class, new byte[0]);
         dappAddr = avmRule.deploy(from, BigInteger.ZERO, jar).getDappAddress();
     }

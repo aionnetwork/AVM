@@ -21,10 +21,7 @@ import org.aion.kernel.TestingKernel;
 import org.aion.types.Address;
 import org.aion.kernel.TestingTransaction;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 /**
  * Tests that demonstrate the ability of the {@link org.aion.avm.core.TypeAwareClassWriter} to
@@ -42,18 +39,18 @@ public class CommonSuperClassTest {
     private static Address DEPLOYER = TestingKernel.PREMINED_ADDRESS;
     private static TestingBlock BLOCK = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
     private static TestingKernel KERNEL = new TestingKernel(BLOCK);
-    private AvmImpl avm;
+    private static AvmImpl avm;
 
-    @Before
-    public void setup() {
+    @BeforeClass
+    public static void setup() {
         AvmConfiguration config = new AvmConfiguration();
         config.enableVerboseContractErrors = true;
         config.preserveDebuggability = false;
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), config);
     }
 
-    @After
-    public void tearDown() {
+    @AfterClass
+    public static void tearDown() {
         avm.shutdown();
     }
 

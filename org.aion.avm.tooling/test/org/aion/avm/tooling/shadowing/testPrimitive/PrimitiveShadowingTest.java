@@ -6,23 +6,20 @@ import java.math.BigInteger;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.tooling.AvmRule.ResultWrapper;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 
 public class PrimitiveShadowingTest {
-    @Rule
-    public AvmRule avmRule = new AvmRule(true);
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(true);
 
-    private Address from = avmRule.getPreminedAccount();
-    private Address dappAddr;
+    private static Address from = avmRule.getPreminedAccount();
+    private static Address dappAddr;
 
-    private long energyLimit = 600_000_00000L;
-    private long energyPrice = 1;
+    private static long energyLimit = 600_000_00000L;
+    private static long energyPrice = 1;
 
-    @Before
-    public void setup() {
+    @BeforeClass
+    public static void setup() {
         byte[] txData = avmRule.getDappBytes (TestResource.class, null);
         dappAddr = avmRule.deploy(from, BigInteger.ZERO, txData, energyLimit, energyPrice).getDappAddress();
     }

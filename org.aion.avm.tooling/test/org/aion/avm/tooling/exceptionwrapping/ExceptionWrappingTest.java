@@ -6,22 +6,19 @@ import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
 import i.PackageConstants;
 import org.aion.kernel.AvmTransactionResult;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 
 import java.math.BigInteger;
 
 
 public class ExceptionWrappingTest {
-    @Rule
-    public AvmRule avmRule = new AvmRule(false);
-    private Address from = avmRule.getPreminedAccount();
-    private Address dappAddr;
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(false);
+    private static Address from = avmRule.getPreminedAccount();
+    private static Address dappAddr;
 
-    @Before
-    public void setup() {
+    @BeforeClass
+    public static void setup() {
         dappAddr = avmRule.deploy(from, BigInteger.ZERO, avmRule.getDappBytes(TestExceptionResource.class, null)).getDappAddress();
     }
 

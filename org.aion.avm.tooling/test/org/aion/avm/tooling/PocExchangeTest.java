@@ -12,33 +12,30 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import java.math.BigInteger;
 
 
 public class PocExchangeTest {
-    private KernelInterface kernel;
-    private AvmImpl avm;
-    private byte[] testERC20Jar;
-    private byte[] testExchangeJar;
+    private static KernelInterface kernel;
+    private static AvmImpl avm;
+    private static byte[] testERC20Jar;
+    private static byte[] testExchangeJar;
 
-    @Before
-    public void setup() {
+    @BeforeClass
+    public static void setup() {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        this.kernel = new TestingKernel(block);
-        this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
+        kernel = new TestingKernel(block);
+        avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         
         testERC20Jar = JarBuilder.buildJarForMainAndClassesAndUserlib(CoinController.class, ERC20Token.class);
         testExchangeJar = JarBuilder.buildJarForMainAndClassesAndUserlib(ExchangeController.class, Exchange.class, ExchangeTransaction.class, ERC20Token.class);
     }
 
-    @After
-    public void tearDown() {
-        this.avm.shutdown();
+    @AfterClass
+    public static void tearDown() {
+        avm.shutdown();
     }
 
     private long energyLimit = 6_000_0000;
@@ -71,7 +68,7 @@ public class PocExchangeTest {
 
         private org.aion.types.Address initCoin(byte[] jar, byte[] arguments){
             TestingTransaction createTransaction = TestingTransaction.create(minter, kernel.getNonce(minter), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1L);
-            TransactionResult createResult = avm.run(PocExchangeTest.this.kernel, new TestingTransaction[] {createTransaction})[0].get();
+            TransactionResult createResult = avm.run(kernel, new TestingTransaction[] {createTransaction})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
             return org.aion.types.Address.wrap(createResult.getReturnData());
         }
@@ -113,7 +110,7 @@ public class PocExchangeTest {
 
         private TransactionResult call(org.aion.types.Address sender, byte[] args) {
             TestingTransaction callTransaction = TestingTransaction.call(sender, addr, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1l);
-            TransactionResult callResult = avm.run(PocExchangeTest.this.kernel, new TestingTransaction[] {callTransaction})[0].get();
+            TransactionResult callResult = avm.run(kernel, new TestingTransaction[] {callTransaction})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
             return callResult;
         }
@@ -131,7 +128,7 @@ public class PocExchangeTest {
 
         private org.aion.types.Address initExchange(byte[] jar, byte[] arguments){
             TestingTransaction createTransaction = TestingTransaction.create(owner, kernel.getNonce(owner), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1L);
-            TransactionResult createResult = avm.run(PocExchangeTest.this.kernel, new TestingTransaction[] {createTransaction})[0].get();
+            TransactionResult createResult = avm.run(kernel, new TestingTransaction[] {createTransaction})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
             return org.aion.types.Address.wrap(createResult.getReturnData());
         }
@@ -153,7 +150,7 @@ public class PocExchangeTest {
 
         private TransactionResult call(org.aion.types.Address sender, byte[] args) {
             TestingTransaction callTransaction = TestingTransaction.call(sender, addr, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1l);
-            TransactionResult callResult = avm.run(PocExchangeTest.this.kernel, new TestingTransaction[] {callTransaction})[0].get();
+            TransactionResult callResult = avm.run(kernel, new TestingTransaction[] {callTransaction})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
             return callResult;
         }

@@ -14,13 +14,14 @@ import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.vm.api.interfaces.TransactionResult;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
 public class IntegTest {
 
-    @Rule
-    public AvmRule avmRule = new AvmRule(true);
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(true);
 
     private static final long ENERGY_LIMIT = 3_500_000L;
     private static final long ENERGY_PRICE = 1L;

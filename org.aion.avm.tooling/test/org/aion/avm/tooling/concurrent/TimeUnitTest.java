@@ -4,25 +4,18 @@ import avm.Address;
 
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 
 import java.math.BigInteger;
 
 public class TimeUnitTest {
     @ClassRule
     public static AvmRule avmRule = new AvmRule(true);
-    private Address dappAddr;
-    private Address preminedAccount;
+    private static Address dappAddr;
+    private static Address preminedAccount = avmRule.getPreminedAccount();
 
-    public TimeUnitTest() {
-        this.preminedAccount = avmRule.getPreminedAccount();
-    }
-
-    @Before
-    public void deployDapp() {
+    @BeforeClass
+    public static void deployDapp() {
         byte[] dapp = avmRule.getDappBytes(TimeUnitTestTarget.class, new byte[0]);
         dappAddr = avmRule.deploy(preminedAccount, BigInteger.ZERO, dapp).getDappAddress();
     }
@@ -43,6 +36,6 @@ public class TimeUnitTest {
         long energyLimit = 600_000_00000L;
         long energyPrice = 1L;
         byte[] txData = ABIUtil.encodeMethodArguments(methodName);
-        return avmRule.call(this.preminedAccount, this.dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
+        return avmRule.call(preminedAccount, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
     }
 }

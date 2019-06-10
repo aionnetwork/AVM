@@ -9,30 +9,27 @@ import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 
 import java.math.BigInteger;
 
 public class HashTest {
-    @Rule
-    public AvmRule avmRule = new AvmRule(false);
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(false);
 
-    private long energyLimit = 10_000_000L;
-    private long energyPrice = 1L;
+    private static long energyLimit = 10_000_000L;
+    private static long energyPrice = 1L;
 
-    private Address deployer = avmRule.getPreminedAccount();
-    private Address dappAddress;
+    private static Address deployer = avmRule.getPreminedAccount();
+    private static Address dappAddress;
 
     private byte[] hashMessage = "test".getBytes();
     private final String blake2bMethodName = "callBlake2b";
     private final String shaMethodName = "callSha";
     private final String keccakbMethodName = "callKeccak";
 
-    @Before
-    public void setup() {
+    @BeforeClass
+    public static void setup() {
         byte[] txData = avmRule.getDappBytes(HashTestTargetClass.class, null);
         dappAddress = avmRule.deploy(deployer, BigInteger.ZERO, txData, energyLimit, energyPrice).getDappAddress();
     }

@@ -3,6 +3,7 @@ package org.aion.avm.tooling.bootstrapmethods;
 import avm.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.vm.api.interfaces.TransactionResult;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -11,8 +12,8 @@ import java.math.BigInteger;
 import static junit.framework.TestCase.assertTrue;
 
 public class BootstrapsCannotBeCalledTest {
-    @Rule
-    public AvmRule avmRule = new AvmRule(false);
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(false);
     private Address deployer = avmRule.getPreminedAccount();
 
     @Test

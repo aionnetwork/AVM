@@ -4,22 +4,19 @@ import avm.Address;
 
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 
 import java.math.BigInteger;
 
 
 public class SystemShadowingTest {
-    @Rule
-    public AvmRule avmRule = new AvmRule(false);
-    private Address from = avmRule.getPreminedAccount();
-    private Address dappAddr;
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(false);
+    private static Address from = avmRule.getPreminedAccount();
+    private static Address dappAddr;
 
-    @Before
-    public void setup() {
+    @BeforeClass
+    public static void setup() {
         dappAddr = avmRule.deploy(from, BigInteger.ZERO, avmRule.getDappBytes(TestResource.class, null)).getDappAddress();
     }
 

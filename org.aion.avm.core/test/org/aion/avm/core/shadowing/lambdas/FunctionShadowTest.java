@@ -10,10 +10,7 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 
 public class FunctionShadowTest {
@@ -21,23 +18,23 @@ public class FunctionShadowTest {
     private static final long ERNGY_PRICE = 1L;
     private static final org.aion.types.Address FROM = TestingKernel.PREMINED_ADDRESS;
 
-    private TestingBlock block;
-    private TestingKernel kernel;
-    private AvmImpl avm;
+    private static TestingBlock block;
+    private static TestingKernel kernel;
+    private static AvmImpl avm;
 
-    @Before
-    public void setup() {
-        this.block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        this.kernel = new TestingKernel(this.block);
+    @BeforeClass
+    public static void setup() {
+        block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        kernel = new TestingKernel(block);
         AvmConfiguration config = new AvmConfiguration();
         config.enableVerboseContractErrors = true;
         config.preserveDebuggability = true;
-        this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), config);
+        avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), config);
     }
 
-    @After
-    public void tearDown() {
-        this.avm.shutdown();
+    @AfterClass
+    public static void tearDown() {
+        avm.shutdown();
     }
 
     @Test
@@ -152,16 +149,16 @@ public class FunctionShadowTest {
     private org.aion.types.Address deployTest(Class<?> testClass) {
         byte[] testJar = JarBuilder.buildJarForMainAndClassesAndUserlib(testClass);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
-        TestingTransaction tx = TestingTransaction.create(FROM, this.kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ERNGY_PRICE);
-        byte[] returnData = this.avm.run(this.kernel, new TestingTransaction[] {tx})[0].get().getReturnData();
+        TestingTransaction tx = TestingTransaction.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ERNGY_PRICE);
+        byte[] returnData = avm.run(kernel, new TestingTransaction[] {tx})[0].get().getReturnData();
         return (null != returnData)
                 ? org.aion.types.Address.wrap(returnData)
                 : null;
     }
 
     private void oneCall(org.aion.types.Address dappAddr, int transactionNumber) {
-        TestingTransaction tx = TestingTransaction.call(FROM, dappAddr, this.kernel.getNonce(FROM), BigInteger.ZERO, new byte[] {(byte)transactionNumber}, ENERGY_LIMIT, ERNGY_PRICE);
-        AvmTransactionResult result = (AvmTransactionResult) this.avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
+        TestingTransaction tx = TestingTransaction.call(FROM, dappAddr, kernel.getNonce(FROM), BigInteger.ZERO, new byte[] {(byte)transactionNumber}, ENERGY_LIMIT, ERNGY_PRICE);
+        AvmTransactionResult result = (AvmTransactionResult) avm.run(kernel, new TestingTransaction[] {tx})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
     }
 }

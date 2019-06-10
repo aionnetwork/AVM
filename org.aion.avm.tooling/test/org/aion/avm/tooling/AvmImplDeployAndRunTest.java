@@ -17,6 +17,7 @@ import static org.junit.Assert.assertEquals;
 
 
 public class AvmImplDeployAndRunTest {
+    // cannot use ClassRule since balance is checked in tests
     @Rule
     public AvmRule avmRule = new AvmRule(false);
 

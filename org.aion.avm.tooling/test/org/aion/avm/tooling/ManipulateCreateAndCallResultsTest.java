@@ -10,12 +10,13 @@ import java.util.Arrays;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.vm.api.interfaces.TransactionResult;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
 public class ManipulateCreateAndCallResultsTest {
-    @Rule
-    public AvmRule avmRule = new AvmRule(true);
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(true);
 
     private Address deployer = avmRule.getPreminedAccount();
 

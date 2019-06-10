@@ -6,10 +6,7 @@ import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 
 import java.math.BigInteger;
 
@@ -22,17 +19,17 @@ import java.math.BigInteger;
  * this design (especially considering that the entry-point interface is likely temporary).
  */
 public class BasicAppTest {
-    @Rule
-    public AvmRule avmRule = new AvmRule(false);
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(false);
 
-    private Address from = avmRule.getPreminedAccount();
-    private Address dappAddr;
+    private static Address from = avmRule.getPreminedAccount();
+    private static Address dappAddr;
 
-    private long energyLimit = 6_000_0000;
-    private long energyPrice = 1;
+    private static long energyLimit = 6_000_0000;
+    private static long energyPrice = 1;
 
-    @Before
-    public void setup() {
+    @BeforeClass
+    public static void setup() {
         byte[] txData = avmRule.getDappBytes(BasicAppTestTarget.class, null, AionMap.class, AionSet.class, AionList.class);
         dappAddr = avmRule.deploy(from, BigInteger.ZERO, txData, energyLimit, energyPrice).getDappAddress();
     }

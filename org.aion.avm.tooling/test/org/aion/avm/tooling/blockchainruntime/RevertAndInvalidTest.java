@@ -3,9 +3,7 @@ package org.aion.avm.tooling.blockchainruntime;
 import avm.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.kernel.AvmTransactionResult;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 
 import java.math.BigInteger;
 
@@ -13,22 +11,22 @@ import static org.junit.Assert.*;
 
 
 public class RevertAndInvalidTest {
-    @Rule
-    public AvmRule avmRule = new AvmRule(false);
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(false);
 
     // transaction
-    private Address deployer = avmRule.getPreminedAccount();
-    private long energyLimit = 1_000_000L;
-    private long energyPrice = 1L;
+    private static Address deployer = avmRule.getPreminedAccount();
+    private static long energyLimit = 1_000_000L;
+    private static long energyPrice = 1L;
 
-    private Address dappAddress;
+    private static Address dappAddress;
 
-    @Before
-    public void setup() {
+    @BeforeClass
+    public static void setup() {
         dappAddress = deploy();
     }
 
-    private Address deploy() {
+    private static Address deploy() {
         byte[] arguments = null;
         return avmRule.deploy(deployer, BigInteger.ZERO, avmRule.getDappBytes(RevertAndInvalidTestResource.class, arguments), energyLimit, energyPrice).getDappAddress();
     }

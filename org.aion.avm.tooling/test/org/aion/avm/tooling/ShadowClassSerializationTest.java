@@ -4,6 +4,7 @@ import avm.Address;
 import org.aion.avm.tooling.AvmRule.ResultWrapper;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -23,8 +24,8 @@ public class ShadowClassSerializationTest {
     private static final BigInteger value = BigInteger.ZERO;
     private static Address contract;
 
-    @Before
-    public void setup() {
+    @BeforeClass
+    public static void setup() {
         byte[] data = avmRule.getDappBytes(ShadowClassSerializationTarget.class, null);
         ResultWrapper deployResult = avmRule.deploy(sender, value, data);
         assertTrue(deployResult.getTransactionResult().getResultCode().isSuccess());

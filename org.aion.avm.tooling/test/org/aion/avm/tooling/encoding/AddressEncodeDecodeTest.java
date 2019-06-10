@@ -4,10 +4,7 @@ import avm.Address;
 
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -20,12 +17,12 @@ public class AddressEncodeDecodeTest {
     @ClassRule
     public static AvmRule avmRule = new AvmRule(false);
 
-    public Address dappAddress;
-    public Address from = avmRule.getPreminedAccount();
-    public Address randomAddress = avmRule.getRandomAddress(BigInteger.ZERO);
+    public static Address dappAddress;
+    public static Address from = avmRule.getPreminedAccount();
+    public static Address randomAddress = avmRule.getRandomAddress(BigInteger.ZERO);
 
-    @Before
-    public void deploy() {
+    @BeforeClass
+    public static void deploy() {
         byte[] dappBytes = avmRule.getDappBytes(AddressEndodeDecodeTarget.class, new byte[0]);
         dappAddress = avmRule.deploy(from, BigInteger.ZERO, dappBytes).getDappAddress();
     }

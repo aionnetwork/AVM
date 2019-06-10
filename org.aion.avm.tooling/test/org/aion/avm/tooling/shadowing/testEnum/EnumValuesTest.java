@@ -7,6 +7,7 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
 import org.junit.Assert;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -15,8 +16,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EnumValuesTest {
-    @Rule
-    public AvmRule avmRule = new AvmRule(false);
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(false);
 
     private Address from = avmRule.getPreminedAccount();
 

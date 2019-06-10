@@ -9,6 +9,7 @@ import avm.Address;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -16,10 +17,10 @@ import java.math.BigInteger;
 
 
 public class ShadowSerializationTest {
-    private boolean preserveDebugInfo = false;
+    private static boolean preserveDebugInfo = false;
 
-    @Rule
-    public AvmRule avmRule = new AvmRule(preserveDebugInfo);
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(preserveDebugInfo);
 
     private static final long DEPLOY_ENERGY_LIMIT = 10_000_000L;
     private static final long ENERGY_PRICE = 1L;

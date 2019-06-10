@@ -2,6 +2,7 @@ package org.aion.avm.tooling.arraywrapping;
 
 import avm.Address;
 import org.aion.avm.tooling.AvmRule;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -11,8 +12,8 @@ import static org.junit.Assert.assertTrue;
 
 public class InvalidArrayDimensionTest {
 
-    @Rule
-    public AvmRule avmRule = new AvmRule(false);
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(false);
 
     Address sender = avmRule.getPreminedAccount();
     BigInteger value = BigInteger.ZERO;

@@ -10,16 +10,16 @@ import org.junit.*;
 
 public class ArrayWrappingTest {
 
-    @Rule
-    public AvmRule avmRule = new AvmRule(false);
-    private Address from = avmRule.getPreminedAccount();
-    private Address dappAddr;
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(false);
+    private static Address from = avmRule.getPreminedAccount();
+    private static Address dappAddr;
 
-    private long energyLimit = 6_000_0000;
-    private long energyPrice = 1;
+    private static long energyLimit = 6_000_0000;
+    private static long energyPrice = 1;
 
-    @Before
-    public void setup() {
+    @BeforeClass
+    public static void setup() {
         byte[] txData = avmRule.getDappBytes(TestResource.class, null);
         dappAddr = avmRule.deploy(from, BigInteger.ZERO, txData, energyLimit, energyPrice).getDappAddress();
     }

@@ -21,10 +21,7 @@ import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 
 /**
@@ -35,18 +32,18 @@ public class PocWalletTest {
     private static final int ADDRESS_SIZE = org.aion.types.Address.SIZE;
 
     // For now, we will just reuse the from, to, and block for each call (in the future, this will change).
-    private org.aion.types.Address from = TestingKernel.PREMINED_ADDRESS;
-    private TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-    private long energyLimit = 10_000_000_000L;
-    private long energyPrice = 1;
+    private static org.aion.types.Address from = TestingKernel.PREMINED_ADDRESS;
+    private static TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+    private static long energyLimit = 10_000_000_000L;
+    private static long energyPrice = 1;
 
-    private KernelInterface kernel;
-    private AvmImpl avm;
+    private static KernelInterface kernel;
+    private static AvmImpl avm;
 
-    @Before
-    public void setup() {
-        this.kernel = new TestingKernel(block);
-        this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities() {
+    @BeforeClass
+    public static void setup() {
+        kernel = new TestingKernel(block);
+        avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities() {
             @Override
             public byte[] blake2b(byte[] data) {
                 // NOTE:  This test relies on calling blake2b but doesn't rely on the answer being correct so just return the input.
@@ -55,9 +52,9 @@ public class PocWalletTest {
         }, new AvmConfiguration());
     }
 
-    @After
-    public void tearDown() {
-        this.avm.shutdown();
+    @AfterClass
+    public static void tearDown() {
+        avm.shutdown();
     }
 
     private byte[] buildTestWalletJar() {
@@ -83,7 +80,7 @@ public class PocWalletTest {
         byte[] testWalletArguments = new byte[0];
 
         TestingTransaction createTransaction = TestingTransaction.create(from, kernel.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(this.kernel, new TestingTransaction[] {createTransaction})[0].get();
+        TransactionResult createResult = avm.run(kernel, new TestingTransaction[] {createTransaction})[0].get();
 
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Assert.assertNotNull(kernel.getTransformedCode(org.aion.types.Address.wrap(createResult.getReturnData())));
@@ -103,7 +100,7 @@ public class PocWalletTest {
         byte[] testWalletJar = buildTestWalletJar();
         byte[] testWalletArguments = new byte[0];
         TestingTransaction createTransaction = TestingTransaction.create(from, kernel.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(this.kernel, new TestingTransaction[] {createTransaction})[0].get();
+        TransactionResult createResult = avm.run(kernel, new TestingTransaction[] {createTransaction})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
 
         // contract address is stored in return data
@@ -111,7 +108,7 @@ public class PocWalletTest {
 
         byte[] initArgs = encodeInit(extra1, extra2, requiredVotes, dailyLimit);
         TestingTransaction initTransaction = TestingTransaction.call(from, contractAddress, kernel.getNonce(from), BigInteger.ZERO, initArgs, energyLimit, energyPrice);
-        TransactionResult initResult = avm.run(this.kernel, new TestingTransaction[] {initTransaction})[0].get();
+        TransactionResult initResult = avm.run(kernel, new TestingTransaction[] {initTransaction})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, initResult.getResultCode());
     }
 
@@ -137,7 +134,7 @@ public class PocWalletTest {
         byte[] data = Helpers.randomBytes(ADDRESS_SIZE);
         byte[] execArgs = encodeExecute(to.toBytes(), dailyLimit + 1, data);
         TestingTransaction executeTransaction = TestingTransaction.call(from, contractAddress, kernel.getNonce(from), BigInteger.ZERO, execArgs, energyLimit, energyPrice);
-        TransactionResult executeResult = avm.run(this.kernel, new TestingTransaction[] {executeTransaction})[0].get();
+        TransactionResult executeResult = avm.run(kernel, new TestingTransaction[] {executeTransaction})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, executeResult.getResultCode());
         byte[] toConfirm = new ABIDecoder(executeResult.getReturnData()).decodeOneByteArray();
 
@@ -145,7 +142,7 @@ public class PocWalletTest {
         kernel.adjustBalance(extra1, BigInteger.valueOf(1_000_000_000_000L));
         byte[] confirmArgs = CallEncoder.confirm(toConfirm);
         TestingTransaction confirmTransaction = TestingTransaction.call(extra1, contractAddress, kernel.getNonce(extra1), BigInteger.ZERO, confirmArgs, energyLimit, energyPrice);
-        TransactionResult confirmResult = avm.run(this.kernel, new TestingTransaction[] {confirmTransaction})[0].get();
+        TransactionResult confirmResult = avm.run(kernel, new TestingTransaction[] {confirmTransaction})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, confirmResult.getResultCode()); // transfer to non-existing accounts
     }
 
@@ -153,7 +150,7 @@ public class PocWalletTest {
     private void runInit(org.aion.types.Address contractAddress, org.aion.types.Address extra1, org.aion.types.Address extra2, int requiredVotes, long dailyLimit) throws Exception {
         byte[] initArgs = encodeInit(extra1, extra2, requiredVotes, dailyLimit);
         TestingTransaction initTransaction = TestingTransaction.call(from, contractAddress, kernel.getNonce(from), BigInteger.ZERO, initArgs, energyLimit, energyPrice);
-        TransactionResult initResult = avm.run(this.kernel, new TestingTransaction[] {initTransaction})[0].get();
+        TransactionResult initResult = avm.run(kernel, new TestingTransaction[] {initTransaction})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, initResult.getResultCode());
     }
 
@@ -162,7 +159,7 @@ public class PocWalletTest {
         byte[] testWalletArguments = new byte[0];
 
         TestingTransaction createTransaction = TestingTransaction.create(from, kernel.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(this.kernel, new TestingTransaction[] {createTransaction})[0].get();
+        TransactionResult createResult = avm.run(kernel, new TestingTransaction[] {createTransaction})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
 
         // contract address is stored in return data

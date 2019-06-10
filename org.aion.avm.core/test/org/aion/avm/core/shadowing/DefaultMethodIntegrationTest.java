@@ -10,10 +10,7 @@ import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionMap;
 import org.aion.kernel.*;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import java.math.BigInteger;
 
@@ -22,20 +19,20 @@ import java.math.BigInteger;
  * Tests that we fail in a meaningful way when a DApp throws an exception due to a missing method.
  */
 public class DefaultMethodIntegrationTest {
-    private org.aion.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
-    private TestingKernel kernel;
-    private AvmImpl avm;
+    private static org.aion.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
+    private static TestingKernel kernel;
+    private static AvmImpl avm;
 
-    @Before
-    public void setup() {
+    @BeforeClass
+    public static void setup() {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        this.kernel = new TestingKernel(block);
-        this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
+        kernel = new TestingKernel(block);
+        avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
 
-    @After
-    public void tearDown() {
-        this.avm.shutdown();
+    @AfterClass
+    public static void tearDown() {
+        avm.shutdown();
     }
 
     @Test
@@ -49,7 +46,7 @@ public class DefaultMethodIntegrationTest {
         TestingTransaction create = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
         
         // The NoSuchMethodError triggers a "FAILED_EXCEPTION" state.
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {create})[0].get();
+        AvmTransactionResult result = (AvmTransactionResult) avm.run(kernel, new TestingTransaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
     }
 
@@ -63,7 +60,7 @@ public class DefaultMethodIntegrationTest {
         long energyLimit = 2_000_000l;
         long energyPrice = 1l;
         TestingTransaction create = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        AvmTransactionResult createResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {create})[0].get();
+        AvmTransactionResult createResult = (AvmTransactionResult) avm.run(kernel, new TestingTransaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         Address contractAddr = new Address(createResult.getReturnData());
         
@@ -72,7 +69,7 @@ public class DefaultMethodIntegrationTest {
         TestingTransaction call = TestingTransaction.call(deployer, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
         
         // The NoSuchMethodError triggers a "FAILED_EXCEPTION" state.
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {call})[0].get();
+        AvmTransactionResult result = (AvmTransactionResult) avm.run(kernel, new TestingTransaction[] {call})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
     }
 }

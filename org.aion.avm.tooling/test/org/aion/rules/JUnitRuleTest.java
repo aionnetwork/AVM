@@ -7,10 +7,7 @@ import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.userlib.AionMap;
 import org.aion.vm.api.interfaces.ResultCode;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 
 import java.math.BigInteger;
 
@@ -22,11 +19,11 @@ public class JUnitRuleTest {
     @ClassRule
     public static AvmRule avmRule = new AvmRule(true);
 
-    private Address dappAddr;
-    private Address preminedAccount = avmRule.getPreminedAccount();
+    private static Address dappAddr;
+    private static Address preminedAccount = avmRule.getPreminedAccount();
 
-    @Before
-    public void deployDapp() {
+    @BeforeClass
+    public static void deployDapp() {
         byte[] arguments = ABIUtil.encodeDeploymentArguments(8);
         byte[] dapp = avmRule.getDappBytes(JUnitRuleTestTarget.class, arguments, AionMap.class);
         dappAddr = avmRule.deploy(preminedAccount, BigInteger.ZERO, dapp).getDappAddress();

@@ -4,25 +4,22 @@ import avm.Address;
 
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 
 import java.math.BigInteger;
 
 
 public class AddressIntegrationTest {
-    @Rule
-    public AvmRule avmRule = new AvmRule(false);
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(false);
 
-    private Address from = avmRule.getPreminedAccount();
-    private long energyLimit = 5_000_000L;
-    private long energyPrice = 1;
-    private Address dappAddr;
+    private static Address from = avmRule.getPreminedAccount();
+    private static long energyLimit = 5_000_000L;
+    private static long energyPrice = 1;
+    private static Address dappAddr;
 
-    @Before
-    public void setUp() {
+    @BeforeClass
+    public static void setUp() {
         byte[] jar = avmRule.getDappBytes(AddressTestTarget.class, new byte[0]);
         dappAddr = avmRule.deploy(from, BigInteger.ZERO, jar, energyLimit, energyPrice).getDappAddress();
     }

@@ -7,10 +7,7 @@ import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.tooling.abi.ABICompiler;
 import org.aion.avm.tooling.deploy.JarOptimizer;
 import org.aion.vm.api.interfaces.TransactionResult;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -22,13 +19,13 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class CreateTest {
 
-    @Rule
-    public AvmRule avmRule = new AvmRule(false);
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(false);
 
-    private Address from = avmRule.getPreminedAccount();
-    private long energyLimit = 5_000_000L;
-    private long energyPrice = 1;
-    private Address dappAddr;
+    private static Address from = avmRule.getPreminedAccount();
+    private static long energyLimit = 5_000_000L;
+    private static long energyPrice = 1;
+    private static Address dappAddr;
 
     /**
      * this test demonstrates the maximum number of times you can deploy an empty contract using blockchain.create

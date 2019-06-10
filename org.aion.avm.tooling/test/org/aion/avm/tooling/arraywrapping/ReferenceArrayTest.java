@@ -13,15 +13,15 @@ import static org.junit.Assert.assertTrue;
 
 public class ReferenceArrayTest {
 
-    @Rule
-    public AvmRule avmRule = new AvmRule(true);
+    @ClassRule
+    public static AvmRule avmRule = new AvmRule(true);
 
-    private final Address sender = avmRule.getPreminedAccount();
-    private final BigInteger value = BigInteger.ZERO;
-    private Address contract;
+    private static final Address sender = avmRule.getPreminedAccount();
+    private static final BigInteger value = BigInteger.ZERO;
+    private static Address contract;
 
-    @Before
-    public void setup() {
+    @BeforeClass
+    public static void setup() {
         byte[] data = avmRule.getDappBytes(ReferenceArrayTarget.class, null);
         AvmRule.ResultWrapper deployResult = avmRule.deploy(sender, value, data);
         assertTrue(deployResult.getTransactionResult().getResultCode().isSuccess());
