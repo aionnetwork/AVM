@@ -1,5 +1,6 @@
 package org.aion.avm.tooling.shadowing.testSystem;
 
+import avm.Blockchain;
 import org.aion.avm.tooling.abi.Callable;
 
 public class TestResource {
@@ -96,5 +97,21 @@ public class TestResource {
             didMatch = true;
         }
         return didMatch;
+    }
+
+    @Callable
+    public static void invalidArrayCopyLength(){
+        long energyRemaining = 0l;
+        boolean exceptionThrown = false;
+        try {
+            char[] arr = new char[]{'a', 'b', 'c'};
+            char[] arrCopy = new char[3];
+            energyRemaining = Blockchain.getRemainingEnergy();
+            System.arraycopy(arr, 0, arrCopy, 0, -1000000000);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            exceptionThrown = true;
+            Blockchain.require(energyRemaining > Blockchain.getRemainingEnergy());
+        }
+        Blockchain.require(exceptionThrown);
     }
 }

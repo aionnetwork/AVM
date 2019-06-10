@@ -25,7 +25,7 @@ import org.junit.Test;
  * The purpose is more to give us an idea about how our deployment costs look for different Dapps.
  */
 public class DeploymentArgumentTest {
-    private static final long ENERGY_LIMIT = 100_000_000_000L;
+    private static final long ENERGY_LIMIT = 5_000_000L;
     private static final long ENERGY_PRICE = 1L;
     private static final org.aion.types.Address DEPLOYER = TestingKernel.PREMINED_ADDRESS;
     private static final byte[] JAR = JarBuilder.buildJarForMainAndClassesAndUserlib(DeploymentArgumentTarget.class);

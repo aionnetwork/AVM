@@ -135,13 +135,13 @@ public final class String extends Object implements Comparable<String>, CharSequ
     }
 
     public boolean avm_regionMatches(int toffset, String other, int ooffset, int len) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_regionMatches + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * len);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_regionMatches + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(len, 0));
         lazyLoad();
         return this.v.regionMatches(toffset, other.v, ooffset, len);
     }
 
     public boolean avm_regionMatches(boolean ignoreCase, int toffset, String other, int ooffset, int len) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_regionMatches_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * len);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_regionMatches_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(len, 0));
         lazyLoad();
         return this.v.regionMatches(ignoreCase, toffset, other.v, ooffset, len);
     }
@@ -345,13 +345,13 @@ public final class String extends Object implements Comparable<String>, CharSequ
     }
 
     public static String avm_valueOf(CharArray data, int offset, int count){
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_valueOf_2 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * count);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_valueOf_2 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(count, 0));
         data.lazyLoad();
         return new String(java.lang.String.valueOf(data.getUnderlying(), offset, count));
     }
 
     public static String avm_copyValueOf(CharArray data, int offset, int count){
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_copyValueOf + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * count);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.String_avm_copyValueOf + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(count, 0));
         data.lazyLoad();
         return new String(java.lang.String.copyValueOf(data.getUnderlying(), offset, count));
     }

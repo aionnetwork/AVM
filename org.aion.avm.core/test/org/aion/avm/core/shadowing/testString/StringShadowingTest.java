@@ -75,6 +75,15 @@ public class StringShadowingTest {
         result = avm.run(kernel, new Transaction[] {tx})[0].get();
         Assert.assertEquals(false, ABIUtil.decodeOneObject(result.getReturnData()));
 
+        txData = ABIUtil.encodeMethodArguments("regionMatches");
+        tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        result = avm.run(kernel, new Transaction[] {tx})[0].get();
+        Assert.assertEquals(true, ABIUtil.decodeOneObject(result.getReturnData()));
+
+        txData = ABIUtil.encodeMethodArguments("valueOf");
+        tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        result = avm.run(kernel, new Transaction[] {tx})[0].get();
+        Assert.assertEquals(true, ABIUtil.decodeOneObject(result.getReturnData()));
         avm.shutdown();
     }
 
@@ -129,6 +138,44 @@ public class StringShadowingTest {
         Assert.assertEquals("abc", ABIUtil.decodeOneObject(results[4].get().getReturnData()));
         Assert.assertEquals("ABC", ABIUtil.decodeOneObject(results[5].get().getReturnData()));
         
+        avm.shutdown();
+    }
+
+    @Test
+    public void testInvalidCases() {
+        org.aion.types.Address from = TestingKernel.PREMINED_ADDRESS;
+        Block block = new Block(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        long energyLimit = 5_000_0000;
+        long energyPrice = 1;
+        TestingKernel kernel = new TestingKernel(block);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
+
+        // We do the deployment, first, since we need the resultant DApp address for the other calls.
+        byte[] testJar = JarBuilder.buildJarForMainAndClassesAndUserlib(TestResource.class);
+        byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
+        Transaction tx = Transaction.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        org.aion.types.Address dappAddr = org.aion.types.Address.wrap(avm.run(kernel, new Transaction[] {tx})[0].get().getReturnData());
+
+        txData = ABIUtil.encodeMethodArguments("regionMatchesInvalidLength");
+        tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        TransactionResult result = avm.run(kernel, new Transaction[] {tx})[0].get();
+        Assert.assertTrue(result.getResultCode().isSuccess());
+
+        txData = ABIUtil.encodeMethodArguments("regionMatchesDoNotIgnoreInvalidLength");
+        tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        result = avm.run(kernel, new Transaction[] {tx})[0].get();
+        Assert.assertTrue(result.getResultCode().isSuccess());
+
+        txData = ABIUtil.encodeMethodArguments("copyValueOfInvalidCount");
+        tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        result = avm.run(kernel, new Transaction[] {tx})[0].get();
+        Assert.assertTrue(result.getResultCode().isSuccess());
+
+        txData = ABIUtil.encodeMethodArguments("valueOfInvalidCount");
+        tx = Transaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        result = avm.run(kernel, new Transaction[] {tx})[0].get();
+        Assert.assertTrue(result.getResultCode().isSuccess());
+
         avm.shutdown();
     }
 }
