@@ -32,7 +32,6 @@ public class ContractLoggingTest {
     private static Address from = TestingKernel.PREMINED_ADDRESS;
     private static long energyLimit = 5_000_000L;
     private static long energyPrice = 1;
-    private static TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
     private static TestingKernel kernel;
     private static AvmImpl avm;
@@ -42,6 +41,7 @@ public class ContractLoggingTest {
 
     @BeforeClass
     public static void setup() {
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         kernel = new TestingKernel(block);
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         deployContract();

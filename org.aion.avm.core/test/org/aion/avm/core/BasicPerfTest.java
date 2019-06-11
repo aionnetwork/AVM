@@ -95,7 +95,6 @@ public class BasicPerfTest {
         private void safeRun() {
             int blockStart = 2;
             for (int i = blockStart; i < (COUNT + blockStart); ++i) {
-                TestingBlock block = new TestingBlock(new byte[32], i, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
                 long transaction1EnergyLimit = 1_000_000_000l;
                 TestingTransaction tx1 = TestingTransaction.call(deployer, this.contractAddress, kernel.getNonce(deployer), BigInteger.ZERO, new byte[0], transaction1EnergyLimit, 1L);
                 TransactionResult result1 = this.avm.run(this.kernel, new TestingTransaction[] {tx1})[0].get();

@@ -25,9 +25,6 @@ public class AvmFailureTest {
     private static long energyLimit = 10_000_000L;
     private static long energyPrice = 1L;
 
-    // block
-    private static TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-
     // kernel & vm
     private static TestingKernel kernel;
     private static AvmImpl avm;
@@ -37,6 +34,7 @@ public class AvmFailureTest {
 
     @BeforeClass
     public static void setup() {
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         kernel = new TestingKernel(block);
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         

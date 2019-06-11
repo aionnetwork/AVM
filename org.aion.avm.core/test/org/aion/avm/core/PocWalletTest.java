@@ -33,7 +33,6 @@ public class PocWalletTest {
 
     // For now, we will just reuse the from, to, and block for each call (in the future, this will change).
     private static org.aion.types.Address from = TestingKernel.PREMINED_ADDRESS;
-    private static TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
     private static long energyLimit = 10_000_000_000L;
     private static long energyPrice = 1;
 
@@ -42,6 +41,7 @@ public class PocWalletTest {
 
     @BeforeClass
     public static void setup() {
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         kernel = new TestingKernel(block);
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities() {
             @Override

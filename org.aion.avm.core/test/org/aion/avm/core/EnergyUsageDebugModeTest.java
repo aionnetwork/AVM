@@ -9,7 +9,6 @@ import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -21,14 +20,13 @@ import static org.junit.Assert.assertTrue;
  * Difference of energy consumption explained more in issue-345
  */
 public class EnergyUsageDebugModeTest {
-    private static TestingBlock block;
     private static TestingKernel kernel;
     private static org.aion.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
 
 
     @BeforeClass
     public static void setup (){
-        block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         kernel = new TestingKernel(block);
     }
 

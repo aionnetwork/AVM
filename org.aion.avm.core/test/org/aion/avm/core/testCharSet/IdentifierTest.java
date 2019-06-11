@@ -21,8 +21,6 @@ import org.junit.*;
 public class IdentifierTest {
 
     private static long energyPrice = 1L;
-    private static TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(),
-        System.currentTimeMillis(), new byte[0]);
 
     private static org.aion.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
     private static org.aion.types.Address dappAddress;
@@ -32,6 +30,7 @@ public class IdentifierTest {
 
     @BeforeClass
     public static void setup() {
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         kernel = new TestingKernel(block);
         avm = CommonAvmFactory
             .buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());

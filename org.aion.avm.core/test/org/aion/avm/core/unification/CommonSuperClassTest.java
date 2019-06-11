@@ -37,12 +37,13 @@ public class CommonSuperClassTest {
     private static long ENERGY_LIMIT = 10_000_000L;
     private static long ENERGY_PRICE = 1L;
     private static Address DEPLOYER = TestingKernel.PREMINED_ADDRESS;
-    private static TestingBlock BLOCK = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-    private static TestingKernel KERNEL = new TestingKernel(BLOCK);
+    private static TestingKernel KERNEL;
     private static AvmImpl avm;
 
     @BeforeClass
     public static void setup() {
+        TestingBlock BLOCK = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        KERNEL = new TestingKernel(BLOCK);
         AvmConfiguration config = new AvmConfiguration();
         config.enableVerboseContractErrors = true;
         config.preserveDebuggability = false;

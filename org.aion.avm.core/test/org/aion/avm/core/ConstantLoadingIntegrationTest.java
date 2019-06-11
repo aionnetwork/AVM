@@ -23,11 +23,9 @@ public class ConstantLoadingIntegrationTest {
     private static TestingKernel kernel;
     private static AvmImpl avm;
 
-    private static TestingBlock block;
-
     @BeforeClass
     public static void setup() {
-        block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         kernel = new TestingKernel(block);
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
@@ -46,8 +44,8 @@ public class ConstantLoadingIntegrationTest {
         int bareLength = 6;
         int populateHash = 62;
         int populateLength = 3;
-        byte[] bare = callStatic(block, contractAddr, 0);
-        byte[] populated = callStatic(block, contractAddr, 1);
+        byte[] bare = callStatic(contractAddr, 0);
+        byte[] populated = callStatic(contractAddr, 1);
         
         Assert.assertEquals((byte)bareHash, bare[0]);
         Assert.assertEquals((byte)bareLength, bare[1]);
@@ -60,15 +58,15 @@ public class ConstantLoadingIntegrationTest {
         Address contractAddr = deploy();
         
         // Run the creation and then test the read calls.
-        callStatic(block, contractAddr, 0);
-        callStatic(block, contractAddr, 1);
+        callStatic(contractAddr, 0);
+        callStatic(contractAddr, 1);
         
         int bareHash = 59;
         int bareLength = 6;
         int populateHash = 62;
         int populateLength = 3;
-        byte[] bare = callStatic(block, contractAddr, 2);
-        byte[] populated = callStatic(block, contractAddr, 3);
+        byte[] bare = callStatic(contractAddr, 2);
+        byte[] populated = callStatic(contractAddr, 3);
         
         Assert.assertEquals((byte)bareHash, bare[0]);
         Assert.assertEquals((byte)bareLength, bare[1]);
@@ -91,7 +89,7 @@ public class ConstantLoadingIntegrationTest {
         return new Address(createResult.getReturnData());
     }
 
-    private byte[] callStatic(TestingBlock block, Address contractAddr, int code) {
+    private byte[] callStatic(Address contractAddr, int code) {
         kernel.generateBlock();
         long energyLimit = 1_000_000l;
         byte[] argData = new byte[] { (byte)code };

@@ -23,7 +23,6 @@ import java.math.BigInteger;
 public class PerformanceTest {
     private TestingKernel kernel;
     private AvmImpl avm;
-    TestingBlock block;
 
     private static final int transactionBlockSize = 10;
     private static final int contextNum = 3;
@@ -40,7 +39,7 @@ public class PerformanceTest {
     @Before
     public void setup() {
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
-        block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         this.kernel = new TestingKernel(block);
         deploy();
     }
@@ -106,7 +105,7 @@ public class PerformanceTest {
         long startTime = System.currentTimeMillis();
 
         for (int i = 0; i < userDappNum; ++i) {
-            callSingle(userAddrs[i], block, Nto1 ? contractAddrs[0] : contractAddrs[i], methodName);
+            callSingle(userAddrs[i], Nto1 ? contractAddrs[0] : contractAddrs[i], methodName);
         }
 
         long endTime = System.currentTimeMillis();
@@ -114,7 +113,7 @@ public class PerformanceTest {
         System.out.printf("%s: %d ms\n", testName, timeElapsed);
     }
 
-    private void callSingle(org.aion.types.Address sender, TestingBlock block, Address contractAddr, String methodName) {
+    private void callSingle(org.aion.types.Address sender, Address contractAddr, String methodName) {
         byte[] argData = new ABIStreamingEncoder().encodeOneString(methodName).toBytes();
         TestingTransaction call = TestingTransaction.call(sender, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
         AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {call})[0].get();
@@ -147,14 +146,14 @@ public class PerformanceTest {
     public void performanceBatch(String methodName, boolean Nto1, String testName) {
         long startTime = System.currentTimeMillis();
 
-        callBatch(methodName, block, Nto1);
+        callBatch(methodName, Nto1);
 
         long endTime = System.currentTimeMillis();
         long timeElapsed = endTime - startTime;
         System.out.printf("%s: %d ms\n", testName, timeElapsed);
     }
 
-    public void callBatch(String methodName, TestingBlock block, boolean Nto1){
+    public void callBatch(String methodName, boolean Nto1){
         byte[] argData = new ABIStreamingEncoder().encodeOneString(methodName).toBytes();
         for(int j = 0; j < contextNum; ++j) {
             TestingTransaction[] transactionArray = new TestingTransaction[transactionBlockSize];

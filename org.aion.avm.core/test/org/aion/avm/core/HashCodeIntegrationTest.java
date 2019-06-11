@@ -27,11 +27,9 @@ public class HashCodeIntegrationTest {
     private TestingKernel kernel;
     private AvmImpl avm;
 
-    TestingBlock block;
-
     @Before
     public void setup() {
-        block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         this.kernel = new TestingKernel(block);
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
@@ -55,16 +53,16 @@ public class HashCodeIntegrationTest {
 
         Address contractAddr = new Address(createResult.getReturnData());
         // Store an object.
-        int systemHash = callStatic(block, contractAddr, "persistNewObject");
+        int systemHash = callStatic(contractAddr, "persistNewObject");
         // We know that this is the current value, but that may change in the future.
         Assert.assertEquals(62, systemHash);
         // Fetch it and verify the hashCode is loaded.
-        int loadSystemHash = callStatic(block, contractAddr, "readPersistentHashCode");
+        int loadSystemHash = callStatic(contractAddr, "readPersistentHashCode");
         Assert.assertEquals(systemHash, loadSystemHash);
     }
 
 
-    private int callStatic(TestingBlock block, Address contractAddr, String methodName) {
+    private int callStatic(Address contractAddr, String methodName) {
         long energyLimit = 1_000_000l;
         byte[] argData = new ABIStreamingEncoder().encodeOneString(methodName).toBytes();
         TestingTransaction call = TestingTransaction.call(deployer, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);

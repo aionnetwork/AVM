@@ -22,8 +22,6 @@ public class AionBufferPerfTest {
     private org.aion.types.Address from = TestingKernel.PREMINED_ADDRESS;
     private long energyLimit = 100_000_000L;
     private long energyPrice = 1;
-    private TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(),
-        System.currentTimeMillis(), new byte[0]);
 
     private byte[] buildBufferPerfJar() {
         return JarBuilder.buildJarForMainAndClassesAndUserlib(AionBufferPerfContract.class);
@@ -50,6 +48,7 @@ public class AionBufferPerfTest {
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         System.out.println(">> Energy measurements for AionBuffer\n>>");
         byte[] args;
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         KernelInterface kernel = new TestingKernel(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
 

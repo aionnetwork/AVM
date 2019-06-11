@@ -52,7 +52,6 @@ public class DefaultMethodIntegrationTest {
 
     @Test
     public void testMissingDefaultInMain() throws Exception {
-        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClasses(TestDefaultMethodInMainResource.class, AionMap.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         

@@ -18,14 +18,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class ApiSubclassingTest {
-    private TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
     private TestingKernel kernel;
     private AvmImpl avm;
     private Address deployer = TestingKernel.PREMINED_ADDRESS;
 
     @Before
     public void setup() {
-        this.kernel = new TestingKernel(this.block);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        this.kernel = new TestingKernel(block);
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
 

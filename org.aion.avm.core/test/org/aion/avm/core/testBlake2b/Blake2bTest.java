@@ -22,7 +22,6 @@ public class Blake2bTest {
 
     private long energyLimit = 10_000_000L;
     private long energyPrice = 1L;
-    private TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
     private org.aion.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
     private org.aion.types.Address dappAddress;
@@ -32,6 +31,7 @@ public class Blake2bTest {
 
     @Before
     public void setup() {
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         this.kernel = new TestingKernel(block);
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         

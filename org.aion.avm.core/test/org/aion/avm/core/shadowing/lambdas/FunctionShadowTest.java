@@ -18,13 +18,12 @@ public class FunctionShadowTest {
     private static final long ERNGY_PRICE = 1L;
     private static final org.aion.types.Address FROM = TestingKernel.PREMINED_ADDRESS;
 
-    private static TestingBlock block;
     private static TestingKernel kernel;
     private static AvmImpl avm;
 
     @BeforeClass
     public static void setup() {
-        block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         kernel = new TestingKernel(block);
         AvmConfiguration config = new AvmConfiguration();
         config.enableVerboseContractErrors = true;

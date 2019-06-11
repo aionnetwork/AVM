@@ -29,13 +29,14 @@ import org.junit.Test;
 
 public class PersistanceNameMappingTest {
     private static Address deployer = TestingKernel.PREMINED_ADDRESS;
-    private static TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-    private static TestingKernel kernel = new TestingKernel(block);
+    private static TestingKernel kernel;
     private static AvmConfiguration configurationWithDebugEnabled;
     private static AvmConfiguration configurationWithDebugDisabled;
 
     @BeforeClass
     public static void setup() {
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        kernel = new TestingKernel(block);
         AvmConfiguration configurationWithDebug = new AvmConfiguration();
         configurationWithDebug.preserveDebuggability = true;
         configurationWithDebugEnabled = configurationWithDebug;

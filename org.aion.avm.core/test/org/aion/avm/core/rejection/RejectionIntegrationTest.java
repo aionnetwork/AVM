@@ -34,13 +34,13 @@ public class RejectionIntegrationTest {
     private static Address FROM = TestingKernel.PREMINED_ADDRESS;
     private static long ENERGY_LIMIT = 5_000_000L;
     private static long ENERGY_PRICE = 1L;
-    private static TestingBlock BLOCK = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
     private static TestingKernel kernel;
     private static AvmImpl avm;
 
     @BeforeClass
     public static void setup() {
+        TestingBlock BLOCK = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         kernel = new TestingKernel(BLOCK);
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
