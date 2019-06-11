@@ -28,6 +28,7 @@ public final class AvmRule implements TestRule {
 
     private boolean debugMode;
     private final JarOptimizer jarOptimizer;
+    private boolean automaticBlockGenerationEnabled;
     public TestingKernel kernel;
     public AvmImpl avm;
 
@@ -38,6 +39,7 @@ public final class AvmRule implements TestRule {
         this.debugMode = debugMode;
         this.kernel = new TestingKernel();
         jarOptimizer = new JarOptimizer(debugMode);
+        automaticBlockGenerationEnabled = true;
     }
 
     @Override
@@ -65,7 +67,7 @@ public final class AvmRule implements TestRule {
      * @param mainClass Main class of the Dapp to include and list in manifest (can be null).
      * @param arguments Constructor arguments
      * @param otherClasses Other classes to include (main is already included).
-     * @return Byte array corresponding to the deployable Dapp jar and arguments.
+     * @return Byte array corresponding to the optimized deployable Dapp jar and arguments, where unreachable classes and methods are removed from the jar
      */
     public byte[] getDappBytes(Class<?> mainClass, byte[] arguments, Class<?>... otherClasses) {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(mainClass, otherClasses);
@@ -180,12 +182,25 @@ public final class AvmRule implements TestRule {
         return new Address(TestingKernel.PREMINED_ADDRESS.toBytes());
     }
 
+    /**
+     * Disables automatic generation of blocks for each transaction
+     */
+    public void disableAutomaticBlockGeneration(){
+        automaticBlockGenerationEnabled = false;
+    }
+
     private ResultWrapper callDapp(Address from, Address dappAddress, BigInteger value, byte[] transactionData, long energyLimit, long energyPrice) {
+        if (automaticBlockGenerationEnabled) {
+            this.kernel.generateBlock();
+        }
         TestingTransaction tx = TestingTransaction.call(org.aion.types.Address.wrap(from.toByteArray()), org.aion.types.Address.wrap(dappAddress.toByteArray()), kernel.getNonce(org.aion.types.Address.wrap(from.toByteArray())), value, transactionData, energyLimit, energyPrice);
         return new ResultWrapper(avm.run(this.kernel, new TestingTransaction[]{tx})[0].get());
     }
 
     private ResultWrapper deployDapp(Address from, BigInteger value, byte[] dappBytes, long energyLimit, long energyPrice) {
+        if (automaticBlockGenerationEnabled) {
+            this.kernel.generateBlock();
+        }
         TestingTransaction tx = TestingTransaction.create(org.aion.types.Address.wrap(from.toByteArray()), kernel.getNonce(org.aion.types.Address.wrap(from.toByteArray())), value, dappBytes, energyLimit, energyPrice);
         return new ResultWrapper(avm.run(this.kernel, new TestingTransaction[]{tx})[0].get());
     }

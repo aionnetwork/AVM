@@ -18,7 +18,6 @@ import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TestingTransaction;
 import org.aion.types.Address;
-import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -37,7 +36,7 @@ public class RejectionIntegrationTest {
     private static long ENERGY_PRICE = 1L;
     private static TestingBlock BLOCK = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
-    private static KernelInterface kernel;
+    private static TestingKernel kernel;
     private static AvmImpl avm;
 
     @BeforeClass
@@ -53,6 +52,7 @@ public class RejectionIntegrationTest {
 
     @Test
     public void rejectNonShadowJclSubclassError() throws Exception {
+        kernel.generateBlock();
         byte[] jar = JarBuilder.buildJarForMainAndClasses(RejectNonShadowJclSubclassError.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         
@@ -63,6 +63,7 @@ public class RejectionIntegrationTest {
 
     @Test
     public void rejectCorruptMainMethod() throws IOException {
+        kernel.generateBlock();
         byte[] classBytes = Files.readAllBytes(Paths.get("test/resources/TestClassTemplate_corruptMainMethod.class"));
         byte[] jar = JarBuilder.buildJarForExplicitClassNameAndBytecode("TestClassTemplate", classBytes);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
@@ -74,6 +75,7 @@ public class RejectionIntegrationTest {
 
     @Test
     public void rejectCorruptMethod() throws IOException {
+        kernel.generateBlock();
         byte[] classBytes = Files.readAllBytes(Paths.get("test/resources/TestClassTemplate_corruptMethod.class"));
         Map<String, byte[]> classMap = new HashMap<>();
         classMap.put("TestClassTemplate_corruptMethod", classBytes);

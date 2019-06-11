@@ -92,6 +92,7 @@ public class ConstantLoadingIntegrationTest {
     }
 
     private byte[] callStatic(TestingBlock block, Address contractAddr, int code) {
+        kernel.generateBlock();
         long energyLimit = 1_000_000l;
         byte[] argData = new byte[] { (byte)code };
         TestingTransaction call = TestingTransaction.call(deployer, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);

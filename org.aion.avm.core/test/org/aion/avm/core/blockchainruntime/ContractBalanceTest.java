@@ -18,7 +18,6 @@ import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TestingTransaction;
 import org.aion.types.Address;
-import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -34,7 +33,7 @@ public class ContractBalanceTest {
     private static long energyPrice = 5;
     private static TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
-    private static KernelInterface kernel;
+    private static TestingKernel kernel;
     private static AvmImpl avm;
 
     @BeforeClass
@@ -101,6 +100,7 @@ public class ContractBalanceTest {
      * Deploys the contract and transfers value amount of Aion into it.
      */
     private Address deployContract(BigInteger value) {
+        kernel.generateBlock();
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(ContractBalanceTarget.class);
         jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
@@ -111,6 +111,7 @@ public class ContractBalanceTest {
     }
 
     private BigInteger callContractToGetItsBalance(Address contract) {
+        kernel.generateBlock();
         byte[] callData = new ABIStreamingEncoder()
                 .encodeOneString("getBalanceOfThisContract")
                 .toBytes();
@@ -121,6 +122,7 @@ public class ContractBalanceTest {
     }
 
     private BigInteger callContractToGetClinitBalance(Address contract) {
+        kernel.generateBlock();
         byte[] callData = new ABIStreamingEncoder()
                 .encodeOneString("getBalanceOfThisContractDuringClinit")
                 .toBytes();
@@ -131,6 +133,7 @@ public class ContractBalanceTest {
     }
 
     private Address deployRedirectContract() {
+        kernel.generateBlock();
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(RedirectContract.class);
         jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
@@ -155,6 +158,7 @@ public class ContractBalanceTest {
     }
 
     private BigInteger runTransactionAndInterpretOutputAsBigInteger(Address contract, byte[] callData) {
+        kernel.generateBlock();        
         TestingTransaction transaction = TestingTransaction.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
         TransactionResult result = avm.run(ContractBalanceTest.kernel, new TestingTransaction[] {transaction})[0].get();
         assertTrue(result.getResultCode().isSuccess());

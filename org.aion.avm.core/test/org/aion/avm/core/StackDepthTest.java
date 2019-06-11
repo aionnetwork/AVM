@@ -46,6 +46,7 @@ public class StackDepthTest {
 
     @Test
     public void testDeepestValidStackDepth() {
+        kernel.generateBlock();
         byte[] data = encodeCall("recurse", 511);
 
         TestingTransaction transaction = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, 2_000_000, 1);
@@ -55,6 +56,7 @@ public class StackDepthTest {
 
     @Test
     public void testStackOverflow() {
+        kernel.generateBlock();
         byte[] data = encodeCall("recurse", 512);
 
         TestingTransaction transaction = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, 2_000_000, 1);
@@ -64,6 +66,7 @@ public class StackDepthTest {
 
     @Test
     public void testLargestValidFibonacci() {
+        kernel.generateBlock();
         byte[] data = encodeCall("fibonacci", 20);
 
         TestingTransaction transaction = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, 2_000_000, 1);
@@ -73,6 +76,7 @@ public class StackDepthTest {
 
     @Test
     public void testExpensiveFibonacci() {
+        kernel.generateBlock();
         byte[] data = encodeCall("fibonacci", 21);
 
         TestingTransaction transaction = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, 2_000_000, 1);

@@ -30,7 +30,7 @@ import org.junit.Test;
 public class PersistanceNameMappingTest {
     private static Address deployer = TestingKernel.PREMINED_ADDRESS;
     private static TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-    private static KernelInterface kernel = new TestingKernel(block);
+    private static TestingKernel kernel = new TestingKernel(block);
     private static AvmConfiguration configurationWithDebugEnabled;
     private static AvmConfiguration configurationWithDebugDisabled;
 
@@ -60,11 +60,14 @@ public class PersistanceNameMappingTest {
     }
 
     private void runTestLogic(AvmImpl avm) {
+        kernel.generateBlock();
         // Deploy the contract.
         Address contract = deployContract(avm, kernel);
+        kernel.generateBlock();
 
         // Set all the persistant fields.
         callContract(avm, kernel, contract, "setFields");
+        kernel.generateBlock();
 
         // Verify all the persistant fields have been retained.
         callContract(avm, kernel, contract, "verifyFields");

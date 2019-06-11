@@ -20,7 +20,6 @@ import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TestingTransaction;
 import org.aion.types.Address;
 import org.aion.vm.api.interfaces.IExecutionLog;
-import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.aion.vm.api.interfaces.TransactionSideEffects;
 import org.junit.AfterClass;
@@ -35,7 +34,7 @@ public class ContractLoggingTest {
     private static long energyPrice = 1;
     private static TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
-    private static KernelInterface kernel;
+    private static TestingKernel kernel;
     private static AvmImpl avm;
     private static Address contract;
 
@@ -187,6 +186,7 @@ public class ContractLoggingTest {
     }
 
     private TestingTransaction generateTxForMethodCall(String methodName, Object... args) {
+        kernel.generateBlock();
         byte[] callData = ABIUtil.encodeMethodArguments(methodName, args);
         return TestingTransaction.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
     }

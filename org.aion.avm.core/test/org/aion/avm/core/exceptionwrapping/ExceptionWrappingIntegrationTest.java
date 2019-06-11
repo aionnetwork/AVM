@@ -35,7 +35,7 @@ public class ExceptionWrappingIntegrationTest {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        KernelInterface kernel = new TestingKernel(block);
+        TestingKernel kernel = new TestingKernel(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
         // Deploy.
@@ -67,7 +67,7 @@ public class ExceptionWrappingIntegrationTest {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        KernelInterface kernel = new TestingKernel(block);
+        TestingKernel kernel = new TestingKernel(block);
         AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(persistentExceptionDeploymentEnergyCalls, () -> {throw new OutOfEnergyException();}), new EmptyCapabilities(), new AvmConfiguration());
         
         // Deploy.
@@ -89,7 +89,7 @@ public class ExceptionWrappingIntegrationTest {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        KernelInterface kernel = new TestingKernel(block);
+        TestingKernel kernel = new TestingKernel(block);
         AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(persistentExceptionDeploymentEnergyCalls, () -> {throw new NullPointerException();}), new EmptyCapabilities(), new AvmConfiguration());
         
         // Deploy.
@@ -111,7 +111,7 @@ public class ExceptionWrappingIntegrationTest {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(AttackExceptionHandlingTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        KernelInterface kernel = new TestingKernel(block);
+        TestingKernel kernel = new TestingKernel(block);
         AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(attackExceptionHandlingTargetDeploymentEnergyCalls, () -> {throw new OutOfMemoryError();}), new EmptyCapabilities(), new AvmConfiguration());
         
         // Deploy.
@@ -149,7 +149,7 @@ public class ExceptionWrappingIntegrationTest {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(AttackExceptionHandlingTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        KernelInterface kernel = new TestingKernel(block);
+        TestingKernel kernel = new TestingKernel(block);
         AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(attackExceptionHandlingTargetDeploymentEnergyCalls, () -> {throw new OutOfMemoryError();}), new EmptyCapabilities(), new AvmConfiguration());
         
         // Deploy.
@@ -182,28 +182,29 @@ public class ExceptionWrappingIntegrationTest {
     }
 
 
-    private int callReturnInt(TestingBlock block, KernelInterface kernel, AvmImpl avm, Address contractAddr, String methodName) {
+    private int callReturnInt(TestingBlock block, TestingKernel kernel, AvmImpl avm, Address contractAddr, String methodName) {
         byte[] result = commonSuccessCall(block, kernel, avm, contractAddr, methodName);
         return new ABIDecoder(result).decodeOneInteger();
     }
 
-    private byte[] callReturnByteArray(TestingBlock block, KernelInterface kernel, AvmImpl avm, Address contractAddr, String methodName) {
+    private byte[] callReturnByteArray(TestingBlock block, TestingKernel kernel, AvmImpl avm, Address contractAddr, String methodName) {
         byte[] result = commonSuccessCall(block, kernel, avm, contractAddr, methodName);
         return new ABIDecoder(result).decodeOneByteArray();
     }
 
-    private byte[] commonSuccessCall(TestingBlock block, KernelInterface kernel, AvmImpl avm, Address contractAddr, String methodName) {
+    private byte[] commonSuccessCall(TestingBlock block, TestingKernel kernel, AvmImpl avm, Address contractAddr, String methodName) {
         TransactionResult result = commonCallStatic(block, kernel, avm, contractAddr, methodName);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         return result.getReturnData();
     }
 
-    private ResultCode callStaticStatus(TestingBlock block, KernelInterface kernel, AvmImpl avm, Address contractAddr, String methodName) {
+    private ResultCode callStaticStatus(TestingBlock block, TestingKernel kernel, AvmImpl avm, Address contractAddr, String methodName) {
         TransactionResult result = commonCallStatic(block, kernel, avm, contractAddr, methodName);
         return result.getResultCode();
     }
 
-    private TransactionResult commonCallStatic(TestingBlock block, KernelInterface kernel, AvmImpl avm, Address contractAddr, String methodName) {
+    private TransactionResult commonCallStatic(TestingBlock block, TestingKernel kernel, AvmImpl avm, Address contractAddr, String methodName) {
+        kernel.generateBlock();
         org.aion.types.Address from = TestingKernel.PREMINED_ADDRESS;
         long energyLimit = 1_000_000l;
         byte[] argData = (null != methodName)

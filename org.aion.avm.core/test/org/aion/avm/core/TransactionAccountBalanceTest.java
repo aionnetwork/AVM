@@ -32,7 +32,7 @@ public class TransactionAccountBalanceTest {
     private static long energyPrice = 5;
     private static TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
-    private static KernelInterface kernel;
+    private static TestingKernel kernel;
     private static AvmImpl avm;
 
     @BeforeClass
@@ -229,6 +229,7 @@ public class TransactionAccountBalanceTest {
     }
 
     private TransactionResult deployContract(BigInteger value) {
+        kernel.generateBlock();
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(BasicAppTestTarget.class);
         jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
@@ -243,12 +244,14 @@ public class TransactionAccountBalanceTest {
     }
 
     private TransactionResult callContract(Address contract, BigInteger value) {
+        kernel.generateBlock();
         byte[] callData = new ABIStreamingEncoder().encodeOneString("allocateObjectArray").toBytes();
         TestingTransaction transaction = TestingTransaction.call(from, contract, kernel.getNonce(from), value, callData, energyLimit, energyPrice);
         return avm.run(TransactionAccountBalanceTest.kernel, new TestingTransaction[] {transaction})[0].get();
     }
 
     private TransactionResult transferValue(Address recipient, BigInteger value) {
+        kernel.generateBlock();
         TestingTransaction transaction = TestingTransaction.call(from, recipient, kernel.getNonce(from), value, new byte[0], BillingRules.BASIC_TRANSACTION_COST, energyPrice);
         return avm.run(TransactionAccountBalanceTest.kernel, new TestingTransaction[] {transaction})[0].get();
     }

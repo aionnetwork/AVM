@@ -57,6 +57,7 @@ public class KeyValueStoreTest {
 
     @Test
     public void testGetStorageKeyNotExist() {
+        kernel.generateBlock();
         byte[] key = Helpers.randomBytes(32);
         byte[] data = encodeOptionalArgsMethodCall("testAvmGetStorage", key, null);
         TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
@@ -68,6 +69,7 @@ public class KeyValueStoreTest {
 
     @Test
     public void testGetStorageWrongSizeKey() {
+        kernel.generateBlock();
         byte[] key = Helpers.randomBytes(33);
         byte[] data = encodeOptionalArgsMethodCall("testAvmGetStorage", key, null);
         TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
@@ -78,6 +80,7 @@ public class KeyValueStoreTest {
 
     @Test
     public void testPutStorageWrongSizeKey() {
+        kernel.generateBlock();
         byte[] key = Helpers.randomBytes(33);
         byte[] value = Helpers.randomBytes(32);
 
@@ -90,6 +93,7 @@ public class KeyValueStoreTest {
 
     @Test
     public void testPutGetStorageSuccess() {
+        kernel.generateBlock();
         byte[] key = Helpers.randomBytes(32);
         byte[] value = Helpers.randomBytes(32);
 
@@ -99,6 +103,7 @@ public class KeyValueStoreTest {
 
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         assertArrayEquals(new byte[0], txResult.getReturnData());
+        kernel.generateBlock();
 
         data = encodeOptionalArgsMethodCall("testAvmGetStorage", key, null);
         tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
@@ -110,6 +115,7 @@ public class KeyValueStoreTest {
 
     @Test
     public void testStoragePutNullDelete() {
+        kernel.generateBlock();
         byte[] key = Helpers.randomBytes(32);
         byte[] value = Helpers.randomBytes(32);
 
@@ -119,6 +125,7 @@ public class KeyValueStoreTest {
 
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         assertArrayEquals(new byte[0], txResult.getReturnData());
+        kernel.generateBlock();
 
         data = encodeOptionalArgsMethodCall("testAvmGetStorage", key, null);
         tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
@@ -126,6 +133,7 @@ public class KeyValueStoreTest {
 
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         assertArrayEquals(value, txResult.getReturnData());
+        kernel.generateBlock();
 
         // put null to delete
         data = encodeOptionalArgsMethodCall("testAvmPutStorageNullValue", key, null);
@@ -134,6 +142,7 @@ public class KeyValueStoreTest {
 
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         assertArrayEquals(new byte[0], txResult.getReturnData());
+        kernel.generateBlock();
 
         data = encodeOptionalArgsMethodCall("testAvmGetStorage", key, null);
         tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
@@ -145,6 +154,7 @@ public class KeyValueStoreTest {
 
     @Test
     public void testStorageBilling() {
+        kernel.generateBlock();
         byte[] key = new byte[]{93, -35, 110, 84, -89, -100, 19, 127, -13, 28, -39, 74, -110, -26, 13, -22, -30, 108, 115, 17, 57, 54, 74, -90, 45, -35, -21, 39, 109, -3, 111, -105};
         byte[] value= new byte[]{124, 22, 37, 17, -40, 97, -46, -103, -38, 48, 46, -115, -78, -5, -116, -15, 81, 94, -61, 52, -68, 73, -35, -34, -44, -82, -43, 68, -32, 100, -124, -124};
 
@@ -156,6 +166,7 @@ public class KeyValueStoreTest {
         assertArrayEquals(new byte[0], txResult.getReturnData());
         long deleteZeroCost = txResult.getEnergyUsed();
         assertEquals(51680L + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage, deleteZeroCost);
+        kernel.generateBlock();
 
         // zero -> nonzero
         data = encodeOptionalArgsMethodCall("testAvmPutStorage", key, value);
@@ -165,6 +176,7 @@ public class KeyValueStoreTest {
         assertArrayEquals(new byte[0], txResult.getReturnData());
         long setStorageCost = txResult.getEnergyUsed();
         assertEquals(55007L + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_setStorage + StorageFees.WRITE_PRICE_PER_BYTE * value.length, setStorageCost);
+        kernel.generateBlock();
 
         // nonzero -> nonzero
         data = encodeOptionalArgsMethodCall("testAvmPutStorage", key, value);
@@ -176,6 +188,7 @@ public class KeyValueStoreTest {
         assertEquals(55007L + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage + StorageFees.WRITE_PRICE_PER_BYTE * value.length, modifyStorageCost);
         // set storage cost 20000 + linear factor cost, modify storage cost 5000
         assertEquals(15000L, setStorageCost - modifyStorageCost);
+        kernel.generateBlock();
 
         // get nonzero
         data = encodeOptionalArgsMethodCall("testAvmGetStorage", key, null);
@@ -184,6 +197,7 @@ public class KeyValueStoreTest {
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         long getStorageCost = txResult.getEnergyUsed();
         assertEquals(49283L + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_getStorage + StorageFees.READ_PRICE_PER_BYTE * value.length, getStorageCost);
+        kernel.generateBlock();
 
         // nonzero -> zero
         data = encodeOptionalArgsMethodCall("testAvmPutStorageNullValue", key, null);
@@ -195,6 +209,7 @@ public class KeyValueStoreTest {
         assertEquals(51680 + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage - RuntimeMethodFeeSchedule.BlockchainRuntime_avm_deleteStorage_refund, deleteStorageCost);
         // both deletion cost 5000, but deleting a non-zero value gets 20000 refund
         assertEquals(15000L, deleteZeroCost - deleteStorageCost);
+        kernel.generateBlock();
 
         // get zero
         data = encodeOptionalArgsMethodCall("testAvmGetStorage", key, null);

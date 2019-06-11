@@ -46,6 +46,7 @@ public class IdentifierTest {
     public void testCharSet() {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(Identifier.class);
         long energyLimit = 10_000_000L;
+        kernel.generateBlock();
         TestingTransaction tx = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO,
             new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, energyPrice);
         TransactionResult txResult = avm.run(kernel, new TestingTransaction[]{tx})[0].get();
@@ -55,6 +56,7 @@ public class IdentifierTest {
 
         byte[] argData = encodeNoArgsMethodCall("sayHelloEN");
 
+        kernel.generateBlock();
         tx = TestingTransaction
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
                 energyLimit, energyPrice);
@@ -63,6 +65,7 @@ public class IdentifierTest {
 
         argData = encodeNoArgsMethodCall("sayHelloTC");
 
+        kernel.generateBlock();
         tx = TestingTransaction
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
                 energyLimit, energyPrice);
@@ -71,6 +74,7 @@ public class IdentifierTest {
 
         argData = encodeNoArgsMethodCall("sayHelloExtendChar");
 
+        kernel.generateBlock();
         tx = TestingTransaction
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
                 energyLimit, energyPrice);
@@ -81,6 +85,7 @@ public class IdentifierTest {
 
         argData = encodeNoArgsMethodCall("sayHelloExtendChar2");
 
+        kernel.generateBlock();
         tx = TestingTransaction
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
                 energyLimit, energyPrice);
@@ -89,6 +94,7 @@ public class IdentifierTest {
 
         argData = encodeNoArgsMethodCall("sayHelloExtendChar3");
 
+        kernel.generateBlock();
         tx = TestingTransaction
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
                 energyLimit, energyPrice);
@@ -97,6 +103,7 @@ public class IdentifierTest {
 
         argData = encodeNoArgsMethodCall("ÿ");
 
+        kernel.generateBlock();
         tx = TestingTransaction
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
                 energyLimit, energyPrice);
@@ -105,6 +112,7 @@ public class IdentifierTest {
 
         argData = encodeNoArgsMethodCall("哈囉");
 
+        kernel.generateBlock();
         tx = TestingTransaction
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
                 energyLimit, energyPrice);
@@ -116,6 +124,7 @@ public class IdentifierTest {
     public void testClassNaming() {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(哈哈ÿ.class);
         long energyLimit = 10_000_000L;
+        kernel.generateBlock();
         TestingTransaction tx = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO,
             new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, energyPrice);
         TransactionResult txResult = avm.run(kernel, new TestingTransaction[]{tx})[0].get();
@@ -125,6 +134,7 @@ public class IdentifierTest {
 
         byte[] argData = encodeNoArgsMethodCall("callInnerClass1");
 
+        kernel.generateBlock();
         tx = TestingTransaction
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
                 energyLimit, energyPrice);
@@ -133,6 +143,7 @@ public class IdentifierTest {
 
         argData = encodeNoArgsMethodCall("callInnerClass2");
 
+        kernel.generateBlock();
         tx = TestingTransaction
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
                 energyLimit, energyPrice);
@@ -144,6 +155,7 @@ public class IdentifierTest {
     public void testInvalidUtf8Code() {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(哈哈ÿ.class);
         long energyLimit = 10_000_000L;
+        kernel.generateBlock();
         TestingTransaction tx = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO,
             new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, energyPrice);
         TransactionResult txResult = avm.run(kernel, new TestingTransaction[]{tx})[0].get();
@@ -157,6 +169,7 @@ public class IdentifierTest {
 
         byte[] argData = encodeNoArgsMethodCall(methodName);
 
+        kernel.generateBlock();
         tx = TestingTransaction
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
                 energyLimit, energyPrice);
@@ -170,6 +183,7 @@ public class IdentifierTest {
 
         argData = encodeNoArgsMethodCall(methodName);
 
+        kernel.generateBlock();
         tx = TestingTransaction
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
                 energyLimit, energyPrice);
