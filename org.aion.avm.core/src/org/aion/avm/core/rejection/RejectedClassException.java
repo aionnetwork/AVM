@@ -64,6 +64,11 @@ public class RejectedClassException extends AvmException {
     public static RejectedClassException invokeDynamicHandleType(int handleKind, String methodDescriptor) {
         throw new RejectedClassException("Unsupported invokedymanic method handle: method descriptor: " + methodDescriptor +", reference kind: " + handleKind);
     }
+
+    public static RejectedClassException tooManyInstanceVariables(String className) {
+        throw new RejectedClassException("Class exceeds instance variable limit: " + className);
+    }
+
     public RejectedClassException(String message) {
         super(message);
     }
