@@ -19,7 +19,7 @@ import org.junit.*;
  * that constants are being correctly loaded, and can be referenced from, the constant class.
  */
 public class ConstantLoadingIntegrationTest {
-    private static org.aion.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
+    private static org.aion.vm.api.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
     private static TestingKernel kernel;
     private static AvmImpl avm;
 
@@ -93,7 +93,7 @@ public class ConstantLoadingIntegrationTest {
         kernel.generateBlock();
         long energyLimit = 1_000_000l;
         byte[] argData = new byte[] { (byte)code };
-        TestingTransaction call = TestingTransaction.call(deployer, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
+        TestingTransaction call = TestingTransaction.call(deployer, org.aion.vm.api.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
         AvmTransactionResult result = (AvmTransactionResult) avm.run(kernel, new TestingTransaction[] {call})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         return result.getReturnData();

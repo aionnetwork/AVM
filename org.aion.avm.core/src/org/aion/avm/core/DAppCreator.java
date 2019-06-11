@@ -40,7 +40,7 @@ import org.aion.avm.core.verification.Verifier;
 import i.*;
 import org.aion.kernel.*;
 import org.aion.parallel.TransactionTask;
-import org.aion.types.Address;
+import org.aion.vm.api.types.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;

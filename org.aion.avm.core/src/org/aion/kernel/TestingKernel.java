@@ -6,7 +6,7 @@ import org.aion.data.DirectoryBackedDataStore;
 import org.aion.data.IAccountStore;
 import org.aion.data.IDataStore;
 import org.aion.data.MemoryBackedDataStore;
-import org.aion.types.Address;
+import org.aion.vm.api.types.Address;
 
 import java.io.File;
 import org.aion.vm.api.interfaces.KernelInterface;

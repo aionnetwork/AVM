@@ -29,8 +29,8 @@ public class StrictFPVisitorTest {
     private long energyLimit = 10_000_000L;
     private long energyPrice = 1L;
 
-    private org.aion.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
-    private org.aion.types.Address dappAddress;
+    private org.aion.vm.api.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
+    private org.aion.vm.api.types.Address dappAddress;
 
     private TestingKernel kernel;
     private AvmImpl avm;
@@ -46,7 +46,7 @@ public class StrictFPVisitorTest {
         TestingTransaction tx = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionResult txResult = avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
-        dappAddress = org.aion.types.Address.wrap(txResult.getReturnData());
+        dappAddress = org.aion.vm.api.types.Address.wrap(txResult.getReturnData());
         assertTrue(null != dappAddress);
     }
 

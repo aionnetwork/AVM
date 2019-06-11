@@ -16,7 +16,7 @@ import org.junit.*;
 public class FunctionShadowTest {
     private static final long ENERGY_LIMIT = 6_000_000L;
     private static final long ERNGY_PRICE = 1L;
-    private static final org.aion.types.Address FROM = TestingKernel.PREMINED_ADDRESS;
+    private static final org.aion.vm.api.types.Address FROM = TestingKernel.PREMINED_ADDRESS;
 
     private static TestingKernel kernel;
     private static AvmImpl avm;
@@ -39,7 +39,7 @@ public class FunctionShadowTest {
     @Test
     public void testNonWhitelistFunction() {
         Class<?> testClass = FunctionShadowFailSupplierResource.class;
-        org.aion.types.Address dappAddr = deployTest(testClass);
+        org.aion.vm.api.types.Address dappAddr = deployTest(testClass);
         // We expect a deployment failure.
         Assert.assertNull(dappAddr);
     }
@@ -47,7 +47,7 @@ public class FunctionShadowTest {
     @Test
     public void testParameterFunction() {
         Class<?> testClass = FunctionShadowFailArgsResource.class;
-        org.aion.types.Address dappAddr = deployTest(testClass);
+        org.aion.vm.api.types.Address dappAddr = deployTest(testClass);
         // We expect a deployment failure.
         Assert.assertNull(dappAddr);
     }
@@ -55,7 +55,7 @@ public class FunctionShadowTest {
     @Test
     public void testSafeParameterFunction() {
         Class<?> testClass = FunctionShadowPassArgsResource.class;
-        org.aion.types.Address dappAddr = deployTest(testClass);
+        org.aion.vm.api.types.Address dappAddr = deployTest(testClass);
         // This case should succeed.
         Assert.assertNotNull(dappAddr);
     }
@@ -63,7 +63,7 @@ public class FunctionShadowTest {
     @Test
     public void testNoComparableFunction() {
         Class<?> testClass = FunctionShadowFailComparableResource.class;
-        org.aion.types.Address dappAddr = deployTest(testClass);
+        org.aion.vm.api.types.Address dappAddr = deployTest(testClass);
         // We expect a deployment failure.
         Assert.assertNull(dappAddr);
     }
@@ -72,7 +72,7 @@ public class FunctionShadowTest {
     public void testLambdaRunnable() {
         // deploy it
         Class<?> testClass = FunctionShadowResource.class;
-        org.aion.types.Address dappAddr = deployTest(testClass);
+        org.aion.vm.api.types.Address dappAddr = deployTest(testClass);
         
         // call transactions and validate the results
         oneCall(dappAddr, 0);
@@ -82,7 +82,7 @@ public class FunctionShadowTest {
     public void testLambdaFunction() {
         // deploy it
         Class<?> testClass = FunctionShadowResource.class;
-        org.aion.types.Address dappAddr = deployTest(testClass);
+        org.aion.vm.api.types.Address dappAddr = deployTest(testClass);
         
         // call transactions and validate the results
         oneCall(dappAddr, 1);
@@ -92,7 +92,7 @@ public class FunctionShadowTest {
     public void testSerializedLambdaRunnable() {
         // deploy it
         Class<?> testClass = FunctionShadowResource.class;
-        org.aion.types.Address dappAddr = deployTest(testClass);
+        org.aion.vm.api.types.Address dappAddr = deployTest(testClass);
         
         // Call the setup routine (2)
         oneCall(dappAddr, 2);
@@ -105,7 +105,7 @@ public class FunctionShadowTest {
     public void testSerializedLambdaFunction() {
         // deploy it
         Class<?> testClass = FunctionShadowResource.class;
-        org.aion.types.Address dappAddr = deployTest(testClass);
+        org.aion.vm.api.types.Address dappAddr = deployTest(testClass);
         
         // Call the setup routine (4)
         oneCall(dappAddr, 4);
@@ -118,7 +118,7 @@ public class FunctionShadowTest {
     public void testReferenceFunction() {
         // deploy it
         Class<?> testClass = FunctionShadowResource.class;
-        org.aion.types.Address dappAddr = deployTest(testClass);
+        org.aion.vm.api.types.Address dappAddr = deployTest(testClass);
         
         // call transactions and validate the results
         oneCall(dappAddr, 6);
@@ -128,7 +128,7 @@ public class FunctionShadowTest {
     public void testNonSharedLambdas() {
         // deploy it
         Class<?> testClass = FunctionShadowResource.class;
-        org.aion.types.Address dappAddr = deployTest(testClass);
+        org.aion.vm.api.types.Address dappAddr = deployTest(testClass);
         
         // call transactions and validate the results
         oneCall(dappAddr, 7);
@@ -138,24 +138,24 @@ public class FunctionShadowTest {
     public void testExceptionInLambdas() {
         // deploy it
         Class<?> testClass = FunctionShadowResource.class;
-        org.aion.types.Address dappAddr = deployTest(testClass);
+        org.aion.vm.api.types.Address dappAddr = deployTest(testClass);
         
         // call transactions and validate the results
         oneCall(dappAddr, 8);
     }
 
 
-    private org.aion.types.Address deployTest(Class<?> testClass) {
+    private org.aion.vm.api.types.Address deployTest(Class<?> testClass) {
         byte[] testJar = JarBuilder.buildJarForMainAndClassesAndUserlib(testClass);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
         TestingTransaction tx = TestingTransaction.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ERNGY_PRICE);
         byte[] returnData = avm.run(kernel, new TestingTransaction[] {tx})[0].get().getReturnData();
         return (null != returnData)
-                ? org.aion.types.Address.wrap(returnData)
+                ? org.aion.vm.api.types.Address.wrap(returnData)
                 : null;
     }
 
-    private void oneCall(org.aion.types.Address dappAddr, int transactionNumber) {
+    private void oneCall(org.aion.vm.api.types.Address dappAddr, int transactionNumber) {
         TestingTransaction tx = TestingTransaction.call(FROM, dappAddr, kernel.getNonce(FROM), BigInteger.ZERO, new byte[] {(byte)transactionNumber}, ENERGY_LIMIT, ERNGY_PRICE);
         AvmTransactionResult result = (AvmTransactionResult) avm.run(kernel, new TestingTransaction[] {tx})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());

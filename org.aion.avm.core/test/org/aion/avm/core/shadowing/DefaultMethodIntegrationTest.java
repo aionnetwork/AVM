@@ -19,7 +19,7 @@ import java.math.BigInteger;
  * Tests that we fail in a meaningful way when a DApp throws an exception due to a missing method.
  */
 public class DefaultMethodIntegrationTest {
-    private static org.aion.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
+    private static org.aion.vm.api.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
     private static TestingKernel kernel;
     private static AvmImpl avm;
 
@@ -65,7 +65,7 @@ public class DefaultMethodIntegrationTest {
         
         // Setup the call (parameters are currently ignored).
         byte[] argData = new byte[0];
-        TestingTransaction call = TestingTransaction.call(deployer, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
+        TestingTransaction call = TestingTransaction.call(deployer, org.aion.vm.api.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
         
         // The NoSuchMethodError triggers a "FAILED_EXCEPTION" state.
         AvmTransactionResult result = (AvmTransactionResult) avm.run(kernel, new TestingTransaction[] {call})[0].get();

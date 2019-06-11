@@ -1,6 +1,6 @@
 package org.aion.avm.tooling;
 
-import org.aion.types.Address;
+import org.aion.vm.api.types.Address;
 import org.aion.avm.tooling.poc.TRS;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionMap;

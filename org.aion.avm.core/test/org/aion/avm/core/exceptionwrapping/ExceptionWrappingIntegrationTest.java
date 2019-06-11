@@ -205,12 +205,12 @@ public class ExceptionWrappingIntegrationTest {
 
     private TransactionResult commonCallStatic(TestingBlock block, TestingKernel kernel, AvmImpl avm, Address contractAddr, String methodName) {
         kernel.generateBlock();
-        org.aion.types.Address from = TestingKernel.PREMINED_ADDRESS;
+        org.aion.vm.api.types.Address from = TestingKernel.PREMINED_ADDRESS;
         long energyLimit = 1_000_000l;
         byte[] argData = (null != methodName)
                 ? new ABIStreamingEncoder().encodeOneString(methodName).toBytes()
                 : new byte[0];
-        TestingTransaction call = TestingTransaction.call(from, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(from), BigInteger.ZERO, argData, energyLimit, 1l);
+        TestingTransaction call = TestingTransaction.call(from, org.aion.vm.api.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(from), BigInteger.ZERO, argData, energyLimit, 1l);
         return avm.run(kernel, new TestingTransaction[] {call})[0].get();
     }
 }

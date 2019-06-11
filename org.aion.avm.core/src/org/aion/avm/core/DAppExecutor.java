@@ -8,7 +8,7 @@ import org.aion.avm.core.util.Helpers;
 import i.*;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.parallel.TransactionTask;
-import org.aion.types.Address;
+import org.aion.vm.api.types.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

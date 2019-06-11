@@ -1,7 +1,7 @@
 package org.aion.avm.core.types;
 
 import i.RuntimeAssertionError;
-import org.aion.types.Address;
+import org.aion.vm.api.types.Address;
 import org.aion.vm.api.interfaces.InternalTransactionInterface;
 
 import java.math.BigInteger;
@@ -57,13 +57,13 @@ public final class InternalTransaction implements InternalTransactionInterface {
 
     @Override
     public Address getSenderAddress() {
-        return org.aion.types.Address.wrap(from);
+        return org.aion.vm.api.types.Address.wrap(from);
     }
 
     @Override
     public Address getDestinationAddress() {
         // The destination can be null in the case of contract creation.
-        return (to == null) ? null : org.aion.types.Address.wrap(to);
+        return (to == null) ? null : org.aion.vm.api.types.Address.wrap(to);
     }
 
     @Override

@@ -21,7 +21,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class EnergyUsageDebugModeTest {
     private static TestingKernel kernel;
-    private static org.aion.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
+    private static org.aion.vm.api.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
 
 
     @BeforeClass
@@ -70,7 +70,7 @@ public class EnergyUsageDebugModeTest {
 
         long energyLimit = 1_000_000l;
         byte[] argData = encodeTryToDivideInteger(a, b);
-        TestingTransaction call = TestingTransaction.call(deployer, org.aion.types.Address.wrap(contractAddressDebug.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
+        TestingTransaction call = TestingTransaction.call(deployer, org.aion.vm.api.types.Address.wrap(contractAddressDebug.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
         TransactionResult result = avmDebugMode.run(kernel, new TestingTransaction[] {call})[0].get();
 
         long energyUsed = energyLimit - result.getEnergyRemaining();
@@ -96,7 +96,7 @@ public class EnergyUsageDebugModeTest {
         Address contractAddressNormal = new Address(createResult.getReturnData());
 
         byte[] argData = encodeTryToDivideInteger(a, b);
-        TestingTransaction call = TestingTransaction.call(deployer, org.aion.types.Address.wrap(contractAddressNormal.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
+        TestingTransaction call = TestingTransaction.call(deployer, org.aion.vm.api.types.Address.wrap(contractAddressNormal.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
         TransactionResult result = avmNormalMode.run(kernel, new TestingTransaction[] {call})[0].get();
         long energyUsed = energyLimit - result.getEnergyRemaining();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());

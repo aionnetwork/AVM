@@ -95,7 +95,7 @@ public class SelfDestructTest {
         // Give it some money, so we can check this later.
         sendMoney(target, new BigInteger("128"));
         
-        long start = avmRule.kernel.getBalance(org.aion.types.Address.wrap(target.toByteArray())).longValueExact();
+        long start = avmRule.kernel.getBalance(org.aion.vm.api.types.Address.wrap(target.toByteArray())).longValueExact();
         Assert.assertEquals(128L, start);
         
         byte[] argData = ABIUtil.encodeMethodArguments("deleteAndReturnBalance", deployer);
@@ -112,7 +112,7 @@ public class SelfDestructTest {
         // Give it some money, so we can check this later.
         sendMoney(target, new BigInteger("128"));
         
-        long start = avmRule.kernel.getBalance(org.aion.types.Address.wrap(target.toByteArray())).longValueExact();
+        long start = avmRule.kernel.getBalance(org.aion.vm.api.types.Address.wrap(target.toByteArray())).longValueExact();
         Assert.assertEquals(128L, start);
         
         byte[] argData = ABIUtil.encodeMethodArguments("deleteAndReturnBalanceFromAnother", deployer, bystander);
@@ -164,7 +164,7 @@ public class SelfDestructTest {
         
         // Give it some money, so we can check this later.
         sendMoney(target, new BigInteger("128"));
-        long start = avmRule.kernel.getBalance(org.aion.types.Address.wrap(target.toByteArray())).longValueExact();
+        long start = avmRule.kernel.getBalance(org.aion.vm.api.types.Address.wrap(target.toByteArray())).longValueExact();
         Assert.assertEquals(128L, start);
         
         byte[] argData = ABIUtil.encodeMethodArguments("deleteAndReturnBeneficiaryBalance", beneficiary);
@@ -173,7 +173,7 @@ public class SelfDestructTest {
         failToCall(target);
         
         // Check that we can see the balance having moved.
-        long end = avmRule.kernel.getBalance(org.aion.types.Address.wrap(beneficiary.toByteArray())).longValueExact();
+        long end = avmRule.kernel.getBalance(org.aion.vm.api.types.Address.wrap(beneficiary.toByteArray())).longValueExact();
         Assert.assertEquals(128L, end);
     }
 

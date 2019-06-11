@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 
 import org.aion.avm.tooling.hash.HashUtils;
 import org.aion.kernel.TestingKernel;
-import org.aion.types.Address;
+import org.aion.vm.api.types.Address;
 import org.aion.vm.api.interfaces.TransactionInterface;
 
 

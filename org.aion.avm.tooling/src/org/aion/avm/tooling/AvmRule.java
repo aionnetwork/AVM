@@ -159,7 +159,7 @@ public final class AvmRule implements TestRule {
      * @return Result of the operation
      */
     public ResultWrapper balanceTransfer(Address from, Address to, BigInteger value, long energyLimit, long energyPrice) {
-        TestingTransaction tx = TestingTransaction.call(org.aion.types.Address.wrap(from.toByteArray()), org.aion.types.Address.wrap(to.toByteArray()), kernel.getNonce(org.aion.types.Address.wrap(from.toByteArray())), value, new byte[0], energyLimit, energyPrice);
+        TestingTransaction tx = TestingTransaction.call(org.aion.vm.api.types.Address.wrap(from.toByteArray()), org.aion.vm.api.types.Address.wrap(to.toByteArray()), kernel.getNonce(org.aion.vm.api.types.Address.wrap(from.toByteArray())), value, new byte[0], energyLimit, energyPrice);
 
         return new ResultWrapper(avm.run(this.kernel, new TestingTransaction[]{tx})[0].get());
     }
@@ -170,7 +170,7 @@ public final class AvmRule implements TestRule {
      * @return Address of the newly created account
      */
     public Address getRandomAddress(BigInteger initialBalance) {
-        org.aion.types.Address account = Helpers.randomAddress();
+        org.aion.vm.api.types.Address account = Helpers.randomAddress();
         kernel.adjustBalance(account, initialBalance);
         return new Address(account.toBytes());
     }
@@ -193,7 +193,7 @@ public final class AvmRule implements TestRule {
         if (automaticBlockGenerationEnabled) {
             this.kernel.generateBlock();
         }
-        TestingTransaction tx = TestingTransaction.call(org.aion.types.Address.wrap(from.toByteArray()), org.aion.types.Address.wrap(dappAddress.toByteArray()), kernel.getNonce(org.aion.types.Address.wrap(from.toByteArray())), value, transactionData, energyLimit, energyPrice);
+        TestingTransaction tx = TestingTransaction.call(org.aion.vm.api.types.Address.wrap(from.toByteArray()), org.aion.vm.api.types.Address.wrap(dappAddress.toByteArray()), kernel.getNonce(org.aion.vm.api.types.Address.wrap(from.toByteArray())), value, transactionData, energyLimit, energyPrice);
         return new ResultWrapper(avm.run(this.kernel, new TestingTransaction[]{tx})[0].get());
     }
 
@@ -201,7 +201,7 @@ public final class AvmRule implements TestRule {
         if (automaticBlockGenerationEnabled) {
             this.kernel.generateBlock();
         }
-        TestingTransaction tx = TestingTransaction.create(org.aion.types.Address.wrap(from.toByteArray()), kernel.getNonce(org.aion.types.Address.wrap(from.toByteArray())), value, dappBytes, energyLimit, energyPrice);
+        TestingTransaction tx = TestingTransaction.create(org.aion.vm.api.types.Address.wrap(from.toByteArray()), kernel.getNonce(org.aion.vm.api.types.Address.wrap(from.toByteArray())), value, dappBytes, energyLimit, energyPrice);
         return new ResultWrapper(avm.run(this.kernel, new TestingTransaction[]{tx})[0].get());
     }
 

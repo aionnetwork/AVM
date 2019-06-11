@@ -21,7 +21,7 @@ import i.RuntimeAssertionError;
 import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.parallel.AddressResourceMonitor;
 import org.aion.parallel.TransactionTask;
-import org.aion.types.Address;
+import org.aion.vm.api.types.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.SimpleFuture;
 import org.aion.vm.api.interfaces.TransactionInterface;

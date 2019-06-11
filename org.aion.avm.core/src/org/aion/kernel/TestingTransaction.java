@@ -5,7 +5,7 @@ import java.math.BigInteger;
 import i.RuntimeAssertionError;
 import org.aion.avm.core.BillingRules;
 import org.aion.avm.core.util.Helpers;
-import org.aion.types.Address;
+import org.aion.vm.api.types.Address;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -71,13 +71,13 @@ public final class TestingTransaction implements TransactionInterface {
 
     @Override
     public Address getSenderAddress() {
-        return org.aion.types.Address.wrap(from);
+        return org.aion.vm.api.types.Address.wrap(from);
     }
 
     @Override
     public Address getDestinationAddress() {
         // The destination can be null in the case of contract creation.
-        return (to == null) ? null : org.aion.types.Address.wrap(to);
+        return (to == null) ? null : org.aion.vm.api.types.Address.wrap(to);
     }
 
     @Override

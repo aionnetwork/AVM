@@ -8,7 +8,7 @@ import java.util.concurrent.CyclicBarrier;
 import i.RuntimeAssertionError;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.parallel.TransactionTask;
-import org.aion.types.Address;
+import org.aion.vm.api.types.Address;
 import org.aion.vm.api.interfaces.SimpleFuture;
 import org.aion.vm.api.interfaces.TransactionInterface;
 import org.aion.vm.api.interfaces.TransactionResult;

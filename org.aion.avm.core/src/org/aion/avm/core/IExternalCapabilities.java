@@ -1,6 +1,6 @@
 package org.aion.avm.core;
 
-import org.aion.types.Address;
+import org.aion.vm.api.types.Address;
 import org.aion.vm.api.interfaces.TransactionInterface;
 
 

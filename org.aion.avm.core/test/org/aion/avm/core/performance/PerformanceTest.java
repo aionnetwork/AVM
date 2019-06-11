@@ -33,7 +33,7 @@ public class PerformanceTest {
     private static long energyLimit = 1_000_000_000_000_000l;
     private static long energyPrice = 1l;
 
-    private org.aion.types.Address[] userAddrs = new org.aion.types.Address[userDappNum];
+    private org.aion.vm.api.types.Address[] userAddrs = new org.aion.vm.api.types.Address[userDappNum];
     private Address[] contractAddrs = new Address[userDappNum];
 
     @Before
@@ -58,7 +58,7 @@ public class PerformanceTest {
         // Deploy
         for(int i = 0; i < userDappNum; ++i) {
             //creating users
-            org.aion.types.Address userAddress = Helpers.randomAddress();
+            org.aion.vm.api.types.Address userAddress = Helpers.randomAddress();
             kernel.createAccount(userAddress);
             kernel.adjustBalance(userAddress, BigInteger.TEN.pow(18));
             userAddrs[i] = userAddress;
@@ -113,9 +113,9 @@ public class PerformanceTest {
         System.out.printf("%s: %d ms\n", testName, timeElapsed);
     }
 
-    private void callSingle(org.aion.types.Address sender, Address contractAddr, String methodName) {
+    private void callSingle(org.aion.vm.api.types.Address sender, Address contractAddr, String methodName) {
         byte[] argData = new ABIStreamingEncoder().encodeOneString(methodName).toBytes();
-        TestingTransaction call = TestingTransaction.call(sender, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
+        TestingTransaction call = TestingTransaction.call(sender, org.aion.vm.api.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
         AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {call})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
     }
@@ -158,9 +158,9 @@ public class PerformanceTest {
         for(int j = 0; j < contextNum; ++j) {
             TestingTransaction[] transactionArray = new TestingTransaction[transactionBlockSize];
             for (int i = 0; i < transactionBlockSize; ++i) {
-                org.aion.types.Address sender = userAddrs[i];
+                org.aion.vm.api.types.Address sender = userAddrs[i];
                 Address contractAddr = Nto1 ? contractAddrs[0] : contractAddrs[i];
-                transactionArray[i] = TestingTransaction.call(sender, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
+                transactionArray[i] = TestingTransaction.call(sender, org.aion.vm.api.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
             }
             SimpleFuture<TransactionResult>[] futures = avm.run(this.kernel, transactionArray);
             for (SimpleFuture<TransactionResult> future : futures) {

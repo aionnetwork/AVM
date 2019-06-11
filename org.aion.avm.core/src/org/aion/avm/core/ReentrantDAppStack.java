@@ -6,7 +6,7 @@ import java.util.Deque;
 import org.aion.avm.core.persistence.LoadedDApp;
 import i.InternedClasses;
 import i.RuntimeAssertionError;
-import org.aion.types.Address;
+import org.aion.vm.api.types.Address;
 
 
 /**

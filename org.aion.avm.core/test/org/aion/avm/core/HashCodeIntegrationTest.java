@@ -23,7 +23,7 @@ import org.junit.Test;
  * Tests the hashCode behaviour of the contract code, when invoked within independent transactions.
  */
 public class HashCodeIntegrationTest {
-    private org.aion.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
+    private org.aion.vm.api.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
     private TestingKernel kernel;
     private AvmImpl avm;
 
@@ -65,7 +65,7 @@ public class HashCodeIntegrationTest {
     private int callStatic(Address contractAddr, String methodName) {
         long energyLimit = 1_000_000l;
         byte[] argData = new ABIStreamingEncoder().encodeOneString(methodName).toBytes();
-        TestingTransaction call = TestingTransaction.call(deployer, org.aion.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
+        TestingTransaction call = TestingTransaction.call(deployer, org.aion.vm.api.types.Address.wrap(contractAddr.toByteArray()), kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
         AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {call})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         ABIDecoder decoder = new ABIDecoder(result.getReturnData());

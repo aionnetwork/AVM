@@ -164,7 +164,7 @@ public class InternalCallContractBalanceTest {
 
     private void giveValueToContracts(Address[] contracts, BigInteger[] value) {
         for (int i = 0; i < contracts.length; i++) {
-            avmRule.kernel.adjustBalance(org.aion.types.Address.wrap(contracts[i].toByteArray()), value[i]);
+            avmRule.kernel.adjustBalance(org.aion.vm.api.types.Address.wrap(contracts[i].toByteArray()), value[i]);
         }
     }
 
@@ -180,7 +180,7 @@ public class InternalCallContractBalanceTest {
 
     private static void verifyEachContractHasSpecifiedBalance(Address[] contracts, BigInteger[] balances) {
         for (int i = 0; i < contracts.length; i++) {
-            assertEquals(avmRule.kernel.getBalance(org.aion.types.Address.wrap(contracts[i].toByteArray())), balances[i]);
+            assertEquals(avmRule.kernel.getBalance(org.aion.vm.api.types.Address.wrap(contracts[i].toByteArray())), balances[i]);
         }
     }
 

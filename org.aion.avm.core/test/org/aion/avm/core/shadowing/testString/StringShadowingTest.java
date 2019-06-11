@@ -21,7 +21,7 @@ public class StringShadowingTest {
 
     @Test
     public void testSingleString() {
-        org.aion.types.Address from = TestingKernel.PREMINED_ADDRESS;
+        org.aion.vm.api.types.Address from = TestingKernel.PREMINED_ADDRESS;
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         long energyLimit = 6_000_0000;
         long energyPrice = 1;
@@ -32,7 +32,7 @@ public class StringShadowingTest {
         byte[] testJar = JarBuilder.buildJarForMainAndClassesAndUserlib(TestResource.class);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
         TestingTransaction tx = TestingTransaction.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        org.aion.types.Address dappAddr = org.aion.types.Address.wrap(avm.run(kernel, new TestingTransaction[] {tx})[0].get().getReturnData());
+        org.aion.vm.api.types.Address dappAddr = org.aion.vm.api.types.Address.wrap(avm.run(kernel, new TestingTransaction[] {tx})[0].get().getReturnData());
         kernel.generateBlock();
 
         // call transactions and validate the results
@@ -91,7 +91,7 @@ public class StringShadowingTest {
      */
     @Test
     public void testBatchingCalls() {
-        org.aion.types.Address from = TestingKernel.PREMINED_ADDRESS;
+        org.aion.vm.api.types.Address from = TestingKernel.PREMINED_ADDRESS;
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         long energyLimit = 6_000_0000;
         long energyPrice = 1;
@@ -102,7 +102,7 @@ public class StringShadowingTest {
         byte[] testJar = JarBuilder.buildJarForMainAndClassesAndUserlib(TestResource.class);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
         TestingTransaction tx = TestingTransaction.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        org.aion.types.Address dappAddr = org.aion.types.Address.wrap(avm.run(kernel, new TestingTransaction[] {tx})[0].get().getReturnData());
+        org.aion.vm.api.types.Address dappAddr = org.aion.vm.api.types.Address.wrap(avm.run(kernel, new TestingTransaction[] {tx})[0].get().getReturnData());
 
         // Now, batch the other 6 transactions together and verify that the result is the same (note that the nonces are artificially incremented since these all have the same sender).
         TestingTransaction[] batch = new TestingTransaction[6];

@@ -6,7 +6,7 @@ import java.util.Arrays;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TransactionalKernel;
-import org.aion.types.Address;
+import org.aion.vm.api.types.Address;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.junit.Assert;
 import org.junit.Test;

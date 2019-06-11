@@ -1,7 +1,7 @@
 package org.aion.avm.core.util;
 
 import p.avm.Blockchain;
-import org.aion.types.Address;
+import org.aion.vm.api.types.Address;
 import i.IBlockchainRuntime;
 import i.IRuntimeSetup;
 import org.aion.avm.core.ClassToolchain;

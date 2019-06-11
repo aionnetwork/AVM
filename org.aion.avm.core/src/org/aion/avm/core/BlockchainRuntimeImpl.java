@@ -61,7 +61,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     @Override
     public Address avm_getAddress() {
         if (null == this.addressCache) {
-            org.aion.types.Address address = tx.destinationAddress;
+            org.aion.vm.api.types.Address address = tx.destinationAddress;
             this.addressCache = new Address(address.toBytes().clone());
         }
 
@@ -159,7 +159,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         byte[] keyCopy = Arrays.copyOf(key.getUnderlying(), key.getUnderlying().length);
         byte[] valueCopy = (value == null) ? null : Arrays.copyOf(value.getUnderlying(), value.getUnderlying().length);
 
-        org.aion.types.Address contractAddress = this.tx.destinationAddress;
+        org.aion.vm.api.types.Address contractAddress = this.tx.destinationAddress;
         if (value == null) {
             kernel.removeStorage(contractAddress, keyCopy);
         } else {
@@ -175,7 +175,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         require(key != null, "Key can't be NULL");
         require(key.getUnderlying().length == 32, "Key must be 32 bytes");
 
-        org.aion.types.Address contractAddress = this.tx.destinationAddress;
+        org.aion.vm.api.types.Address contractAddress = this.tx.destinationAddress;
         byte[] data = this.kernel.getStorage(contractAddress, key.getUnderlying());
         return (null != data)
             ? new ByteArray(Arrays.copyOf(data, data.length))
@@ -188,13 +188,13 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
         // Acquire resource before reading
         avm.getResourceMonitor().acquire(address.toByteArray(), this.task);
-        return new s.java.math.BigInteger(this.kernel.getBalance(org.aion.types.Address.wrap(address.toByteArray())));
+        return new s.java.math.BigInteger(this.kernel.getBalance(org.aion.vm.api.types.Address.wrap(address.toByteArray())));
     }
 
     @Override
     public s.java.math.BigInteger avm_getBalanceOfThisContract() {
         // This method can be called inside clinit so CREATE is a valid context.
-        org.aion.types.Address contractAddress = this.tx.destinationAddress;
+        org.aion.vm.api.types.Address contractAddress = this.tx.destinationAddress;
 
         // Acquire resource before reading
         avm.getResourceMonitor().acquire(contractAddress.toBytes(), this.task);
@@ -207,7 +207,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
         // Acquire resource before reading
         avm.getResourceMonitor().acquire(address.toByteArray(), this.task);
-        byte[] vc = this.kernel.getCode(org.aion.types.Address.wrap(address.toByteArray()));
+        byte[] vc = this.kernel.getCode(org.aion.vm.api.types.Address.wrap(address.toByteArray()));
         return vc == null ? 0 : vc.length;
     }
 
@@ -218,7 +218,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public Result avm_call(Address targetAddress, s.java.math.BigInteger value, ByteArray data, long energyLimit) {
-        org.aion.types.Address internalSender = this.tx.destinationAddress;
+        org.aion.vm.api.types.Address internalSender = this.tx.destinationAddress;
 
         java.math.BigInteger underlyingValue = value.getUnderlying();
         require(targetAddress != null, "Destination can't be NULL");
@@ -233,7 +233,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
             throw new CallDepthLimitExceededException("Internal call depth cannot be more than 10");
         }
 
-        org.aion.types.Address target = org.aion.types.Address.wrap(targetAddress.toByteArray());
+        org.aion.vm.api.types.Address target = org.aion.vm.api.types.Address.wrap(targetAddress.toByteArray());
         if (!kernel.destinationAddressIsSafeForThisVM(target)) {
             throw new IllegalArgumentException("Attempt to execute code using a foreign virtual machine");
         }
@@ -254,7 +254,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public Result avm_create(s.java.math.BigInteger value, ByteArray data, long energyLimit) {
-        org.aion.types.Address internalSender = this.tx.destinationAddress;
+        org.aion.vm.api.types.Address internalSender = this.tx.destinationAddress;
 
         java.math.BigInteger underlyingValue = value.getUnderlying();
         require(underlyingValue.compareTo(java.math.BigInteger.ZERO) >= 0 , "Value can't be negative");
@@ -291,7 +291,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     public void avm_selfDestruct(Address beneficiary) {
         require(null != beneficiary, "Beneficiary can't be NULL");
 
-        org.aion.types.Address contractAddr = this.tx.destinationAddress;
+        org.aion.vm.api.types.Address contractAddr = this.tx.destinationAddress;
 
         // Acquire beneficiary address, the address of current contract is already locked at this stage.
         this.avm.getResourceMonitor().acquire(beneficiary.toByteArray(), this.task);
@@ -299,7 +299,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         // Value transfer
         java.math.BigInteger balanceToTransfer = this.kernel.getBalance(contractAddr);
         this.kernel.adjustBalance(contractAddr, balanceToTransfer.negate());
-        this.kernel.adjustBalance(org.aion.types.Address.wrap(beneficiary.toByteArray()), balanceToTransfer);
+        this.kernel.adjustBalance(org.aion.vm.api.types.Address.wrap(beneficiary.toByteArray()), balanceToTransfer);
 
         // Delete Account
         // Note that the account being deleted means it will still run but no DApp which sees this delete
@@ -457,7 +457,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         AvmTransaction avmTransaction = AvmTransaction.from(this.capabilities, internalTx);
 
         // Acquire the target of the internal transaction
-        org.aion.types.Address target = avmTransaction.destinationAddress;
+        org.aion.vm.api.types.Address target = avmTransaction.destinationAddress;
         avm.getResourceMonitor().acquire(target.toBytes(), task);
 
         // execute the internal transaction

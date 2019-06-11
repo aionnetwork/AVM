@@ -149,7 +149,7 @@ public class ParallelExecution {
                 public Result avm_call(Address targetAddress, s.java.math.BigInteger value, ByteArray payload, long energyLimit) {
                     InternalTransaction internalTx = InternalTransaction.buildTransactionOfTypeCall(
                             tx.getDestinationAddress(),
-                            org.aion.types.Address.wrap(targetAddress.toByteArray()),
+                            org.aion.vm.api.types.Address.wrap(targetAddress.toByteArray()),
                             BigInteger.ZERO,
                             value.getUnderlying(),
                             payload.getUnderlying(),

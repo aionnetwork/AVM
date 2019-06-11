@@ -61,10 +61,10 @@ public class BasicPerfTest {
 
 
     private static class TestRunnable extends Thread {
-        private org.aion.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
+        private org.aion.vm.api.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
         private KernelInterface kernel;
         private AvmImpl avm;
-        private org.aion.types.Address contractAddress;
+        private org.aion.vm.api.types.Address contractAddress;
         private Throwable backgroundThrowable;
         public void deploy(byte[] jar, byte[] arguments) {
             // Deploy.
@@ -75,7 +75,7 @@ public class BasicPerfTest {
             TestingTransaction tx1 = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), transaction1EnergyLimit, 1L);
             TransactionResult result1 = this.avm.run(this.kernel, new TestingTransaction[] {tx1})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
-            this.contractAddress = org.aion.types.Address.wrap(result1.getReturnData());
+            this.contractAddress = org.aion.vm.api.types.Address.wrap(result1.getReturnData());
         }
         public void waitForSafeTermination() throws Throwable {
             this.join();

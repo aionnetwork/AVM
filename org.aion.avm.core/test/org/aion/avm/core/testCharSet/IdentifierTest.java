@@ -22,8 +22,8 @@ public class IdentifierTest {
 
     private static long energyPrice = 1L;
 
-    private static org.aion.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
-    private static org.aion.types.Address dappAddress;
+    private static org.aion.vm.api.types.Address deployer = TestingKernel.PREMINED_ADDRESS;
+    private static org.aion.vm.api.types.Address dappAddress;
 
     private static TestingKernel kernel;
     private static AvmImpl avm;
@@ -50,7 +50,7 @@ public class IdentifierTest {
             new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, energyPrice);
         TransactionResult txResult = avm.run(kernel, new TestingTransaction[]{tx})[0].get();
 
-        dappAddress = org.aion.types.Address.wrap(txResult.getReturnData());
+        dappAddress = org.aion.vm.api.types.Address.wrap(txResult.getReturnData());
         assertNotNull(dappAddress);
 
         byte[] argData = encodeNoArgsMethodCall("sayHelloEN");
@@ -128,7 +128,7 @@ public class IdentifierTest {
             new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, energyPrice);
         TransactionResult txResult = avm.run(kernel, new TestingTransaction[]{tx})[0].get();
 
-        dappAddress = org.aion.types.Address.wrap(txResult.getReturnData());
+        dappAddress = org.aion.vm.api.types.Address.wrap(txResult.getReturnData());
         assertNotNull(dappAddress);
 
         byte[] argData = encodeNoArgsMethodCall("callInnerClass1");
@@ -158,7 +158,7 @@ public class IdentifierTest {
         TestingTransaction tx = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO,
             new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, energyPrice);
         TransactionResult txResult = avm.run(kernel, new TestingTransaction[]{tx})[0].get();
-        dappAddress = org.aion.types.Address.wrap(txResult.getReturnData());
+        dappAddress = org.aion.vm.api.types.Address.wrap(txResult.getReturnData());
         assertNotNull(dappAddress);
 
         byte[] invalidCode = new byte[]{(byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff,

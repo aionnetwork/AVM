@@ -37,11 +37,11 @@ public class TransactionTask implements Comparable<TransactionTask>{
     private Stack<SideEffects> sideEffectsStack;
     private Address origin;
     private int depth;
-    private Set<org.aion.types.Address> selfDestructedAddresses;
-    private Set<Pair<org.aion.types.Address, ByteArrayWrapper>> resetStorageKeys;
+    private Set<org.aion.vm.api.types.Address> selfDestructedAddresses;
+    private Set<Pair<org.aion.vm.api.types.Address, ByteArrayWrapper>> resetStorageKeys;
 
 
-    public TransactionTask(KernelInterface parentKernel, AvmTransaction tx, int index, org.aion.types.Address origin){
+    public TransactionTask(KernelInterface parentKernel, AvmTransaction tx, int index, org.aion.vm.api.types.Address origin){
         this.parentKernel = parentKernel;
         this.externalTransaction = tx;
         this.index = index;
@@ -181,11 +181,11 @@ public class TransactionTask implements Comparable<TransactionTask>{
         depth--;
     }
 
-    public void addSelfDestructAddress(org.aion.types.Address address){ selfDestructedAddresses.add(address); }
+    public void addSelfDestructAddress(org.aion.vm.api.types.Address address){ selfDestructedAddresses.add(address); }
 
     public int getSelfDestructAddressCount(){ return selfDestructedAddresses.size(); }
 
-    public void addResetStoragekey(org.aion.types.Address address, byte[] key){ resetStorageKeys.add(Pair.of(address, new ByteArrayWrapper(key))); }
+    public void addResetStoragekey(org.aion.vm.api.types.Address address, byte[] key){ resetStorageKeys.add(Pair.of(address, new ByteArrayWrapper(key))); }
 
     public int getResetStorageKeyCount(){ return resetStorageKeys.size(); }
 

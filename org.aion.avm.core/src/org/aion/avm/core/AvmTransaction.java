@@ -2,7 +2,7 @@ package org.aion.avm.core;
 
 import java.math.BigInteger;
 
-import org.aion.types.Address;
+import org.aion.vm.api.types.Address;
 import org.aion.vm.api.interfaces.TransactionInterface;
 
 

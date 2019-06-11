@@ -2,7 +2,7 @@ package org.aion.kernel;
 
 import java.math.BigInteger;
 
-import org.aion.types.Address;
+import org.aion.vm.api.types.Address;
 
 
 public final class TestingBlock {

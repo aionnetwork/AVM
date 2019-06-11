@@ -34,16 +34,16 @@ public class SelfDestructTest {
     public void selfDestruct() {
         long energyUsed = call("selfDestruct", beneficiary);
         Assert.assertEquals(45009 - refundPerContract, energyUsed);
-        Assert.assertEquals(BigInteger.ZERO, avmRule.kernel.getBalance(new org.aion.types.Address(dappAddr.toByteArray())));
-        Assert.assertEquals(initialBalance, avmRule.kernel.getBalance(new org.aion.types.Address(beneficiary.toByteArray())));
+        Assert.assertEquals(BigInteger.ZERO, avmRule.kernel.getBalance(new org.aion.vm.api.types.Address(dappAddr.toByteArray())));
+        Assert.assertEquals(initialBalance, avmRule.kernel.getBalance(new org.aion.vm.api.types.Address(beneficiary.toByteArray())));
     }
 
     @Test
     public void selfDestructMulti() {
         long energyUsed = call("selfDestructMulti", beneficiary);
         Assert.assertEquals(63539 - refundPerContract, energyUsed);
-        Assert.assertEquals(BigInteger.ZERO, avmRule.kernel.getBalance(new org.aion.types.Address(dappAddr.toByteArray())));
-        Assert.assertEquals(initialBalance, avmRule.kernel.getBalance(new org.aion.types.Address(beneficiary.toByteArray())));
+        Assert.assertEquals(BigInteger.ZERO, avmRule.kernel.getBalance(new org.aion.vm.api.types.Address(dappAddr.toByteArray())));
+        Assert.assertEquals(initialBalance, avmRule.kernel.getBalance(new org.aion.vm.api.types.Address(beneficiary.toByteArray())));
     }
 
     @Test
@@ -53,8 +53,8 @@ public class SelfDestructTest {
         long energyUsed = call("reentrantSelfDestruct", txData);
 
         Assert.assertEquals(64182 - refundPerContract, energyUsed);
-        Assert.assertEquals(BigInteger.ZERO, avmRule.kernel.getBalance(new org.aion.types.Address(dappAddr.toByteArray())));
-        Assert.assertEquals(initialBalance, avmRule.kernel.getBalance(new org.aion.types.Address(beneficiary.toByteArray())));
+        Assert.assertEquals(BigInteger.ZERO, avmRule.kernel.getBalance(new org.aion.vm.api.types.Address(dappAddr.toByteArray())));
+        Assert.assertEquals(initialBalance, avmRule.kernel.getBalance(new org.aion.vm.api.types.Address(beneficiary.toByteArray())));
     }
 
     @Test
@@ -71,7 +71,7 @@ public class SelfDestructTest {
         Assert.assertEquals(242406 - (242406 / 2), energyUsed);
 
         Assert.assertEquals(initialBalance.multiply(BigInteger.valueOf(contracts.length)).add(BigInteger.valueOf(contracts.length)),
-                avmRule.kernel.getBalance(new org.aion.types.Address(beneficiary.toByteArray())));
+                avmRule.kernel.getBalance(new org.aion.vm.api.types.Address(beneficiary.toByteArray())));
     }
 
     @Test
@@ -79,7 +79,7 @@ public class SelfDestructTest {
         long energyUsed = call("selfDestruct", dappAddr);
         Assert.assertEquals(45099 - refundPerContract, energyUsed);
         //burns the balance
-        Assert.assertEquals(BigInteger.ZERO, avmRule.kernel.getBalance(new org.aion.types.Address(dappAddr.toByteArray())));
+        Assert.assertEquals(BigInteger.ZERO, avmRule.kernel.getBalance(new org.aion.vm.api.types.Address(dappAddr.toByteArray())));
     }
 
     @Test
@@ -92,11 +92,11 @@ public class SelfDestructTest {
 
         Assert.assertEquals(68169 - refundPerContract, energyUsed);
 
-        Assert.assertEquals(BigInteger.ZERO, avmRule.kernel.getBalance(new org.aion.types.Address(dappAddr.toByteArray())));
+        Assert.assertEquals(BigInteger.ZERO, avmRule.kernel.getBalance(new org.aion.vm.api.types.Address(dappAddr.toByteArray())));
 
-        Assert.assertEquals(initialBalance, avmRule.kernel.getBalance(new org.aion.types.Address(addresses[0].toByteArray())));
-        Assert.assertEquals(BigInteger.ZERO, avmRule.kernel.getBalance(new org.aion.types.Address(addresses[1].toByteArray())));
-        Assert.assertEquals(BigInteger.ZERO, avmRule.kernel.getBalance(new org.aion.types.Address(addresses[2].toByteArray())));
+        Assert.assertEquals(initialBalance, avmRule.kernel.getBalance(new org.aion.vm.api.types.Address(addresses[0].toByteArray())));
+        Assert.assertEquals(BigInteger.ZERO, avmRule.kernel.getBalance(new org.aion.vm.api.types.Address(addresses[1].toByteArray())));
+        Assert.assertEquals(BigInteger.ZERO, avmRule.kernel.getBalance(new org.aion.vm.api.types.Address(addresses[2].toByteArray())));
     }
 
     private long call(String methodName, Object... objects) {

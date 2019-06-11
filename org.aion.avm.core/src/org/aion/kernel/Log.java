@@ -2,7 +2,7 @@ package org.aion.kernel;
 
 import org.aion.avm.core.IExternalCapabilities;
 import org.aion.avm.core.util.Helpers;
-import org.aion.types.Address;
+import org.aion.vm.api.types.Address;
 
 import java.util.List;
 import java.util.stream.Collectors;

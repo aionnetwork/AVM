@@ -7,7 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import org.aion.avm.core.util.Helpers;
-import org.aion.types.Address;
+import org.aion.vm.api.types.Address;
 import org.junit.Test;
 
 public class AddressTest {

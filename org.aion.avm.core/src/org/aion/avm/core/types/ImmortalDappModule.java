@@ -12,7 +12,7 @@ import java.util.jar.Manifest;
 
 import java.util.zip.ZipEntry;
 import org.aion.avm.core.dappreading.LoadedJar;
-import org.aion.types.Address;
+import org.aion.vm.api.types.Address;
 
 
 /**

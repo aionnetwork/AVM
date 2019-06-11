@@ -27,9 +27,9 @@ import org.aion.vm.api.interfaces.KernelInterface;
  */
 public class TestingBlockchainRuntime implements IBlockchainRuntime {
     private final IExternalCapabilities capabilities;
-    private org.aion.types.Address address = Helpers.address(1);
-    private org.aion.types.Address caller = Helpers.address(2);
-    private org.aion.types.Address origin = Helpers.address(2);
+    private org.aion.vm.api.types.Address address = Helpers.address(1);
+    private org.aion.vm.api.types.Address caller = Helpers.address(2);
+    private org.aion.vm.api.types.Address origin = Helpers.address(2);
     private BigInteger value = BigInteger.avm_ZERO;
     private byte[] data = new byte[0];
     private long energyLimit = 1_000_000L;
@@ -37,7 +37,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
 
     private long blockNumber = 1;
     private long blockTimstamp = System.currentTimeMillis();
-    private org.aion.types.Address blockCoinbase = Helpers.address(3);
+    private org.aion.vm.api.types.Address blockCoinbase = Helpers.address(3);
     private long blockEnergyLimit = 10_000_000L;
     private java.math.BigInteger blockDifficulty = java.math.BigInteger.valueOf(1000L);
 
@@ -51,12 +51,12 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     }
 
     public TestingBlockchainRuntime withAddress(byte[] address) {
-        this.address = org.aion.types.Address.wrap(address);
+        this.address = org.aion.vm.api.types.Address.wrap(address);
         return this;
     }
 
     public TestingBlockchainRuntime withCaller(byte[] caller) {
-        this.caller = org.aion.types.Address.wrap(caller);
+        this.caller = org.aion.vm.api.types.Address.wrap(caller);
         return this;
     }
 
@@ -162,7 +162,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     @Override
     public BigInteger avm_getBalance(Address address) {
         Objects.requireNonNull(address);
-        return new BigInteger(kernel.getBalance(org.aion.types.Address.wrap(address.toByteArray())));
+        return new BigInteger(kernel.getBalance(org.aion.vm.api.types.Address.wrap(address.toByteArray())));
     }
 
     @Override
@@ -173,7 +173,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     @Override
     public int avm_getCodeSize(Address address) {
         Objects.requireNonNull(address);
-        byte[] vc = kernel.getCode(org.aion.types.Address.wrap(address.toByteArray()));
+        byte[] vc = kernel.getCode(org.aion.vm.api.types.Address.wrap(address.toByteArray()));
         return vc == null ? 0 : vc.length;
     }
 
