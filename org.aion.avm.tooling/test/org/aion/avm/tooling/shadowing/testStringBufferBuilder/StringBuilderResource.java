@@ -79,5 +79,76 @@ public class StringBuilderResource {
         Blockchain.require(sb3.toString().equals("MyString"));
     }
 
+    @Callable
+    public static void stringBuilderInvalidConstructor() {
+        long energyRemaining = 0l;
+        boolean exceptionThrown = false;
+        try {
+            energyRemaining = Blockchain.getRemainingEnergy();
+            StringBuilder sb = new StringBuilder(-10000000);
+        } catch (NegativeArraySizeException e) {
+            exceptionThrown = true;
+            Blockchain.require(energyRemaining > Blockchain.getRemainingEnergy());
+        }
+        Blockchain.require(exceptionThrown);
+    }
+
+    @Callable
+    public static void stringBuilderInvalidAppend(){
+        long energyRemaining = 0l;
+        boolean exceptionThrown = false;
+        try {
+            StringBuilder sb = new StringBuilder();
+            char[] arr = new char[]{'a', 'b', 'c'};
+            energyRemaining = Blockchain.getRemainingEnergy();
+            sb.append(arr, 1, -10000000);
+        } catch (IndexOutOfBoundsException e) {
+            exceptionThrown = true;
+            Blockchain.require(energyRemaining > Blockchain.getRemainingEnergy());
+        }
+        Blockchain.require(exceptionThrown);
+    }
+
+    @Callable
+    public static void stringBuilderInvalidInsert(){
+        long energyRemaining = 0l;
+        boolean exceptionThrown = false;
+        try {
+            StringBuilder sb = new StringBuilder();
+            char[] arr = new char[]{'a', 'b', 'c'};
+            energyRemaining = Blockchain.getRemainingEnergy();
+            sb.insert(0, arr, 0, -10000000);
+        } catch (IndexOutOfBoundsException e) {
+            exceptionThrown = true;
+            Blockchain.require(energyRemaining > Blockchain.getRemainingEnergy());
+        }
+        Blockchain.require(exceptionThrown);
+    }
+
+    @Callable
+    public static void stringBuilderInsert(){
+        StringBuilder sb = new StringBuilder()
+                .insert(0, new char[]{'a', 'b', 'c'}, 0, 1)
+                .insert(1, 1)
+                .insert(2, 10l)
+                .insert(3, 1.4d)
+                .insert(4, 1.2f)
+                .insert(5, "Hello")
+                .insert(6, new SampleClass());
+        Blockchain.require(sb.toString().length() == 106);
+    }
+
+    @Callable
+    public static void stringBuilderAppend(){
+        StringBuilder sb = new StringBuilder()
+                .append("Hello ")
+                .append("World!")
+                .append(123)
+                .append(true)
+                .append(new char[]{'a', 'b', 'c'}, 0, 1)
+                .append(new SampleClass());
+        Blockchain.require(sb.toString().length() == 111);
+    }
+
     public static class SampleClass{}
 }

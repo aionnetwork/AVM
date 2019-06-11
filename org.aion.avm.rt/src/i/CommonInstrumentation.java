@@ -152,7 +152,10 @@ public class CommonInstrumentation implements IInstrumentation {
         if (null != this.currentFrame.forceExitState) {
             throw this.currentFrame.forceExitState;
         }
-        
+
+        RuntimeAssertionError.assertTrue(cost >= 0);
+        RuntimeAssertionError.assertTrue(cost < Math.pow(2, 30));
+
         // Bill for the block.
         this.currentFrame.energyLeft -= cost;
         if (this.currentFrame.energyLeft < 0) {

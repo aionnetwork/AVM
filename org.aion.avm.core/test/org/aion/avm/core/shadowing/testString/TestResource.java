@@ -28,10 +28,23 @@ public class TestResource {
                 return ABIEncoder.encodeOneString(stringReturnSubSequence());
             }  else if (methodName.equals("equalsIgnoreCase")) {
                 return ABIEncoder.encodeOneBoolean(equalsIgnoreCase());
-        }else {
+            } else if (methodName.equals("regionMatches")) {
+                return ABIEncoder.encodeOneBoolean(regionMatches());
+            }  else if (methodName.equals("valueOf")) {
+                return ABIEncoder.encodeOneBoolean(valueOf());
+            } else if (methodName.equals("regionMatchesInvalidLength")) {
+                regionMatchesInvalidLength();
+            } else if (methodName.equals("regionMatchesDoNotIgnoreCaseInvalidLength")) {
+                regionMatchesDoNotIgnoreCaseInvalidLength();
+            } else if (methodName.equals("copyValueOfInvalidCount")) {
+                copyValueOfInvalidCount();
+            } else if (methodName.equals("valueOfInvalidCount")) {
+                valueOfInvalidCount();
+            } else {
                 return new byte[0];
             }
         }
+        return new byte[0];
     }
 
     public static int[] singleStringReturnInt() {
@@ -91,5 +104,62 @@ public class TestResource {
     public static boolean equalsIgnoreCase(){
         String str = "equalsIgnoreCase";
         return str.equalsIgnoreCase(null);
+    }
+
+    public static boolean regionMatches() {
+        String str = "my test String str";
+        boolean res = str.regionMatches(3, "test", 0, 4);
+        return res & str.regionMatches(true, 8, "STR", 0, 3);
+    }
+
+    public static boolean valueOf() {
+        boolean res = String.valueOf(new char[] {'a', 'b', 'c', 'd'}, 0, 2).equals("ab");
+        return res & String.copyValueOf(new char[] {'a', 'b', 'c', 'd'}, 2, 2).equals("cd");
+    }
+
+    public static void regionMatchesInvalidLength() {
+        String s = "asdfghjklertuyuiuiop";
+        long remainingEnergy = Blockchain.getRemainingEnergy();
+        s.regionMatches(0, "asdfghjk", 0, -1000000);
+        Blockchain.require(remainingEnergy > Blockchain.getRemainingEnergy());
+    }
+
+    public static void regionMatchesDoNotIgnoreCaseInvalidLength() {
+        String s = "asdfghjklertuyuiuiop";
+        long remainingEnergy = Blockchain.getRemainingEnergy();
+        s.regionMatches(false, 0, "asdfghjk", 0, -1000000);
+        Blockchain.require(remainingEnergy > Blockchain.getRemainingEnergy());
+    }
+
+    public static void valueOfInvalidCount(){
+        String s = "asdfghjklertuyuiuiop";
+        boolean exceptionThrown = false;
+        long remainingEnergy = 0l;
+        try {
+            char[] c = new char[]{'a', 's', 's', 'f'};
+            remainingEnergy = Blockchain.getRemainingEnergy();
+            String.valueOf(c, 0, -100000);
+
+        } catch (StringIndexOutOfBoundsException e){
+            exceptionThrown = true;
+            Blockchain.require(remainingEnergy > Blockchain.getRemainingEnergy());
+        }
+        Blockchain.require(exceptionThrown);
+    }
+
+    public static void copyValueOfInvalidCount(){
+        String s = "asdfghjklertuyuiuiop";
+        boolean exceptionThrown = false;
+        long remainingEnergy = 0l;
+        try {
+            char[] c = new char[]{'a', 's', 's', 'f'};
+            remainingEnergy = Blockchain.getRemainingEnergy();
+            String.copyValueOf(c, 0, -10000);
+
+        } catch (StringIndexOutOfBoundsException e){
+            exceptionThrown = true;
+            Blockchain.require(remainingEnergy > Blockchain.getRemainingEnergy());
+        }
+        Blockchain.require(exceptionThrown);
     }
 }

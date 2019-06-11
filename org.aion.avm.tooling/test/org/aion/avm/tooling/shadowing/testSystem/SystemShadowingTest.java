@@ -49,4 +49,11 @@ public class SystemShadowingTest {
         Object result = avmRule.call(avmRule.getPreminedAccount(), dappAddr, BigInteger.ZERO, txData).getDecodedReturnData();
         Assert.assertEquals(true, result);
     }
+
+    @Test
+    public void invalidArrayCopyLength() {
+        byte[] txData = ABIUtil.encodeMethodArguments("invalidArrayCopyLength");
+        AvmRule.ResultWrapper result = avmRule.call(avmRule.getPreminedAccount(), dappAddr, BigInteger.ZERO, txData);
+        Assert.assertTrue(result.getTransactionResult().getResultCode().isSuccess());
+    }
 }
