@@ -1,8 +1,6 @@
 package org.aion.avm.core.util;
 
-import java.nio.ByteBuffer;
-
-import i.RuntimeAssertionError;
+import org.aion.avm.userlib.AionBuffer;
 
 
 /**
@@ -20,7 +18,7 @@ public class CodeAndArguments {
     public static CodeAndArguments decodeFromBytes(byte[] bytes) {
         CodeAndArguments result = null;
         if ((null != bytes) && (bytes.length > 4)) {
-            ByteBuffer buffer = ByteBuffer.wrap(bytes);
+            AionBuffer buffer = AionBuffer.wrap(bytes);
             int codeLength = buffer.getInt();
             
             if (codeLength + 4 <= bytes.length) {
@@ -53,7 +51,9 @@ public class CodeAndArguments {
      */
     public CodeAndArguments(byte[] code, byte[] arguments) {
         // Null code is a usage error but the arguments can be null.
-        RuntimeAssertionError.assertTrue(null != code);
+        if (null == code) {
+            throw new NullPointerException();
+        }
         
         this.code = code;
         this.arguments = arguments;
@@ -69,7 +69,7 @@ public class CodeAndArguments {
         int bufferLength = (null != this.arguments)
                 ? (4 + this.code.length + 4 + this.arguments.length)
                 : (4 + this.code.length);
-        ByteBuffer buffer = ByteBuffer.allocate(bufferLength);
+        AionBuffer buffer = AionBuffer.allocate(bufferLength);
         
         // Write the code.
         buffer.putInt(this.code.length);
@@ -82,6 +82,6 @@ public class CodeAndArguments {
         }
         
         // Return the raw bytes.
-        return buffer.array();
+        return buffer.getArray();
     }
 }
