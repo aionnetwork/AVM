@@ -4,7 +4,7 @@ import java.math.BigInteger;
 
 /**
  * Every DApp has an associated <code>Blockchain</code> which allows
- * the application to interface with the environment teh app is running.
+ * the application to interface with the environment the app is running.
  * <p>
  * Typically, it includes the transaction and block context, and other blockchain
  * functionality.
