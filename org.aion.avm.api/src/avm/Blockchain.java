@@ -186,8 +186,8 @@ public final class Blockchain {
      * Returns the size of the code, of the given account.
      *
      * @param address the account address.
-     * @return the code size, or 0 if the account does not exist
-     * @throws IllegalArgumentException when the arguments are invalid, e.g. NULL address.
+     * @return the code size in bytes, or 0 if no contract is deployed at that address
+     * @throws IllegalArgumentException when the argument is invalid, e.g. NULL address.
      */
     public static int getCodeSize(Address address) throws IllegalArgumentException {
         return 0;
