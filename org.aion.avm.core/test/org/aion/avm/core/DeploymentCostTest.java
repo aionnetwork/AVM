@@ -14,8 +14,9 @@ import org.aion.avm.core.testWallet.Multiowned;
 import org.aion.avm.core.testWallet.Operation;
 import org.aion.avm.core.testWallet.RequireFailedException;
 import org.aion.avm.core.testWallet.Wallet;
-import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.userlib.CodeAndArguments;
+
 import i.RuntimeAssertionError;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;

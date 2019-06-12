@@ -1,11 +1,11 @@
 package org.aion.avm.tooling.blockchainruntime;
 
 import avm.Address;
-import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.tooling.abi.ABICompiler;
 import org.aion.avm.tooling.deploy.JarOptimizer;
+import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.*;
 import org.objectweb.asm.ClassWriter;

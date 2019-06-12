@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;

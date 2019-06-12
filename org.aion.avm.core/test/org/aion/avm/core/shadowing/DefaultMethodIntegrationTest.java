@@ -6,9 +6,9 @@ import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionMap;
+import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.*;
 import org.junit.*;
 

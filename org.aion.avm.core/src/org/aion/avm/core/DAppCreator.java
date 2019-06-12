@@ -32,10 +32,11 @@ import org.aion.avm.core.types.GeneratedClassConsumer;
 import org.aion.avm.core.types.ImmortalDappModule;
 import org.aion.avm.core.types.RawDappModule;
 import org.aion.avm.core.types.TransformedDappModule;
-import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.DebugNameResolver;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.verification.Verifier;
+import org.aion.avm.userlib.CodeAndArguments;
+
 import i.*;
 import org.aion.kernel.*;
 import org.aion.parallel.TransactionTask;

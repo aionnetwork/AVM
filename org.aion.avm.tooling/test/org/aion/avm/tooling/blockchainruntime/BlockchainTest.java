@@ -4,10 +4,10 @@ import java.math.BigInteger;
 import avm.Address;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.tooling.hash.HashUtils;
 import org.aion.avm.userlib.AionBuffer;
+import org.aion.avm.userlib.CodeAndArguments;
 import org.junit.ClassRule;
 import org.junit.Test;
 

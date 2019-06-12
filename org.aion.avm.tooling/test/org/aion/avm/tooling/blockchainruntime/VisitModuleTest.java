@@ -2,9 +2,9 @@ package org.aion.avm.tooling.blockchainruntime;
 
 import avm.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
+import org.aion.avm.userlib.CodeAndArguments;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;

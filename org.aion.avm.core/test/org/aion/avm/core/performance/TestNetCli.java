@@ -1,6 +1,5 @@
 package org.aion.avm.core.performance;
 
-import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 
 import java.io.BufferedReader;
@@ -17,6 +16,8 @@ import java.util.ArrayList;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 

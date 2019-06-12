@@ -5,7 +5,7 @@ import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.CodeAndArguments;
+import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.*;
 import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.vm.api.interfaces.TransactionResult;

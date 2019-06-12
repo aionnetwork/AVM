@@ -1,6 +1,4 @@
-package org.aion.avm.core.util;
-
-import org.aion.avm.userlib.AionBuffer;
+package org.aion.avm.userlib;
 
 
 /**

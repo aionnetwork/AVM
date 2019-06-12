@@ -1,9 +1,10 @@
 package org.aion.avm.tooling.shadowing.testEnum;
 
 import org.aion.avm.tooling.abi.ABICompiler;
+import org.aion.avm.userlib.CodeAndArguments;
+
 import avm.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
 import org.junit.Assert;

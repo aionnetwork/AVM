@@ -9,7 +9,8 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import org.aion.avm.core.util.CodeAndArguments;
+
+import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Rule;

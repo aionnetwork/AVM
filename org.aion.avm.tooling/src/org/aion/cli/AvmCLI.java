@@ -6,10 +6,10 @@ import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.IExternalCapabilities;
-import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.StandardCapabilities;
+import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.cli.ArgumentParser.Action;
 import org.aion.kernel.*;
 

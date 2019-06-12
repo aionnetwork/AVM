@@ -2,7 +2,6 @@ package org.aion.avm.tooling;
 
 import avm.Address;
 import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.CodeAndArguments;
 import org.aion.avm.tooling.poc.AionBufferPerfContract;
 import org.aion.avm.tooling.poc.TRS;
 import org.aion.avm.tooling.testExchange.*;
@@ -10,6 +9,7 @@ import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
+import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.AvmTransactionResult;
 import org.junit.ClassRule;
 import org.junit.Test;
