@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import org.aion.vm.api.interfaces.TransactionResult;
 
 
 public class AvmCLI {
@@ -52,7 +51,7 @@ public class AvmCLI {
         env.logLine("Sender       : " + sender);
     }
 
-    public static void reportDeployResult(IEnvironment env, TransactionResult createResult){
+    public static void reportDeployResult(IEnvironment env, AvmTransactionResult createResult){
         String dappAddress = Helpers.bytesToHexString(createResult.getReturnData());
         env.noteRelevantAddress(dappAddress);
         
@@ -60,7 +59,7 @@ public class AvmCLI {
         env.logLine("DApp deployment status");
         env.logLine("Result status: " + createResult.getResultCode().name());
         env.logLine("Dapp Address : " + dappAddress);
-        env.logLine("Energy cost  : " + ((AvmTransactionResult) createResult).getEnergyUsed());
+        env.logLine("Energy cost  : " + createResult.getEnergyUsed());
     }
 
     public static TestingTransaction setupOneCall(IEnvironment env, String storagePath, AionAddress contract, AionAddress sender, String method, Object[] args, long energyLimit, long nonceBias, BigInteger balance) {
@@ -100,15 +99,15 @@ public class AvmCLI {
         }
     }
 
-    private static void reportCallResult(IEnvironment env, TransactionResult callResult){
+    private static void reportCallResult(IEnvironment env, AvmTransactionResult callResult){
         lineSeparator(env);
         env.logLine("DApp call result");
         env.logLine("Result status: " + callResult.getResultCode().name());
         env.logLine("Return value : " + Helpers.bytesToHexString(callResult.getReturnData()));
-        env.logLine("Energy cost  : " + ((AvmTransactionResult) callResult).getEnergyUsed());
+        env.logLine("Energy cost  : " + callResult.getEnergyUsed());
 
         if (callResult.getResultCode() == AvmTransactionResult.Code.FAILED_EXCEPTION) {
-            env.dumpThrowable(((AvmTransactionResult) callResult).getUncaughtException());
+            env.dumpThrowable(callResult.getUncaughtException());
         }
     }
 
@@ -121,7 +120,7 @@ public class AvmCLI {
         env.logLine("Balance      : " + balance);
     }
 
-    private static void reportTransferResult(IEnvironment env, TransactionResult transferResult){
+    private static void reportTransferResult(IEnvironment env, AvmTransactionResult transferResult){
         lineSeparator(env);
         env.logLine("DApp balance transfer result");
         env.logLine("Result status: " + transferResult.getResultCode().name());
@@ -130,10 +129,10 @@ public class AvmCLI {
         } else {
             env.logLine("Return value : " + Helpers.bytesToHexString(transferResult.getReturnData()));
         }
-        env.logLine("Energy cost  : " + ((AvmTransactionResult) transferResult).getEnergyUsed());
+        env.logLine("Energy cost  : " + transferResult.getEnergyUsed());
 
         if (transferResult.getResultCode() == AvmTransactionResult.Code.FAILED_EXCEPTION) {
-            env.dumpThrowable(((AvmTransactionResult) transferResult).getUncaughtException());
+            env.dumpThrowable(transferResult.getUncaughtException());
         }
     }
 
@@ -291,7 +290,7 @@ public class AvmCLI {
                 TestingKernel kernel = new TestingKernel(storageFile, block);
                 AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(capabilities, new AvmConfiguration());
                 FutureResult[] futures = avm.run(kernel, transactions);
-                TransactionResult[] results = new AvmTransactionResult[futures.length];
+                AvmTransactionResult[] results = new AvmTransactionResult[futures.length];
                 for (int i = 0; i < futures.length; ++i) {
                     results[i] = futures[i].get();
                 }

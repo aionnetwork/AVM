@@ -15,7 +15,6 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.*;
-import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -145,7 +144,7 @@ public class AvmParallelTest {
             f.get();
         }
 
-        TransactionResult res = results[4].get();
+        AvmTransactionResult res = results[4].get();
         AionAddress contractAddr = new AionAddress(res.getReturnData());
 
         byte[] args = encodeNoArgsMethodCall("doTransfer");
@@ -186,7 +185,7 @@ public class AvmParallelTest {
             tempUsers[i] = Helpers.randomAddress();
             firstBatch[i] = TestingTransaction.call(preminedAddress, tempUsers[i], BigInteger.valueOf(i), BigInteger.valueOf(2L * valueToSend), new byte[0], 100_000L, 1L);
         }
-        FutureResult[] results = avm.run(kernel, firstBatch);
+            FutureResult[] results = avm.run(kernel, firstBatch);
         for (FutureResult f : results){
             Assert.assertTrue(f.get().getResultCode().isSuccess());
         }

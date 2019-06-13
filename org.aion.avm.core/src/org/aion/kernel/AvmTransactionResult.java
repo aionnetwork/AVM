@@ -5,9 +5,7 @@ import i.RuntimeAssertionError;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.ResultCode;
 
-import org.aion.vm.api.interfaces.TransactionResult;
-
-public class AvmTransactionResult implements TransactionResult {
+public class AvmTransactionResult {
 
     private enum CodeType {
         SUCCESS, REJECTED, FAILED
@@ -191,32 +189,26 @@ public class AvmTransactionResult implements TransactionResult {
         this.sideEffects = new SideEffects();
     }
 
-    @Override
     public ResultCode getResultCode() {
         return resultCode;
     }
 
-    @Override
     public void setResultCode(ResultCode code) {
         resultCode = code;
     }
 
-    @Override
     public byte[] getReturnData() {
         return returnData;
     }
 
-    @Override
     public void setReturnData(byte[] returnData) {
         this.returnData = returnData;
     }
 
-    @Override
     public long getEnergyRemaining() {
         return this.energyRemaining;
     }
 
-    @Override
     public void setEnergyRemaining(long energyRemaining) {
         // In order to avoid double-setting this field (since it gets set by its dual 'energyUsed'
         // variable, we only allow it to be set in 'energyUsed'. Cuts down on the complexity.
@@ -240,12 +232,10 @@ public class AvmTransactionResult implements TransactionResult {
         this.uncaughtException = uncaughtException;
     }
 
-    @Override
     public void setKernelInterface(KernelInterface kernel) {
         this.kernel = kernel;
     }
 
-    @Override
     public KernelInterface getKernelInterface() {
         return kernel;
     }
@@ -259,12 +249,10 @@ public class AvmTransactionResult implements TransactionResult {
                 '}';
     }
 
-    @Override
     public SideEffects getSideEffects() {
         return sideEffects;
     }
 
-    @Override
     public byte[] toBytes() {
         throw new AssertionError("No equivalent concept in Avm exists for this.");
     }

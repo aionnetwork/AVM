@@ -13,7 +13,6 @@ import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TestingTransaction;
 import org.aion.vm.api.interfaces.KernelInterface;
-import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -55,7 +54,7 @@ public class RejectVirtualMachineErrorIntegrationTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(RejectCatchError.class);
 
         // Deploy.
-        TransactionResult createResult = deployJar(jar);
+        AvmTransactionResult createResult = deployJar(jar);
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_REJECTED, createResult.getResultCode());
     }
 
@@ -64,7 +63,7 @@ public class RejectVirtualMachineErrorIntegrationTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(RejectInstantiateError.class);
 
         // Deploy.
-        TransactionResult createResult = deployJar(jar);
+        AvmTransactionResult createResult = deployJar(jar);
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_REJECTED, createResult.getResultCode());
     }
 
@@ -73,12 +72,12 @@ public class RejectVirtualMachineErrorIntegrationTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(RejectSubclassError.class);
 
         // Deploy.
-        TransactionResult createResult = deployJar(jar);
+        AvmTransactionResult createResult = deployJar(jar);
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_REJECTED, createResult.getResultCode());
     }
 
 
-    private TransactionResult deployJar(byte[] jar) {
+    private AvmTransactionResult deployJar(byte[] jar) {
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         TestingTransaction transaction = TestingTransaction.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
         return avm.run(RejectVirtualMachineErrorIntegrationTest.kernel, new TestingTransaction[] {transaction})[0].get();

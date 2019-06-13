@@ -6,7 +6,6 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.kernel.TestingKernel;
-import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -47,7 +46,7 @@ public class BadDestinationTest {
                 Address destination = generateDestinationAddressWithSpecifiedFirstByte(valueAsByte);
                 addCodeToAddress(destination);
 
-                TransactionResult result = callContractWithoutCatchingException(destination);
+                AvmTransactionResult result = callContractWithoutCatchingException(destination);
                 assertEquals(Code.FAILED_EXCEPTION, result.getResultCode());
             }
         }
@@ -66,7 +65,7 @@ public class BadDestinationTest {
                 Address destination = generateDestinationAddressWithSpecifiedFirstByte(valueAsByte);
                 addCodeToAddress(destination);
 
-                TransactionResult result = callDestinationAndCatchException(destination);
+                AvmTransactionResult result = callDestinationAndCatchException(destination);
                 assertTrue(result.getResultCode().isSuccess());
                 assertEquals(energyLimit, ((AvmTransactionResult) result).getEnergyUsed() + result.getEnergyRemaining());
             }
@@ -84,7 +83,7 @@ public class BadDestinationTest {
             Address destination = generateDestinationAddressWithSpecifiedFirstByte(valueAsByte);
 
             // Since the method doesn't catch the exception, it will fail if the destination is bad.
-            TransactionResult result = callContractWithoutCatchingException(destination);
+            AvmTransactionResult result = callContractWithoutCatchingException(destination);
             assertTrue(result.getResultCode().isSuccess());
             assertEquals(energyLimit, ((AvmTransactionResult) result).getEnergyUsed() + result.getEnergyRemaining());
         }
@@ -93,17 +92,17 @@ public class BadDestinationTest {
     private static void deployContract() {
         byte[] jar = avmRule.getDappBytes(BadDestinationTarget.class, new byte[0]);
 
-        TransactionResult result = avmRule.deploy(from, BigInteger.ZERO, jar, energyLimit, energyPrice).getTransactionResult();
+        AvmTransactionResult result = avmRule.deploy(from, BigInteger.ZERO, jar, energyLimit, energyPrice).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
         contract = new Address(result.getReturnData());
     }
 
-    private TransactionResult callContractWithoutCatchingException(Address callAddress) {
+    private AvmTransactionResult callContractWithoutCatchingException(Address callAddress) {
         byte[] callData = encodeCallData("callDestinationNoExceptionCatching", callAddress);
         return avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice).getTransactionResult();
     }
 
-    private TransactionResult callDestinationAndCatchException(Address callAddress) {
+    private AvmTransactionResult callDestinationAndCatchException(Address callAddress) {
         byte[] callData = encodeCallData("callDestinationAndCatchException", callAddress);
         return avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice).getTransactionResult();
     }

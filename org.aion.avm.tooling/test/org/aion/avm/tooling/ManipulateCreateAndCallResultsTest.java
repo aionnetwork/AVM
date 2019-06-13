@@ -8,10 +8,9 @@ import avm.Address;
 import java.math.BigInteger;
 import java.util.Arrays;
 import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.AvmTransactionResult.Code;
-import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 
 public class ManipulateCreateAndCallResultsTest {
@@ -28,7 +27,7 @@ public class ManipulateCreateAndCallResultsTest {
     public void testManipulateDeployResult() {
         byte[] jar = avmRule.getDappBytes(DappManipulator.class, new byte[0]);
 
-        TransactionResult result = avmRule.deploy(deployer, BigInteger.ZERO, jar, 5_000_000, 1).getTransactionResult();
+        AvmTransactionResult result = avmRule.deploy(deployer, BigInteger.ZERO, jar, 5_000_000, 1).getTransactionResult();
         assertEquals(Code.SUCCESS, result.getResultCode());
 
         byte[] originalAddress = Arrays.copyOf(result.getReturnData(), 32);
@@ -59,7 +58,7 @@ public class ManipulateCreateAndCallResultsTest {
     public void testManipulateCallResult() {
         // Deploy the field target class that will return its field to a dapp that tries to modify it.
         byte[] jar = avmRule.getDappBytes(ManipulateFieldTarget.class, new byte[0]);
-        TransactionResult result = avmRule.deploy(deployer, BigInteger.ZERO, jar, 5_000_000, 1).getTransactionResult();
+        AvmTransactionResult result = avmRule.deploy(deployer, BigInteger.ZERO, jar, 5_000_000, 1).getTransactionResult();
         assertEquals(Code.SUCCESS, result.getResultCode());
         Address fieldContract = new Address(result.getReturnData());
 
@@ -82,7 +81,7 @@ public class ManipulateCreateAndCallResultsTest {
         // Deploy the dapp that will create the other dapp and modify its returned address.
         avmRule.kernel.generateBlock();
         byte[] jar = avmRule.getDappBytes(DappManipulator.class, new byte[0]);
-        TransactionResult result = avmRule.deploy(deployer, BigInteger.ZERO, jar, 5_000_000, 1).getTransactionResult();
+        AvmTransactionResult result = avmRule.deploy(deployer, BigInteger.ZERO, jar, 5_000_000, 1).getTransactionResult();
         assertEquals(Code.SUCCESS, result.getResultCode());
         Address contract = new Address(result.getReturnData());
 

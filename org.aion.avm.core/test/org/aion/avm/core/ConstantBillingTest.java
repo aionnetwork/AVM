@@ -14,7 +14,6 @@ import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TestingTransaction;
 import org.aion.vm.api.interfaces.KernelInterface;
-import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Test;
 import org.objectweb.asm.Opcodes;
 
@@ -30,7 +29,7 @@ public class ConstantBillingTest {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         KernelInterface kernel = new TestingKernel(block);
         TestingTransaction tx = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, new byte[0]).encodeToBytes(), energyLimit, 1);
-        TransactionResult result = avm.run(kernel, new TestingTransaction[] { tx })[0].get();
+        AvmTransactionResult result = avm.run(kernel, new TestingTransaction[] { tx })[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
 
         BytecodeFeeScheduler feeScheduler = new BytecodeFeeScheduler();

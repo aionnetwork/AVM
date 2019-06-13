@@ -14,7 +14,6 @@ import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TestingTransaction;
-import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,7 +39,7 @@ public class ReentrantObjectArrayTest {
         
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(ReentrantObjectArrayTestResource.class);
         TestingTransaction tx = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult txResult = avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
+        AvmTransactionResult txResult = avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         dappAddress = new AionAddress(txResult.getReturnData());
     }
@@ -54,7 +53,7 @@ public class ReentrantObjectArrayTest {
     public void testReentrantStringArray() {
         byte[] data = new ABIStreamingEncoder().encodeOneString("testString").toBytes();
         TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        AvmTransactionResult txResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
+        AvmTransactionResult txResult = avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
 
         assertEquals(Code.SUCCESS, txResult.getResultCode());
     }

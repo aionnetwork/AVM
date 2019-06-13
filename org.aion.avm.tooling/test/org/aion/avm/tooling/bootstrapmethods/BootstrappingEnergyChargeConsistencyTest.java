@@ -6,7 +6,6 @@ import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.AvmTransactionResult.Code;
-import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -33,9 +32,9 @@ public class BootstrappingEnergyChargeConsistencyTest {
         Address contractAddress = deployContract();
 
         // Run the contract multiple times.
-        AvmTransactionResult result1 = (AvmTransactionResult) runContract(deployer, contractAddress);
-        AvmTransactionResult result2 = (AvmTransactionResult) runContract(deployer, contractAddress);
-        AvmTransactionResult result3 = (AvmTransactionResult) runContract(deployer, contractAddress);
+        AvmTransactionResult result1 = runContract(deployer, contractAddress);
+        AvmTransactionResult result2 = runContract(deployer, contractAddress);
+        AvmTransactionResult result3 = runContract(deployer, contractAddress);
 
         // Ensure the calls were all successful.
         assertEquals(Code.SUCCESS, result1.getResultCode());
@@ -66,7 +65,7 @@ public class BootstrappingEnergyChargeConsistencyTest {
         return avmRule.deploy(deployer, BigInteger.ZERO, avmRule.getDappBytes(EnergyChargeConsistencyTarget.class, null)).getDappAddress();
     }
 
-    private TransactionResult runContract(Address sender, Address contract) {
+    private AvmTransactionResult runContract(Address sender, Address contract) {
         byte[] callData = ABIUtil.encodeMethodArguments("run");
         return avmRule.call(sender, contract, BigInteger.ZERO, callData, energyLimit, 1L).getTransactionResult();
     }

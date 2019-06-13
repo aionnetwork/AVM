@@ -8,7 +8,6 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.*;
 import org.aion.kernel.AvmTransactionResult.Code;
-import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -316,7 +315,7 @@ public class CryptoUtilMethodFeeBenchmarkTest {
         TestingTransaction tx = setupTransaction(methodName, arguments);
 
         st = System.nanoTime();
-        TransactionResult result = avm.run(this.kernel, new TestingTransaction[]{tx})[0].get();
+        AvmTransactionResult result = avm.run(this.kernel, new TestingTransaction[]{tx})[0].get();
         et = System.nanoTime();
 
         Assert.assertEquals(Code.SUCCESS, result.getResultCode());

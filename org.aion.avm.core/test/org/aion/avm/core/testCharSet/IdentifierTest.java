@@ -4,6 +4,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.math.BigInteger;
+import org.aion.kernel.AvmTransactionResult;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
@@ -16,7 +17,6 @@ import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TestingTransaction;
-import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.*;
 
 public class IdentifierTest {
@@ -49,7 +49,7 @@ public class IdentifierTest {
         kernel.generateBlock();
         TestingTransaction tx = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO,
             new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult txResult = avm.run(kernel, new TestingTransaction[]{tx})[0].get();
+        AvmTransactionResult txResult = avm.run(kernel, new TestingTransaction[]{tx})[0].get();
 
         dappAddress = new AionAddress(txResult.getReturnData());
         assertNotNull(dappAddress);
@@ -127,7 +127,7 @@ public class IdentifierTest {
         kernel.generateBlock();
         TestingTransaction tx = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO,
             new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult txResult = avm.run(kernel, new TestingTransaction[]{tx})[0].get();
+        AvmTransactionResult txResult = avm.run(kernel, new TestingTransaction[]{tx})[0].get();
 
         dappAddress = new AionAddress(txResult.getReturnData());
         assertNotNull(dappAddress);
@@ -158,7 +158,7 @@ public class IdentifierTest {
         kernel.generateBlock();
         TestingTransaction tx = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO,
             new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult txResult = avm.run(kernel, new TestingTransaction[]{tx})[0].get();
+        AvmTransactionResult txResult = avm.run(kernel, new TestingTransaction[]{tx})[0].get();
         dappAddress = new AionAddress(txResult.getReturnData());
         assertNotNull(dappAddress);
 

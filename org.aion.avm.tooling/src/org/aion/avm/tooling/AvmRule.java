@@ -205,10 +205,10 @@ public final class AvmRule implements TestRule {
     }
 
     public static class ResultWrapper {
-        TransactionResult result;
+        AvmTransactionResult result;
         TransactionSideEffects sideEffects;
 
-        ResultWrapper(TransactionResult result) {
+        ResultWrapper(AvmTransactionResult result) {
             this.result = result;
             this.sideEffects = result.getSideEffects();
         }
@@ -216,7 +216,7 @@ public final class AvmRule implements TestRule {
         /**
          * @return Result of the transaction execution
          */
-        public TransactionResult getTransactionResult(){
+        public AvmTransactionResult getTransactionResult(){
             return result;
         }
 

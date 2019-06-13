@@ -15,7 +15,6 @@ import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.KernelInterface;
-import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -51,7 +50,7 @@ public class DemoTest {
         byte[] arguments = ABIUtil.encodeDeploymentArguments("Pepe", "PEPE", 8);
         //CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);
         TestingTransaction createTransaction = TestingTransaction.create(pepeMinter, kernel.getNonce(pepeMinter), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult txResult = avm.run(kernel, new TestingTransaction[] {createTransaction})[0].get();
+        AvmTransactionResult txResult = avm.run(kernel, new TestingTransaction[] {createTransaction})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
         Address tokenDapp = new Address(txResult.getReturnData());
         System.out.println(">> \"PEPE\" ERC20 token Dapp is deployed. (Address " + Helpers.bytesToHexString(txResult.getReturnData()) + ")");

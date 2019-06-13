@@ -12,7 +12,6 @@ import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.*;
 import org.aion.vm.api.interfaces.KernelInterface;
-import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -36,12 +35,12 @@ public class AionCollectionPerfTest {
         return JarBuilder.buildJarForMainAndClassesAndUserlib(AionMapPerfContract.class);
     }
 
-    private TransactionResult deploy(KernelInterface kernel, AvmImpl avm, byte[] testJar){
+    private AvmTransactionResult deploy(KernelInterface kernel, AvmImpl avm, byte[] testJar){
 
 
         byte[] testWalletArguments = new byte[0];
         TestingTransaction createTransaction = TestingTransaction.create(from, kernel.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new TestingTransaction[] {createTransaction})[0].get();
+        AvmTransactionResult createResult = avm.run(kernel, new TestingTransaction[] {createTransaction})[0].get();
 
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
 
@@ -49,9 +48,9 @@ public class AionCollectionPerfTest {
     }
 
 
-    private TransactionResult call(KernelInterface kernel, AvmImpl avm, AionAddress contract, AionAddress sender, byte[] args) {
+    private AvmTransactionResult call(KernelInterface kernel, AvmImpl avm, AionAddress contract, AionAddress sender, byte[] args) {
         TestingTransaction callTransaction = TestingTransaction.call(sender, contract, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1l);
-        TransactionResult callResult = avm.run(kernel, new TestingTransaction[] {callTransaction})[0].get();
+        AvmTransactionResult callResult = avm.run(kernel, new TestingTransaction[] {callTransaction})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
         return callResult;
     }

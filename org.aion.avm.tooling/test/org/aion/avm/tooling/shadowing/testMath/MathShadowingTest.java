@@ -4,7 +4,6 @@ import avm.Address;
 
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
-import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.*;
 
 import java.math.BigInteger;

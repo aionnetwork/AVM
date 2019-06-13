@@ -4,7 +4,6 @@ import net.i2p.crypto.eddsa.Utils;
 import avm.Address;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.*;
 
 import java.math.BigInteger;
@@ -33,7 +32,7 @@ public class EdverifyTest {
     public void testVerifyCorrectness(){
         byte[] txData = ABIUtil.encodeMethodArguments("callEdverify", testMessage, messageSignature, publicKeyBytes);
 
-        TransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
+        AvmTransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult.getResultCode());
         Assert.assertTrue(new ABIDecoder(txResult.getReturnData()).decodeOneBoolean());
@@ -46,7 +45,7 @@ public class EdverifyTest {
 
         byte[] txData = ABIUtil.encodeMethodArguments("callEdverify", testMessage, incorrectSignature, publicKeyBytes);
 
-        TransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
+        AvmTransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult.getResultCode());
         Assert.assertFalse(new ABIDecoder(txResult.getReturnData()).decodeOneBoolean());
@@ -59,7 +58,7 @@ public class EdverifyTest {
 
         byte[] txData = ABIUtil.encodeMethodArguments("callEdverify", testMessage, messageSignature, incorrectPublicKey);
 
-        TransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
+        AvmTransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult.getResultCode());
         Assert.assertFalse(new ABIDecoder(txResult.getReturnData()).decodeOneBoolean());

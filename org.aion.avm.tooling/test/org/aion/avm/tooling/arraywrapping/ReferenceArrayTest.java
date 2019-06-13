@@ -4,7 +4,7 @@ import avm.Address;
 
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
-import org.aion.vm.api.interfaces.TransactionResult;
+import org.aion.kernel.AvmTransactionResult;
 import org.junit.*;
 
 import java.math.BigInteger;
@@ -31,28 +31,28 @@ public class ReferenceArrayTest {
     @Test
     public void test2DimArraySize() {
         byte[] data = ABIUtil.encodeMethodArguments("twoDimArraySize");
-        TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
+        AvmTransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         Assert.assertTrue(result.getResultCode().isSuccess());
     }
 
     @Test
     public void test2DimArraySize2() {
         byte[] data = ABIUtil.encodeMethodArguments("twoDimArraySize2");
-        TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
+        AvmTransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         Assert.assertTrue(result.getResultCode().isSuccess());
     }
 
     @Test
     public void test2DimArrayAccess() {
         byte[] data = ABIUtil.encodeMethodArguments("twoDimArrayAccess");
-        TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
+        AvmTransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         Assert.assertTrue(result.getResultCode().isSuccess());
     }
 
     @Test
     public void testMultiDimArraySize() {
         byte[] data = ABIUtil.encodeMethodArguments("multiDimArraySize");
-        TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
+        AvmTransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         Assert.assertTrue(result.getResultCode().isSuccess());
     }
 
@@ -60,21 +60,21 @@ public class ReferenceArrayTest {
     @Test
     public void testMultiDimArrayAccess() {
         byte[] data = ABIUtil.encodeMethodArguments("multiDimArrayAccess");
-        TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
+        AvmTransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         Assert.assertTrue(result.getResultCode().isSuccess());
     }
 
     @Test
     public void InterfaceArrayAccess() {
         byte[] data = ABIUtil.encodeMethodArguments("InterfaceArrayAccess");
-        TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
+        AvmTransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         Assert.assertTrue(result.getResultCode().isSuccess());
     }
 
     @Test
     public void InterfaceArraySize() {
         byte[] data = ABIUtil.encodeMethodArguments("InterfaceArraySize");
-        TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
+        AvmTransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         Assert.assertTrue(result.getResultCode().isSuccess());
     }
 
@@ -82,14 +82,14 @@ public class ReferenceArrayTest {
     @Test
     public void ObjectArrayAccess() {
         byte[] data = ABIUtil.encodeMethodArguments("ObjectArrayAccess");
-        TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
+        AvmTransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         Assert.assertTrue(result.getResultCode().isSuccess());
     }
 
     @Test
     public void ObjectArraySize() {
         byte[] data = ABIUtil.encodeMethodArguments("ObjectArraySize");
-        TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
+        AvmTransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         Assert.assertTrue(result.getResultCode().isSuccess());
     }
 

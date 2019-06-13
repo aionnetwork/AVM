@@ -22,7 +22,6 @@ import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TestingTransaction;
 import org.aion.vm.api.interfaces.KernelInterface;
 import org.aion.vm.api.interfaces.TransactionInterface;
-import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -78,7 +77,7 @@ public class PersistanceNameMappingTest {
         byte[] data = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         TestingTransaction createTransaction = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, data, 5_000_000L, 1L);
-        TransactionResult result = avm.run(kernel, new TransactionInterface[]{ createTransaction })[0].get();
+        AvmTransactionResult result = avm.run(kernel, new TransactionInterface[]{ createTransaction })[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
 
         return new AionAddress(result.getReturnData());
@@ -87,7 +86,7 @@ public class PersistanceNameMappingTest {
     private void callContract(AvmImpl avm, KernelInterface kernel, AionAddress contract, String method) {
         byte[] data = ABIEncoder.encodeOneString(method);
         TestingTransaction callTransaction = TestingTransaction.call(deployer, contract, kernel.getNonce(deployer), BigInteger.ZERO, data, 2_000_000L, 1L);
-        TransactionResult result = avm.run(kernel, new TransactionInterface[]{ callTransaction })[0].get();
+        AvmTransactionResult result = avm.run(kernel, new TransactionInterface[]{ callTransaction })[0].get();
 
         // The tests will REVERT if what we want to test does not occur!
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());

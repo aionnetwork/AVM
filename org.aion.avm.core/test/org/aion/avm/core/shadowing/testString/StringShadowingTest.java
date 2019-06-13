@@ -14,7 +14,6 @@ import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.*;
-import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -39,7 +38,7 @@ public class StringShadowingTest {
         // call transactions and validate the results
         txData = encodeNoArgsMethodCall("singleStringReturnInt");
         tx = TestingTransaction.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult result = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
+        AvmTransactionResult result = avm.run(kernel, new TestingTransaction[] {tx})[0].get();
         Assert.assertTrue(java.util.Arrays.equals(new int[]{96354, 3, 1, -1}, new ABIDecoder(result.getReturnData()).decodeOneIntegerArray()));
         kernel.generateBlock();
 
@@ -128,7 +127,7 @@ public class StringShadowingTest {
 
         // Send the batch.
         FutureResult[] results = avm.run(kernel, batch);
-        
+
         // Now, process the results.
         Assert.assertArrayEquals(new int[]{96354, 3, 1, -1}, new ABIDecoder(results[0].get().getReturnData()).decodeOneIntegerArray());
         Assert.assertArrayEquals(new boolean[]{true, false, true, false, true, false, false}, new ABIDecoder(results[1].get().getReturnData()).decodeOneBooleanArray());

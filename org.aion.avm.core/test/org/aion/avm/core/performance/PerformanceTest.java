@@ -163,7 +163,7 @@ public class PerformanceTest {
             }
             FutureResult[] futures = avm.run(this.kernel, transactionArray);
             for (FutureResult future : futures) {
-                AvmTransactionResult result = (AvmTransactionResult) future.get();
+                AvmTransactionResult result = future.get();
                 Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
                 // These should all return an empty byte[] (void).
                 Assert.assertEquals(0, result.getReturnData().length);

@@ -3,7 +3,6 @@ package org.aion.avm.tooling;
 import avm.Address;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -34,7 +33,7 @@ public class TransformedMethodTest {
     @Test
     public void testCallNothing() {
         byte[] argData = ABIUtil.encodeMethodArguments("nothing");
-        TransactionResult result = avmRule.call(deployer, dappAddress, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+        AvmTransactionResult result = avmRule.call(deployer, dappAddress, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
     }
 
@@ -315,8 +314,8 @@ public class TransformedMethodTest {
         return new ABIDecoder(runTransaction(argData).getReturnData()).decodeOneBoolean();
     }
 
-    private TransactionResult runTransaction(byte[] argData) {
-        TransactionResult result = avmRule.call(deployer, dappAddress, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+    private AvmTransactionResult runTransaction(byte[] argData) {
+        AvmTransactionResult result = avmRule.call(deployer, dappAddress, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         return result;
     }

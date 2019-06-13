@@ -6,7 +6,6 @@ import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.tooling.abi.ABICompiler;
 import org.aion.avm.tooling.deploy.JarOptimizer;
 import org.aion.avm.userlib.CodeAndArguments;
-import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.*;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;

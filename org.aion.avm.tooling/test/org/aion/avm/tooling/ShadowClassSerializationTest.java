@@ -2,8 +2,7 @@ package org.aion.avm.tooling;
 
 import avm.Address;
 import org.aion.avm.tooling.AvmRule.ResultWrapper;
-import org.aion.vm.api.interfaces.TransactionResult;
-import org.junit.Before;
+import org.aion.kernel.AvmTransactionResult;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -35,14 +34,14 @@ public class ShadowClassSerializationTest {
     @Test
     public void testIdentitiesOfBigIntegerConstants() {
         byte[] data = ABIUtil.encodeMethodArguments("checkBigIntegerSerialization");
-        TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
+        AvmTransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
     }
 
     @Test
     public void testIdentitiesOfBigDecimalConstants() {
         byte[] data = ABIUtil.encodeMethodArguments("checkBigDecimalSerialization");
-        TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
+        AvmTransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
         assertTrue(result.getResultCode().isSuccess());
     }
 }

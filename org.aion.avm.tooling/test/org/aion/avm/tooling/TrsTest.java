@@ -7,7 +7,6 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.*;
-import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -83,7 +82,7 @@ public class TrsTest {
         BigInteger accountBalance = basicBalance;
 
         for (int i = 0; i < NUM_PERIODS; i++) {
-            TransactionResult result = withdrawFromTrs(account);
+            AvmTransactionResult result = withdrawFromTrs(account);
 
             // Check the transaction was successful.
             assertTrue(result.getResultCode().isSuccess());
@@ -116,41 +115,41 @@ public class TrsTest {
         }
     }
 
-    private TransactionResult sendFundsToTrs(BigInteger amount) {
+    private AvmTransactionResult sendFundsToTrs(BigInteger amount) {
         return sendFundsTo(contract, amount);
     }
 
-    private TransactionResult sendFundsTo(AionAddress recipient, BigInteger amount) {
+    private AvmTransactionResult sendFundsTo(AionAddress recipient, BigInteger amount) {
         Address recipientAddress = new Address(recipient.toByteArray());
         AvmRule.ResultWrapper result = avmRule.balanceTransfer(DEPLOYER_API, recipientAddress, amount, ENERGY_LIMIT, ENERGY_PRICE);
         return result.getTransactionResult();
     }
 
-    private TransactionResult mintAccountToTrs(AionAddress account, BigInteger amount) {
+    private AvmTransactionResult mintAccountToTrs(AionAddress account, BigInteger amount) {
         return callContract("mint", new Address(account.toByteArray()), amount.longValue());
     }
 
-    private TransactionResult withdrawFromTrs(AionAddress recipient) {
+    private AvmTransactionResult withdrawFromTrs(AionAddress recipient) {
         return callContract(recipient, "withdraw");
     }
 
-    private TransactionResult startTrs() {
+    private AvmTransactionResult startTrs() {
         return callContract("start", avmRule.kernel.getBlockTimestamp());
     }
 
-    private TransactionResult lockTrs() {
+    private AvmTransactionResult lockTrs() {
         return callContract("lock");
     }
 
-    private TransactionResult initializeTrs() {
+    private AvmTransactionResult initializeTrs() {
         return callContract("init", NUM_PERIODS, 0);
     }
 
-    private TransactionResult callContract(String method, Object... parameters) {
+    private AvmTransactionResult callContract(String method, Object... parameters) {
         return callContract(DEPLOYER, method, parameters);
     }
 
-    private TransactionResult callContract(AionAddress sender, String method, Object... parameters) {
+    private AvmTransactionResult callContract(AionAddress sender, String method, Object... parameters) {
         byte[] callData = ABIUtil.encodeMethodArguments(method, parameters);
         Address contractAddress = new Address(contract.toByteArray());
         Address senderAddress = new Address(sender.toByteArray());
@@ -160,7 +159,7 @@ public class TrsTest {
 
     }
 
-    private TransactionResult deployContract() {
+    private AvmTransactionResult deployContract() {
         byte[] jarBytes = avmRule.getDappBytes(TRS.class, null, AionMap.class);
 
         AvmRule.ResultWrapper result = avmRule.deploy(DEPLOYER_API, BigInteger.ZERO, jarBytes, ENERGY_LIMIT, ENERGY_PRICE);

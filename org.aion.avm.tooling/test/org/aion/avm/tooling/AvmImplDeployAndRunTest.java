@@ -7,7 +7,6 @@ import org.aion.types.AionAddress;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingKernel;
-import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -26,7 +25,7 @@ public class AvmImplDeployAndRunTest {
     private long energyLimit = 10_000_000L;
     private long energyPrice = 1;
 
-    public TransactionResult deployHelloWorld() {
+    public AvmTransactionResult deployHelloWorld() {
         byte[] txData = avmRule.getDappBytes(HelloWorld.class, null);
         return avmRule.deploy(from, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
     }
@@ -36,19 +35,19 @@ public class AvmImplDeployAndRunTest {
         byte[] arguments = ABIUtil.encodeDeploymentArguments(100);
         byte[] txData = avmRule.getDappBytes(HelloWorld.class, arguments);
 
-        TransactionResult result = avmRule.deploy(from, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
+        AvmTransactionResult result = avmRule.deploy(from, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
     }
 
     @Test
     public void testDeployAndMethodCalls() {
-        TransactionResult deployResult = deployHelloWorld();
+        AvmTransactionResult deployResult = deployHelloWorld();
         assertEquals(AvmTransactionResult.Code.SUCCESS, deployResult.getResultCode());
 
         // call the "run" method
         byte[] txData = ABIUtil.encodeMethodArguments("run");
-        TransactionResult result = avmRule.call(from, new Address(deployResult.getReturnData()), BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
+        AvmTransactionResult result = avmRule.call(from, new Address(deployResult.getReturnData()), BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         assertEquals("Hello, world!", new String(new ABIDecoder(result.getReturnData()).decodeOneByteArray()));
@@ -62,19 +61,19 @@ public class AvmImplDeployAndRunTest {
         assertEquals(124, new ABIDecoder(result.getReturnData()).decodeOneInteger());
     }
 
-    public TransactionResult deployTheDeployAndRunTest() {
+    public AvmTransactionResult deployTheDeployAndRunTest() {
         byte[] txData = avmRule.getDappBytes(DeployAndRunTarget.class, null);
         return avmRule.deploy(from, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
     }
 
     @Test
     public void testDeployAndRunTest() {
-        TransactionResult deployResult = deployTheDeployAndRunTest();
+        AvmTransactionResult deployResult = deployTheDeployAndRunTest();
         assertEquals(AvmTransactionResult.Code.SUCCESS, deployResult.getResultCode());
 
         // test encode method arguments with "encodeArgs"
         byte[] txData = ABIUtil.encodeMethodArguments("encodeArgs");
-        TransactionResult result = avmRule.call(from, new Address(deployResult.getReturnData()), BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
+        AvmTransactionResult result = avmRule.call(from, new Address(deployResult.getReturnData()), BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
@@ -146,7 +145,7 @@ public class AvmImplDeployAndRunTest {
 
         // account1 get 10000
         Address account1 = avmRule.getRandomAddress(BigInteger.ZERO);
-        TransactionResult result = avmRule.balanceTransfer(from, account1, BigInteger.valueOf(100000L), 21000, energyPrice).getTransactionResult();
+        AvmTransactionResult result = avmRule.balanceTransfer(from, account1, BigInteger.valueOf(100000L), 21000, energyPrice).getTransactionResult();
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         assertEquals(BigInteger.valueOf(100000L), avmRule.kernel.getBalance(new AionAddress(account1.toByteArray())));
@@ -168,7 +167,7 @@ public class AvmImplDeployAndRunTest {
 
         Address account1 = avmRule.getRandomAddress(BigInteger.ZERO);
         long maxEnergyPrice = Long.MAX_VALUE;
-        TransactionResult result = avmRule.balanceTransfer(new Address(from.toByteArray()), account1, BigInteger.valueOf(100_000L), 21_000L, maxEnergyPrice).getTransactionResult();
+        AvmTransactionResult result = avmRule.balanceTransfer(new Address(from.toByteArray()), account1, BigInteger.valueOf(100_000L), 21_000L, maxEnergyPrice).getTransactionResult();
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         assertEquals(BigInteger.valueOf(100000L), avmRule.kernel.getBalance(new AionAddress(account1.toByteArray())));
@@ -184,7 +183,7 @@ public class AvmImplDeployAndRunTest {
 
         Address account1 = avmRule.getRandomAddress(BigInteger.ZERO);
         long maxEnergyPrice = Long.MAX_VALUE;
-        TransactionResult result = avmRule.balanceTransfer(new Address(from.toByteArray()), account1, BigInteger.valueOf(100_000L), 2_000_000L, maxEnergyPrice).getTransactionResult();
+        AvmTransactionResult result = avmRule.balanceTransfer(new Address(from.toByteArray()), account1, BigInteger.valueOf(100_000L), 2_000_000L, maxEnergyPrice).getTransactionResult();
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         assertEquals(BigInteger.valueOf(100_000L), avmRule.kernel.getBalance(new AionAddress(account1.toByteArray())));
@@ -197,7 +196,7 @@ public class AvmImplDeployAndRunTest {
     public void testCreateAndCallWithBalanceTransfer() {
         // deploy the Dapp with 100000 value transfer; create with balance transfer
         byte[] txData = avmRule.getDappBytes(DeployAndRunTarget.class, null);
-        TransactionResult deployResult = avmRule.deploy(from, BigInteger.valueOf(100000L), txData, energyLimit, energyPrice).getTransactionResult();
+        AvmTransactionResult deployResult = avmRule.deploy(from, BigInteger.valueOf(100000L), txData, energyLimit, energyPrice).getTransactionResult();
         assertEquals(AvmTransactionResult.Code.SUCCESS, deployResult.getResultCode());
         assertEquals(BigInteger.valueOf(100000L), avmRule.kernel.getBalance(new AionAddress(deployResult.getReturnData())));
 
@@ -205,7 +204,7 @@ public class AvmImplDeployAndRunTest {
         BigInteger accountBalance = BigInteger.valueOf(1000000L);
 
         Address account1 = avmRule.getRandomAddress(BigInteger.ZERO);
-        TransactionResult result = avmRule.balanceTransfer(from, account1, accountBalance, 21000, energyPrice).getTransactionResult();
+        AvmTransactionResult result = avmRule.balanceTransfer(from, account1, accountBalance, 21000, energyPrice).getTransactionResult();
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         assertEquals(accountBalance, avmRule.kernel.getBalance(new AionAddress(account1.toByteArray())));
@@ -221,7 +220,7 @@ public class AvmImplDeployAndRunTest {
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         assertEquals(BigInteger.valueOf(150000L), avmRule.kernel.getBalance(new AionAddress(deployResult.getReturnData())));
-        assertEquals(accountBalanceAfterValueTransfer.subtract(BigInteger.valueOf(((AvmTransactionResult) result).getEnergyUsed())), avmRule.kernel.getBalance(new AionAddress(account1.toByteArray())));
+        assertEquals(accountBalanceAfterValueTransfer.subtract(BigInteger.valueOf(result.getEnergyUsed())), avmRule.kernel.getBalance(new AionAddress(account1.toByteArray())));
         assertEquals(accountBalanceAfterValueTransfer.subtract(BigInteger.valueOf(energyLimit - result.getEnergyRemaining())), avmRule.kernel.getBalance(new AionAddress(account1.toByteArray())));
     }
 }

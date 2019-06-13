@@ -8,6 +8,7 @@ import static org.junit.Assert.fail;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import org.aion.kernel.AvmTransactionResult;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
@@ -20,7 +21,6 @@ import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TestingTransaction;
 import org.aion.vm.api.interfaces.IExecutionLog;
-import org.aion.vm.api.interfaces.TransactionResult;
 import org.aion.vm.api.interfaces.TransactionSideEffects;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -55,7 +55,7 @@ public class ContractLoggingTest {
     @Test
     public void testLogs() {
         TestingTransaction transaction = generateTxForMethodCall("hitLogs");
-        TransactionResult result = runTransaction(transaction);
+        AvmTransactionResult result = runTransaction(transaction);
         assertTrue(result.getResultCode().isSuccess());
 
         TransactionSideEffects sideEffects = result.getSideEffects();
@@ -68,7 +68,7 @@ public class ContractLoggingTest {
     @Test
     public void testLogsFireOffInDeepestInternalTransaction() {
         TestingTransaction transaction = generateTxForMethodCall("spawnInternalTransactionsAndHitLogsAtBottomLevel", 9);
-        TransactionResult result = runTransaction(transaction);
+        AvmTransactionResult result = runTransaction(transaction);
         assertTrue(result.getResultCode().isSuccess());
 
         TransactionSideEffects sideEffects = result.getSideEffects();
@@ -83,7 +83,7 @@ public class ContractLoggingTest {
         int depth = 9;
 
         TestingTransaction transaction = generateTxForMethodCall("spawnInternalTransactionsAndHitLogsAtEachLevel", depth);
-        TransactionResult result = runTransaction(transaction);
+        AvmTransactionResult result = runTransaction(transaction);
         assertTrue(result.getResultCode().isSuccess());
 
         TransactionSideEffects sideEffects = result.getSideEffects();
@@ -96,7 +96,7 @@ public class ContractLoggingTest {
     @Test
     public void testLogsFiredOffInEachInternalTransactionUptoFive() {
         TestingTransaction transaction = generateTxForMethodCall("spawnInternalTransactionsAndFailAtDepth5", 9);
-        TransactionResult result = runTransaction(transaction);
+        AvmTransactionResult result = runTransaction(transaction);
         assertTrue(result.getResultCode().isSuccess());
 
         TransactionSideEffects sideEffects = result.getSideEffects();
@@ -175,13 +175,13 @@ public class ContractLoggingTest {
         jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         TestingTransaction transaction = TestingTransaction.create(from, kernel.getNonce(from), BigInteger.ZERO, jar, energyLimit, energyPrice);
-        TransactionResult result = avm.run(ContractLoggingTest.kernel, new TestingTransaction[] {transaction})[0].get();
+        AvmTransactionResult result = avm.run(ContractLoggingTest.kernel, new TestingTransaction[] {transaction})[0].get();
 
         assertTrue(result.getResultCode().isSuccess());
         contract = new AionAddress(result.getReturnData());
     }
 
-    private TransactionResult runTransaction(TestingTransaction tx) {
+    private AvmTransactionResult runTransaction(TestingTransaction tx) {
         return avm.run(ContractLoggingTest.kernel, new TestingTransaction[] {tx})[0].get();
     }
 

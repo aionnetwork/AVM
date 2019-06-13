@@ -42,7 +42,7 @@ public class ExceptionWrappingIntegrationTest {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
         TestingTransaction create = TestingTransaction.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new TestingTransaction[] {create})[0].get();
+        AvmTransactionResult createResult = avm.run(kernel, new TestingTransaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         AionAddress contractAddr = new AionAddress(createResult.getReturnData());
         
@@ -74,7 +74,7 @@ public class ExceptionWrappingIntegrationTest {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
         TestingTransaction create = TestingTransaction.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new TestingTransaction[] {create})[0].get();
+        AvmTransactionResult createResult = avm.run(kernel, new TestingTransaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         AionAddress contractAddr = new AionAddress(createResult.getReturnData());
         
@@ -96,7 +96,7 @@ public class ExceptionWrappingIntegrationTest {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
         TestingTransaction create = TestingTransaction.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new TestingTransaction[] {create})[0].get();
+        AvmTransactionResult createResult = avm.run(kernel, new TestingTransaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         AionAddress contractAddr = new AionAddress(createResult.getReturnData());
         
@@ -118,7 +118,7 @@ public class ExceptionWrappingIntegrationTest {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
         TestingTransaction create = TestingTransaction.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new TestingTransaction[] {create})[0].get();
+        AvmTransactionResult createResult = avm.run(kernel, new TestingTransaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         AionAddress contractAddr = new AionAddress(createResult.getReturnData());
         
@@ -156,7 +156,7 @@ public class ExceptionWrappingIntegrationTest {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
         TestingTransaction create = TestingTransaction.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new TestingTransaction[] {create})[0].get();
+        AvmTransactionResult createResult = avm.run(kernel, new TestingTransaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         AionAddress contractAddr = new AionAddress(createResult.getReturnData());
         // The next call will spin in a loop, thus triggering our failure.
@@ -193,17 +193,17 @@ public class ExceptionWrappingIntegrationTest {
     }
 
     private byte[] commonSuccessCall(TestingBlock block, TestingKernel kernel, AvmImpl avm, AionAddress contractAddr, String methodName) {
-        TransactionResult result = commonCallStatic(block, kernel, avm, contractAddr, methodName);
+        AvmTransactionResult result = commonCallStatic(block, kernel, avm, contractAddr, methodName);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         return result.getReturnData();
     }
 
     private ResultCode callStaticStatus(TestingBlock block, TestingKernel kernel, AvmImpl avm, AionAddress contractAddr, String methodName) {
-        TransactionResult result = commonCallStatic(block, kernel, avm, contractAddr, methodName);
+        AvmTransactionResult result = commonCallStatic(block, kernel, avm, contractAddr, methodName);
         return result.getResultCode();
     }
 
-    private TransactionResult commonCallStatic(TestingBlock block, TestingKernel kernel, AvmImpl avm, AionAddress contractAddr, String methodName) {
+    private AvmTransactionResult commonCallStatic(TestingBlock block, TestingKernel kernel, AvmImpl avm, AionAddress contractAddr, String methodName) {
         kernel.generateBlock();
         AionAddress from = TestingKernel.PREMINED_ADDRESS;
         long energyLimit = 1_000_000l;
