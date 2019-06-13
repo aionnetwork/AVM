@@ -207,7 +207,7 @@ public final class AvmRule implements TestRule {
 
     public static class ResultWrapper {
         AvmTransactionResult result;
-        TransactionSideEffects sideEffects;
+        SideEffects sideEffects;
 
         ResultWrapper(AvmTransactionResult result) {
             this.result = result;

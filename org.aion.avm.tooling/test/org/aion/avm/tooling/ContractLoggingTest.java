@@ -9,6 +9,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import org.aion.kernel.AvmTransactionResult;
+import org.aion.kernel.SideEffects;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
@@ -21,7 +22,6 @@ import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TestingTransaction;
 import org.aion.vm.api.interfaces.IExecutionLog;
-import org.aion.vm.api.interfaces.TransactionSideEffects;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -58,7 +58,7 @@ public class ContractLoggingTest {
         AvmTransactionResult result = runTransaction(transaction);
         assertTrue(result.getResultCode().isSuccess());
 
-        TransactionSideEffects sideEffects = result.getSideEffects();
+        SideEffects sideEffects = result.getSideEffects();
         assertEquals(NUM_LOGS, sideEffects.getExecutionLogs().size());
         assertEquals(0, sideEffects.getInternalTransactions().size());
 
@@ -71,7 +71,7 @@ public class ContractLoggingTest {
         AvmTransactionResult result = runTransaction(transaction);
         assertTrue(result.getResultCode().isSuccess());
 
-        TransactionSideEffects sideEffects = result.getSideEffects();
+        SideEffects sideEffects = result.getSideEffects();
         assertEquals(NUM_LOGS, sideEffects.getExecutionLogs().size());
         assertEquals(9, sideEffects.getInternalTransactions().size());
 
@@ -86,7 +86,7 @@ public class ContractLoggingTest {
         AvmTransactionResult result = runTransaction(transaction);
         assertTrue(result.getResultCode().isSuccess());
 
-        TransactionSideEffects sideEffects = result.getSideEffects();
+        SideEffects sideEffects = result.getSideEffects();
         assertEquals(NUM_LOGS * (depth + 1), sideEffects.getExecutionLogs().size());
         assertEquals(depth, sideEffects.getInternalTransactions().size());
 
@@ -99,7 +99,7 @@ public class ContractLoggingTest {
         AvmTransactionResult result = runTransaction(transaction);
         assertTrue(result.getResultCode().isSuccess());
 
-        TransactionSideEffects sideEffects = result.getSideEffects();
+        SideEffects sideEffects = result.getSideEffects();
         assertEquals(NUM_LOGS * 5, sideEffects.getExecutionLogs().size());
         assertEquals(5, sideEffects.getInternalTransactions().size());
 
