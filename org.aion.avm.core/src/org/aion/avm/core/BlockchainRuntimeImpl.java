@@ -457,7 +457,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         InstrumentationHelpers.temporarilyExitFrame(this.thisDAppSetup);
 
         // Create the AvmTransaction.
-        AvmTransaction avmTransaction = AvmTransaction.from(this.capabilities, internalTx);
+        AvmTransaction avmTransaction = AvmTransactionUtil.from(this.capabilities, internalTx);
 
         // Acquire the target of the internal transaction
         AionAddress target = avmTransaction.destinationAddress;

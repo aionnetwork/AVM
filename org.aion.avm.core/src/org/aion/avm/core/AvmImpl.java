@@ -186,7 +186,7 @@ public class AvmImpl implements AvmInternal {
     private AvmTransaction[] checkTransactions(TransactionInterface[] transactions) {
         AvmTransaction[] result = new AvmTransaction[transactions.length];
         for (int i = 0; i < result.length; ++i) {
-            result[i] = AvmTransaction.from(this.capabilities, transactions[i]);
+            result[i] = AvmTransactionUtil.from(this.capabilities, transactions[i]);
         }
         return result;
     }
