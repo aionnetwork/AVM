@@ -1,5 +1,6 @@
 package org.aion.avm.tooling;
 
+import org.aion.avm.core.types.InternalTransaction;
 import org.aion.kernel.TestingTransaction;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.IExternalCapabilities;
@@ -39,6 +40,11 @@ public class StandardCapabilities implements IExternalCapabilities {
 
     @Override
     public AionAddress generateContractAddress(TestingTransaction tx) {
+        return AddressUtil.generateContractAddress(tx);
+    }
+
+    @Override
+    public AionAddress generateContractAddress(InternalTransaction tx) {
         return AddressUtil.generateContractAddress(tx);
     }
 }

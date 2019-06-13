@@ -3,6 +3,7 @@ package org.aion.avm.tooling;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
+import org.aion.avm.core.types.InternalTransaction;
 import org.aion.kernel.TestingTransaction;
 import org.aion.types.AionAddress;
 import org.aion.avm.tooling.hash.HashUtils;
@@ -20,6 +21,10 @@ public class AddressUtil {
     }
 
     public static AionAddress generateContractAddress(TestingTransaction tx) {
+        return generateContractAddressInternal(tx.getSenderAddress(), tx.getNonce());
+    }
+
+    public static AionAddress generateContractAddress(InternalTransaction tx) {
         return generateContractAddressInternal(tx.getSenderAddress(), tx.getNonce());
     }
 

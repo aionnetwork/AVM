@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import java.math.BigInteger;
+import org.aion.avm.core.types.InternalTransaction;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
@@ -11,7 +12,6 @@ import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TestingTransaction;
-import org.aion.vm.api.interfaces.InternalTransactionInterface;
 import org.junit.*;
 
 import static org.junit.Assert.assertEquals;
@@ -64,7 +64,7 @@ public class AvmFailureTest {
         assertEquals(5, txResult.getSideEffects().getInternalTransactions().size());
         assertEquals(0, txResult.getSideEffects().getExecutionLogs().size());
 
-        for (InternalTransactionInterface i : txResult.getSideEffects().getInternalTransactions()) {
+        for (InternalTransaction i : txResult.getSideEffects().getInternalTransactions()) {
             assertTrue(i.isRejected());
         }
     }

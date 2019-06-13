@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.aion.avm.core.types.InternalTransaction;
 import org.aion.types.AionAddress;
 import org.aion.types.Log;
-import org.aion.vm.api.interfaces.InternalTransactionInterface;
 
 /**
  * A class representing the side-effects that are caused by executing some external transaction.
@@ -18,7 +18,7 @@ import org.aion.vm.api.interfaces.InternalTransactionInterface;
  */
 public class SideEffects {
     private List<Log> logs;
-    private List<InternalTransactionInterface> internalTransactions;
+    private List<InternalTransaction> internalTransactions;
 
     /**
      * Constructs a new empty {@code SideEffects}.
@@ -34,16 +34,16 @@ public class SideEffects {
     }
 
     public void markAllInternalTransactionsAsRejected() {
-        for (InternalTransactionInterface transaction : this.internalTransactions) {
+        for (InternalTransaction transaction : this.internalTransactions) {
             transaction.markAsRejected();
         }
     }
 
-    public void addInternalTransaction(InternalTransactionInterface transaction) {
+    public void addInternalTransaction(InternalTransaction transaction) {
         this.internalTransactions.add(transaction);
     }
 
-    public void addInternalTransactions(List<InternalTransactionInterface> transactions) {
+    public void addInternalTransactions(List<InternalTransaction> transactions) {
         this.internalTransactions.addAll(transactions);
     }
 
@@ -63,7 +63,7 @@ public class SideEffects {
         this.logs.addAll(logs);
     }
 
-    public List<InternalTransactionInterface> getInternalTransactions() {
+    public List<InternalTransaction> getInternalTransactions() {
         return this.internalTransactions;
     }
 

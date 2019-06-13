@@ -1,5 +1,6 @@
 package org.aion.avm.core.blockchainruntime;
 
+import org.aion.avm.core.types.InternalTransaction;
 import org.aion.kernel.TestingTransaction;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.IExternalCapabilities;
@@ -42,6 +43,11 @@ public class EmptyCapabilities implements IExternalCapabilities {
 
     @Override
     public AionAddress generateContractAddress(TestingTransaction tx) {
+        return generateContractAddressInternal(tx.getSenderAddress(), tx.getNonce());
+    }
+
+    @Override
+    public AionAddress generateContractAddress(InternalTransaction tx) {
         return generateContractAddressInternal(tx.getSenderAddress(), tx.getNonce());
     }
 
