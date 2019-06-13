@@ -1,5 +1,6 @@
 package org.aion.avm.core.performance;
 
+import org.aion.avm.core.FutureResult;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
@@ -11,8 +12,6 @@ import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.*;
-import org.aion.vm.api.interfaces.SimpleFuture;
-import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -162,8 +161,8 @@ public class PerformanceTest {
                 AionAddress contractAddr = Nto1 ? contractAddrs[0] : contractAddrs[i];
                 transactionArray[i] = TestingTransaction.call(sender, contractAddr, kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
             }
-            SimpleFuture<TransactionResult>[] futures = avm.run(this.kernel, transactionArray);
-            for (SimpleFuture<TransactionResult> future : futures) {
+            FutureResult[] futures = avm.run(this.kernel, transactionArray);
+            for (FutureResult future : futures) {
                 AvmTransactionResult result = (AvmTransactionResult) future.get();
                 Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
                 // These should all return an empty byte[] (void).

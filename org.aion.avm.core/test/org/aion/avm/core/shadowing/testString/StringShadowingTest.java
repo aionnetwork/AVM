@@ -2,6 +2,7 @@ package org.aion.avm.core.shadowing.testString;
 
 import java.math.BigInteger;
 
+import org.aion.avm.core.FutureResult;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
@@ -13,7 +14,6 @@ import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.*;
-import org.aion.vm.api.interfaces.SimpleFuture;
 import org.aion.vm.api.interfaces.TransactionResult;
 import org.junit.Assert;
 import org.junit.Test;
@@ -127,7 +127,7 @@ public class StringShadowingTest {
         batch[5] = TestingTransaction.call(from, dappAddr, kernel.getNonce(from).add(BigInteger.valueOf(5)), BigInteger.ZERO, txData, energyLimit, energyPrice);
 
         // Send the batch.
-        SimpleFuture<TransactionResult>[] results = avm.run(kernel, batch);
+        FutureResult[] results = avm.run(kernel, batch);
         
         // Now, process the results.
         Assert.assertArrayEquals(new int[]{96354, 3, 1, -1}, new ABIDecoder(results[0].get().getReturnData()).decodeOneIntegerArray());

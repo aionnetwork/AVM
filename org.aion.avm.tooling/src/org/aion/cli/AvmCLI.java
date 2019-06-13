@@ -1,6 +1,7 @@
 package org.aion.cli;
 
 import java.math.BigInteger;
+import org.aion.avm.core.FutureResult;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
@@ -18,7 +19,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import org.aion.vm.api.interfaces.SimpleFuture;
 import org.aion.vm.api.interfaces.TransactionResult;
 
 
@@ -290,7 +290,7 @@ public class AvmCLI {
                 File storageFile = new File(invocation.storagePath);
                 TestingKernel kernel = new TestingKernel(storageFile, block);
                 AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(capabilities, new AvmConfiguration());
-                SimpleFuture<TransactionResult>[] futures = avm.run(kernel, transactions);
+                FutureResult[] futures = avm.run(kernel, transactions);
                 TransactionResult[] results = new AvmTransactionResult[futures.length];
                 for (int i = 0; i < futures.length; ++i) {
                     results[i] = futures[i].get();
