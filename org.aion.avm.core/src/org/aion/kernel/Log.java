@@ -6,12 +6,11 @@ import org.aion.avm.core.util.Helpers;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import org.aion.vm.api.interfaces.IExecutionLog;
 
 /**
  * Represents a log emitted by dapp.
  */
-public class Log implements IExecutionLog {
+public class Log {
     private final IExternalCapabilities capabilities;
     private byte[] address;
     private List<byte[]> topics;
@@ -24,7 +23,6 @@ public class Log implements IExecutionLog {
         this.data = data;
     }
 
-    @Override
     public AionAddress getSourceAddress() {
         return new AionAddress(this.address);
     }
@@ -37,7 +35,6 @@ public class Log implements IExecutionLog {
         this.address = address;
     }
 
-    @Override
     public List<byte[]> getTopics() {
         return topics;
     }
@@ -46,7 +43,6 @@ public class Log implements IExecutionLog {
         this.topics = topics;
     }
 
-    @Override
     public byte[] getData() {
         return data;
     }
@@ -63,7 +59,6 @@ public class Log implements IExecutionLog {
      *
      * @return A {@link BloomFilter} representing this log.
      */
-    @Override
     public BloomFilter getBloomFilterForLog() {
         BloomFilter filter = BloomFilter.create(this.capabilities.blake2b(this.address));
         for (byte[] topic : this.topics) {
@@ -78,7 +73,6 @@ public class Log implements IExecutionLog {
      * Eventually this type will get pulled out into a common space, where a reliable serialization
      * can be put in place so that each project agrees upon it.
      */
-    @Override
     public byte[] getEncoded() {
         return null;
     }

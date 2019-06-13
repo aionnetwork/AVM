@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.aion.types.AionAddress;
-import org.aion.vm.api.interfaces.IExecutionLog;
 import org.aion.vm.api.interfaces.InternalTransactionInterface;
 
 /**
@@ -17,7 +16,7 @@ import org.aion.vm.api.interfaces.InternalTransactionInterface;
  * 3. All of the internal transactions that were spawned as a result of executing this transaction.
  */
 public class SideEffects {
-    private List<IExecutionLog> logs;
+    private List<Log> logs;
     private List<InternalTransactionInterface> internalTransactions;
 
     /**
@@ -55,11 +54,11 @@ public class SideEffects {
         throw new AssertionError("We shouldn't be adding and deleted addresses in the AVM");
     }
 
-    public void addLog(IExecutionLog log) {
+    public void addLog(Log log) {
         this.logs.add(log);
     }
 
-    public void addLogs(Collection<IExecutionLog> logs) {
+    public void addLogs(Collection<Log> logs) {
         this.logs.addAll(logs);
     }
 
@@ -71,7 +70,7 @@ public class SideEffects {
         return new ArrayList<>();
     }
 
-    public List<IExecutionLog> getExecutionLogs() {
+    public List<Log> getExecutionLogs() {
         return this.logs;
     }
 

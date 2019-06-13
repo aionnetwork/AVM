@@ -249,7 +249,7 @@ public final class AvmRule implements TestRule {
         /**
          * @return List of log objects
          */
-        public List<IExecutionLog> getLogs(){
+        public List<Log> getLogs(){
             return sideEffects.getExecutionLogs();
         }
     }

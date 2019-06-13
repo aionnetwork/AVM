@@ -9,6 +9,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import org.aion.kernel.AvmTransactionResult;
+import org.aion.kernel.Log;
 import org.aion.kernel.SideEffects;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.AvmConfiguration;
@@ -21,7 +22,6 @@ import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TestingTransaction;
-import org.aion.vm.api.interfaces.IExecutionLog;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -112,9 +112,9 @@ public class ContractLoggingTest {
      *
      * If anything fails to check out here the calling test will fail.
      */
-    private void verifyLogs(List<IExecutionLog> logs, int numCallsToHitLogs) {
+    private void verifyLogs(List<Log> logs, int numCallsToHitLogs) {
         resetCounters();
-        for (IExecutionLog log : logs) {
+        for (Log log : logs) {
             verifyLog(log);
         }
         verifyCounts(numCallsToHitLogs);
@@ -132,7 +132,7 @@ public class ContractLoggingTest {
     /**
      * Verifies that log is one of the 5 possible logging calls in the contract.
      */
-    private void verifyLog(IExecutionLog log) {
+    private void verifyLog(Log log) {
         assertEquals(contract, log.getSourceAddress());
         switch (log.getTopics().size()) {
             case 0:
