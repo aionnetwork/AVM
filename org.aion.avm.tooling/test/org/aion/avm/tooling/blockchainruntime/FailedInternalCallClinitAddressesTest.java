@@ -1,5 +1,7 @@
 package org.aion.avm.tooling.blockchainruntime;
 
+import org.aion.avm.core.AvmTransaction;
+import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.types.AionAddress;
 import avm.Address;
@@ -7,7 +9,6 @@ import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AddressUtil;
-import org.aion.kernel.TestingTransaction;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -132,9 +133,9 @@ public class FailedInternalCallClinitAddressesTest {
         Address[] contracts = new Address[numContractsToDeploy];
         for (int i = 0; i < numContractsToDeploy; i++) {
             // Create a "fake" transaction so we can use the common helper to precompute the target contract address.
-            TestingTransaction fakeTransaction = (0 == i)
-                    ? TestingTransaction.create(new AionAddress(contract.toByteArray()), BigInteger.valueOf(nonce + i), BigInteger.ZERO, new byte[0], energyLimit, energyPrice)
-                    : TestingTransaction.create(new AionAddress(contracts[i - 1].toByteArray()), BigInteger.ZERO, BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
+            AvmTransaction fakeTransaction = (0 == i)
+                    ? AvmTransactionUtil.create(new AionAddress(contract.toByteArray()), BigInteger.valueOf(nonce + i), BigInteger.ZERO, new byte[0], energyLimit, energyPrice)
+                    : AvmTransactionUtil.create(new AionAddress(contracts[i - 1].toByteArray()), BigInteger.ZERO, BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
             contracts[i] = new Address(AddressUtil.generateContractAddress(fakeTransaction).toByteArray());
         }
         return contracts;

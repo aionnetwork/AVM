@@ -28,6 +28,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     private final ReentrantDAppStack.ReentrantState reentrantState;
 
     private AvmTransaction tx;
+    private final AionAddress transactionDestination;
     private final byte[] dAppData;
     private TransactionTask task;
     private final IRuntimeSetup thisDAppSetup;
@@ -47,6 +48,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         this.avm = avm;
         this.reentrantState = reentrantState;
         this.tx = tx;
+        this.transactionDestination = (tx.isCreate) ? capabilities.generateContractAddress(tx) : tx.destinationAddress;
         this.dAppData = dAppData;
         this.task = task;
         this.thisDAppSetup = thisDAppSetup;
@@ -63,8 +65,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     @Override
     public Address avm_getAddress() {
         if (null == this.addressCache) {
-            AionAddress address = tx.destinationAddress;
-            this.addressCache = new Address(address.toByteArray());
+            this.addressCache = new Address(this.transactionDestination.toByteArray());
         }
 
         return this.addressCache;
@@ -161,14 +162,13 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         byte[] keyCopy = Arrays.copyOf(key.getUnderlying(), key.getUnderlying().length);
         byte[] valueCopy = (value == null) ? null : Arrays.copyOf(value.getUnderlying(), value.getUnderlying().length);
 
-        AionAddress contractAddress = this.tx.destinationAddress;
         if (value == null) {
-            kernel.removeStorage(contractAddress, keyCopy);
+            kernel.removeStorage(this.transactionDestination, keyCopy);
         } else {
-            kernel.putStorage(contractAddress, keyCopy, valueCopy);
+            kernel.putStorage(this.transactionDestination, keyCopy, valueCopy);
         }
         if(requiresRefund){
-            task.addResetStoragekey(contractAddress, keyCopy);
+            task.addResetStoragekey(this.transactionDestination, keyCopy);
         }
     }
 
@@ -177,8 +177,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         require(key != null, "Key can't be NULL");
         require(key.getUnderlying().length == 32, "Key must be 32 bytes");
 
-        AionAddress contractAddress = this.tx.destinationAddress;
-        byte[] data = this.kernel.getStorage(contractAddress, key.getUnderlying());
+        byte[] data = this.kernel.getStorage(this.transactionDestination, key.getUnderlying());
         return (null != data)
             ? new ByteArray(Arrays.copyOf(data, data.length))
             : null;
@@ -197,12 +196,10 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     @Override
     public s.java.math.BigInteger avm_getBalanceOfThisContract() {
         // This method can be called inside clinit so CREATE is a valid context.
-        AionAddress contractAddress = this.tx.destinationAddress;
-
         // Acquire resource before reading
         // Returned result of acquire is not checked, since an abort exception will be thrown by IInstrumentation during chargeEnergy if the task has been aborted
-        avm.getResourceMonitor().acquire(contractAddress.toByteArray(), this.task);
-        return new s.java.math.BigInteger(this.kernel.getBalance(contractAddress));
+        avm.getResourceMonitor().acquire(this.transactionDestination.toByteArray(), this.task);
+        return new s.java.math.BigInteger(this.kernel.getBalance(this.transactionDestination));
     }
 
     @Override
@@ -223,12 +220,10 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public Result avm_call(Address targetAddress, s.java.math.BigInteger value, ByteArray data, long energyLimit) {
-        AionAddress internalSender = this.tx.destinationAddress;
-
         java.math.BigInteger underlyingValue = value.getUnderlying();
         require(targetAddress != null, "Destination can't be NULL");
         require(underlyingValue.compareTo(java.math.BigInteger.ZERO) >= 0 , "Value can't be negative");
-        require(underlyingValue.compareTo(kernel.getBalance(internalSender)) <= 0, "Insufficient balance");
+        require(underlyingValue.compareTo(kernel.getBalance(this.transactionDestination)) <= 0, "Insufficient balance");
         require(data != null, "Data can't be NULL");
         require(energyLimit >= 0, "Energy limit can't be negative");
 
@@ -245,9 +240,9 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
         // construct the internal transaction
         InternalTransaction internalTx = InternalTransaction.buildTransactionOfTypeCall(
-                internalSender,
+                this.transactionDestination,
                 target,
-                this.kernel.getNonce(internalSender),
+                this.kernel.getNonce(this.transactionDestination),
                 underlyingValue,
                 data.getUnderlying(),
                 restrictEnergyLimit(energyLimit),
@@ -259,11 +254,9 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public Result avm_create(s.java.math.BigInteger value, ByteArray data, long energyLimit) {
-        AionAddress internalSender = this.tx.destinationAddress;
-
         java.math.BigInteger underlyingValue = value.getUnderlying();
         require(underlyingValue.compareTo(java.math.BigInteger.ZERO) >= 0 , "Value can't be negative");
-        require(underlyingValue.compareTo(kernel.getBalance(internalSender)) <= 0, "Insufficient balance");
+        require(underlyingValue.compareTo(kernel.getBalance(this.transactionDestination)) <= 0, "Insufficient balance");
         require(data != null, "Data can't be NULL");
         require(energyLimit >= 0, "Energy limit can't be negative");
 
@@ -275,8 +268,8 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
         // construct the internal transaction
         InternalTransaction internalTx = InternalTransaction.buildTransactionOfTypeCreate(
-                internalSender,
-                this.kernel.getNonce(internalSender),
+                this.transactionDestination,
+                this.kernel.getNonce(this.transactionDestination),
                 underlyingValue,
                 data.getUnderlying(),
                 restrictEnergyLimit(energyLimit),
@@ -296,30 +289,28 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     public void avm_selfDestruct(Address beneficiary) {
         require(null != beneficiary, "Beneficiary can't be NULL");
 
-        AionAddress contractAddress = this.tx.destinationAddress;
-
         // Acquire beneficiary address, the address of current contract is already locked at this stage.
         // Returned result of acquire is not checked, since an abort exception will be thrown by IInstrumentation during chargeEnergy if the task has been aborted
         this.avm.getResourceMonitor().acquire(beneficiary.toByteArray(), this.task);
 
         // Value transfer
-        java.math.BigInteger balanceToTransfer = this.kernel.getBalance(contractAddress);
-        this.kernel.adjustBalance(contractAddress, balanceToTransfer.negate());
+        java.math.BigInteger balanceToTransfer = this.kernel.getBalance(this.transactionDestination);
+        this.kernel.adjustBalance(this.transactionDestination, balanceToTransfer.negate());
         this.kernel.adjustBalance(new AionAddress(beneficiary.toByteArray()), balanceToTransfer);
 
         // Delete Account
         // Note that the account being deleted means it will still run but no DApp which sees this delete
         // (the current one and any callers, or any later transactions, assuming this commits) will be able
         // to invoke it (the code will be missing).
-        this.kernel.deleteAccount(contractAddress);
-        task.addSelfDestructAddress(contractAddress);
+        this.kernel.deleteAccount(this.transactionDestination);
+        task.addSelfDestructAddress(this.transactionDestination);
     }
 
     @Override
     public void avm_log(ByteArray data) {
         require(null != data, "data can't be NULL");
 
-        Log log = Log.dataOnly(tx.destinationAddress.toByteArray(), data.getUnderlying());
+        Log log = Log.dataOnly(this.transactionDestination.toByteArray(), data.getUnderlying());
         task.peekSideEffects().addLog(log);
     }
 
@@ -328,7 +319,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         require(null != topic1, "topic1 can't be NULL");
         require(null != data, "data can't be NULL");
 
-        Log log = Log.topicsAndData(tx.destinationAddress.toByteArray(),
+        Log log = Log.topicsAndData(this.transactionDestination.toByteArray(),
                 List.of(LogSizeUtils.truncatePadTopic(topic1.getUnderlying())),
                 data.getUnderlying()
         );
@@ -341,7 +332,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         require(null != topic2, "topic2 can't be NULL");
         require(null != data, "data can't be NULL");
 
-        Log log = Log.topicsAndData(tx.destinationAddress.toByteArray(),
+        Log log = Log.topicsAndData(this.transactionDestination.toByteArray(),
                 List.of(LogSizeUtils.truncatePadTopic(topic1.getUnderlying()), LogSizeUtils.truncatePadTopic(topic2.getUnderlying())),
                 data.getUnderlying()
         );
@@ -355,7 +346,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         require(null != topic3, "topic3 can't be NULL");
         require(null != data, "data can't be NULL");
 
-        Log log = Log.topicsAndData(tx.destinationAddress.toByteArray(),
+        Log log = Log.topicsAndData(this.transactionDestination.toByteArray(),
                 List.of(LogSizeUtils.truncatePadTopic(topic1.getUnderlying()), LogSizeUtils.truncatePadTopic(topic2.getUnderlying()), LogSizeUtils.truncatePadTopic(topic3.getUnderlying())),
                 data.getUnderlying()
         );
@@ -370,7 +361,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         require(null != topic4, "topic4 can't be NULL");
         require(null != data, "data can't be NULL");
 
-        Log log = Log.topicsAndData(tx.destinationAddress.toByteArray(),
+        Log log = Log.topicsAndData(this.transactionDestination.toByteArray(),
                 List.of(LogSizeUtils.truncatePadTopic(topic1.getUnderlying()), LogSizeUtils.truncatePadTopic(topic2.getUnderlying()), LogSizeUtils.truncatePadTopic(topic3.getUnderlying()), LogSizeUtils.truncatePadTopic(topic4.getUnderlying())),
                 data.getUnderlying()
         );
@@ -459,12 +450,11 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         // Create the AvmTransaction.
         AvmTransaction avmTransaction = AvmTransactionUtil.from(this.capabilities, internalTx);
 
-        // Acquire the target of the internal transaction
-        AionAddress target = avmTransaction.destinationAddress;
-
         // execute the internal transaction
         AvmTransactionResult newResult;
-        boolean isAcquired = avm.getResourceMonitor().acquire(target.toByteArray(), task);
+
+        // Acquire the target of the internal transaction
+        boolean isAcquired = avm.getResourceMonitor().acquire(avmTransaction.destinationAddress.toByteArray(), task);
 
         try {
             if(isAcquired) {

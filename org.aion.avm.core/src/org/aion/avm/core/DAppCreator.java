@@ -182,7 +182,7 @@ public class DAppCreator {
         LoadedDApp dapp = null;
         try {
             // read dapp module
-            AionAddress dappAddress = tx.destinationAddress;
+            AionAddress dappAddress = (tx.isCreate) ? capabilities.generateContractAddress(tx) : tx.destinationAddress;
             CodeAndArguments codeAndArguments = CodeAndArguments.decodeFromBytes(tx.data);
             if (codeAndArguments == null) {
                 if (verboseErrors) {

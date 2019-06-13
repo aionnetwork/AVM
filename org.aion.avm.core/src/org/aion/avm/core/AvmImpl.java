@@ -159,14 +159,6 @@ public class AvmImpl implements AvmInternal {
         this.handoff.startExecutorThreads();
     }
 
-    public FutureResult[] run(KernelInterface kernel, TestingTransaction[] transactions) {
-        return run(kernel, toAvmTransactions(capabilities, transactions));
-    }
-
-    public FutureResult[] run(KernelInterface kernel, TransactionInterface[] transactions) {
-        return run(kernel, toAvmTransactions(capabilities, transactions));
-    }
-
     public FutureResult[] run(KernelInterface kernel, AvmTransaction[] transactions) throws IllegalStateException {
         if (null != this.backgroundFatalError) {
             throw this.backgroundFatalError;
@@ -215,7 +207,7 @@ public class AvmImpl implements AvmInternal {
 
         // Acquire both sender and target resources
         AionAddress sender = tx.senderAddress;
-        AionAddress target = tx.destinationAddress;
+        AionAddress target = (tx.isCreate) ? capabilities.generateContractAddress(tx) : tx.destinationAddress;
 
         AvmTransactionResult result = null;
 
@@ -363,7 +355,7 @@ public class AvmImpl implements AvmInternal {
         AvmTransactionResult result = new AvmTransactionResult(tx.energyLimit, transactionBaseCost);
 
         // grab the recipient address as either the new contract address or the given account address.
-        AionAddress recipient = tx.destinationAddress;
+        AionAddress recipient = (tx.isCreate) ? capabilities.generateContractAddress(tx) : tx.destinationAddress;
 
         // conduct value transfer
         BigInteger value = tx.value;
@@ -456,21 +448,5 @@ public class AvmImpl implements AvmInternal {
         // getLoadedDataBlockNum will always be either equal or less than getLoadedCodeBlockNum
         Predicate<SoftReference<LoadedDApp>> condition = (v) -> null != v.get() && v.get().getLoadedCodeBlockNum() >= blockNum;
         this.hotCache.removeValueIf(condition);
-    }
-
-    private static AvmTransaction[] toAvmTransactions(IExternalCapabilities capabilities, TransactionInterface[] transactions) {
-        AvmTransaction[] avmTransactions = new AvmTransaction[transactions.length];
-        for (int i = 0; i < transactions.length; i++) {
-            avmTransactions[i] = AvmTransactionUtil.from(capabilities, transactions[i]);
-        }
-        return avmTransactions;
-    }
-
-    private static AvmTransaction[] toAvmTransactions(IExternalCapabilities capabilities, TestingTransaction[] transactions) {
-        AvmTransaction[] avmTransactions = new AvmTransaction[transactions.length];
-        for (int i = 0; i < transactions.length; i++) {
-            avmTransactions[i] = AvmTransactionUtil.from(capabilities, transactions[i]);
-        }
-        return avmTransactions;
     }
 }

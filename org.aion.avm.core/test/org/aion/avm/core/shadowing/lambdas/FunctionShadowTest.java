@@ -2,6 +2,8 @@ package org.aion.avm.core.shadowing.lambdas;
 
 import java.math.BigInteger;
 
+import org.aion.avm.core.AvmTransaction;
+import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
@@ -149,16 +151,16 @@ public class FunctionShadowTest {
     private AionAddress deployTest(Class<?> testClass) {
         byte[] testJar = JarBuilder.buildJarForMainAndClassesAndUserlib(testClass);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
-        TestingTransaction tx = TestingTransaction.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ERNGY_PRICE);
-        byte[] returnData = avm.run(kernel, new TestingTransaction[] {tx})[0].get().getReturnData();
+        AvmTransaction tx = AvmTransactionUtil.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ERNGY_PRICE);
+        byte[] returnData = avm.run(kernel, new AvmTransaction[] {tx})[0].get().getReturnData();
         return (null != returnData)
                 ? new AionAddress(returnData)
                 : null;
     }
 
     private void oneCall(AionAddress dappAddr, int transactionNumber) {
-        TestingTransaction tx = TestingTransaction.call(FROM, dappAddr, kernel.getNonce(FROM), BigInteger.ZERO, new byte[] {(byte)transactionNumber}, ENERGY_LIMIT, ERNGY_PRICE);
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(kernel, new TestingTransaction[] {tx})[0].get();
+        AvmTransaction tx = AvmTransactionUtil.call(FROM, dappAddr, kernel.getNonce(FROM), BigInteger.ZERO, new byte[] {(byte)transactionNumber}, ENERGY_LIMIT, ERNGY_PRICE);
+        AvmTransactionResult result = (AvmTransactionResult) avm.run(kernel, new AvmTransaction[] {tx})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
     }
 }

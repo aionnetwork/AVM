@@ -12,7 +12,6 @@ import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
-import org.aion.kernel.TestingTransaction;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,8 +36,8 @@ public class ApiSubclassingTest {
     @Test
     public void testDeployAndCallContractWithAbiSubclasses() {
         byte[] jar = new CodeAndArguments(JarBuilder.buildJarForMainAndClassesAndUserlib(ApiSubclassingTarget.class), null).encodeToBytes();
-        TestingTransaction transaction = TestingTransaction.create(this.deployer, this.kernel.getNonce(deployer), BigInteger.ZERO, jar, 5_000_000, 1);
-        AvmTransactionResult result = this.avm.run(this.kernel, new TestingTransaction[] {transaction})[0].get();
+        AvmTransaction transaction = AvmTransactionUtil.create(this.deployer, this.kernel.getNonce(deployer), BigInteger.ZERO, jar, 5_000_000, 1);
+        AvmTransactionResult result = this.avm.run(this.kernel, new AvmTransaction[] {transaction})[0].get();
         assertEquals(Code.FAILED_REJECTED, result.getResultCode());
     }
 

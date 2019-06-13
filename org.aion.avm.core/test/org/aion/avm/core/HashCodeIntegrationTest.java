@@ -12,7 +12,6 @@ import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
-import org.aion.kernel.TestingTransaction;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -47,8 +46,8 @@ public class HashCodeIntegrationTest {
         // Deploy.
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
-        TestingTransaction create = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        AvmTransactionResult createResult = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {create})[0].get();
+        AvmTransaction create = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        AvmTransactionResult createResult = avm.run(this.kernel, new AvmTransaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
 
         AionAddress contractAddr = new AionAddress(createResult.getReturnData());
@@ -65,8 +64,8 @@ public class HashCodeIntegrationTest {
     private int callStatic(AionAddress contractAddr, String methodName) {
         long energyLimit = 1_000_000l;
         byte[] argData = new ABIStreamingEncoder().encodeOneString(methodName).toBytes();
-        TestingTransaction call = TestingTransaction.call(deployer,contractAddr, kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new TestingTransaction[] {call})[0].get();
+        AvmTransaction call = AvmTransactionUtil.call(deployer,contractAddr, kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
+        AvmTransactionResult result = avm.run(this.kernel, new AvmTransaction[] {call})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         ABIDecoder decoder = new ABIDecoder(result.getReturnData());
         return decoder.decodeOneInteger();

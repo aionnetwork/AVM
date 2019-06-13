@@ -2,6 +2,8 @@ package org.aion.avm.core.miscvisitors;
 
 import java.math.BigInteger;
 
+import org.aion.avm.core.AvmTransaction;
+import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.AvmConfiguration;
@@ -14,7 +16,6 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
-import org.aion.kernel.TestingTransaction;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,8 +45,8 @@ public class StrictFPVisitorTest {
         
         byte[] jar = JarBuilder.buildJarForMainAndClasses(StrictFPVisitorTestResource.class);
         byte[] arguments = null;
-        TestingTransaction tx = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
-        AvmTransactionResult txResult = avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
+        AvmTransaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
+        AvmTransactionResult txResult = avm.run(this.kernel, new AvmTransaction[] {tx})[0].get();
 
         dappAddress = new AionAddress(txResult.getReturnData());
         assertTrue(null != dappAddress);
@@ -69,8 +70,8 @@ public class StrictFPVisitorTest {
 
     @Test
     public void testFp() {
-        TestingTransaction tx = TestingTransaction.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
-        AvmTransactionResult txResult = avm.run(this.kernel, new TestingTransaction[] {tx})[0].get();
+        AvmTransaction tx = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
+        AvmTransactionResult txResult = avm.run(this.kernel, new AvmTransaction[] {tx})[0].get();
         assertTrue(txResult.getResultCode().isSuccess());
     }
 }

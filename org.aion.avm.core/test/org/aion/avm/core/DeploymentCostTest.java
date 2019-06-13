@@ -21,7 +21,6 @@ import i.RuntimeAssertionError;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
-import org.aion.kernel.TestingTransaction;
 
 import java.math.BigInteger;
 import java.text.NumberFormat;
@@ -140,8 +139,8 @@ public class DeploymentCostTest {
         byte[] jar = getDeploymentJarBytesForContract(contract);
 
         //deploy in normal Mode
-        TestingTransaction create = TestingTransaction.create(DEPLOYER, this.kernel.getNonce(DEPLOYER), BigInteger.ZERO, jar, ENERGY_LIMIT, ENERGY_PRICE);
-        AvmTransactionResult createResult = this.avm.run(this.kernel, new TestingTransaction[] {create})[0].get();
+        AvmTransaction create = AvmTransactionUtil.create(DEPLOYER, this.kernel.getNonce(DEPLOYER), BigInteger.ZERO, jar, ENERGY_LIMIT, ENERGY_PRICE);
+        AvmTransactionResult createResult = this.avm.run(this.kernel, new AvmTransaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         return createResult;
     }

@@ -5,6 +5,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import org.aion.avm.core.AvmTransaction;
+import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
@@ -17,7 +19,6 @@ import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
-import org.aion.kernel.TestingTransaction;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -54,9 +55,9 @@ public class RejectionIntegrationTest {
         kernel.generateBlock();
         byte[] jar = JarBuilder.buildJarForMainAndClasses(RejectNonShadowJclSubclassError.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        
-        TestingTransaction transaction = TestingTransaction.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
-        AvmTransactionResult createResult = avm.run(RejectionIntegrationTest.kernel, new TestingTransaction[] {transaction})[0].get();
+
+        AvmTransaction transaction = AvmTransactionUtil.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
+        AvmTransactionResult createResult = avm.run(RejectionIntegrationTest.kernel, new AvmTransaction[] {transaction})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_REJECTED, createResult.getResultCode());
     }
 
@@ -67,8 +68,8 @@ public class RejectionIntegrationTest {
         byte[] jar = JarBuilder.buildJarForExplicitClassNameAndBytecode("TestClassTemplate", classBytes);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
-        TestingTransaction transaction = TestingTransaction.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
-        AvmTransactionResult createResult = avm.run(RejectionIntegrationTest.kernel, new TestingTransaction[] {transaction})[0].get();
+        AvmTransaction transaction = AvmTransactionUtil.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
+        AvmTransactionResult createResult = avm.run(RejectionIntegrationTest.kernel, new AvmTransaction[] {transaction})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_REJECTED, createResult.getResultCode());
     }
 
@@ -82,8 +83,8 @@ public class RejectionIntegrationTest {
             AvmImplTestResource.class, classMap);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
-        TestingTransaction transaction = TestingTransaction.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
-        AvmTransactionResult createResult = avm.run(RejectionIntegrationTest.kernel, new TestingTransaction[] {transaction})[0].get();
+        AvmTransaction transaction = AvmTransactionUtil.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
+        AvmTransactionResult createResult = avm.run(RejectionIntegrationTest.kernel, new AvmTransaction[] {transaction})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.FAILED_REJECTED, createResult.getResultCode());
     }
 }

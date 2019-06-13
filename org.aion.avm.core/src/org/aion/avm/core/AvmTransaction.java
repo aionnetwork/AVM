@@ -35,9 +35,6 @@ public class AvmTransaction {
         if (null == senderAddress) {
             throw new IllegalArgumentException("No sender");
         }
-        if (null == destinationAddress) {
-            throw new IllegalArgumentException("No destination");
-        }
         if (null == transactionHash) {
             throw new IllegalArgumentException("No transaction hash");
         }

@@ -8,6 +8,8 @@ import static org.junit.Assert.fail;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import org.aion.avm.core.AvmTransaction;
+import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.SideEffects;
 import org.aion.types.AionAddress;
@@ -21,7 +23,6 @@ import org.aion.avm.core.util.LogSizeUtils;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
-import org.aion.kernel.TestingTransaction;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -54,7 +55,7 @@ public class ContractLoggingTest {
 
     @Test
     public void testLogs() {
-        TestingTransaction transaction = generateTxForMethodCall("hitLogs");
+        AvmTransaction transaction = generateTxForMethodCall("hitLogs");
         AvmTransactionResult result = runTransaction(transaction);
         assertTrue(result.getResultCode().isSuccess());
 
@@ -67,7 +68,7 @@ public class ContractLoggingTest {
 
     @Test
     public void testLogsFireOffInDeepestInternalTransaction() {
-        TestingTransaction transaction = generateTxForMethodCall("spawnInternalTransactionsAndHitLogsAtBottomLevel", 9);
+        AvmTransaction transaction = generateTxForMethodCall("spawnInternalTransactionsAndHitLogsAtBottomLevel", 9);
         AvmTransactionResult result = runTransaction(transaction);
         assertTrue(result.getResultCode().isSuccess());
 
@@ -82,7 +83,7 @@ public class ContractLoggingTest {
     public void testLogsFiredOffInEachInternalTransaction() {
         int depth = 9;
 
-        TestingTransaction transaction = generateTxForMethodCall("spawnInternalTransactionsAndHitLogsAtEachLevel", depth);
+        AvmTransaction transaction = generateTxForMethodCall("spawnInternalTransactionsAndHitLogsAtEachLevel", depth);
         AvmTransactionResult result = runTransaction(transaction);
         assertTrue(result.getResultCode().isSuccess());
 
@@ -95,7 +96,7 @@ public class ContractLoggingTest {
 
     @Test
     public void testLogsFiredOffInEachInternalTransactionUptoFive() {
-        TestingTransaction transaction = generateTxForMethodCall("spawnInternalTransactionsAndFailAtDepth5", 9);
+        AvmTransaction transaction = generateTxForMethodCall("spawnInternalTransactionsAndFailAtDepth5", 9);
         AvmTransactionResult result = runTransaction(transaction);
         assertTrue(result.getResultCode().isSuccess());
 
@@ -174,21 +175,21 @@ public class ContractLoggingTest {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(LoggingTarget.class);
         jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
-        TestingTransaction transaction = TestingTransaction.create(from, kernel.getNonce(from), BigInteger.ZERO, jar, energyLimit, energyPrice);
-        AvmTransactionResult result = avm.run(ContractLoggingTest.kernel, new TestingTransaction[] {transaction})[0].get();
+        AvmTransaction transaction = AvmTransactionUtil.create(from, kernel.getNonce(from), BigInteger.ZERO, jar, energyLimit, energyPrice);
+        AvmTransactionResult result = avm.run(ContractLoggingTest.kernel, new AvmTransaction[] {transaction})[0].get();
 
         assertTrue(result.getResultCode().isSuccess());
         contract = new AionAddress(result.getReturnData());
     }
 
-    private AvmTransactionResult runTransaction(TestingTransaction tx) {
-        return avm.run(ContractLoggingTest.kernel, new TestingTransaction[] {tx})[0].get();
+    private AvmTransactionResult runTransaction(AvmTransaction tx) {
+        return avm.run(ContractLoggingTest.kernel, new AvmTransaction[] {tx})[0].get();
     }
 
-    private TestingTransaction generateTxForMethodCall(String methodName, Object... args) {
+    private AvmTransaction generateTxForMethodCall(String methodName, Object... args) {
         kernel.generateBlock();
         byte[] callData = ABIUtil.encodeMethodArguments(methodName, args);
-        return TestingTransaction.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
+        return AvmTransactionUtil.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
     }
 
     private void resetCounters() {

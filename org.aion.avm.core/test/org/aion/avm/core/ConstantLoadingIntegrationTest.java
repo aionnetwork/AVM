@@ -10,7 +10,6 @@ import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
-import org.aion.kernel.TestingTransaction;
 import org.junit.*;
 
 
@@ -82,8 +81,8 @@ public class ConstantLoadingIntegrationTest {
         // Deploy.
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
-        TestingTransaction create = TestingTransaction.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        AvmTransactionResult createResult = (AvmTransactionResult) avm.run(kernel, new TestingTransaction[] {create})[0].get();
+        AvmTransaction create = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        AvmTransactionResult createResult = (AvmTransactionResult) avm.run(kernel, new AvmTransaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
 
         return new AionAddress(createResult.getReturnData());
@@ -93,8 +92,8 @@ public class ConstantLoadingIntegrationTest {
         kernel.generateBlock();
         long energyLimit = 1_000_000l;
         byte[] argData = new byte[] { (byte)code };
-        TestingTransaction call = TestingTransaction.call(deployer, contractAddr, kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(kernel, new TestingTransaction[] {call})[0].get();
+        AvmTransaction call = AvmTransactionUtil.call(deployer, contractAddr, kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
+        AvmTransactionResult result = (AvmTransactionResult) avm.run(kernel, new AvmTransaction[] {call})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         return result.getReturnData();
     }

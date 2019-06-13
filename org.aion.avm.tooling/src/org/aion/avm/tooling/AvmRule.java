@@ -2,6 +2,8 @@ package org.aion.avm.tooling;
 
 import avm.Address;
 import org.aion.kernel.AvmTransactionResult.Code;
+import org.aion.avm.core.AvmTransaction;
+import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.types.AionAddress;
 import org.aion.types.Log;
 import org.aion.avm.core.AvmConfiguration;
@@ -161,9 +163,9 @@ public final class AvmRule implements TestRule {
      * @return Result of the operation
      */
     public ResultWrapper balanceTransfer(Address from, Address to, BigInteger value, long energyLimit, long energyPrice) {
-        TestingTransaction tx = TestingTransaction.call(new AionAddress(from.toByteArray()), new AionAddress(to.toByteArray()), kernel.getNonce(new AionAddress(from.toByteArray())), value, new byte[0], energyLimit, energyPrice);
+        AvmTransaction tx = AvmTransactionUtil.call(new AionAddress(from.toByteArray()), new AionAddress(to.toByteArray()), kernel.getNonce(new AionAddress(from.toByteArray())), value, new byte[0], energyLimit, energyPrice);
 
-        return new ResultWrapper(avm.run(this.kernel, new TestingTransaction[]{tx})[0].get());
+        return new ResultWrapper(avm.run(this.kernel, new AvmTransaction[]{tx})[0].get());
     }
 
     /**
@@ -194,15 +196,15 @@ public final class AvmRule implements TestRule {
     private ResultWrapper callDapp(Address from, Address dappAddress, BigInteger value, byte[] transactionData, long energyLimit, long energyPrice) {
         if (automaticBlockGenerationEnabled) {
             this.kernel.generateBlock();
-        }TestingTransaction tx = TestingTransaction.call(new AionAddress(from.toByteArray()), new AionAddress(dappAddress.toByteArray()), kernel.getNonce(new AionAddress(from.toByteArray())), value, transactionData, energyLimit, energyPrice);
-        return new ResultWrapper(avm.run(this.kernel, new TestingTransaction[]{tx})[0].get());
+        }AvmTransaction tx = AvmTransactionUtil.call(new AionAddress(from.toByteArray()), new AionAddress(dappAddress.toByteArray()), kernel.getNonce(new AionAddress(from.toByteArray())), value, transactionData, energyLimit, energyPrice);
+        return new ResultWrapper(avm.run(this.kernel, new AvmTransaction[]{tx})[0].get());
     }
 
     private ResultWrapper deployDapp(Address from, BigInteger value, byte[] dappBytes, long energyLimit, long energyPrice) {
         if (automaticBlockGenerationEnabled) {
             this.kernel.generateBlock();
-        }TestingTransaction tx = TestingTransaction.create(new AionAddress(from.toByteArray()), kernel.getNonce(new AionAddress(from.toByteArray())), value, dappBytes, energyLimit, energyPrice);
-        return new ResultWrapper(avm.run(this.kernel, new TestingTransaction[]{tx})[0].get());
+        }AvmTransaction tx = AvmTransactionUtil.create(new AionAddress(from.toByteArray()), kernel.getNonce(new AionAddress(from.toByteArray())), value, dappBytes, energyLimit, energyPrice);
+        return new ResultWrapper(avm.run(this.kernel, new AvmTransaction[]{tx})[0].get());
     }
 
     public static class ResultWrapper {
