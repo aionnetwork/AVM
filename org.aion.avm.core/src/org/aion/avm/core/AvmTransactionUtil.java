@@ -1,10 +1,37 @@
 package org.aion.avm.core;
 
 import java.math.BigInteger;
+import org.aion.kernel.TestingTransaction;
 import org.aion.types.AionAddress;
 import org.aion.vm.api.interfaces.TransactionInterface;
 
 public class AvmTransactionUtil {
+
+    /**
+     * Factory method to create the AvmTransaction data type from a TestingTransaction.
+     *
+     * @param capabilities The capabilities for generating a new contract address, if this is a create call.
+     * @param external The transaction we were given.
+     * @return The new AvmTransaction instance.
+     * @throws IllegalArgumentException If any elements of external are statically invalid.
+     */
+    public static AvmTransaction from(IExternalCapabilities capabilities, TestingTransaction external) {
+        boolean isCreate = external.isContractCreationTransaction();
+        AionAddress destinationAddress = isCreate
+            ? capabilities.generateContractAddress(external)
+            : external.getDestinationAddress();
+
+        return fromInternal(external.getSenderAddress()
+            , destinationAddress
+            , external.getTransactionHash()
+            , external.getValue()
+            , external.getNonce()
+            , external.getEnergyPrice()
+            , external.getEnergyLimit()
+            , isCreate
+            , external.getData()
+        );
+    }
 
     /**
      * Factory method to create the AvmTransaction data type from a TransactionInterface.
@@ -16,27 +43,32 @@ public class AvmTransactionUtil {
      */
     public static AvmTransaction from(IExternalCapabilities capabilities, TransactionInterface external) {
         boolean isCreate = external.isContractCreationTransaction();
-
-        AionAddress senderAddress = external.getSenderAddress();
         AionAddress destinationAddress = isCreate
             ? capabilities.generateContractAddress(external)
             : external.getDestinationAddress();
-        byte[] transactionHash = external.getTransactionHash();
-        BigInteger value = new BigInteger(1, external.getValue());
-        BigInteger nonce = new BigInteger(1, external.getNonce());
-        long energyPrice = external.getEnergyPrice();
-        long energyLimit = external.getEnergyLimit();
-        byte[] data = external.getData();
+
+        return fromInternal(external.getSenderAddress()
+            , destinationAddress
+            , external.getTransactionHash()
+            , external.getValue()
+            , external.getNonce()
+            , external.getEnergyPrice()
+            , external.getEnergyLimit()
+            , isCreate
+            , external.getData()
+        );
+    }
+
+    private static AvmTransaction fromInternal(AionAddress senderAddress, AionAddress destinationAddress, byte[] transactionHash, byte[] value, byte[] nonce, long energyPrice, long energyLimit, boolean isCreate, byte[] data) {
         return new AvmTransaction(senderAddress
             , destinationAddress
             , transactionHash
-            , value
-            , nonce
+            , new BigInteger(1, value)
+            , new BigInteger(1, nonce)
             , energyPrice
             , energyLimit
             , isCreate
             , data
         );
     }
-
 }

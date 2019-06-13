@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import avm.Address;
+import i.RuntimeAssertionError;
 import java.math.BigInteger;
 
 import org.aion.types.AionAddress;
@@ -137,7 +138,7 @@ public class AvmImplTest {
 
             @Override
             public AionAddress getContractAddress() {
-                return tx.getContractAddress();
+                throw RuntimeAssertionError.unimplemented("unimplemented.");
             }
 
             @Override
@@ -153,7 +154,7 @@ public class AvmImplTest {
 
             @Override
             public byte getTargetVM() {
-                return tx.getTargetVM();
+                throw RuntimeAssertionError.unimplemented("unimplemented.");
             }
 
             @Override
@@ -181,7 +182,7 @@ public class AvmImplTest {
 
             @Override
             public byte getKind() {
-                return tx.getKind();
+                throw RuntimeAssertionError.unimplemented("unimplemented.");
             }
         };
     }

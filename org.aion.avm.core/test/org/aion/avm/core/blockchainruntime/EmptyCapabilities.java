@@ -1,5 +1,6 @@
 package org.aion.avm.core.blockchainruntime;
 
+import org.aion.kernel.TestingTransaction;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.IExternalCapabilities;
 import i.RuntimeAssertionError;
@@ -36,10 +37,18 @@ public class EmptyCapabilities implements IExternalCapabilities {
 
     @Override
     public AionAddress generateContractAddress(TransactionInterface tx) {
+        return generateContractAddressInternal(tx.getSenderAddress(), tx.getNonce());
+    }
+
+    @Override
+    public AionAddress generateContractAddress(TestingTransaction tx) {
+        return generateContractAddressInternal(tx.getSenderAddress(), tx.getNonce());
+    }
+
+    private AionAddress generateContractAddressInternal(AionAddress senderAddress, byte[] senderAddressNonce) {
         // NOTE:  This address generation isn't anything particular.  It is just meant to be deterministic and derived from the tx.
         // It is NOT meant to be equivalent/similar to the implementation used by an actual kernel.
-        byte[] senderAddressBytes = tx.getSenderAddress().toByteArray();
-        byte[] senderAddressNonce = tx.getNonce();
+        byte[] senderAddressBytes = senderAddress.toByteArray();
         byte[] raw = new byte[AionAddress.LENGTH];
         for (int i = 0; i < AionAddress.LENGTH - 1; ++i) {
             byte one = (i < senderAddressBytes.length) ? senderAddressBytes[i] : (byte)i;

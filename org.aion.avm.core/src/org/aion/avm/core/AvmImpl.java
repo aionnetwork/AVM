@@ -159,7 +159,15 @@ public class AvmImpl implements AvmInternal {
         this.handoff.startExecutorThreads();
     }
 
-    public FutureResult[] run(KernelInterface kernel, TransactionInterface[] transactions) throws IllegalStateException {
+    public FutureResult[] run(KernelInterface kernel, TestingTransaction[] transactions) {
+        return run(kernel, toAvmTransactions(capabilities, transactions));
+    }
+
+    public FutureResult[] run(KernelInterface kernel, TransactionInterface[] transactions) {
+        return run(kernel, toAvmTransactions(capabilities, transactions));
+    }
+
+    public FutureResult[] run(KernelInterface kernel, AvmTransaction[] transactions) throws IllegalStateException {
         if (null != this.backgroundFatalError) {
             throw this.backgroundFatalError;
         }
@@ -171,24 +179,14 @@ public class AvmImpl implements AvmInternal {
             long currentBlockNum = kernel.getBlockNumber();
             validateCodeCache(currentBlockNum);
         }
-        
-        // Filter these transactions into the safe kind we use internally (the type passed in may not be well-formed).
-        AvmTransaction[] safeTransactions = checkTransactions(transactions);
+
         // Create tasks for these new transactions and send them off to be asynchronously executed.
         TransactionTask[] tasks = new TransactionTask[transactions.length];
         for (int i = 0; i < transactions.length; i++){
-            tasks[i] = new TransactionTask(kernel, safeTransactions[i], i, safeTransactions[i].senderAddress);
+            tasks[i] = new TransactionTask(kernel, transactions[i], i, transactions[i].senderAddress);
         }
 
         return this.handoff.sendTransactionsAsynchronously(tasks);
-    }
-
-    private AvmTransaction[] checkTransactions(TransactionInterface[] transactions) {
-        AvmTransaction[] result = new AvmTransaction[transactions.length];
-        for (int i = 0; i < result.length; ++i) {
-            result[i] = AvmTransactionUtil.from(this.capabilities, transactions[i]);
-        }
-        return result;
     }
 
     private AvmTransactionResult backgroundProcessTransaction(TransactionTask task) {
@@ -458,5 +456,21 @@ public class AvmImpl implements AvmInternal {
         // getLoadedDataBlockNum will always be either equal or less than getLoadedCodeBlockNum
         Predicate<SoftReference<LoadedDApp>> condition = (v) -> null != v.get() && v.get().getLoadedCodeBlockNum() >= blockNum;
         this.hotCache.removeValueIf(condition);
+    }
+
+    private static AvmTransaction[] toAvmTransactions(IExternalCapabilities capabilities, TransactionInterface[] transactions) {
+        AvmTransaction[] avmTransactions = new AvmTransaction[transactions.length];
+        for (int i = 0; i < transactions.length; i++) {
+            avmTransactions[i] = AvmTransactionUtil.from(capabilities, transactions[i]);
+        }
+        return avmTransactions;
+    }
+
+    private static AvmTransaction[] toAvmTransactions(IExternalCapabilities capabilities, TestingTransaction[] transactions) {
+        AvmTransaction[] avmTransactions = new AvmTransaction[transactions.length];
+        for (int i = 0; i < transactions.length; i++) {
+            avmTransactions[i] = AvmTransactionUtil.from(capabilities, transactions[i]);
+        }
+        return avmTransactions;
     }
 }
