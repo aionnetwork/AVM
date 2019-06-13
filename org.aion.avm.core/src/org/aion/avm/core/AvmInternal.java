@@ -12,7 +12,7 @@ import org.aion.vm.api.interfaces.VirtualMachine;
  * The private/internal extension of the Avm public interface.  This is the internally-facing interface which supports things like internal
  * transactions, which aren't otherwise exposted/meaningful to calls originating outside an AVM implementation.
  */
-public interface AvmInternal extends VirtualMachine {
+public interface AvmInternal {
     /**
      * Runs a transaction, originating from inside the AVM, itself.
      * 
