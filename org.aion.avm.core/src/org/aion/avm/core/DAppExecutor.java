@@ -10,7 +10,6 @@ import org.aion.avm.core.util.Helpers;
 import i.*;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.parallel.TransactionTask;
-import org.aion.vm.api.interfaces.KernelInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +18,7 @@ public class DAppExecutor {
 
     private static final Logger logger = LoggerFactory.getLogger(DAppExecutor.class);
 
-    public static void call(IExternalCapabilities capabilities, KernelInterface kernel, AvmInternal avm, LoadedDApp dapp,
+    public static void call(IExternalCapabilities capabilities, IExternalState externalState, AvmInternal avm, LoadedDApp dapp,
                             ReentrantDAppStack.ReentrantState stateToResume, TransactionTask task,
                             Transaction tx, AvmTransactionResult result, boolean verboseErrors, boolean readFromCache) {
         AionAddress dappAddress = tx.destinationAddress;
@@ -58,7 +57,7 @@ public class DAppExecutor {
         } else {
             byte[] rawGraphData = (null != callerState)
                     ? callerState.rawState
-                    : kernel.getObjectGraph(dappAddress);
+                    : externalState.getObjectGraph(dappAddress);
             nextHashCode = dapp.loadEntireGraph(initialClassWrappers, rawGraphData);
             rawGraphDataLength = rawGraphData.length;
         }
@@ -72,7 +71,7 @@ public class DAppExecutor {
         task.getReentrantDAppStack().pushState(thisState);
         
         InstrumentationHelpers.pushNewStackFrame(dapp.runtimeSetup, dapp.loader, tx.energyLimit - result.getEnergyUsed(), nextHashCode, initialClassWrappers);
-        IBlockchainRuntime previousRuntime = dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(capabilities, kernel, avm, thisState, task, tx, tx.copyOfTransactionData(), dapp.runtimeSetup));
+        IBlockchainRuntime previousRuntime = dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(capabilities, externalState, avm, thisState, task, tx, tx.copyOfTransactionData(), dapp.runtimeSetup));
 
         try {
             // It is now safe for us to bill for the cost of loading the graph (the cost is the same, whether this came from the caller or the disk).
@@ -98,7 +97,7 @@ public class DAppExecutor {
                 byte[] postCallGraphData = dapp.saveEntireGraph(newHashCode, StorageFees.MAX_GRAPH_SIZE);
                 // Bill for writing this size.
                 threadInstrumentation.chargeEnergy(StorageFees.WRITE_PRICE_PER_BYTE * postCallGraphData.length);
-                kernel.putObjectGraph(dappAddress, postCallGraphData);
+                externalState.putObjectGraph(dappAddress, postCallGraphData);
                 // Update LoadedDApp state at the end of execution
                 dapp.setHashCode(newHashCode);
                 dapp.setSerializedLength(postCallGraphData.length);

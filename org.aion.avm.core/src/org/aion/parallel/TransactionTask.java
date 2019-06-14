@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
 
+import org.aion.avm.core.IExternalState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.ReentrantDAppStack;
@@ -15,7 +16,6 @@ import org.aion.avm.core.util.Helpers;
 import i.IInstrumentation;
 import i.RuntimeAssertionError;
 import org.aion.kernel.*;
-import org.aion.vm.api.interfaces.KernelInterface;
 
 
 /**
@@ -26,7 +26,7 @@ import org.aion.vm.api.interfaces.KernelInterface;
  * preventing other transactions with the same address to be processed while this task is being executed
  */
 public class TransactionTask implements Comparable<TransactionTask>{
-    private final KernelInterface parentKernel;
+    private final IExternalState parentKernel;
     private Transaction externalTransaction;
     private volatile boolean abortState;
     private IInstrumentation threadOwningTask;
@@ -41,7 +41,7 @@ public class TransactionTask implements Comparable<TransactionTask>{
     private Set<Pair<AionAddress, ByteArrayWrapper>> resetStorageKeys;
 
 
-    public TransactionTask(KernelInterface parentKernel, Transaction tx, int index, AionAddress origin){
+    public TransactionTask(IExternalState parentKernel, Transaction tx, int index, AionAddress origin){
         this.parentKernel = parentKernel;
         this.externalTransaction = tx;
         this.index = index;

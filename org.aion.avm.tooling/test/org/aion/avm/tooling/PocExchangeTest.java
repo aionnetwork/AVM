@@ -1,6 +1,7 @@
 package org.aion.avm.tooling;
 
 import org.aion.avm.core.AvmTransactionUtil;
+import org.aion.avm.core.IExternalState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import avm.Address;
@@ -13,14 +14,13 @@ import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
-import org.aion.vm.api.interfaces.KernelInterface;
 import org.junit.*;
 
 import java.math.BigInteger;
 
 
 public class PocExchangeTest {
-    private static KernelInterface kernel;
+    private static IExternalState kernel;
     private static AvmImpl avm;
     private static byte[] testERC20Jar;
     private static byte[] testExchangeJar;

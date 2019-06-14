@@ -25,7 +25,6 @@ import i.OutOfEnergyException;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
-import org.aion.vm.api.interfaces.KernelInterface;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -639,61 +638,61 @@ public class AvmImplTest {
     }
 
 
-    private int callRecursiveHash(KernelInterface kernel, AvmImpl avm, long energyLimit, AionAddress contractAddr, int depth) {
+    private int callRecursiveHash(IExternalState externalState, AvmImpl avm, long energyLimit, AionAddress contractAddr, int depth) {
         byte[] argData = encodeCallInt("getRecursiveHashCode", depth);
-        Transaction call = AvmTransactionUtil.call(deployer, contractAddr, kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1L);
-        AvmTransactionResult result = avm.run(kernel, new Transaction[] {call})[0].get();
+        Transaction call = AvmTransactionUtil.call(deployer, contractAddr, externalState.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1L);
+        AvmTransactionResult result = avm.run(externalState, new Transaction[] {call})[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         return new ABIDecoder(result.getReturnData()).decodeOneInteger();
     }
 
-    private int callReentrantAccess(KernelInterface kernel, AvmImpl avm, AionAddress contractAddr, String methodName, boolean shouldFail) {
+    private int callReentrantAccess(IExternalState externalState, AvmImpl avm, AionAddress contractAddr, String methodName, boolean shouldFail) {
             byte[] nearData = encodeCallBool(methodName, shouldFail);
-        return callDAppInteger(kernel, avm, contractAddr, nearData);
+        return callDAppInteger(externalState, avm, contractAddr, nearData);
     }
 
-    private AionAddress createDApp(KernelInterface kernel, AvmImpl avm, byte[] createData) {
-        AvmTransactionResult result1 = createDAppCanFail(kernel, avm, createData);
+    private AionAddress createDApp(IExternalState externalState, AvmImpl avm, byte[] createData) {
+        AvmTransactionResult result1 = createDAppCanFail(externalState, avm, createData);
         assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
         return new AionAddress(result1.getReturnData());
     }
 
-    private AvmTransactionResult createDAppCanFail(KernelInterface kernel, AvmImpl avm, byte[] createData) {
+    private AvmTransactionResult createDAppCanFail(IExternalState externalState, AvmImpl avm, byte[] createData) {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
-        Transaction tx1 = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, createData, energyLimit, energyPrice);
-        return avm.run(kernel, new Transaction[] {tx1})[0].get();
+        Transaction tx1 = AvmTransactionUtil.create(deployer, externalState.getNonce(deployer), BigInteger.ZERO, createData, energyLimit, energyPrice);
+        return avm.run(externalState, new Transaction[] {tx1})[0].get();
     }
 
-    private void callDAppVoid(KernelInterface kernel, AvmImpl avm, AionAddress dAppAddress, byte[] argData) {
-        byte[] result = callDAppSuccess(kernel, avm, dAppAddress, argData);
+    private void callDAppVoid(IExternalState externalState, AvmImpl avm, AionAddress dAppAddress, byte[] argData) {
+        byte[] result = callDAppSuccess(externalState, avm, dAppAddress, argData);
         assertArrayEquals(new byte[0], result);
     }
 
-    private boolean callDAppBoolean(KernelInterface kernel, AvmImpl avm, AionAddress dAppAddress, byte[] argData) {
-        byte[] result = callDAppSuccess(kernel, avm, dAppAddress, argData);
+    private boolean callDAppBoolean(IExternalState externalState, AvmImpl avm, AionAddress dAppAddress, byte[] argData) {
+        byte[] result = callDAppSuccess(externalState, avm, dAppAddress, argData);
         return new ABIDecoder(result).decodeOneBoolean();
     }
 
-    private int callDAppInteger(KernelInterface kernel, AvmImpl avm, AionAddress dAppAddress, byte[] argData) {
-        byte[] result = callDAppSuccess(kernel, avm, dAppAddress, argData);
+    private int callDAppInteger(IExternalState externalState, AvmImpl avm, AionAddress dAppAddress, byte[] argData) {
+        byte[] result = callDAppSuccess(externalState, avm, dAppAddress, argData);
         return new ABIDecoder(result).decodeOneInteger();
     }
 
-    private byte[] callDAppByteArray(KernelInterface kernel, AvmImpl avm, AionAddress dAppAddress, byte[] argData) {
-        byte[] result = callDAppSuccess(kernel, avm, dAppAddress, argData);
+    private byte[] callDAppByteArray(IExternalState externalState, AvmImpl avm, AionAddress dAppAddress, byte[] argData) {
+        byte[] result = callDAppSuccess(externalState, avm, dAppAddress, argData);
         return new ABIDecoder(result).decodeOneByteArray();
     }
 
-    private Address callDAppAddress(KernelInterface kernel, AvmImpl avm, AionAddress dAppAddress, byte[] argData) {
-        byte[] result = callDAppSuccess(kernel, avm, dAppAddress, argData);
+    private Address callDAppAddress(IExternalState externalState, AvmImpl avm, AionAddress dAppAddress, byte[] argData) {
+        byte[] result = callDAppSuccess(externalState, avm, dAppAddress, argData);
         return new ABIDecoder(result).decodeOneAddress();
     }
 
-    private byte[] callDAppSuccess(KernelInterface kernel, AvmImpl avm, AionAddress dAppAddress, byte[] argData) {
+    private byte[] callDAppSuccess(IExternalState externalState, AvmImpl avm, AionAddress dAppAddress, byte[] argData) {
         long energyLimit = 5_000_000l;
-        Transaction tx = AvmTransactionUtil.call(deployer, dAppAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1L);
-        AvmTransactionResult result2 = avm.run(kernel, new Transaction[] {tx})[0].get();
+        Transaction tx = AvmTransactionUtil.call(deployer, dAppAddress, externalState.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1L);
+        AvmTransactionResult result2 = avm.run(externalState, new Transaction[] {tx})[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result2.getResultCode());
         return result2.getReturnData();
     }

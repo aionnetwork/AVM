@@ -1,6 +1,7 @@
 package org.aion.kernel;
 
 import java.math.BigInteger;
+import org.aion.avm.core.IExternalState;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.util.Helpers;
 import org.aion.data.DirectoryBackedDataStore;
@@ -9,13 +10,12 @@ import org.aion.data.IDataStore;
 import org.aion.data.MemoryBackedDataStore;
 
 import java.io.File;
-import org.aion.vm.api.interfaces.KernelInterface;
 
 
 /**
  * A modified version of CachingKernel to support more general usage so it can be used as the kernel underlying tests.
  */
-public class TestingKernel implements KernelInterface {
+public class TestingKernel implements IExternalState {
     /**
      * For testing purposes, we will give every contract address this prefix.
      */
@@ -89,7 +89,7 @@ public class TestingKernel implements KernelInterface {
     }
 
     @Override
-    public KernelInterface makeChildKernelInterface() {
+    public IExternalState newChildExternalState() {
         return new TransactionalKernel(this);
     }
 
@@ -99,7 +99,7 @@ public class TestingKernel implements KernelInterface {
     }
 
     @Override
-    public void commitTo(KernelInterface target) {
+    public void commitTo(IExternalState target) {
         throw new AssertionError("This class does not implement this method.");
     }
 

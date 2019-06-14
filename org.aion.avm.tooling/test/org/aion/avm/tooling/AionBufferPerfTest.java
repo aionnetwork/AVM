@@ -2,6 +2,7 @@ package org.aion.avm.tooling;
 
 import java.math.BigInteger;
 import org.aion.avm.core.AvmTransactionUtil;
+import org.aion.avm.core.IExternalState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.AvmConfiguration;
@@ -14,7 +15,6 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
-import org.aion.vm.api.interfaces.KernelInterface;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -28,7 +28,7 @@ public class AionBufferPerfTest {
         return JarBuilder.buildJarForMainAndClassesAndUserlib(AionBufferPerfContract.class);
     }
 
-    private AvmTransactionResult deploy(KernelInterface kernel, AvmImpl avm, byte[] testJar){
+    private AvmTransactionResult deploy(IExternalState kernel, AvmImpl avm, byte[] testJar){
         byte[] testWalletArguments = new byte[0];
         Transaction createTransaction = AvmTransactionUtil.create(from, kernel.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
         AvmTransactionResult createResult = avm.run(kernel, new Transaction[] {createTransaction})[0].get();
@@ -37,8 +37,8 @@ public class AionBufferPerfTest {
         return createResult;
     }
 
-    private AvmTransactionResult call(KernelInterface kernel, AvmImpl avm, AionAddress contract, AionAddress sender, byte[] args) {
-        Transaction callTransaction = AvmTransactionUtil.call(sender, contract, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1L);
+    private AvmTransactionResult call(IExternalState kernel, AvmImpl avm, AionAddress contract, AionAddress sender, byte[] args) {
+            Transaction callTransaction = AvmTransactionUtil.call(sender, contract, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1L);
         AvmTransactionResult callResult = avm.run(kernel, new Transaction[] {callTransaction})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
         return callResult;
@@ -50,7 +50,7 @@ public class AionBufferPerfTest {
         System.out.println(">> Energy measurements for AionBuffer\n>>");
         byte[] args;
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        KernelInterface kernel = new TestingKernel(block);
+        IExternalState kernel = new TestingKernel(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
 
         AvmTransactionResult deployRes = deploy(kernel, avm, buildBufferPerfJar());

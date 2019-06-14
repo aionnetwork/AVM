@@ -2,18 +2,16 @@ package org.aion.kernel;
 
 import java.math.BigInteger;
 import i.RuntimeAssertionError;
+import org.aion.avm.core.IExternalState;
 import org.aion.types.AionAddress;
 import org.aion.data.IAccountStore;
 import org.aion.data.IDataStore;
 import org.aion.data.MemoryBackedDataStore;
 
-import org.aion.vm.api.interfaces.KernelInterface;
-
-
 /**
  * In in-memory cached used by the TransactionalKernel in order to store results of in-flight transactions prior to commit.
  */
-public class CachingKernel implements KernelInterface {
+public class CachingKernel implements IExternalState {
     private final IDataStore dataStore;
 
     /**
@@ -24,7 +22,7 @@ public class CachingKernel implements KernelInterface {
     }
 
     @Override
-    public KernelInterface makeChildKernelInterface() {
+    public IExternalState newChildExternalState() {
         // While this kind of kernel could support children, the use-case would be an error, based on what this implementation is for.
         throw RuntimeAssertionError.unreachable("Caching kernel should never be asked to create children.");
     }
@@ -35,7 +33,7 @@ public class CachingKernel implements KernelInterface {
     }
 
     @Override
-    public void commitTo(KernelInterface target) {
+    public void commitTo(IExternalState target) {
         throw RuntimeAssertionError.unreachable("This class does not implement this method.");
     }
 

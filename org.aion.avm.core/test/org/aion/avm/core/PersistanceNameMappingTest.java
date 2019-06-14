@@ -20,7 +20,6 @@ import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
 
-import org.aion.vm.api.interfaces.KernelInterface;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -71,21 +70,21 @@ public class PersistanceNameMappingTest {
         callContract(avm, kernel, contract, "verifyFields");
     }
 
-    private AionAddress deployContract(AvmImpl avm, KernelInterface kernel) {
+    private AionAddress deployContract(AvmImpl avm, IExternalState externalState) {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(PersistanceNameMappingTestTarget.class, ABIDecoder.class, ABIException.class, ABIToken.class, AionBuffer.class, AionSet.class, AionMap.class);
         byte[] data = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
-        Transaction createTransaction = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, data, 5_000_000L, 1L);
-        AvmTransactionResult result = avm.run(kernel, new Transaction[]{ createTransaction })[0].get();
+        Transaction createTransaction = AvmTransactionUtil.create(deployer, externalState.getNonce(deployer), BigInteger.ZERO, data, 5_000_000L, 1L);
+        AvmTransactionResult result = avm.run(externalState, new Transaction[]{ createTransaction })[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
 
         return new AionAddress(result.getReturnData());
     }
 
-    private void callContract(AvmImpl avm, KernelInterface kernel, AionAddress contract, String method) {
+    private void callContract(AvmImpl avm, IExternalState externalState, AionAddress contract, String method) {
         byte[] data = ABIEncoder.encodeOneString(method);
-        Transaction callTransaction = AvmTransactionUtil.call(deployer, contract, kernel.getNonce(deployer), BigInteger.ZERO, data, 2_000_000L, 1L);
-        AvmTransactionResult result = avm.run(kernel, new Transaction[]{ callTransaction })[0].get();
+        Transaction callTransaction = AvmTransactionUtil.call(deployer, contract, externalState.getNonce(deployer), BigInteger.ZERO, data, 2_000_000L, 1L);
+        AvmTransactionResult result = avm.run(externalState, new Transaction[]{ callTransaction })[0].get();
 
         // The tests will REVERT if what we want to test does not occur!
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());

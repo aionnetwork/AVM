@@ -1,6 +1,7 @@
 package org.aion.avm.core.rejection.errors;
 
 import org.aion.avm.core.AvmTransactionUtil;
+import org.aion.avm.core.IExternalState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.AvmConfiguration;
@@ -13,7 +14,6 @@ import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
-import org.aion.vm.api.interfaces.KernelInterface;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -35,13 +35,13 @@ public class RejectVirtualMachineErrorIntegrationTest {
     private static long ENERGY_LIMIT = 5_000_000L;
     private static long ENERGY_PRICE = 1L;
 
-    private static KernelInterface kernel;
+    private static IExternalState externalState;
     private static AvmImpl avm;
 
     @BeforeClass
     public static void setup() {
         TestingBlock BLOCK = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        kernel = new TestingKernel(BLOCK);
+        externalState = new TestingKernel(BLOCK);
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
 
@@ -80,7 +80,7 @@ public class RejectVirtualMachineErrorIntegrationTest {
 
     private AvmTransactionResult deployJar(byte[] jar) {
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        Transaction transaction = AvmTransactionUtil.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
-        return avm.run(RejectVirtualMachineErrorIntegrationTest.kernel, new Transaction[] {transaction})[0].get();
+        Transaction transaction = AvmTransactionUtil.create(FROM, externalState.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
+        return avm.run(RejectVirtualMachineErrorIntegrationTest.externalState, new Transaction[] {transaction})[0].get();
     }
 }

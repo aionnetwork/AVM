@@ -7,23 +7,23 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import org.aion.avm.core.IExternalState;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.types.Pair;
 import org.aion.avm.core.util.ByteArrayWrapper;
-import org.aion.vm.api.interfaces.KernelInterface;
 
 
 /**
- * A transactional implementation of the KernelInterface which only writes back to its "parent" on commit.
+ * A transactional implementation of the IExternalState which only writes back to its "parent" on commit.
  * 
  * This uses a relatively extensible pattern for its implementation, building a transaction log rather than its own actual direct implementation.
  * This means that changes to the interface should mostly just translate into a new kind of transaction log entry, in this implementation.
  * Special attention needs to be paid to read-and-write operations (such as adjustBalance()) and anything involving deletes.
  */
-public class TransactionalKernel implements KernelInterface {
-    private final KernelInterface parent;
+public class TransactionalKernel implements IExternalState {
+    private final IExternalState parent;
     private final CachingKernel writeCache;
-    private final List<Consumer<KernelInterface>> writeLog;
+    private final List<Consumer<IExternalState>> writeLog;
     private final Set<ByteArrayWrapper> deletedAccountProjection;
     private final Set<ByteArrayWrapper> cachedAccountBalances;
     private final Set<Pair<AionAddress, ByteArrayWrapper>> deletedStorageKeys;
@@ -35,7 +35,7 @@ public class TransactionalKernel implements KernelInterface {
     private long blockNrgLimit;
     private AionAddress blockCoinbase;
 
-    public TransactionalKernel(KernelInterface parent) {
+    public TransactionalKernel(IExternalState parent) {
         this.parent = parent;
         this.writeCache = new CachingKernel();
         this.writeLog = new ArrayList<>();
@@ -50,7 +50,7 @@ public class TransactionalKernel implements KernelInterface {
     }
 
     @Override
-    public TransactionalKernel makeChildKernelInterface() {
+    public TransactionalKernel newChildExternalState() {
         return new TransactionalKernel(this);
     }
 
@@ -60,7 +60,7 @@ public class TransactionalKernel implements KernelInterface {
      */
     @Override
     public void commit() {
-        for (Consumer<KernelInterface> mutation : this.writeLog) {
+        for (Consumer<IExternalState> mutation : this.writeLog) {
             mutation.accept(this.parent);
         }
     }
@@ -70,16 +70,16 @@ public class TransactionalKernel implements KernelInterface {
      * This method should only be used by AION kernel for database write back.
      */
     @Override
-    public void commitTo(KernelInterface target) {
-        for (Consumer<KernelInterface> mutation : this.writeLog) {
+    public void commitTo(IExternalState target) {
+        for (Consumer<IExternalState> mutation : this.writeLog) {
             mutation.accept(target);
         }
     }
 
     @Override
     public void createAccount(AionAddress address) {
-        Consumer<KernelInterface> write = (kernel) -> {
-            kernel.createAccount(address);
+        Consumer<IExternalState> write = (externalState) -> {
+            externalState.createAccount(address);
         };
         write.accept(writeCache);
         writeLog.add(write);
@@ -114,8 +114,8 @@ public class TransactionalKernel implements KernelInterface {
 
     @Override
     public void putCode(AionAddress address, byte[] code) {
-        Consumer<KernelInterface> write = (kernel) -> {
-            kernel.putCode(address, code);
+        Consumer<IExternalState> write = (externalState) -> {
+            externalState.putCode(address, code);
         };
         write.accept(writeCache);
         writeLog.add(write);
@@ -135,8 +135,8 @@ public class TransactionalKernel implements KernelInterface {
 
     @Override
     public void setTransformedCode(AionAddress address, byte[] bytes) {
-        Consumer<KernelInterface> write = (kernel) -> {
-            kernel.setTransformedCode(address, bytes);
+        Consumer<IExternalState> write = (externalState) -> {
+            externalState.setTransformedCode(address, bytes);
         };
         write.accept(writeCache);
         writeLog.add(write);
@@ -144,8 +144,8 @@ public class TransactionalKernel implements KernelInterface {
 
     @Override
     public void putObjectGraph(AionAddress address, byte[] bytes) {
-        Consumer<KernelInterface> write = (kernel) -> {
-            kernel.putObjectGraph(address, bytes);
+        Consumer<IExternalState> write = (externalState) -> {
+            externalState.putObjectGraph(address, bytes);
         };
         write.accept(writeCache);
         writeLog.add(write);
@@ -162,8 +162,8 @@ public class TransactionalKernel implements KernelInterface {
 
     @Override
     public void putStorage(AionAddress address, byte[] key, byte[] value) {
-        Consumer<KernelInterface> write = (kernel) -> {
-            kernel.putStorage(address, key, value);
+        Consumer<IExternalState> write = (externalState) -> {
+            externalState.putStorage(address, key, value);
         };
         if(deletedStorageKeys.contains(Pair.of(address, new ByteArrayWrapper(key)))){
             deletedStorageKeys.remove(Pair.of(address, new ByteArrayWrapper(key)));
@@ -186,8 +186,8 @@ public class TransactionalKernel implements KernelInterface {
 
     @Override
     public void deleteAccount(AionAddress address) {
-        Consumer<KernelInterface> write = (kernel) -> {
-            kernel.deleteAccount(address);
+        Consumer<IExternalState> write = (externalState) -> {
+            externalState.deleteAccount(address);
         };
         write.accept(writeCache);
         writeLog.add(write);
@@ -224,8 +224,8 @@ public class TransactionalKernel implements KernelInterface {
         // If this was previously deleted, fake the lazy re-creation.
         this.deletedAccountProjection.remove(new ByteArrayWrapper(address.toByteArray()));
 
-        Consumer<KernelInterface> write = (kernel) -> {
-            kernel.adjustBalance(address, delta);
+        Consumer<IExternalState> write = (externalState) -> {
+            externalState.adjustBalance(address, delta);
         };
         write.accept(writeCache);
         writeLog.add(write);
@@ -245,8 +245,8 @@ public class TransactionalKernel implements KernelInterface {
 
     @Override
     public void incrementNonce(AionAddress address) {
-        Consumer<KernelInterface> write = (kernel) -> {
-            kernel.incrementNonce(address);
+        Consumer<IExternalState> write = (externalState) -> {
+            externalState.incrementNonce(address);
         };
         write.accept(writeCache);
         writeLog.add(write);
@@ -254,47 +254,47 @@ public class TransactionalKernel implements KernelInterface {
 
     @Override
     public boolean accountNonceEquals(AionAddress address, BigInteger nonce) {
-        // Delegate the check to our parent. The actual KernelInterface given to us by the kernel
+        // Delegate the check to our parent. The actual KernelInterface given to us by the externalState
         // has an opportunity to do some special case logic here when it wishes.
         return this.parent.accountNonceEquals(address, nonce);
     }
 
     @Override
     public boolean accountBalanceIsAtLeast(AionAddress address, BigInteger amount) {
-        // Delegate the check to our parent. The actual KernelInterface given to us by the kernel
+        // Delegate the check to our parent. The actual KernelInterface given to us by the externalState
         // has an opportunity to do some special case logic here when it wishes.
         return this.parent.accountBalanceIsAtLeast(address, amount);
     }
 
     @Override
     public boolean isValidEnergyLimitForCreate(long energyLimit) {
-        // Delegate the check to our parent. The actual KernelInterface given to us by the kernel
+        // Delegate the check to our parent. The actual KernelInterface given to us by the externalState
         // has an opportunity to do some special case logic here when it wishes.
         return this.parent.isValidEnergyLimitForCreate(energyLimit);
     }
 
     @Override
     public boolean isValidEnergyLimitForNonCreate(long energyLimit) {
-        // Delegate the check to our parent. The actual KernelInterface given to us by the kernel
+        // Delegate the check to our parent. The actual KernelInterface given to us by the externalState
         // has an opportunity to do some special case logic here when it wishes.
         return this.parent.isValidEnergyLimitForNonCreate(energyLimit);
     }
 
     @Override
     public void refundAccount(AionAddress address, BigInteger amount) {
-        // This method may have special logic in the kernel. Here it is just adjustBalance.
+        // This method may have special logic in the externalState. Here it is just adjustBalance.
         adjustBalance(address, amount);
     }
 
     @Override
     public void deductEnergyCost(AionAddress address, BigInteger cost) {
-        // This method may have special logic in the kernel. Here it is just adjustBalance.
+        // This method may have special logic in the externalState. Here it is just adjustBalance.
         adjustBalance(address, cost);
     }
 
     @Override
     public void payMiningFee(AionAddress address, BigInteger fee) {
-        // This method may have special logic in the kernel. Here it is just adjustBalance.
+        // This method may have special logic in the externalState. Here it is just adjustBalance.
         adjustBalance(address, fee);
     }
 
@@ -305,8 +305,8 @@ public class TransactionalKernel implements KernelInterface {
 
     @Override
     public void removeStorage(AionAddress address, byte[] key) {
-        Consumer<KernelInterface> write = (kernel) -> {
-            kernel.removeStorage(address, key);
+        Consumer<IExternalState> write = (externalState) -> {
+            externalState.removeStorage(address, key);
         };
         deletedStorageKeys.add(Pair.of(address, new ByteArrayWrapper(key)));
         write.accept(writeCache);
@@ -315,7 +315,7 @@ public class TransactionalKernel implements KernelInterface {
 
     @Override
     public boolean destinationAddressIsSafeForThisVM(AionAddress address) {
-        // We need to delegate to our parent kernel to apply whatever logic is defined there.
+        // We need to delegate to our parent externalState to apply whatever logic is defined there.
         // The only exception to this is cases where we already stored code in our cache so see if that is there.
         return (null != this.writeCache.getTransformedCode(address)) || this.parent.destinationAddressIsSafeForThisVM(address);
     }

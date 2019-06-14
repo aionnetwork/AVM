@@ -23,7 +23,6 @@ import i.RuntimeAssertionError;
 import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.parallel.AddressResourceMonitor;
 import org.aion.parallel.TransactionTask;
-import org.aion.vm.api.interfaces.KernelInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -159,7 +158,7 @@ public class AvmImpl implements AvmInternal {
         this.handoff.startExecutorThreads();
     }
 
-    public FutureResult[] run(KernelInterface kernel, Transaction[] transactions) throws IllegalStateException {
+    public FutureResult[] run(IExternalState kernel, Transaction[] transactions) throws IllegalStateException {
         if (null != this.backgroundFatalError) {
             throw this.backgroundFatalError;
         }
@@ -239,7 +238,7 @@ public class AvmImpl implements AvmInternal {
         }
 
         if (AvmTransactionResult.Code.FAILED_ABORT != result.getResultCode()){
-            result.setKernelInterface(task.getThisTransactionalKernel());
+            result.setExternalState(task.getThisTransactionalKernel());
         }
 
         return result;
@@ -277,7 +276,7 @@ public class AvmImpl implements AvmInternal {
     }
 
     @Override
-    public AvmTransactionResult runInternalTransaction(KernelInterface parentKernel, TransactionTask task, Transaction tx) {
+    public AvmTransactionResult runInternalTransaction(IExternalState parentKernel, TransactionTask task, Transaction tx) {
         if (null != this.backgroundFatalError) {
             throw this.backgroundFatalError;
         }
@@ -293,7 +292,7 @@ public class AvmImpl implements AvmInternal {
         return result;
     }
 
-    private AvmTransactionResult runExternalInvoke(KernelInterface parentKernel, TransactionTask task, Transaction tx) {
+    private AvmTransactionResult runExternalInvoke(IExternalState parentKernel, TransactionTask task, Transaction tx) {
         // to capture any error during validation
         AvmTransactionResult.Code error = null;
 
@@ -339,7 +338,7 @@ public class AvmImpl implements AvmInternal {
         return result;
     }
 
-    private AvmTransactionResult commonInvoke(KernelInterface parentKernel, TransactionTask task, Transaction tx, long transactionBaseCost) {
+    private AvmTransactionResult commonInvoke(IExternalState parentKernel, TransactionTask task, Transaction tx, long transactionBaseCost) {
         if (logger.isDebugEnabled()) {
             logger.debug("Transaction: address = {}, caller = {}, value = {}, data = {}, energyLimit = {}",
                 tx.destinationAddress,

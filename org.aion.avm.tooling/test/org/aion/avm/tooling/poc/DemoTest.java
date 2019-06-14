@@ -1,6 +1,7 @@
 package org.aion.avm.tooling.poc;
 
 import org.aion.avm.core.AvmTransactionUtil;
+import org.aion.avm.core.IExternalState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import avm.Address;
@@ -16,7 +17,6 @@ import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
-import org.aion.vm.api.interfaces.KernelInterface;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -36,7 +36,7 @@ public class DemoTest {
 
     @Test
     public void testWallet() {
-        KernelInterface kernel = new TestingKernel();
+        IExternalState kernel = new TestingKernel();
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         kernel.adjustBalance(pepeMinter, BigInteger.valueOf(1_000_000_000L));
         kernel.adjustBalance(deployer, BigInteger.valueOf(1_000_000_000L));

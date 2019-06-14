@@ -41,7 +41,6 @@ import org.aion.avm.userlib.CodeAndArguments;
 import i.*;
 import org.aion.kernel.*;
 import org.aion.parallel.TransactionTask;
-import org.aion.vm.api.interfaces.KernelInterface;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -178,7 +177,7 @@ public class DAppCreator {
         return processedClasses;
     }
 
-    public static void create(IExternalCapabilities capabilities, KernelInterface kernel, AvmInternal avm, TransactionTask task, Transaction tx, AvmTransactionResult result, boolean preserveDebuggability, boolean verboseErrors) {
+    public static void create(IExternalCapabilities capabilities, IExternalState externalState, AvmInternal avm, TransactionTask task, Transaction tx, AvmTransactionResult result, boolean preserveDebuggability, boolean verboseErrors) {
         // Expose the DApp outside the try so we can detach from it, when we exit.
         LoadedDApp dapp = null;
         try {
@@ -226,7 +225,7 @@ public class DAppCreator {
             int nextHashCode = 1;
             InstrumentationHelpers.pushNewStackFrame(dapp.runtimeSetup, dapp.loader, tx.energyLimit - result.getEnergyUsed(), nextHashCode, new InternedClasses());
             // (we pass a null reentrant state since we haven't finished initializing yet - nobody can call into us).
-            IBlockchainRuntime previousRuntime = dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(capabilities, kernel, avm, null, task, tx, codeAndArguments.arguments, dapp.runtimeSetup));
+            IBlockchainRuntime previousRuntime = dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(capabilities, externalState, avm, null, task, tx, codeAndArguments.arguments, dapp.runtimeSetup));
 
             // We have just created this dApp, there should be no previous runtime associated with it.
             RuntimeAssertionError.assertTrue(previousRuntime == null);
@@ -249,10 +248,10 @@ public class DAppCreator {
             ImmortalDappModule immortalDapp = ImmortalDappModule.fromImmortalClasses(immortalClasses, transformedDapp.mainClass);
 
             // store deployed code
-            kernel.putCode(dappAddress, codeAndArguments.code);
+            externalState.putCode(dappAddress, codeAndArguments.code);
             // store transformed dapp
-            byte[] immortalDappJar = immortalDapp.createJar(dappAddress, kernel.getBlockTimestamp());
-            kernel.setTransformedCode(dappAddress, immortalDappJar);
+            byte[] immortalDappJar = immortalDapp.createJar(dappAddress, externalState.getBlockTimestamp());
+            externalState.setTransformedCode(dappAddress, immortalDappJar);
 
             // Force the classes in the dapp to initialize so that the <clinit> is run (since we already saved the version without).
             dapp.forceInitializeAllClasses();
@@ -261,7 +260,7 @@ public class DAppCreator {
             byte[] rawGraphData = dapp.saveEntireGraph(threadInstrumentation.peekNextHashCode(), StorageFees.MAX_GRAPH_SIZE);
             // Bill for writing this size.
             threadInstrumentation.chargeEnergy(StorageFees.WRITE_PRICE_PER_BYTE * rawGraphData.length);
-            kernel.putObjectGraph(dappAddress, rawGraphData);
+            externalState.putObjectGraph(dappAddress, rawGraphData);
 
             long refund = 0;
             long energyUsed = tx.energyLimit - threadInstrumentation.energyLeft();

@@ -1,5 +1,6 @@
 package org.aion.avm.tooling.blockchainruntime;
 
+import org.aion.avm.core.IExternalState;
 import org.aion.types.AionAddress;
 import p.avm.Address;
 import p.avm.Result;
@@ -18,7 +19,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import org.aion.vm.api.interfaces.KernelInterface;
 
 
 /**
@@ -42,7 +42,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     private java.math.BigInteger blockDifficulty = java.math.BigInteger.valueOf(1000L);
 
 
-    private KernelInterface kernel = new TestingKernel();
+    private IExternalState kernel = new TestingKernel();
     private Map<java.lang.String, Integer> eventCounter = new HashMap<>();
 
     public TestingBlockchainRuntime() {
@@ -73,7 +73,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
         return this;
     }
 
-    public TestingBlockchainRuntime withKernel(KernelInterface kernel) {
+    public TestingBlockchainRuntime withKernel(IExternalState kernel) {
         this.kernel = kernel;
         return this;
     }

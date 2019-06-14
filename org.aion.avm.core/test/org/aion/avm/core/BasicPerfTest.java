@@ -15,7 +15,6 @@ import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingKernel;
 
-import org.aion.vm.api.interfaces.KernelInterface;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -62,7 +61,7 @@ public class BasicPerfTest {
 
     private static class TestRunnable extends Thread {
         private AionAddress deployer = TestingKernel.PREMINED_ADDRESS;
-        private KernelInterface kernel;
+        private IExternalState externalState;
         private AvmImpl avm;
         private AionAddress contractAddress;
         private Throwable backgroundThrowable;
@@ -70,10 +69,10 @@ public class BasicPerfTest {
             // Deploy.
             this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
             TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-            this.kernel = new TestingKernel(block);
+            this.externalState = new TestingKernel(block);
             long transaction1EnergyLimit = 1_000_000_000l;
-            Transaction tx1 = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), transaction1EnergyLimit, 1L);
-            AvmTransactionResult result1 = this.avm.run(this.kernel, new Transaction[] {tx1})[0].get();
+            Transaction tx1 = AvmTransactionUtil.create(deployer, externalState.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), transaction1EnergyLimit, 1L);
+            AvmTransactionResult result1 = this.avm.run(this.externalState, new Transaction[] {tx1})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
             this.contractAddress = new AionAddress(result1.getReturnData());
         }
@@ -96,8 +95,8 @@ public class BasicPerfTest {
             int blockStart = 2;
             for (int i = blockStart; i < (COUNT + blockStart); ++i) {
                 long transaction1EnergyLimit = 1_000_000_000l;
-                Transaction tx1 = AvmTransactionUtil.call(deployer, this.contractAddress, kernel.getNonce(deployer), BigInteger.ZERO, new byte[0], transaction1EnergyLimit, 1L);
-                AvmTransactionResult result1 = this.avm.run(this.kernel, new Transaction[] {tx1})[0].get();
+                Transaction tx1 = AvmTransactionUtil.call(deployer, this.contractAddress, externalState.getNonce(deployer), BigInteger.ZERO, new byte[0], transaction1EnergyLimit, 1L);
+                AvmTransactionResult result1 = this.avm.run(this.externalState, new Transaction[] {tx1})[0].get();
                 Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
             }
         }

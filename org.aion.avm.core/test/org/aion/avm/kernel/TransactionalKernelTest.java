@@ -3,11 +3,11 @@ package org.aion.avm.kernel;
 import java.math.BigInteger;
 import java.util.Arrays;
 
+import org.aion.avm.core.IExternalState;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.TestingKernel;
 import org.aion.kernel.TransactionalKernel;
-import org.aion.vm.api.interfaces.KernelInterface;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,7 +15,7 @@ import org.junit.Test;
 public class TransactionalKernelTest {
     @Test
     public void testCommitDataOntoEmpty() {
-        KernelInterface base = new TestingKernel();
+        IExternalState base = new TestingKernel();
         TransactionalKernel transaction = new TransactionalKernel(base);
         AionAddress address = Helpers.randomAddress();
         // Code cannot be empty.
@@ -45,7 +45,7 @@ public class TransactionalKernelTest {
 
     @Test
     public void testCommitDataOntoPartial() {
-        KernelInterface base = new TestingKernel();
+        IExternalState base = new TestingKernel();
         AionAddress address = Helpers.randomAddress();
         byte[] key1 = Helpers.randomBytes(32);
         byte[] value1_1 = Helpers.randomBytes(32);
@@ -69,7 +69,7 @@ public class TransactionalKernelTest {
 
     @Test
     public void testCommitAdjustment() {
-        KernelInterface base = new TestingKernel();
+        IExternalState base = new TestingKernel();
         AionAddress address = Helpers.randomAddress();
         base.createAccount(address);
         base.adjustBalance(address, BigInteger.ONE);
@@ -90,7 +90,7 @@ public class TransactionalKernelTest {
 
     @Test
     public void testCommitDelete() {
-        KernelInterface base = new TestingKernel();
+        IExternalState base = new TestingKernel();
         AionAddress address = Helpers.randomAddress();
         base.createAccount(address);
         base.adjustBalance(address, BigInteger.ONE);
@@ -111,7 +111,7 @@ public class TransactionalKernelTest {
     @Test
     public void testCommitDeleteRecreate() {
         // This probably can't happen, in reality, but this test at least shows it is possible.
-        KernelInterface base = new TestingKernel();
+        IExternalState base = new TestingKernel();
         AionAddress address = Helpers.randomAddress();
         base.createAccount(address);
         base.adjustBalance(address, BigInteger.ONE);
