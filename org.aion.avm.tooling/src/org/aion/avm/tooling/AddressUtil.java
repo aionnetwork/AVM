@@ -8,7 +8,6 @@ import org.aion.avm.core.types.InternalTransaction;
 import org.aion.types.AionAddress;
 import org.aion.avm.tooling.hash.HashUtils;
 import org.aion.kernel.TestingKernel;
-import org.aion.vm.api.interfaces.TransactionInterface;
 
 
 /**
@@ -16,10 +15,6 @@ import org.aion.vm.api.interfaces.TransactionInterface;
  * into the calling kernel (since it depends on the blockchain design, not the VM).
  */
 public class AddressUtil {
-    public static AionAddress generateContractAddress(TransactionInterface tx) {
-        return generateContractAddressInternal(tx.getSenderAddress(), tx.getNonce());
-    }
-
     public static AionAddress generateContractAddress(InternalTransaction tx) {
         return generateContractAddressInternal(tx.getSenderAddress(), tx.getNonce());
     }

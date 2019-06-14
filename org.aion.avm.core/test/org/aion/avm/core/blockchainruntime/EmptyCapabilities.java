@@ -6,7 +6,6 @@ import org.aion.types.AionAddress;
 import org.aion.avm.core.IExternalCapabilities;
 import i.RuntimeAssertionError;
 import org.aion.kernel.TestingKernel;
-import org.aion.vm.api.interfaces.TransactionInterface;
 
 
 /**
@@ -34,11 +33,6 @@ public class EmptyCapabilities implements IExternalCapabilities {
     @Override
     public boolean verifyEdDSA(byte[] data, byte[] signature, byte[] publicKey) {
         throw RuntimeAssertionError.unimplemented("Not called in test");
-    }
-
-    @Override
-    public AionAddress generateContractAddress(TransactionInterface tx) {
-        return generateContractAddressInternal(tx.getSenderAddress(), tx.getNonce());
     }
 
     @Override
