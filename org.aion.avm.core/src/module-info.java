@@ -19,6 +19,5 @@ module org.aion.avm.core {
     requires org.objectweb.asm.tree;
     requires org.objectweb.asm.util;
     requires org.objectweb.asm.tree.analysis;
-    requires aion.vm.api;
     requires aion.types;
 }

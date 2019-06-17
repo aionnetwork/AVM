@@ -11,7 +11,6 @@ module org.aion.avm.tooling {
     requires slf4j.simple;
     requires spongycastle;
     requires ed25519;
-    requires aion.vm.api;
     requires org.objectweb.asm;
 
     //Dependency for Junit Rule
