@@ -1,5 +1,6 @@
 package org.aion.avm.core.exceptionwrapping;
 
+import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmFailedException;
@@ -16,7 +17,6 @@ import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 
 import i.OutOfEnergyException;
 import org.aion.kernel.*;
-import org.aion.vm.api.interfaces.*;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -198,7 +198,7 @@ public class ExceptionWrappingIntegrationTest {
         return result.getReturnData();
     }
 
-    private ResultCode callStaticStatus(TestingBlock block, TestingKernel kernel, AvmImpl avm, AionAddress contractAddr, String methodName) {
+    private Code callStaticStatus(TestingBlock block, TestingKernel kernel, AvmImpl avm, AionAddress contractAddr, String methodName) {
         AvmTransactionResult result = commonCallStatic(block, kernel, avm, contractAddr, methodName);
         return result.getResultCode();
     }

@@ -1,6 +1,7 @@
 package org.aion.avm.tooling;
 
 import avm.Address;
+import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
@@ -241,7 +242,7 @@ public final class AvmRule implements TestRule {
         /**
          * @return Transaction execution result code, which can be SUCCESS, REJECTED, or FAILED.
          */
-        public ResultCode getReceiptStatus() {
+        public Code getReceiptStatus() {
             return result.getResultCode();
         }
 

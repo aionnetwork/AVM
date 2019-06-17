@@ -3,7 +3,6 @@ package org.aion.kernel;
 import org.aion.avm.core.util.Helpers;
 import i.RuntimeAssertionError;
 import org.aion.vm.api.interfaces.KernelInterface;
-import org.aion.vm.api.interfaces.ResultCode;
 
 public class AvmTransactionResult {
 
@@ -11,7 +10,7 @@ public class AvmTransactionResult {
         SUCCESS, REJECTED, FAILED
     }
 
-    public enum Code implements ResultCode {
+    public enum Code {
         /**
          * The transaction was executed successfully.
          */
@@ -100,22 +99,18 @@ public class AvmTransactionResult {
             this.value = value;
         }
 
-        @Override
         public boolean isSuccess() {
             return type == CodeType.SUCCESS;
         }
 
-        @Override
         public boolean isRejected() {
             return type == CodeType.REJECTED;
         }
 
-        @Override
         public boolean isFailed() {
             return type == CodeType.FAILED;
         }
 
-        @Override
         public boolean isRevert() {
             // This is set to false, since it will be called by the kernel and the refund for a reverted Avm transaction will be handled by the Avm.
             // This differs from Fvm where the kernel handles the refund based on the transaction result category.
@@ -123,13 +118,11 @@ public class AvmTransactionResult {
             return false;
         }
 
-        @Override
         public boolean isFatal() {
             // Avm currently has no fatal error codes defined yet.
             return false;
         }
 
-        @Override
         public int toInt() {
             return value;
         }
@@ -149,7 +142,7 @@ public class AvmTransactionResult {
     /**
      * The status code.
      */
-    private ResultCode resultCode;
+    private Code resultCode;
 
     /**
      * The return data.
@@ -189,11 +182,11 @@ public class AvmTransactionResult {
         this.sideEffects = new SideEffects();
     }
 
-    public ResultCode getResultCode() {
+    public Code getResultCode() {
         return resultCode;
     }
 
-    public void setResultCode(ResultCode code) {
+    public void setResultCode(Code code) {
         resultCode = code;
     }
 

@@ -1,13 +1,13 @@
 package org.aion.rules;
 
 import org.aion.kernel.AvmTransactionResult;
+import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.types.AionAddress;
 import avm.Address;
 import org.aion.avm.core.util.LogSizeUtils;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.userlib.AionMap;
-import org.aion.vm.api.interfaces.ResultCode;
 import org.junit.*;
 
 import java.math.BigInteger;
@@ -50,14 +50,14 @@ public class JUnitRuleTest {
     @Test
     public void testMapPut() {
         byte[] txData = ABIUtil.encodeMethodArguments("mapPut", "1", 42);
-        ResultCode result = avmRule.call(preminedAccount, dappAddr, BigInteger.ZERO, txData).getReceiptStatus();
+        Code result = avmRule.call(preminedAccount, dappAddr, BigInteger.ZERO, txData).getReceiptStatus();
         Assert.assertTrue(result.isFailed());
     }
 
     @Test
     public void testMapGet() {
         byte[] txData = ABIUtil.encodeMethodArguments("mapPut", 1, "val1");
-        ResultCode status = avmRule.call(preminedAccount, dappAddr, BigInteger.ZERO, txData).getReceiptStatus();
+        Code status = avmRule.call(preminedAccount, dappAddr, BigInteger.ZERO, txData).getReceiptStatus();
         Assert.assertTrue(status.isSuccess());
 
         txData = ABIUtil.encodeMethodArguments("mapGet", 1);
