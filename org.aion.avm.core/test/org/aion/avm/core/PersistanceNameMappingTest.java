@@ -18,21 +18,21 @@ import org.aion.avm.userlib.abi.ABIException;
 import org.aion.avm.userlib.abi.ABIToken;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
-import org.aion.kernel.TestingKernel;
+import org.aion.kernel.TestingState;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class PersistanceNameMappingTest {
-    private static AionAddress deployer = TestingKernel.PREMINED_ADDRESS;
-    private static TestingKernel kernel;
+    private static AionAddress deployer = TestingState.PREMINED_ADDRESS;
+    private static TestingState kernel;
     private static AvmConfiguration configurationWithDebugEnabled;
     private static AvmConfiguration configurationWithDebugDisabled;
 
     @BeforeClass
     public static void setup() {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        kernel = new TestingKernel(block);
+        kernel = new TestingState(block);
         AvmConfiguration configurationWithDebug = new AvmConfiguration();
         configurationWithDebug.preserveDebuggability = true;
         configurationWithDebugEnabled = configurationWithDebug;

@@ -3,6 +3,7 @@ package org.aion.avm.core;
 import static org.junit.Assert.assertEquals;
 
 import java.math.BigInteger;
+import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
@@ -13,7 +14,6 @@ import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.kernel.TestingBlock;
-import org.aion.kernel.TestingKernel;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,16 +25,16 @@ public class ReentrantClassWrapperTest {
     private long energyPrice = 1L;
 
     // kernel & vm
-    private TestingKernel kernel;
+    private TestingState kernel;
     private AvmImpl avm;
 
-    private AionAddress deployer = TestingKernel.PREMINED_ADDRESS;
+    private AionAddress deployer = TestingState.PREMINED_ADDRESS;
     private AionAddress dappAddress;
 
     @Before
     public void setup() {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        this.kernel = new TestingKernel(block);
+        this.kernel = new TestingState(block);
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(ReentrantClassWrapperTestResource.class);

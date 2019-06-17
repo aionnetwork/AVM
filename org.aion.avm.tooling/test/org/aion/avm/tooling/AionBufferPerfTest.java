@@ -14,13 +14,13 @@ import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
-import org.aion.kernel.TestingKernel;
+import org.aion.kernel.TestingState;
 import org.junit.Assert;
 import org.junit.Test;
 
 
 public class AionBufferPerfTest {
-    private AionAddress from = TestingKernel.PREMINED_ADDRESS;
+    private AionAddress from = TestingState.PREMINED_ADDRESS;
     private long energyLimit = 100_000_000L;
     private long energyPrice = 1;
 
@@ -50,7 +50,7 @@ public class AionBufferPerfTest {
         System.out.println(">> Energy measurements for AionBuffer\n>>");
         byte[] args;
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        IExternalState kernel = new TestingKernel(block);
+        IExternalState kernel = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
 
         AvmTransactionResult deployRes = deploy(kernel, avm, buildBufferPerfJar());

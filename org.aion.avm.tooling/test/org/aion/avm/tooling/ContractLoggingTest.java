@@ -11,6 +11,7 @@ import java.util.List;
 import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.SideEffects;
+import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Log;
 import org.aion.types.Transaction;
@@ -22,7 +23,6 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.LogSizeUtils;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.TestingBlock;
-import org.aion.kernel.TestingKernel;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -30,11 +30,11 @@ import org.junit.Test;
 public class ContractLoggingTest {
     private static final int NUM_LOGS = 5;
 
-    private static AionAddress from = TestingKernel.PREMINED_ADDRESS;
+    private static AionAddress from = TestingState.PREMINED_ADDRESS;
     private static long energyLimit = 5_000_000L;
     private static long energyPrice = 1;
 
-    private static TestingKernel kernel;
+    private static TestingState kernel;
     private static AvmImpl avm;
     private static AionAddress contract;
 
@@ -43,7 +43,7 @@ public class ContractLoggingTest {
     @BeforeClass
     public static void setup() {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        kernel = new TestingKernel(block);
+        kernel = new TestingState(block);
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         deployContract();
     }

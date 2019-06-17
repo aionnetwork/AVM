@@ -1,10 +1,10 @@
 package org.aion.avm.core.blockchainruntime;
 
+import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.IExternalCapabilities;
 import i.RuntimeAssertionError;
-import org.aion.kernel.TestingKernel;
 
 
 /**
@@ -48,7 +48,7 @@ public class EmptyCapabilities implements IExternalCapabilities {
             // but that number is huge, so it's fine for testing purposes.
             raw[i+1] = (byte) (one + two);
         }
-        raw[0] = TestingKernel.AVM_CONTRACT_PREFIX;
+        raw[0] = TestingState.AVM_CONTRACT_PREFIX;
         return new AionAddress(raw);
     }
 }

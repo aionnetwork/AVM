@@ -1,11 +1,11 @@
 package org.aion.avm.tooling;
 
+import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import avm.Address;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.AvmTransactionResult.Code;
-import org.aion.kernel.TestingKernel;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -42,7 +42,7 @@ public class BadDestinationTest {
         for (int i = Byte.MIN_VALUE; i <= Byte.MAX_VALUE; i++) {
             byte valueAsByte = (byte) i;
 
-            if (valueAsByte != TestingKernel.AVM_CONTRACT_PREFIX) {
+            if (valueAsByte != TestingState.AVM_CONTRACT_PREFIX) {
                 Address destination = generateDestinationAddressWithSpecifiedFirstByte(valueAsByte);
                 addCodeToAddress(destination);
 
@@ -61,7 +61,7 @@ public class BadDestinationTest {
         for (int i = Byte.MIN_VALUE; i <= Byte.MAX_VALUE; i++) {
             byte valueAsByte = (byte) i;
 
-            if (valueAsByte != TestingKernel.AVM_CONTRACT_PREFIX) {
+            if (valueAsByte != TestingState.AVM_CONTRACT_PREFIX) {
                 Address destination = generateDestinationAddressWithSpecifiedFirstByte(valueAsByte);
                 addCodeToAddress(destination);
 

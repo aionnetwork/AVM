@@ -31,7 +31,7 @@ import org.junit.*;
 public class PocWalletTest {
 
     // For now, we will just reuse the from, to, and block for each call (in the future, this will change).
-    private static AionAddress from = TestingKernel.PREMINED_ADDRESS;
+    private static AionAddress from = TestingState.PREMINED_ADDRESS;
     private static long energyLimit = 10_000_000_000L;
     private static long energyPrice = 1;
 
@@ -42,7 +42,7 @@ public class PocWalletTest {
     @BeforeClass
     public static void setup() {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        externalState = new TestingKernel(block);
+        externalState = new TestingState(block);
         externalCapabilities = new EmptyCapabilities() {
             @Override
             public byte[] blake2b(byte[] data) {

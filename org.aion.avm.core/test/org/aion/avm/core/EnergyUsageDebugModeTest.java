@@ -20,15 +20,15 @@ import static org.junit.Assert.assertTrue;
  * Difference of energy consumption explained more in issue-345
  */
 public class EnergyUsageDebugModeTest {
-    private static TestingKernel kernel;
-    private static AionAddress deployer = TestingKernel.PREMINED_ADDRESS;
+    private static TestingState kernel;
+    private static AionAddress deployer = TestingState.PREMINED_ADDRESS;
 
 
 
     @BeforeClass
     public static void setup (){
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        kernel = new TestingKernel(block);
+        kernel = new TestingState(block);
     }
 
     /**

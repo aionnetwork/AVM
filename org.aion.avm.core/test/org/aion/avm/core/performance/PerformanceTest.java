@@ -22,7 +22,7 @@ import org.junit.Test;
 import java.math.BigInteger;
 
 public class PerformanceTest {
-    private TestingKernel kernel;
+    private TestingState kernel;
     private AvmImpl avm;
 
     private static final int transactionBlockSize = 10;
@@ -41,7 +41,7 @@ public class PerformanceTest {
     public void setup() {
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        this.kernel = new TestingKernel(block);
+        this.kernel = new TestingState(block);
         deploy();
     }
 

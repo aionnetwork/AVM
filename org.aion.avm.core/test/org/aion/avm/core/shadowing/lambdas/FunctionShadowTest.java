@@ -19,15 +19,15 @@ import org.junit.*;
 public class FunctionShadowTest {
     private static final long ENERGY_LIMIT = 6_000_000L;
     private static final long ERNGY_PRICE = 1L;
-    private static final AionAddress FROM = TestingKernel.PREMINED_ADDRESS;
+    private static final AionAddress FROM = TestingState.PREMINED_ADDRESS;
 
-    private static TestingKernel kernel;
+    private static TestingState kernel;
     private static AvmImpl avm;
 
     @BeforeClass
     public static void setup() {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        kernel = new TestingKernel(block);
+        kernel = new TestingState(block);
         AvmConfiguration config = new AvmConfiguration();
         config.enableVerboseContractErrors = true;
         config.preserveDebuggability = true;

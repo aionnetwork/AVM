@@ -13,9 +13,9 @@ import java.io.File;
 
 
 /**
- * A modified version of CachingKernel to support more general usage so it can be used as the kernel underlying tests.
+ * A modified version of CachingKernel to support more general usage so it can be used as the external state underlying tests.
  */
-public class TestingKernel implements IExternalState {
+public class TestingState implements IExternalState {
     /**
      * For testing purposes, we will give every contract address this prefix.
      */
@@ -38,7 +38,7 @@ public class TestingKernel implements IExternalState {
     /**
      * Creates an instance of the interface which is backed by in-memory structures, only.
      */
-    public TestingKernel() {
+    public TestingState() {
         this.dataStore = new MemoryBackedDataStore();
         IAccountStore premined = this.dataStore.createAccount(PREMINED_ADDRESS.toByteArray());
         premined.setBalance(PREMINED_AMOUNT);
@@ -54,7 +54,7 @@ public class TestingKernel implements IExternalState {
     /**
      * Creates an instance of the interface which is backed by in-memory structures, only.
      */
-    public TestingKernel(TestingBlock block) {
+    public TestingState(TestingBlock block) {
         this.dataStore = new MemoryBackedDataStore();
         IAccountStore premined = this.dataStore.createAccount(PREMINED_ADDRESS.toByteArray());
         premined.setBalance(PREMINED_AMOUNT);
@@ -73,7 +73,7 @@ public class TestingKernel implements IExternalState {
      * @param onDiskRoot The root directory which this implementation will use for persistence.
      * @param block The top block of the current state of this kernel.
      */
-    public TestingKernel(File onDiskRoot, TestingBlock block) {
+    public TestingState(File onDiskRoot, TestingBlock block) {
         this.dataStore = new DirectoryBackedDataStore(onDiskRoot);
         // Try to open the account, creating it if doesn't exist.
         IAccountStore premined = this.dataStore.openAccount(PREMINED_ADDRESS.toByteArray());
@@ -235,7 +235,7 @@ public class TestingKernel implements IExternalState {
         // This implementation knows about contract address prefixes (just used by tests - real kernel stores out-of-band meta-data).
         // So, it is valid to use any regular address or AVM contract address.
         byte[] code = internalGetTransformedCode(address);
-        return (code == null) || (address.toByteArray()[0] == TestingKernel.AVM_CONTRACT_PREFIX);
+        return (code == null) || (address.toByteArray()[0] == TestingState.AVM_CONTRACT_PREFIX);
     }
 
     @Override

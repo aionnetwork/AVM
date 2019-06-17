@@ -20,7 +20,7 @@ import org.junit.Test;
 
 public class AionCollectionPerfTest {
 
-    private AionAddress from = TestingKernel.PREMINED_ADDRESS;
+    private AionAddress from = TestingState.PREMINED_ADDRESS;
     private TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
     private long energyLimit = 100_000_000L;
     private long energyPrice = 1;
@@ -62,7 +62,7 @@ public class AionCollectionPerfTest {
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         System.out.println(">> Energy measurement for AionList");
         byte[] args;
-        IExternalState externalState = new TestingKernel(block);
+        IExternalState externalState = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         AvmTransactionResult deployRes = (AvmTransactionResult) deploy(externalState, avm, buildListPerfJar());
@@ -98,7 +98,7 @@ public class AionCollectionPerfTest {
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         System.out.println(">> Energy measurement for AionSet");
         byte[] args;
-        IExternalState externalState = new TestingKernel(block);
+        IExternalState externalState = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         AvmTransactionResult deployRes = (AvmTransactionResult) deploy(externalState, avm, buildSetPerfJar());
@@ -150,7 +150,7 @@ public class AionCollectionPerfTest {
         System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         System.out.println(">> Energy measurement for AionMap");
         byte[] args;
-        IExternalState externalState = new TestingKernel(block);
+        IExternalState externalState = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         AvmTransactionResult deployRes = (AvmTransactionResult) deploy(externalState, avm, buildMapPerfJar());

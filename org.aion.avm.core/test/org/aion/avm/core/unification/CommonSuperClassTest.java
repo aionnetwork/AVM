@@ -3,6 +3,7 @@ package org.aion.avm.core.unification;
 import java.math.BigInteger;
 
 import org.aion.avm.core.AvmTransactionUtil;
+import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.AvmConfiguration;
@@ -20,7 +21,6 @@ import org.aion.avm.userlib.abi.ABIException;
 import org.aion.avm.userlib.abi.ABIToken;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
-import org.aion.kernel.TestingKernel;
 import org.junit.*;
 
 /**
@@ -36,14 +36,14 @@ import org.junit.*;
 public class CommonSuperClassTest {
     private static long ENERGY_LIMIT = 10_000_000L;
     private static long ENERGY_PRICE = 1L;
-    private static AionAddress DEPLOYER = TestingKernel.PREMINED_ADDRESS;
-    private static TestingKernel KERNEL;
+    private static AionAddress DEPLOYER = TestingState.PREMINED_ADDRESS;
+    private static TestingState KERNEL;
     private static AvmImpl avm;
 
     @BeforeClass
     public static void setup() {
         TestingBlock BLOCK = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        KERNEL = new TestingKernel(BLOCK);
+        KERNEL = new TestingState(BLOCK);
         AvmConfiguration config = new AvmConfiguration();
         config.enableVerboseContractErrors = true;
         config.preserveDebuggability = false;

@@ -4,6 +4,7 @@ import java.math.BigInteger;
 
 import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.kernel.AvmTransactionResult;
+import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.AvmConfiguration;
@@ -15,7 +16,6 @@ import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.TestingBlock;
-import org.aion.kernel.TestingKernel;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,16 +31,16 @@ public class StrictFPVisitorTest {
     private long energyLimit = 10_000_000L;
     private long energyPrice = 1L;
 
-    private AionAddress deployer = TestingKernel.PREMINED_ADDRESS;
+    private AionAddress deployer = TestingState.PREMINED_ADDRESS;
     private AionAddress dappAddress;
 
-    private TestingKernel kernel;
+    private TestingState kernel;
     private AvmImpl avm;
 
     @Before
     public void setup() {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        this.kernel = new TestingKernel(block);
+        this.kernel = new TestingState(block);
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
         byte[] jar = JarBuilder.buildJarForMainAndClasses(StrictFPVisitorTestResource.class);

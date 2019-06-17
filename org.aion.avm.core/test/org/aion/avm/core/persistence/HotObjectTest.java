@@ -14,7 +14,7 @@ import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
-import org.aion.kernel.TestingKernel;
+import org.aion.kernel.TestingState;
 import avm.Address;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
@@ -27,7 +27,7 @@ import static org.junit.Assert.assertEquals;
 // todo: AKI-221: enable this once caching has been enabled.
 @Ignore
 public class HotObjectTest {
-    private static AionAddress deployer = TestingKernel.PREMINED_ADDRESS;
+    private static AionAddress deployer = TestingState.PREMINED_ADDRESS;
     private static TestingBlock block;
     private static AvmImpl avm;
 
@@ -53,7 +53,7 @@ public class HotObjectTest {
     public void executeMultipleTransactionSameBlock() {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 
         AvmTransactionResult result = callDapp(kernel, deployer, dappAddress, "doubleStaticValue");
@@ -84,10 +84,10 @@ public class HotObjectTest {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
-        TestingKernel kernel1 = new TestingKernel(block);
+        TestingState kernel1 = new TestingState(block);
         AionAddress dapp1 = deploy(deployer, kernel1, txData);
 
-        TestingKernel kernel2 = new TestingKernel(block);
+        TestingState kernel2 = new TestingState(block);
         AionAddress dapp2 = deploy(deployer, kernel2, txData);
 
         //advance the block number
@@ -114,7 +114,7 @@ public class HotObjectTest {
     public void executeTransactionSameBlock() {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 
         byte[] objectGraph = kernel.getObjectGraph(dappAddress);
@@ -136,7 +136,7 @@ public class HotObjectTest {
     public void executeTransactionFromCache() {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 
         byte[] objectGraph = kernel.getObjectGraph(dappAddress);
@@ -163,7 +163,7 @@ public class HotObjectTest {
     public void executeTransactionRevert() {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 
         kernel.generateBlock();
@@ -194,7 +194,7 @@ public class HotObjectTest {
     public void executeTransactionException() {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 
         kernel.generateBlock();
@@ -225,7 +225,7 @@ public class HotObjectTest {
     public void executeReentrantRevert() {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] deployData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
         AionAddress dappAddress = deploy(deployer, kernel, deployData);
 
         kernel.generateBlock();
@@ -257,7 +257,7 @@ public class HotObjectTest {
     public void executeReentrantSuccess() {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] deployData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
         AionAddress dappAddress = deploy(deployer, kernel, deployData);
 
         kernel.generateBlock();
@@ -287,7 +287,7 @@ public class HotObjectTest {
     public void performanceTest() {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 
         //307168 bytes
@@ -327,7 +327,7 @@ public class HotObjectTest {
         AionAddress[] dappAddresses = new AionAddress[length];
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] deployData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
 
         for (int i = 0; i < length; i++) {
             AionAddress deployer = Helpers.randomAddress();
@@ -375,7 +375,7 @@ public class HotObjectTest {
         AionAddress[] dappAddresses = new AionAddress[length];
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] deployData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
 
         for (int i = 0; i < length; i++) {
             AionAddress deployer = Helpers.randomAddress();
@@ -430,7 +430,7 @@ public class HotObjectTest {
         AionAddress[] dappAddresses = new AionAddress[length];
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
 
         Transaction[] txs = new Transaction[length];
         byte[] readIntArrayData = new ABIStreamingEncoder().encodeOneString("readIntArray").toBytes();
@@ -474,7 +474,7 @@ public class HotObjectTest {
         AionAddress[] dappAddresses = new AionAddress[length];
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
         Transaction[] txs = new Transaction[length];
 
         for (int i = 0; i < length; i++) {
@@ -515,7 +515,7 @@ public class HotObjectTest {
         AionAddress[] dappAddresses = new AionAddress[length + 1];
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] deployData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
 
         byte[] dataForInternalCall = new ABIStreamingEncoder().encodeOneString("doubleStaticValue").toBytes();
         Transaction[] txs = new Transaction[length];
@@ -553,7 +553,7 @@ public class HotObjectTest {
     public void selfDestructThenSendTransaction() {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 
         AvmTransactionResult result = callDapp(kernel, deployer, dappAddress, "doubleStaticValue");
@@ -579,7 +579,7 @@ public class HotObjectTest {
         AionAddress[] dappAddresses = new AionAddress[length];
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] deployData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
 
         for (int i = 0; i < length; i++) {
             AionAddress deployer = Helpers.randomAddress();
@@ -623,7 +623,7 @@ public class HotObjectTest {
         Assert.assertEquals(5, new ABIDecoder(result.getReturnData()).decodeOneInteger());
     }
 
-    private static long measureMethodExecutionTime(TestingKernel kernel, AionAddress dappAddress, String methodName, boolean generateBlock, int rounds) {
+    private static long measureMethodExecutionTime(TestingState kernel, AionAddress dappAddress, String methodName, boolean generateBlock, int rounds) {
         long totalDuration = 0l;
         for (int i = 0; i < rounds; ++i) {
             long start = System.nanoTime();
@@ -637,14 +637,14 @@ public class HotObjectTest {
         return totalDuration / rounds;
     }
 
-    private static AionAddress deploy(AionAddress deployer, TestingKernel kernel, byte[] txData) {
+    private static AionAddress deploy(AionAddress deployer, TestingState kernel, byte[] txData) {
         Transaction tx1 = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, 5_000_000, energyPrice);
         AvmTransactionResult result = avm.run(kernel, new Transaction[]{tx1})[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         return new AionAddress(result.getReturnData());
     }
 
-    private static AvmTransactionResult callDapp(TestingKernel kernel, AionAddress sender, AionAddress dappAddress, String methodName, Object... args) {
+    private static AvmTransactionResult callDapp(TestingState kernel, AionAddress sender, AionAddress dappAddress, String methodName, Object... args) {
         ABIStreamingEncoder encoder = new ABIStreamingEncoder().encodeOneString(methodName);
         for (Object arg : args) {
             encoder.encodeOneByteArray((byte[]) arg);

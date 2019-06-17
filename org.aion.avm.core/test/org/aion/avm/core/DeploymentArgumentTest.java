@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import avm.Address;
+import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
@@ -10,7 +11,6 @@ import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
-import org.aion.kernel.TestingKernel;
 
 import java.math.BigInteger;
 
@@ -25,19 +25,19 @@ import org.junit.*;
 public class DeploymentArgumentTest {
     private static final long ENERGY_LIMIT = 100_000_000_000L;
     private static final long ENERGY_PRICE = 1L;
-    private static final AionAddress DEPLOYER = TestingKernel.PREMINED_ADDRESS;
+    private static final AionAddress DEPLOYER = TestingState.PREMINED_ADDRESS;
     private static final Address DEPLOYER_API = new Address(DEPLOYER.toByteArray());
     private static final byte[] JAR = JarBuilder.buildJarForMainAndClassesAndUserlib(DeploymentArgumentTarget.class);
     private static final byte[] SMALL_JAR = JarBuilder.buildJarForMainAndClasses(DeploymentArgumentSmallTarget.class);
 
-    private static TestingKernel kernel;
+    private static TestingState kernel;
     private static AvmImpl avm;
 
     @BeforeClass
     public static void setup() {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(),
             System.currentTimeMillis(), new byte[0]);
-        kernel = new TestingKernel(block);
+        kernel = new TestingState(block);
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
 

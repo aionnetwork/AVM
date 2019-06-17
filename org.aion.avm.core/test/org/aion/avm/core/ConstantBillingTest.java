@@ -12,12 +12,12 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
-import org.aion.kernel.TestingKernel;
+import org.aion.kernel.TestingState;
 import org.junit.Test;
 import org.objectweb.asm.Opcodes;
 
 public class ConstantBillingTest {
-    private static AionAddress deployer = TestingKernel.PREMINED_ADDRESS;
+    private static AionAddress deployer = TestingState.PREMINED_ADDRESS;
     private static long energyLimit = 1_000_000;
 
     @Test
@@ -26,7 +26,7 @@ public class ConstantBillingTest {
 
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        IExternalState externalState = new TestingKernel(block);
+        IExternalState externalState = new TestingState(block);
         Transaction tx = AvmTransactionUtil.create(deployer, externalState.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, new byte[0]).encodeToBytes(), energyLimit, 1);
         AvmTransactionResult result = avm.run(externalState, new Transaction[] { tx })[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());

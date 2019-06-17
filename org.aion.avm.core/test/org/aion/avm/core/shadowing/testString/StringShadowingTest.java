@@ -23,11 +23,11 @@ public class StringShadowingTest {
 
     @Test
     public void testSingleString() {
-        AionAddress from = TestingKernel.PREMINED_ADDRESS;
+        AionAddress from = TestingState.PREMINED_ADDRESS;
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         long energyLimit = 6_000_0000;
         long energyPrice = 1;
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         kernel.generateBlock();
         // deploy it
@@ -93,11 +93,11 @@ public class StringShadowingTest {
      */
     @Test
     public void testBatchingCalls() {
-        AionAddress from = TestingKernel.PREMINED_ADDRESS;
+        AionAddress from = TestingState.PREMINED_ADDRESS;
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         long energyLimit = 6_000_0000;
         long energyPrice = 1;
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         // We do the deployment, first, since we need the resultant DApp address for the other calls.

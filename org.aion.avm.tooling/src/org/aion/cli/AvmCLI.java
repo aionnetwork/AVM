@@ -32,7 +32,7 @@ public class AvmCLI {
 
         File storageFile = new File(storagePath);
 
-        TestingKernel kernel = new TestingKernel(storageFile, block);
+        TestingState kernel = new TestingState(storageFile, block);
 
         Path path = Paths.get(jarPath);
         byte[] jar;
@@ -81,7 +81,7 @@ public class AvmCLI {
 
         File storageFile = new File(storagePath);
 
-        TestingKernel kernel = new TestingKernel(storageFile, block);
+        TestingState kernel = new TestingState(storageFile, block);
 
         // Note that we can remove this bias when/if we change this to no longer send all transactions from the same account.
         BigInteger biasedNonce = kernel.getNonce(sender).add(BigInteger.valueOf(nonceBias));
@@ -148,7 +148,7 @@ public class AvmCLI {
         env.logLine("Creating Account " + toOpen);
 
         File storageFile = new File(storagePath);
-        TestingKernel kernel = new TestingKernel(storageFile, block);
+        TestingState kernel = new TestingState(storageFile, block);
 
         kernel.createAccount(toOpen);
         kernel.adjustBalance(toOpen, BigInteger.valueOf(100000000000L));
@@ -289,7 +289,7 @@ public class AvmCLI {
                 
                 // Run them in a single batch.
                 File storageFile = new File(invocation.storagePath);
-                TestingKernel kernel = new TestingKernel(storageFile, block);
+                TestingState kernel = new TestingState(storageFile, block);
                 AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(capabilities, new AvmConfiguration());
                 FutureResult[] futures = avm.run(kernel, transactions);
                 AvmTransactionResult[] results = new AvmTransactionResult[futures.length];

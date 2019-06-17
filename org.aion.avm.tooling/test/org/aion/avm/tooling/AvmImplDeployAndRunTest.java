@@ -3,10 +3,10 @@ package org.aion.avm.tooling;
 import legacy_examples.deployAndRunTest.DeployAndRunTarget;
 import legacy_examples.helloworld.HelloWorld;
 import avm.Address;
+import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.TestingKernel;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -141,7 +141,7 @@ public class AvmImplDeployAndRunTest {
 
     @Test
     public void testBalanceTransfer() {
-        assertEquals(TestingKernel.PREMINED_AMOUNT, avmRule.kernel.getBalance(new AionAddress(from.toByteArray())));
+        assertEquals(TestingState.PREMINED_AMOUNT, avmRule.kernel.getBalance(new AionAddress(from.toByteArray())));
 
         // account1 get 10000
         Address account1 = avmRule.getRandomAddress(BigInteger.ZERO);
@@ -162,8 +162,8 @@ public class AvmImplDeployAndRunTest {
 
     @Test
     public void testBalanceTransferUpperBound() {
-        AionAddress from = TestingKernel.BIG_PREMINED_ADDRESS;
-        assertEquals(TestingKernel.PREMINED_BIG_AMOUNT, avmRule.kernel.getBalance(from));
+        AionAddress from = TestingState.BIG_PREMINED_ADDRESS;
+        assertEquals(TestingState.PREMINED_BIG_AMOUNT, avmRule.kernel.getBalance(from));
 
         Address account1 = avmRule.getRandomAddress(BigInteger.ZERO);
         long maxEnergyPrice = Long.MAX_VALUE;
@@ -171,15 +171,15 @@ public class AvmImplDeployAndRunTest {
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         assertEquals(BigInteger.valueOf(100000L), avmRule.kernel.getBalance(new AionAddress(account1.toByteArray())));
-        BigInteger preminedAmountRemained = TestingKernel.PREMINED_BIG_AMOUNT.subtract(BigInteger.valueOf(100_000L)).subtract(BigInteger.valueOf(21_000L).multiply(BigInteger.valueOf(maxEnergyPrice)));
+        BigInteger preminedAmountRemained = TestingState.PREMINED_BIG_AMOUNT.subtract(BigInteger.valueOf(100_000L)).subtract(BigInteger.valueOf(21_000L).multiply(BigInteger.valueOf(maxEnergyPrice)));
         assertEquals(preminedAmountRemained , avmRule.kernel.getBalance(new AionAddress(from.toByteArray())));
 
     }
 
     @Test
     public void testBalanceTransferUpperBoundRefund() {
-        AionAddress from = TestingKernel.BIG_PREMINED_ADDRESS;
-        assertEquals(TestingKernel.PREMINED_BIG_AMOUNT, avmRule.kernel.getBalance(from));
+        AionAddress from = TestingState.BIG_PREMINED_ADDRESS;
+        assertEquals(TestingState.PREMINED_BIG_AMOUNT, avmRule.kernel.getBalance(from));
 
         Address account1 = avmRule.getRandomAddress(BigInteger.ZERO);
         long maxEnergyPrice = Long.MAX_VALUE;
@@ -187,7 +187,7 @@ public class AvmImplDeployAndRunTest {
 
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         assertEquals(BigInteger.valueOf(100_000L), avmRule.kernel.getBalance(new AionAddress(account1.toByteArray())));
-        BigInteger preminedAmountRemained = TestingKernel.PREMINED_BIG_AMOUNT.subtract(BigInteger.valueOf(100_000L)).subtract(BigInteger.valueOf(21_000L).multiply(BigInteger.valueOf(maxEnergyPrice)));
+        BigInteger preminedAmountRemained = TestingState.PREMINED_BIG_AMOUNT.subtract(BigInteger.valueOf(100_000L)).subtract(BigInteger.valueOf(21_000L).multiply(BigInteger.valueOf(maxEnergyPrice)));
         assertEquals(preminedAmountRemained , avmRule.kernel.getBalance(new AionAddress(from.toByteArray())));
 
     }

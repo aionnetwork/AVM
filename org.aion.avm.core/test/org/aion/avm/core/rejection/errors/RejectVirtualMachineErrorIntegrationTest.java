@@ -13,7 +13,7 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
-import org.aion.kernel.TestingKernel;
+import org.aion.kernel.TestingState;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -31,7 +31,7 @@ import java.math.BigInteger;
  * since Throwable can be caught, but none of the VirtualMachineError instances should actually appear there.
  */
 public class RejectVirtualMachineErrorIntegrationTest {
-    private static AionAddress FROM = TestingKernel.PREMINED_ADDRESS;
+    private static AionAddress FROM = TestingState.PREMINED_ADDRESS;
     private static long ENERGY_LIMIT = 5_000_000L;
     private static long ENERGY_PRICE = 1L;
 
@@ -41,7 +41,7 @@ public class RejectVirtualMachineErrorIntegrationTest {
     @BeforeClass
     public static void setup() {
         TestingBlock BLOCK = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        externalState = new TestingKernel(BLOCK);
+        externalState = new TestingState(BLOCK);
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
 

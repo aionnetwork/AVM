@@ -7,7 +7,7 @@ import org.aion.avm.core.IExternalState;
 import org.aion.kernel.TransactionalState;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.util.Helpers;
-import org.aion.kernel.TestingKernel;
+import org.aion.kernel.TestingState;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,7 +15,7 @@ import org.junit.Test;
 public class TransactionalStateTest {
     @Test
     public void testCommitDataOntoEmpty() {
-        IExternalState base = new TestingKernel();
+        IExternalState base = new TestingState();
         TransactionalState transaction = new TransactionalState(base);
         AionAddress address = Helpers.randomAddress();
         // Code cannot be empty.
@@ -45,7 +45,7 @@ public class TransactionalStateTest {
 
     @Test
     public void testCommitDataOntoPartial() {
-        IExternalState base = new TestingKernel();
+        IExternalState base = new TestingState();
         AionAddress address = Helpers.randomAddress();
         byte[] key1 = Helpers.randomBytes(32);
         byte[] value1_1 = Helpers.randomBytes(32);
@@ -69,7 +69,7 @@ public class TransactionalStateTest {
 
     @Test
     public void testCommitAdjustment() {
-        IExternalState base = new TestingKernel();
+        IExternalState base = new TestingState();
         AionAddress address = Helpers.randomAddress();
         base.createAccount(address);
         base.adjustBalance(address, BigInteger.ONE);
@@ -90,7 +90,7 @@ public class TransactionalStateTest {
 
     @Test
     public void testCommitDelete() {
-        IExternalState base = new TestingKernel();
+        IExternalState base = new TestingState();
         AionAddress address = Helpers.randomAddress();
         base.createAccount(address);
         base.adjustBalance(address, BigInteger.ONE);
@@ -111,7 +111,7 @@ public class TransactionalStateTest {
     @Test
     public void testCommitDeleteRecreate() {
         // This probably can't happen, in reality, but this test at least shows it is possible.
-        IExternalState base = new TestingKernel();
+        IExternalState base = new TestingState();
         AionAddress address = Helpers.randomAddress();
         base.createAccount(address);
         base.adjustBalance(address, BigInteger.ONE);

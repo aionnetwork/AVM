@@ -4,22 +4,22 @@ import java.math.BigInteger;
 import org.aion.avm.core.IExternalState;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.util.Helpers;
-import org.aion.kernel.TestingKernel;
+import org.aion.kernel.TestingState;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestingKernelTest {
+public class TestingStateTest {
 
     @Test
     public void testPremine() {
-        IExternalState kernel = new TestingKernel();
+        IExternalState kernel = new TestingState();
         AionAddress address = Helpers.randomAddress();
         BigInteger delta = BigInteger.valueOf(10);
-        kernel.adjustBalance(TestingKernel.PREMINED_ADDRESS, delta.negate());
+        kernel.adjustBalance(TestingState.PREMINED_ADDRESS, delta.negate());
         kernel.adjustBalance(address, delta);
 
-        assertEquals(TestingKernel.PREMINED_AMOUNT.subtract(delta), kernel.getBalance(TestingKernel.PREMINED_ADDRESS));
+        assertEquals(TestingState.PREMINED_AMOUNT.subtract(delta), kernel.getBalance(TestingState.PREMINED_ADDRESS));
         assertEquals(delta, kernel.getBalance(address));
     }
 }

@@ -23,13 +23,13 @@ import org.junit.Test;
 
 public class AvmParallelTest {
 
-    private AionAddress preminedAddress = TestingKernel.PREMINED_ADDRESS;
+    private AionAddress preminedAddress = TestingState.PREMINED_ADDRESS;
 
     private TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
     @Test
     public void basicConcurrencyTest(){
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         AionAddress usr1 = new AionAddress(Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111"));
@@ -99,7 +99,7 @@ public class AvmParallelTest {
     @Test
     public void cyclicWaitTest(){
 
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         AionAddress usr1 = new AionAddress(Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111"));
@@ -127,7 +127,7 @@ public class AvmParallelTest {
 
         byte[] code = JarBuilder.buildJarForMainAndClassesAndUserlib(TestContract.class);
 
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         AionAddress usr1 = new AionAddress(Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111"));
@@ -173,7 +173,7 @@ public class AvmParallelTest {
      */
     @Test
     public void heavyAbortTest(){
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
         // We will send 2x the value to these accounts, initially, and they will send 1x to the target.
@@ -212,7 +212,7 @@ public class AvmParallelTest {
     public void reentrantAbort() {
         byte[] code = JarBuilder.buildJarForMainAndClassesAndUserlib(TestContract.class);
 
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         int length = 5;
@@ -277,7 +277,7 @@ public class AvmParallelTest {
 
         byte[] code = JarBuilder.buildJarForMainAndClassesAndUserlib(TestContract.class);
 
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         int length = 4;

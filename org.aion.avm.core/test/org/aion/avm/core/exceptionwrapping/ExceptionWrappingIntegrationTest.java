@@ -37,13 +37,13 @@ public class ExceptionWrappingIntegrationTest {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
         // Deploy.
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
-        Transaction create = AvmTransactionUtil.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction create = AvmTransactionUtil.create(TestingState.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
         AvmTransactionResult createResult = avm.run(kernel, new Transaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         AionAddress contractAddr = new AionAddress(createResult.getReturnData());
@@ -69,13 +69,13 @@ public class ExceptionWrappingIntegrationTest {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
         AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(persistentExceptionDeploymentEnergyCalls, () -> {throw new OutOfEnergyException();}), new EmptyCapabilities(), new AvmConfiguration());
         
         // Deploy.
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
-        Transaction create = AvmTransactionUtil.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction create = AvmTransactionUtil.create(TestingState.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
         AvmTransactionResult createResult = avm.run(kernel, new Transaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         AionAddress contractAddr = new AionAddress(createResult.getReturnData());
@@ -91,13 +91,13 @@ public class ExceptionWrappingIntegrationTest {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
         AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(persistentExceptionDeploymentEnergyCalls, () -> {throw new NullPointerException();}), new EmptyCapabilities(), new AvmConfiguration());
         
         // Deploy.
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
-        Transaction create = AvmTransactionUtil.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction create = AvmTransactionUtil.create(TestingState.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
         AvmTransactionResult createResult = avm.run(kernel, new Transaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         AionAddress contractAddr = new AionAddress(createResult.getReturnData());
@@ -113,13 +113,13 @@ public class ExceptionWrappingIntegrationTest {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(AttackExceptionHandlingTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
         AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(attackExceptionHandlingTargetDeploymentEnergyCalls, () -> {throw new OutOfMemoryError();}), new EmptyCapabilities(), new AvmConfiguration());
         
         // Deploy.
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
-        Transaction create = AvmTransactionUtil.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction create = AvmTransactionUtil.create(TestingState.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
         AvmTransactionResult createResult = avm.run(kernel, new Transaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         AionAddress contractAddr = new AionAddress(createResult.getReturnData());
@@ -151,13 +151,13 @@ public class ExceptionWrappingIntegrationTest {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(AttackExceptionHandlingTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        TestingKernel kernel = new TestingKernel(block);
+        TestingState kernel = new TestingState(block);
         AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(attackExceptionHandlingTargetDeploymentEnergyCalls, () -> {throw new OutOfMemoryError();}), new EmptyCapabilities(), new AvmConfiguration());
         
         // Deploy.
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
-        Transaction create = AvmTransactionUtil.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
+        Transaction create = AvmTransactionUtil.create(TestingState.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
         AvmTransactionResult createResult = avm.run(kernel, new Transaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         AionAddress contractAddr = new AionAddress(createResult.getReturnData());
@@ -184,30 +184,30 @@ public class ExceptionWrappingIntegrationTest {
     }
 
 
-    private int callReturnInt(TestingBlock block, TestingKernel kernel, AvmImpl avm, AionAddress contractAddr, String methodName) {
+    private int callReturnInt(TestingBlock block, TestingState kernel, AvmImpl avm, AionAddress contractAddr, String methodName) {
         byte[] result = commonSuccessCall(block, kernel, avm, contractAddr, methodName);
         return new ABIDecoder(result).decodeOneInteger();
     }
 
-    private byte[] callReturnByteArray(TestingBlock block, TestingKernel kernel, AvmImpl avm, AionAddress contractAddr, String methodName) {
+    private byte[] callReturnByteArray(TestingBlock block, TestingState kernel, AvmImpl avm, AionAddress contractAddr, String methodName) {
         byte[] result = commonSuccessCall(block, kernel, avm, contractAddr, methodName);
         return new ABIDecoder(result).decodeOneByteArray();
     }
 
-    private byte[] commonSuccessCall(TestingBlock block, TestingKernel kernel, AvmImpl avm, AionAddress contractAddr, String methodName) {
+    private byte[] commonSuccessCall(TestingBlock block, TestingState kernel, AvmImpl avm, AionAddress contractAddr, String methodName) {
         AvmTransactionResult result = commonCallStatic(block, kernel, avm, contractAddr, methodName);
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
         return result.getReturnData();
     }
 
-    private Code callStaticStatus(TestingBlock block, TestingKernel kernel, AvmImpl avm, AionAddress contractAddr, String methodName) {
+    private Code callStaticStatus(TestingBlock block, TestingState kernel, AvmImpl avm, AionAddress contractAddr, String methodName) {
         AvmTransactionResult result = commonCallStatic(block, kernel, avm, contractAddr, methodName);
         return result.getResultCode();
     }
 
-    private AvmTransactionResult commonCallStatic(TestingBlock block, TestingKernel kernel, AvmImpl avm, AionAddress contractAddr, String methodName) {
+    private AvmTransactionResult commonCallStatic(TestingBlock block, TestingState kernel, AvmImpl avm, AionAddress contractAddr, String methodName) {
         kernel.generateBlock();
-        AionAddress from = TestingKernel.PREMINED_ADDRESS;
+        AionAddress from = TestingState.PREMINED_ADDRESS;
         long energyLimit = 1_000_000l;
         byte[] argData = (null != methodName)
                 ? new ABIStreamingEncoder().encodeOneString(methodName).toBytes()

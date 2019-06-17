@@ -14,7 +14,7 @@ import i.RuntimeAssertionError;
 import s.java.lang.String;
 import s.java.math.BigInteger;
 import org.aion.kernel.TestingBlock;
-import org.aion.kernel.TestingKernel;
+import org.aion.kernel.TestingState;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -44,7 +44,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
 
     private TestingBlock block = new TestingBlock(new byte[32], blockNumber, blockCoinbase, blockTimstamp, new byte[0]);
 
-    private IExternalState kernel = new TestingKernel(block);
+    private IExternalState kernel = new TestingState(block);
     private Map<java.lang.String, Integer> eventCounter = new HashMap<>();
 
     public TestingBlockchainRuntime(IExternalCapabilities capabilities) {

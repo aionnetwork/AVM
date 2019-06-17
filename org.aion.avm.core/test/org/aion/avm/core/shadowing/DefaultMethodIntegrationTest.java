@@ -21,14 +21,14 @@ import java.math.BigInteger;
  * Tests that we fail in a meaningful way when a DApp throws an exception due to a missing method.
  */
 public class DefaultMethodIntegrationTest {
-    private static AionAddress deployer = TestingKernel.PREMINED_ADDRESS;
-    private static TestingKernel kernel;
+    private static AionAddress deployer = TestingState.PREMINED_ADDRESS;
+    private static TestingState kernel;
     private static AvmImpl avm;
 
     @BeforeClass
     public static void setup() {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        kernel = new TestingKernel(block);
+        kernel = new TestingState(block);
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
 

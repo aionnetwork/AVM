@@ -8,6 +8,7 @@ import java.math.BigInteger;
 import avm.Blockchain;
 import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.kernel.AvmTransactionResult;
+import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.AvmConfiguration;
@@ -20,7 +21,6 @@ import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.TestingBlock;
-import org.aion.kernel.TestingKernel;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -30,17 +30,17 @@ import org.junit.Test;
  * of a deployed contract from within that contract.
  */
 public class ContractBalanceTest {
-    private static AionAddress from = TestingKernel.PREMINED_ADDRESS;
+    private static AionAddress from = TestingState.PREMINED_ADDRESS;
     private static long energyLimit = 10_000_000L;
     private static long energyPrice = 5;
 
-    private static TestingKernel kernel;
+    private static TestingState kernel;
     private static AvmImpl avm;
 
     @BeforeClass
     public static void setup() {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        kernel = new TestingKernel(block);
+        kernel = new TestingState(block);
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
 

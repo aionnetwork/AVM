@@ -33,7 +33,7 @@ public final class AvmRule implements TestRule {
     private boolean debugMode;
     private final JarOptimizer jarOptimizer;
     private boolean automaticBlockGenerationEnabled;
-    public TestingKernel kernel;
+    public TestingState kernel;
     public AvmImpl avm;
 
     /**
@@ -41,7 +41,7 @@ public final class AvmRule implements TestRule {
      */
     public AvmRule(boolean debugMode) {
         this.debugMode = debugMode;
-        this.kernel = new TestingKernel();
+        this.kernel = new TestingState();
         jarOptimizer = new JarOptimizer(debugMode);
         automaticBlockGenerationEnabled = true;
     }
@@ -183,7 +183,7 @@ public final class AvmRule implements TestRule {
      * @return Address of the account with initial (pre-mined) balance in the kernel
      */
     public Address getPreminedAccount() {
-        return new Address(TestingKernel.PREMINED_ADDRESS.toByteArray());
+        return new Address(TestingState.PREMINED_ADDRESS.toByteArray());
     }
 
     /**

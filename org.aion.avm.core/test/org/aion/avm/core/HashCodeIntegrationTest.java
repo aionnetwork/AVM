@@ -2,6 +2,7 @@ package org.aion.avm.core;
 
 import java.math.BigInteger;
 
+import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
@@ -12,7 +13,6 @@ import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
-import org.aion.kernel.TestingKernel;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -23,14 +23,14 @@ import org.junit.Test;
  * Tests the hashCode behaviour of the contract code, when invoked within independent transactions.
  */
 public class HashCodeIntegrationTest {
-    private AionAddress deployer = TestingKernel.PREMINED_ADDRESS;
-    private TestingKernel kernel;
+    private AionAddress deployer = TestingState.PREMINED_ADDRESS;
+    private TestingState kernel;
     private AvmImpl avm;
 
     @Before
     public void setup() {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        this.kernel = new TestingKernel(block);
+        this.kernel = new TestingState(block);
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
 

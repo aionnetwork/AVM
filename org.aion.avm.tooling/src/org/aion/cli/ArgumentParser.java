@@ -2,7 +2,7 @@ package org.aion.cli;
 
 import avm.Address;
 import org.aion.avm.core.util.Helpers;
-import org.aion.kernel.TestingKernel;
+import org.aion.kernel.TestingState;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ import java.util.function.BiFunction;
  */
 public class ArgumentParser {
     static String DEFAULT_STORAGE = "./storage";
-    static String DEFAULT_SENDER_STRING = TestingKernel.PREMINED_ADDRESS.toString();
+    static String DEFAULT_SENDER_STRING = TestingState.PREMINED_ADDRESS.toString();
     static long DEFAULT_ENERGY_LIMIT = 100_000_000L;
 
     /**

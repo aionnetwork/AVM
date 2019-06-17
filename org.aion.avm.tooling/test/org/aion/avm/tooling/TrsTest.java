@@ -26,7 +26,7 @@ public class TrsTest {
     private static final long ENERGY_PRICE = 1;
     private static final int NUM_PERIODS = 12;
 
-    private static TestingKernel kernel;
+    private static TestingState kernel;
 
     @BeforeClass
     public static void setup() {

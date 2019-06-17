@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
+import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
@@ -13,7 +14,6 @@ import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
-import org.aion.kernel.TestingKernel;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -23,19 +23,19 @@ import org.junit.Test;
  * after a transaction has been sent.
  */
 public class TransactionAccountBalanceTest {
-    private static AionAddress from = TestingKernel.PREMINED_ADDRESS;
+    private static AionAddress from = TestingState.PREMINED_ADDRESS;
     private static long energyLimit = 10_000_000L;
 
     private static long energyLimitForValueTransfer = 21_000L;
     private static long energyPrice = 5;
     private static TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
-    private static TestingKernel kernel;
+    private static TestingState kernel;
     private static AvmImpl avm;
 
     @BeforeClass
     public static void setup() {
-        kernel = new TestingKernel(block);
+        kernel = new TestingState(block);
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
 

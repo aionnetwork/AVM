@@ -13,7 +13,7 @@ import i.InvalidException;
 import i.RevertException;
 import s.java.lang.String;
 import s.java.math.BigInteger;
-import org.aion.kernel.TestingKernel;
+import org.aion.kernel.TestingState;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -42,7 +42,7 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     private java.math.BigInteger blockDifficulty = java.math.BigInteger.valueOf(1000L);
 
 
-    private IExternalState kernel = new TestingKernel();
+    private IExternalState kernel = new TestingState();
     private Map<java.lang.String, Integer> eventCounter = new HashMap<>();
 
     public TestingBlockchainRuntime() {

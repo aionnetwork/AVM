@@ -53,10 +53,10 @@ public class CryptoUtilMethodFeeBenchmarkTest {
     private long energyLimit = 100_000_000_000L;
     private long energyPrice = 1L;
 
-    private AionAddress deployer = TestingKernel.PREMINED_ADDRESS;
+    private AionAddress deployer = TestingState.PREMINED_ADDRESS;
     private AionAddress dappAddress;
 
-    private TestingKernel kernel;
+    private TestingState kernel;
     private AvmImpl avm;
 
     private byte[] hashMessage = "benchmark testing".getBytes();
@@ -90,7 +90,7 @@ public class CryptoUtilMethodFeeBenchmarkTest {
 
         byte[] txData = new CodeAndArguments(basicAppTestJar, null).encodeToBytes();
 
-        this.kernel = new TestingKernel();
+        this.kernel = new TestingState();
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         Transaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
         dappAddress = new AionAddress(avm.run(this.kernel, new Transaction[] {tx})[0].get().getReturnData());

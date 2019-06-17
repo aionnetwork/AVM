@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
@@ -21,7 +22,6 @@ import org.aion.avm.userlib.CodeAndArguments;
 import i.RuntimeAssertionError;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
-import org.aion.kernel.TestingKernel;
 
 import java.math.BigInteger;
 import java.text.NumberFormat;
@@ -42,15 +42,15 @@ import org.junit.Test;
 public class DeploymentCostTest {
     private static final long ENERGY_LIMIT = 100_000_000_000L;
     private static final long ENERGY_PRICE = 1L;
-    private static final AionAddress DEPLOYER = TestingKernel.PREMINED_ADDRESS;
+    private static final AionAddress DEPLOYER = TestingState.PREMINED_ADDRESS;
 
-    private TestingKernel kernel;
+    private TestingState kernel;
     private AvmImpl avm;
 
     @Before
     public void setup() {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        this.kernel = new TestingKernel(block);
+        this.kernel = new TestingState(block);
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
 

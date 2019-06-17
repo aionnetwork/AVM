@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
 import org.aion.types.Transaction;
 import org.aion.types.AionAddress;
 import org.aion.avm.tooling.hash.HashUtils;
-import org.aion.kernel.TestingKernel;
+import org.aion.kernel.TestingState;
 
 
 /**
@@ -20,7 +20,7 @@ public class AddressUtil {
         ByteBuffer buffer = ByteBuffer.allocate(32 + 8).put(tx.senderAddress.toByteArray()).putLong(nonceAsLong);
         byte[] hash = HashUtils.sha256(buffer.array());
         // NOTE: This implemenation assumes are being used on the testing kernel.
-        hash[0] = TestingKernel.AVM_CONTRACT_PREFIX;
+        hash[0] = TestingState.AVM_CONTRACT_PREFIX;
         return new AionAddress(hash);
     }
 }
