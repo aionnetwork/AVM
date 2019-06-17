@@ -22,7 +22,7 @@ import org.aion.avm.core.util.ByteArrayWrapper;
  */
 public class TransactionalState implements IExternalState {
     private final IExternalState parent;
-    private final CachingKernel writeCache;
+    private final CachingState writeCache;
     private final List<Consumer<IExternalState>> writeLog;
     private final Set<ByteArrayWrapper> deletedAccountProjection;
     private final Set<ByteArrayWrapper> cachedAccountBalances;
@@ -37,7 +37,7 @@ public class TransactionalState implements IExternalState {
 
     public TransactionalState(IExternalState parent) {
         this.parent = parent;
-        this.writeCache = new CachingKernel();
+        this.writeCache = new CachingState();
         this.writeLog = new ArrayList<>();
         this.deletedAccountProjection = new HashSet<>();
         this.cachedAccountBalances = new HashSet<>();

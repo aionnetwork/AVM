@@ -11,20 +11,20 @@ import org.aion.data.MemoryBackedDataStore;
 /**
  * In in-memory cached used by the TransactionalState in order to store results of in-flight transactions prior to commit.
  */
-public class CachingKernel implements IExternalState {
+public class CachingState implements IExternalState {
     private final IDataStore dataStore;
 
     /**
      * Creates an instance which is backed by in-memory structures, only.
      */
-    public CachingKernel() {
+    public CachingState() {
         this.dataStore = new MemoryBackedDataStore();
     }
 
     @Override
     public IExternalState newChildExternalState() {
         // While this kind of kernel could support children, the use-case would be an error, based on what this implementation is for.
-        throw RuntimeAssertionError.unreachable("Caching kernel should never be asked to create children.");
+        throw RuntimeAssertionError.unreachable("Caching state should never be asked to create children.");
     }
 
     @Override

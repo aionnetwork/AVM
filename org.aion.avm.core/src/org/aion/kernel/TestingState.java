@@ -13,7 +13,7 @@ import java.io.File;
 
 
 /**
- * A modified version of CachingKernel to support more general usage so it can be used as the external state underlying tests.
+ * A modified version of CachingState to support more general usage so it can be used as the external state underlying tests.
  */
 public class TestingState implements IExternalState {
     /**
