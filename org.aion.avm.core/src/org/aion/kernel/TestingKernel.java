@@ -90,7 +90,7 @@ public class TestingKernel implements IExternalState {
 
     @Override
     public IExternalState newChildExternalState() {
-        return new TransactionalKernel(this);
+        return new TransactionalState(this);
     }
 
     @Override

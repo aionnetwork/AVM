@@ -20,7 +20,7 @@ import org.aion.avm.core.util.ByteArrayWrapper;
  * This means that changes to the interface should mostly just translate into a new kind of transaction log entry, in this implementation.
  * Special attention needs to be paid to read-and-write operations (such as adjustBalance()) and anything involving deletes.
  */
-public class TransactionalKernel implements IExternalState {
+public class TransactionalState implements IExternalState {
     private final IExternalState parent;
     private final CachingKernel writeCache;
     private final List<Consumer<IExternalState>> writeLog;
@@ -35,7 +35,7 @@ public class TransactionalKernel implements IExternalState {
     private long blockNrgLimit;
     private AionAddress blockCoinbase;
 
-    public TransactionalKernel(IExternalState parent) {
+    public TransactionalState(IExternalState parent) {
         this.parent = parent;
         this.writeCache = new CachingKernel();
         this.writeLog = new ArrayList<>();
@@ -50,8 +50,8 @@ public class TransactionalKernel implements IExternalState {
     }
 
     @Override
-    public TransactionalKernel newChildExternalState() {
-        return new TransactionalKernel(this);
+    public TransactionalState newChildExternalState() {
+        return new TransactionalState(this);
     }
 
     /**

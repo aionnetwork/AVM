@@ -348,7 +348,7 @@ public class AvmImpl implements AvmInternal {
                 tx.energyLimit);
         }
         // Invoke calls must build their transaction on top of an existing "parent" kernel.
-        TransactionalKernel thisTransactionKernel = new TransactionalKernel(parentKernel);
+        TransactionalState thisTransactionKernel = new TransactionalState(parentKernel);
 
         // only one result (mutable) shall be created per transaction execution
         AvmTransactionResult result = new AvmTransactionResult(tx.energyLimit, transactionBaseCost);

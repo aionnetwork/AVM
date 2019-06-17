@@ -9,7 +9,7 @@ import org.aion.data.IDataStore;
 import org.aion.data.MemoryBackedDataStore;
 
 /**
- * In in-memory cached used by the TransactionalKernel in order to store results of in-flight transactions prior to commit.
+ * In in-memory cached used by the TransactionalState in order to store results of in-flight transactions prior to commit.
  */
 public class CachingKernel implements IExternalState {
     private final IDataStore dataStore;

@@ -33,7 +33,7 @@ public class TransactionTask implements Comparable<TransactionTask>{
     private ReentrantDAppStack reentrantDAppStack;
     private int index;
     private StringBuffer outBuffer;
-    private TransactionalKernel thisTransactionKernel;
+    private TransactionalState thisTransactionKernel;
     private Stack<SideEffects> sideEffectsStack;
     private Address origin;
     private int depth;
@@ -64,7 +64,7 @@ public class TransactionTask implements Comparable<TransactionTask>{
         this.outBuffer = new StringBuffer();
         
         // All IO will be performed on an per task transactional kernel so we can abort the whole task in one go
-        this.thisTransactionKernel = new TransactionalKernel(this.parentKernel);
+        this.thisTransactionKernel = new TransactionalState(this.parentKernel);
     }
 
     /**
@@ -137,7 +137,7 @@ public class TransactionTask implements Comparable<TransactionTask>{
      *
      * @return The task transactional kernel of the task.
      */
-    public TransactionalKernel getThisTransactionalKernel() {
+    public TransactionalState getThisTransactionalKernel() {
         return this.thisTransactionKernel;
     }
 

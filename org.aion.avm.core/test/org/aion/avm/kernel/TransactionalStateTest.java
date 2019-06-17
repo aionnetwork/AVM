@@ -4,19 +4,19 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 import org.aion.avm.core.IExternalState;
+import org.aion.kernel.TransactionalState;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.TestingKernel;
-import org.aion.kernel.TransactionalKernel;
 import org.junit.Assert;
 import org.junit.Test;
 
 
-public class TransactionalKernelTest {
+public class TransactionalStateTest {
     @Test
     public void testCommitDataOntoEmpty() {
         IExternalState base = new TestingKernel();
-        TransactionalKernel transaction = new TransactionalKernel(base);
+        TransactionalState transaction = new TransactionalState(base);
         AionAddress address = Helpers.randomAddress();
         // Code cannot be empty.
         transaction.setTransformedCode(address, new byte[1]);
@@ -52,7 +52,7 @@ public class TransactionalKernelTest {
         base.putStorage(address, key1, value1_1);
         Assert.assertTrue(Arrays.equals(value1_1, base.getStorage(address, key1)));
         
-        TransactionalKernel transaction = new TransactionalKernel(base);
+        TransactionalState transaction = new TransactionalState(base);
         byte[] key2 = Helpers.randomBytes(32);
         byte[] value2_1 = Helpers.randomBytes(32);
         byte[] value1_2 = Helpers.randomBytes(32);
@@ -74,7 +74,7 @@ public class TransactionalKernelTest {
         base.createAccount(address);
         base.adjustBalance(address, BigInteger.ONE);
         
-        TransactionalKernel transaction = new TransactionalKernel(base);
+        TransactionalState transaction = new TransactionalState(base);
         Assert.assertEquals(BigInteger.ONE, transaction.getBalance(address));
         transaction.adjustBalance(address, BigInteger.TEN);
         Assert.assertEquals(BigInteger.valueOf(11L), transaction.getBalance(address));
@@ -95,7 +95,7 @@ public class TransactionalKernelTest {
         base.createAccount(address);
         base.adjustBalance(address, BigInteger.ONE);
         
-        TransactionalKernel transaction = new TransactionalKernel(base);
+        TransactionalState transaction = new TransactionalState(base);
         Assert.assertEquals(BigInteger.ONE, transaction.getBalance(address));
         transaction.adjustBalance(address, BigInteger.TEN);
         Assert.assertEquals(BigInteger.valueOf(11L), transaction.getBalance(address));
@@ -116,7 +116,7 @@ public class TransactionalKernelTest {
         base.createAccount(address);
         base.adjustBalance(address, BigInteger.ONE);
         
-        TransactionalKernel transaction = new TransactionalKernel(base);
+        TransactionalState transaction = new TransactionalState(base);
         Assert.assertEquals(BigInteger.ONE, transaction.getBalance(address));
         transaction.adjustBalance(address, BigInteger.TEN);
         Assert.assertEquals(BigInteger.valueOf(11L), transaction.getBalance(address));
