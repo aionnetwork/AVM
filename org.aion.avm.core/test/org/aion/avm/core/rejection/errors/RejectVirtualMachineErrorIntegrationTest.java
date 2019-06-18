@@ -2,6 +2,7 @@ package org.aion.avm.core.rejection.errors;
 
 import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.avm.core.IExternalState;
+import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.AvmConfiguration;
@@ -11,9 +12,9 @@ import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
-import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingState;
+import org.aion.types.TransactionResult;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -55,8 +56,8 @@ public class RejectVirtualMachineErrorIntegrationTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(RejectCatchError.class);
 
         // Deploy.
-        AvmTransactionResult createResult = deployJar(jar);
-        Assert.assertEquals(AvmTransactionResult.Code.FAILED_REJECTED, createResult.getResultCode());
+        TransactionResult createResult = deployJar(jar);
+        Assert.assertEquals(AvmInternalError.FAILED_REJECTED_CLASS.error, createResult.transactionStatus.causeOfError);
     }
 
     @Test
@@ -64,8 +65,8 @@ public class RejectVirtualMachineErrorIntegrationTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(RejectInstantiateError.class);
 
         // Deploy.
-        AvmTransactionResult createResult = deployJar(jar);
-        Assert.assertEquals(AvmTransactionResult.Code.FAILED_REJECTED, createResult.getResultCode());
+        TransactionResult createResult = deployJar(jar);
+        Assert.assertEquals(AvmInternalError.FAILED_REJECTED_CLASS.error, createResult.transactionStatus.causeOfError);
     }
 
     @Test
@@ -73,14 +74,14 @@ public class RejectVirtualMachineErrorIntegrationTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(RejectSubclassError.class);
 
         // Deploy.
-        AvmTransactionResult createResult = deployJar(jar);
-        Assert.assertEquals(AvmTransactionResult.Code.FAILED_REJECTED, createResult.getResultCode());
+        TransactionResult createResult = deployJar(jar);
+        Assert.assertEquals(AvmInternalError.FAILED_REJECTED_CLASS.error, createResult.transactionStatus.causeOfError);
     }
 
 
-    private AvmTransactionResult deployJar(byte[] jar) {
+    private TransactionResult deployJar(byte[] jar) {
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         Transaction transaction = AvmTransactionUtil.create(FROM, externalState.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
-        return avm.run(RejectVirtualMachineErrorIntegrationTest.externalState, new Transaction[] {transaction})[0].get();
+        return avm.run(RejectVirtualMachineErrorIntegrationTest.externalState, new Transaction[] {transaction})[0].getResult();
     }
 }

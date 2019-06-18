@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import avm.Address;
+import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
@@ -9,11 +10,11 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
-import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
 
 import java.math.BigInteger;
 
+import org.aion.types.TransactionResult;
 import org.junit.*;
 
 
@@ -55,8 +56,8 @@ public class DeploymentArgumentTest {
                 .encodeOneDouble(6.7)
                 .encodeOneByteArray(SMALL_JAR)
                 .toBytes();
-        AvmTransactionResult result = deployContract(encodedArguments);
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
+        TransactionResult result = deployContract(encodedArguments);
+        Assert.assertTrue(result.transactionStatus.isSuccess());
     }
 
     @Test
@@ -67,14 +68,14 @@ public class DeploymentArgumentTest {
                 .encodeOneInteger(5)
                 .encodeOneDouble(6.7)
                 .toBytes();
-        AvmTransactionResult result = deployContract(encodedArguments);
-        Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
+        TransactionResult result = deployContract(encodedArguments);
+        Assert.assertEquals(AvmInternalError.FAILED_EXCEPTION.error, result.transactionStatus.causeOfError);
     }
 
     @Test
     public void testMissingArguments() {
-        AvmTransactionResult result = deployContract(new byte[0]);
-        Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
+        TransactionResult result = deployContract(new byte[0]);
+        Assert.assertEquals(AvmInternalError.FAILED_EXCEPTION.error, result.transactionStatus.causeOfError);
     }
 
     @Test
@@ -86,12 +87,12 @@ public class DeploymentArgumentTest {
                 .encodeOneDouble(6.7)
                 .encodeOneByteArray(SMALL_JAR)
                 .toBytes();
-        AvmTransactionResult result = deployContract(encodedArguments);
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
+        TransactionResult result = deployContract(encodedArguments);
+        Assert.assertTrue(result.transactionStatus.isSuccess());
 
-        AionAddress target = new AionAddress(result.getReturnData());
-        AvmTransactionResult callResult = callContract(target, "correctDeployment");
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
+        AionAddress target = new AionAddress(result.copyOfTransactionOutput().orElseThrow());
+        TransactionResult callResult = callContract(target, "correctDeployment");
+        Assert.assertTrue(callResult.transactionStatus.isSuccess());
     }
 
     @Test
@@ -103,26 +104,26 @@ public class DeploymentArgumentTest {
                 .encodeOneDouble(6.7)
                 .encodeOneByteArray(SMALL_JAR)
                 .toBytes();
-        AvmTransactionResult result = deployContract(encodedArguments);
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        
-        AionAddress target = new AionAddress(result.getReturnData());
-        AvmTransactionResult callResult = callContract(target, "incorrectDeployment");
+        TransactionResult result = deployContract(encodedArguments);
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+
+        AionAddress target = new AionAddress(result.copyOfTransactionOutput().orElseThrow());
+        TransactionResult callResult = callContract(target, "incorrectDeployment");
         // (note that this is still a success since the call expects to fail, internally)
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
+        Assert.assertTrue(callResult.transactionStatus.isSuccess());
     }
 
 
-    private AvmTransactionResult deployContract(byte[] args) {
+    private TransactionResult deployContract(byte[] args) {
         byte[] payload = new CodeAndArguments(JAR, args).encodeToBytes();
         Transaction create = AvmTransactionUtil.create(DEPLOYER, kernel.getNonce(DEPLOYER), BigInteger.ZERO, payload, ENERGY_LIMIT, ENERGY_PRICE);
-        return avm.run(kernel, new Transaction[] {create})[0].get();
+        return avm.run(kernel, new Transaction[] {create})[0].getResult();
     }
 
-    private AvmTransactionResult callContract(AionAddress target, String methodName) {
+    private TransactionResult callContract(AionAddress target, String methodName) {
         byte[] argData = new ABIStreamingEncoder().encodeOneString(methodName).toBytes();
         Transaction call = AvmTransactionUtil.call(DEPLOYER, target, kernel.getNonce(DEPLOYER), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
-        AvmTransactionResult result = avm.run(kernel, new Transaction[] {call})[0].get();
+        TransactionResult result = avm.run(kernel, new Transaction[] {call})[0].getResult();
         return result;
     }
 }

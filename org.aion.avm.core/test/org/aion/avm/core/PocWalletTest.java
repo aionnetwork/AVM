@@ -21,6 +21,7 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.*;
+import org.aion.types.TransactionResult;
 import org.junit.*;
 
 
@@ -81,10 +82,10 @@ public class PocWalletTest {
         byte[] testWalletArguments = new byte[0];
 
         Transaction createTransaction = AvmTransactionUtil.create(from, externalState.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
-        AvmTransactionResult createResult = avm.run(externalState, new Transaction[] {createTransaction})[0].get();
+        TransactionResult createResult = avm.run(externalState, new Transaction[] {createTransaction})[0].getResult();
 
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
-        Assert.assertNotNull(externalState.getTransformedCode(new AionAddress(createResult.getReturnData())));
+        Assert.assertTrue(createResult.transactionStatus.isSuccess());
+        Assert.assertNotNull(externalState.getTransformedCode(new AionAddress(createResult.copyOfTransactionOutput().orElseThrow())));
     }
 
     /**
@@ -101,16 +102,16 @@ public class PocWalletTest {
         byte[] testWalletJar = buildTestWalletJar();
         byte[] testWalletArguments = new byte[0];
         Transaction createTransaction = AvmTransactionUtil.create(from, externalState.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
-        AvmTransactionResult createResult = avm.run(externalState, new Transaction[] {createTransaction})[0].get();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
+        TransactionResult createResult = avm.run(externalState, new Transaction[] {createTransaction})[0].getResult();
+        Assert.assertTrue(createResult.transactionStatus.isSuccess());
 
         // contract address is stored in return data
-        AionAddress contractAddress = new AionAddress(createResult.getReturnData());
+        AionAddress contractAddress = new AionAddress(createResult.copyOfTransactionOutput().orElseThrow());
 
         byte[] initArgs = CallEncoder.init(new Address(extra1.toByteArray()), new Address(extra2.toByteArray()), requiredVotes, dailyLimit);
         Transaction initTransaction = AvmTransactionUtil.call(from, contractAddress, externalState.getNonce(from), BigInteger.ZERO, initArgs, energyLimit, energyPrice);
-        AvmTransactionResult initResult = avm.run(externalState, new Transaction[] {initTransaction})[0].get();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, initResult.getResultCode());
+        TransactionResult initResult = avm.run(externalState, new Transaction[] {initTransaction})[0].getResult();
+        Assert.assertTrue(initResult.transactionStatus.isSuccess());
     }
 
     /**
@@ -135,24 +136,24 @@ public class PocWalletTest {
         byte[] data = Helpers.randomBytes(AionAddress.LENGTH);
         byte[] execArgs = CallEncoder.execute(new Address(to.toByteArray()), dailyLimit + 1, data);
         Transaction executeTransaction = AvmTransactionUtil.call(from, contractAddress, externalState.getNonce(from), BigInteger.ZERO, execArgs, energyLimit, energyPrice);
-        AvmTransactionResult executeResult = avm.run(externalState, new Transaction[] {executeTransaction})[0].get();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, executeResult.getResultCode());
-        byte[] toConfirm = new ABIDecoder(executeResult.getReturnData()).decodeOneByteArray();
+        TransactionResult executeResult = avm.run(externalState, new Transaction[] {executeTransaction})[0].getResult();
+        Assert.assertTrue(executeResult.transactionStatus.isSuccess());
+        byte[] toConfirm = new ABIDecoder(executeResult.copyOfTransactionOutput().orElseThrow()).decodeOneByteArray();
 
         // Now, confirm as one of the other owners to observe we can instantiate the Transaction instance, from storage.
         externalState.adjustBalance(extra1, BigInteger.valueOf(1_000_000_000_000L));
         byte[] confirmArgs = CallEncoder.confirm(toConfirm);
         Transaction confirmTransaction = AvmTransactionUtil.call(extra1, contractAddress, externalState.getNonce(extra1), BigInteger.ZERO, confirmArgs, energyLimit, energyPrice);
-        AvmTransactionResult confirmResult = avm.run(externalState, new Transaction[] {confirmTransaction})[0].get();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, confirmResult.getResultCode()); // transfer to non-existing accounts
+        TransactionResult confirmResult = avm.run(externalState, new Transaction[] {confirmTransaction})[0].getResult();
+        Assert.assertTrue(confirmResult.transactionStatus.isSuccess()); // transfer to non-existing accounts
     }
 
 
     private void runInit(AionAddress contractAddress, Address extra1, Address extra2, int requiredVotes, long dailyLimit) throws Exception {
         byte[] initArgs = CallEncoder.init(extra1, extra2, requiredVotes, dailyLimit);
         Transaction initTransaction = AvmTransactionUtil.call(from, contractAddress, externalState.getNonce(from), BigInteger.ZERO, initArgs, energyLimit, energyPrice);
-        AvmTransactionResult initResult = avm.run(externalState, new Transaction[] {initTransaction})[0].get();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, initResult.getResultCode());
+        TransactionResult initResult = avm.run(externalState, new Transaction[] {initTransaction})[0].getResult();
+        Assert.assertTrue(initResult.transactionStatus.isSuccess());
     }
 
     private byte[] deployTestWallet() {
@@ -160,11 +161,11 @@ public class PocWalletTest {
         byte[] testWalletArguments = new byte[0];
 
         Transaction createTransaction = AvmTransactionUtil.create(from, externalState.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
-        AvmTransactionResult createResult = avm.run(externalState, new Transaction[] {createTransaction})[0].get();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
+        TransactionResult createResult = avm.run(externalState, new Transaction[] {createTransaction})[0].getResult();
+        Assert.assertTrue(createResult.transactionStatus.isSuccess());
 
         // contract address is stored in return data
-        byte[] contractAddress = createResult.getReturnData();
+        byte[] contractAddress = createResult.copyOfTransactionOutput().orElseThrow();
         return contractAddress;
     }
 }

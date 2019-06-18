@@ -1,7 +1,6 @@
 package org.aion.avm.tooling.blockchainruntime;
 
 import org.aion.avm.core.AvmTransactionUtil;
-import org.aion.kernel.AvmTransactionResult;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import avm.Address;
@@ -9,6 +8,7 @@ import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AddressUtil;
+import org.aion.types.TransactionResult;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -142,9 +142,9 @@ public class FailedInternalCallClinitAddressesTest {
     }
 
     private static Address deployInternalCallClinitAddressTrackerContract() {
-        AvmTransactionResult result = avmRule.deploy(from, BigInteger.ZERO, getDappBytes(), energyLimit, energyPrice).getTransactionResult();
-        assertTrue(result.getResultCode().isSuccess());
-        return new Address(result.getReturnData());
+        TransactionResult result = avmRule.deploy(from, BigInteger.ZERO, getDappBytes(), energyLimit, energyPrice).getTransactionResult();
+        assertTrue(result.transactionStatus.isSuccess());
+        return new Address(result.copyOfTransactionOutput().orElseThrow());
     }
 
     private Address[] callFailedInternalCallClinitAddressesContract(Address contract, int numInternalCalls, boolean recurseFirst) {
@@ -157,9 +157,9 @@ public class FailedInternalCallClinitAddressesTest {
             callData = ABIUtil.encodeMethodArguments("runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse", dappBytes, numInternalCalls);
         }
 
-        AvmTransactionResult result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice).getTransactionResult();
-        assertTrue(result.getResultCode().isSuccess());
-        return new ABIDecoder(result.getReturnData()).decodeOneAddressArray();
+        TransactionResult result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice).getTransactionResult();
+        assertTrue(result.transactionStatus.isSuccess());
+        return new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneAddressArray();
     }
 
     private static byte[] getDappBytes() {

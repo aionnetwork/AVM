@@ -7,6 +7,7 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.*;
+import org.aion.types.TransactionResult;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -39,7 +40,7 @@ public class TrsTest {
 
     @Test
     public void testDeployTrs() {
-        assertTrue(deployContract().getResultCode().isSuccess());
+        assertTrue(deployContract().transactionStatus.isSuccess());
     }
 
     /**
@@ -60,38 +61,38 @@ public class TrsTest {
         AionAddress account = Helpers.randomAddress();
 
         // Deploy and initialize the contract.
-        assertTrue(deployContract().getResultCode().isSuccess());
-        assertTrue(initializeTrs().getResultCode().isSuccess());
+        assertTrue(deployContract().transactionStatus.isSuccess());
+        assertTrue(initializeTrs().transactionStatus.isSuccess());
 
         // Send funds to the contract and verify they were received.
-        assertTrue(sendFundsToTrs(trsFunds).getResultCode().isSuccess());
+        assertTrue(sendFundsToTrs(trsFunds).transactionStatus.isSuccess());
         assertEquals(trsFunds, kernel.getBalance(contract));
 
         // Mint an account into the contract so that it gets all of the funds.
-        assertTrue(mintAccountToTrs(account, trsFunds).getResultCode().isSuccess());
+        assertTrue(mintAccountToTrs(account, trsFunds).transactionStatus.isSuccess());
 
         // Lock and start the contract.
-        assertTrue(lockTrs().getResultCode().isSuccess());
-        assertTrue(startTrs().getResultCode().isSuccess());
+        assertTrue(lockTrs().transactionStatus.isSuccess());
+        assertTrue(startTrs().transactionStatus.isSuccess());
 
         // Give account some basic balance so that it is able to make withdrawals.
-        assertTrue(sendFundsTo(account, basicBalance).getResultCode().isSuccess());
+        assertTrue(sendFundsTo(account, basicBalance).transactionStatus.isSuccess());
         assertEquals(basicBalance, kernel.getBalance(account));
 
         // Step through each period in the contract and withdraw the funds.
         BigInteger accountBalance = basicBalance;
 
         for (int i = 0; i < NUM_PERIODS; i++) {
-            AvmTransactionResult result = withdrawFromTrs(account);
+            TransactionResult result = withdrawFromTrs(account);
 
             // Check the transaction was successful.
-            assertTrue(result.getResultCode().isSuccess());
+            assertTrue(result.transactionStatus.isSuccess());
 
             // Check the return value is true, indicating a non-zero withdrawal amount.
-            assertTrue(new ABIDecoder(result.getReturnData()).decodeOneBoolean());
+            assertTrue(new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneBoolean());
 
             // Update the account balance by deducting the transaction cost from the previous balance.
-            long callCost = ((AvmTransactionResult) result).getEnergyUsed() * ENERGY_PRICE;
+            long callCost = result.energyUsed * ENERGY_PRICE;
             accountBalance = accountBalance.subtract(BigInteger.valueOf(callCost));
 
             // Move into next period.
@@ -115,41 +116,41 @@ public class TrsTest {
         }
     }
 
-    private AvmTransactionResult sendFundsToTrs(BigInteger amount) {
+    private TransactionResult sendFundsToTrs(BigInteger amount) {
         return sendFundsTo(contract, amount);
     }
 
-    private AvmTransactionResult sendFundsTo(AionAddress recipient, BigInteger amount) {
+    private TransactionResult sendFundsTo(AionAddress recipient, BigInteger amount) {
         Address recipientAddress = new Address(recipient.toByteArray());
         AvmRule.ResultWrapper result = avmRule.balanceTransfer(DEPLOYER_API, recipientAddress, amount, ENERGY_LIMIT, ENERGY_PRICE);
         return result.getTransactionResult();
     }
 
-    private AvmTransactionResult mintAccountToTrs(AionAddress account, BigInteger amount) {
+    private TransactionResult mintAccountToTrs(AionAddress account, BigInteger amount) {
         return callContract("mint", new Address(account.toByteArray()), amount.longValue());
     }
 
-    private AvmTransactionResult withdrawFromTrs(AionAddress recipient) {
+    private TransactionResult withdrawFromTrs(AionAddress recipient) {
         return callContract(recipient, "withdraw");
     }
 
-    private AvmTransactionResult startTrs() {
+    private TransactionResult startTrs() {
         return callContract("start", avmRule.kernel.getBlockTimestamp());
     }
 
-    private AvmTransactionResult lockTrs() {
+    private TransactionResult lockTrs() {
         return callContract("lock");
     }
 
-    private AvmTransactionResult initializeTrs() {
+    private TransactionResult initializeTrs() {
         return callContract("init", NUM_PERIODS, 0);
     }
 
-    private AvmTransactionResult callContract(String method, Object... parameters) {
+    private TransactionResult callContract(String method, Object... parameters) {
         return callContract(DEPLOYER, method, parameters);
     }
 
-    private AvmTransactionResult callContract(AionAddress sender, String method, Object... parameters) {
+    private TransactionResult callContract(AionAddress sender, String method, Object... parameters) {
         byte[] callData = ABIUtil.encodeMethodArguments(method, parameters);
         Address contractAddress = new Address(contract.toByteArray());
         Address senderAddress = new Address(sender.toByteArray());
@@ -159,7 +160,7 @@ public class TrsTest {
 
     }
 
-    private AvmTransactionResult deployContract() {
+    private TransactionResult deployContract() {
         byte[] jarBytes = avmRule.getDappBytes(TRS.class, null, AionMap.class);
 
         AvmRule.ResultWrapper result = avmRule.deploy(DEPLOYER_API, BigInteger.ZERO, jarBytes, ENERGY_LIMIT, ENERGY_PRICE);

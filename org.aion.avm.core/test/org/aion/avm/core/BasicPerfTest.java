@@ -11,10 +11,10 @@ import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.avm.userlib.CodeAndArguments;
-import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingState;
 
+import org.aion.types.TransactionResult;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -72,9 +72,9 @@ public class BasicPerfTest {
             this.externalState = new TestingState(block);
             long transaction1EnergyLimit = 1_000_000_000l;
             Transaction tx1 = AvmTransactionUtil.create(deployer, externalState.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), transaction1EnergyLimit, 1L);
-            AvmTransactionResult result1 = this.avm.run(this.externalState, new Transaction[] {tx1})[0].get();
-            Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
-            this.contractAddress = new AionAddress(result1.getReturnData());
+            TransactionResult result1 = this.avm.run(this.externalState, new Transaction[] {tx1})[0].getResult();
+            Assert.assertTrue(result1.transactionStatus.isSuccess());
+            this.contractAddress = new AionAddress(result1.copyOfTransactionOutput().orElseThrow());
         }
         public void waitForSafeTermination() throws Throwable {
             this.join();
@@ -96,8 +96,8 @@ public class BasicPerfTest {
             for (int i = blockStart; i < (COUNT + blockStart); ++i) {
                 long transaction1EnergyLimit = 1_000_000_000l;
                 Transaction tx1 = AvmTransactionUtil.call(deployer, this.contractAddress, externalState.getNonce(deployer), BigInteger.ZERO, new byte[0], transaction1EnergyLimit, 1L);
-                AvmTransactionResult result1 = this.avm.run(this.externalState, new Transaction[] {tx1})[0].get();
-                Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
+                TransactionResult result1 = this.avm.run(this.externalState, new Transaction[] {tx1})[0].getResult();
+                Assert.assertTrue(result1.transactionStatus.isSuccess());
             }
         }
     }

@@ -3,7 +3,7 @@ package org.aion.avm.tooling;
 import net.i2p.crypto.eddsa.Utils;
 import avm.Address;
 import org.aion.avm.userlib.abi.ABIDecoder;
-import org.aion.kernel.AvmTransactionResult;
+import org.aion.types.TransactionResult;
 import org.junit.*;
 
 import java.math.BigInteger;
@@ -32,10 +32,10 @@ public class EdverifyTest {
     public void testVerifyCorrectness(){
         byte[] txData = ABIUtil.encodeMethodArguments("callEdverify", testMessage, messageSignature, publicKeyBytes);
 
-        AvmTransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
+        TransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult.getResultCode());
-        Assert.assertTrue(new ABIDecoder(txResult.getReturnData()).decodeOneBoolean());
+        Assert.assertTrue(txResult.transactionStatus.isSuccess());
+        Assert.assertTrue(new ABIDecoder(txResult.copyOfTransactionOutput().orElseThrow()).decodeOneBoolean());
     }
 
     @Test
@@ -45,10 +45,10 @@ public class EdverifyTest {
 
         byte[] txData = ABIUtil.encodeMethodArguments("callEdverify", testMessage, incorrectSignature, publicKeyBytes);
 
-        AvmTransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
+        TransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult.getResultCode());
-        Assert.assertFalse(new ABIDecoder(txResult.getReturnData()).decodeOneBoolean());
+        Assert.assertTrue(txResult.transactionStatus.isSuccess());
+        Assert.assertFalse(new ABIDecoder(txResult.copyOfTransactionOutput().orElseThrow()).decodeOneBoolean());
     }
 
     @Test
@@ -58,9 +58,9 @@ public class EdverifyTest {
 
         byte[] txData = ABIUtil.encodeMethodArguments("callEdverify", testMessage, messageSignature, incorrectPublicKey);
 
-        AvmTransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
+        TransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult.getResultCode());
-        Assert.assertFalse(new ABIDecoder(txResult.getReturnData()).decodeOneBoolean());
+        Assert.assertTrue(txResult.transactionStatus.isSuccess());
+        Assert.assertFalse(new ABIDecoder(txResult.copyOfTransactionOutput().orElseThrow()).decodeOneBoolean());
     }
 }

@@ -5,7 +5,7 @@ import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.avm.userlib.abi.ABIDecoder;
-import org.aion.kernel.AvmTransactionResult;
+import org.aion.types.TransactionResult;
 import org.junit.*;
 
 import java.math.BigInteger;
@@ -38,20 +38,20 @@ public class BasicAppTest {
     @Test
     public void testIdentity() {
         byte[] txData = ABIUtil.encodeMethodArguments("identity", new byte[] {42, 13});
-        AvmTransactionResult result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
+        TransactionResult result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
         // These should be the same instance.
-        Assert.assertEquals(42, new ABIDecoder(result.getReturnData()).decodeOneByteArray()[0]);
-        Assert.assertEquals(13, new ABIDecoder(result.getReturnData()).decodeOneByteArray()[1]);
+        Assert.assertEquals(42, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneByteArray()[0]);
+        Assert.assertEquals(13, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneByteArray()[1]);
     }
 
     @Test
     public void testSumInput() {
         byte[] txData = ABIUtil.encodeMethodArguments("sum", new byte[] {42, 13});
-        AvmTransactionResult result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
+        TransactionResult result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
         // Should be just 1 byte, containing the sum.
-        Assert.assertEquals(42 + 13, new ABIDecoder(result.getReturnData()).decodeOneInteger());
+        Assert.assertEquals(42 + 13, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
     }
 
     /**
@@ -62,66 +62,66 @@ public class BasicAppTest {
     @Test
     public void testRepeatedSwaps() {
         byte[] txData = ABIUtil.encodeMethodArguments("swapInputs", 1);
-        AvmTransactionResult result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
+        TransactionResult result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
-        Assert.assertEquals(0, new ABIDecoder(result.getReturnData()).decodeOneInteger());
+        Assert.assertEquals(0, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
 
         txData = ABIUtil.encodeMethodArguments("swapInputs", 2);
         result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
-        Assert.assertEquals(1, new ABIDecoder(result.getReturnData()).decodeOneInteger());
+        Assert.assertEquals(1, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
 
         txData = ABIUtil.encodeMethodArguments("swapInputs", 1);
         result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
-        Assert.assertEquals(2, new ABIDecoder(result.getReturnData()).decodeOneInteger());
+        Assert.assertEquals(2, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
     }
 
     @Test
     public void testArrayEquality() {
         byte[] txData = ABIUtil.encodeMethodArguments("arrayEquality", new byte[] {42, 13});
-        AvmTransactionResult result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
+        TransactionResult result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
-        Assert.assertEquals(false, new ABIDecoder(result.getReturnData()).decodeOneBoolean());
+        Assert.assertEquals(false, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneBoolean());
 
         txData = ABIUtil.encodeMethodArguments("arrayEquality", new byte[] {5, 6, 7, 8});
         result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
-        Assert.assertEquals(false, new ABIDecoder(result.getReturnData()).decodeOneBoolean());
+        Assert.assertEquals(false, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneBoolean());
     }
 
     @Test
     public void testAllocateArray() {
         byte[] txData = ABIUtil.encodeMethodArguments("allocateObjectArray");
-        AvmTransactionResult result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
+        TransactionResult result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
-        Assert.assertEquals(2, new ABIDecoder(result.getReturnData()).decodeOneInteger());
+        Assert.assertEquals(2, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
     }
 
     @Test
     public void testByteAutoboxing() {
         byte[] txData = ABIUtil.encodeMethodArguments("byteAutoboxing", (byte) 42);
-        AvmTransactionResult result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
+        TransactionResult result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
-        Assert.assertEquals(42, new ABIDecoder(result.getReturnData()).decodeOneByteArray()[0]);
-        Assert.assertEquals(42, new ABIDecoder(result.getReturnData()).decodeOneByteArray()[1]);
+        Assert.assertEquals(42, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneByteArray()[0]);
+        Assert.assertEquals(42, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneByteArray()[1]);
     }
 
     @Test
     public void testMapInteraction() {
         byte[] txData = ABIUtil.encodeMethodArguments("mapPut", (byte)1, (byte)42);
-        AvmTransactionResult result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
+        TransactionResult result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
-        Assert.assertEquals((byte) 42, new ABIDecoder(result.getReturnData()).decodeOneByte());
+        Assert.assertEquals((byte) 42, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneByte());
 
         txData = ABIUtil.encodeMethodArguments("mapPut", (byte)2, (byte)13);
         result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
-        Assert.assertEquals((byte) 13, new ABIDecoder(result.getReturnData()).decodeOneByte());
+        Assert.assertEquals((byte) 13, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneByte());
 
         txData = ABIUtil.encodeMethodArguments("mapGet", (byte)2);
         result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
-        Assert.assertEquals((byte) 13, new ABIDecoder(result.getReturnData()).decodeOneByte());
+        Assert.assertEquals((byte) 13, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneByte());
     }
 }

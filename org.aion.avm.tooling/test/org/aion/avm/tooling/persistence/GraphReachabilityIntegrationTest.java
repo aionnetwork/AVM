@@ -13,6 +13,7 @@ import org.aion.avm.tooling.deploy.eliminator.UnreachableMethodRemover;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.kernel.*;
+import org.aion.types.TransactionResult;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -236,9 +237,9 @@ public class GraphReachabilityIntegrationTest {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
 
-        AvmTransactionResult createResult = (AvmTransactionResult) avmRule.deploy(deployer, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
-        Address contractAddr = new Address(createResult.getReturnData());
+        TransactionResult createResult = avmRule.deploy(deployer, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
+        Assert.assertTrue(createResult.transactionStatus.isSuccess());
+        Address contractAddr = new Address(createResult.copyOfTransactionOutput().orElseThrow());
         
         // Check that the deployment cost is what we expected.
         // The first three numbers here are: basic cost of tx, processing cost and storage cost
@@ -257,9 +258,8 @@ public class GraphReachabilityIntegrationTest {
 
         long totalExpectedCost = miscCharges + storageCharges + userlibCost;
 
-        Assert.assertEquals(totalExpectedCost, createResult.getEnergyUsed());
-        Assert.assertEquals(energyLimit - totalExpectedCost, createResult.getEnergyRemaining());
-        
+        Assert.assertEquals(totalExpectedCost, createResult.energyUsed);
+
         // Setup test.
         callStaticVoid(block, contractAddr, getCost_setup249(), "setup249");
         return contractAddr;
@@ -278,11 +278,10 @@ public class GraphReachabilityIntegrationTest {
     private byte[] callStaticSuccess(TestingBlock block, Address contractAddr, long expectedCost, String methodName, Object... args) {
         long energyLimit = 1_000_000l;
         byte[] argData = ABIUtil.encodeMethodArguments(methodName, args);
-        AvmTransactionResult result = (AvmTransactionResult) avmRule.call(deployer, contractAddr, BigInteger.ZERO, argData, energyLimit, 1l).getTransactionResult();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        Assert.assertEquals(expectedCost, result.getEnergyUsed());
-        Assert.assertEquals(energyLimit - expectedCost, result.getEnergyRemaining());
-        return result.getReturnData();
+        TransactionResult result = avmRule.call(deployer, contractAddr, BigInteger.ZERO, argData, energyLimit, 1l).getTransactionResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+        Assert.assertEquals(expectedCost, result.energyUsed);
+        return result.copyOfTransactionOutput().orElseThrow();
     }
 
     private static long getCost_check249(boolean before) {

@@ -1,13 +1,13 @@
 package org.aion.rules;
 
-import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.types.AionAddress;
 import avm.Address;
 import org.aion.avm.core.util.LogSizeUtils;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.userlib.AionMap;
+import org.aion.types.TransactionResult;
+import org.aion.types.TransactionStatus;
 import org.junit.*;
 
 import java.math.BigInteger;
@@ -50,14 +50,14 @@ public class JUnitRuleTest {
     @Test
     public void testMapPut() {
         byte[] txData = ABIUtil.encodeMethodArguments("mapPut", "1", 42);
-        Code result = avmRule.call(preminedAccount, dappAddr, BigInteger.ZERO, txData).getReceiptStatus();
+        TransactionStatus result = avmRule.call(preminedAccount, dappAddr, BigInteger.ZERO, txData).getReceiptStatus();
         Assert.assertTrue(result.isFailed());
     }
 
     @Test
     public void testMapGet() {
         byte[] txData = ABIUtil.encodeMethodArguments("mapPut", 1, "val1");
-        Code status = avmRule.call(preminedAccount, dappAddr, BigInteger.ZERO, txData).getReceiptStatus();
+        TransactionStatus status = avmRule.call(preminedAccount, dappAddr, BigInteger.ZERO, txData).getReceiptStatus();
         Assert.assertTrue(status.isSuccess());
 
         txData = ABIUtil.encodeMethodArguments("mapGet", 1);
@@ -72,25 +72,25 @@ public class JUnitRuleTest {
         AvmRule.ResultWrapper result = avmRule.call(preminedAccount, dappAddr, BigInteger.ZERO, txData);
 
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
-        Assert.assertEquals(2, result.getLogs().size());
-        assertEquals(dappAddr, new Address(result.getLogs().get(0).copyOfAddress()));
-        assertArrayEquals(new byte[]{ 0x1 }, result.getLogs().get(0).copyOfData());
-        assertArrayEquals(LogSizeUtils.truncatePadTopic(new byte[]{ 0xf, 0xe, 0xd, 0xc, 0xb, 0xa }), result.getLogs().get(1).copyOfTopics().get(0));
+        Assert.assertEquals(2, result.getTransactionResult().logs.size());
+        assertEquals(dappAddr, new Address(result.getTransactionResult().logs.get(0).copyOfAddress()));
+        assertArrayEquals(new byte[]{ 0x1 }, result.getTransactionResult().logs.get(0).copyOfData());
+        assertArrayEquals(LogSizeUtils.truncatePadTopic(new byte[]{ 0xf, 0xe, 0xd, 0xc, 0xb, 0xa }), result.getTransactionResult().logs.get(1).copyOfTopics().get(0));
     }
 
     @Test
     public void balanceTransfer(){
         // balance transfer to account
         Address to = avmRule.getRandomAddress(BigInteger.ZERO);
-        AvmTransactionResult result = avmRule.balanceTransfer(preminedAccount, to, BigInteger.valueOf(100L), 21000, 1L).getTransactionResult();
+        TransactionResult result = avmRule.balanceTransfer(preminedAccount, to, BigInteger.valueOf(100L), 21000, 1L).getTransactionResult();
 
-        assertTrue(result.getResultCode().isSuccess());
+        assertTrue(result.transactionStatus.isSuccess());
         assertEquals(BigInteger.valueOf(100L), avmRule.kernel.getBalance(new AionAddress(to.toByteArray())));
 
         // balance transfer to contract
         result = avmRule.balanceTransfer(preminedAccount, dappAddr, BigInteger.valueOf(100L), 51000, 1L).getTransactionResult();
 
-        assertTrue(result.getResultCode().isSuccess());
+        assertTrue(result.transactionStatus.isSuccess());
         assertEquals(BigInteger.valueOf(100L), avmRule.kernel.getBalance(new AionAddress(dappAddr.toByteArray())));
 
     }

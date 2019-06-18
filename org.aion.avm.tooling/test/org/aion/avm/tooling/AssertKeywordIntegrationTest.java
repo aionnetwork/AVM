@@ -3,10 +3,9 @@ package org.aion.avm.tooling;
 import org.aion.avm.userlib.abi.ABIDecoder;
 
 import avm.Address;
-import org.aion.kernel.AvmTransactionResult;
+import org.aion.types.TransactionResult;
 import org.junit.Assert;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -87,9 +86,9 @@ public class AssertKeywordIntegrationTest {
         byte[] txData = avmRule.getDappBytes(testClass, new byte[0]);
         
         // Deploy.
-        AvmTransactionResult createResult = avmRule.deploy(avmRule.getPreminedAccount(), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
-        return new Address(createResult.getReturnData());
+        TransactionResult createResult = avmRule.deploy(avmRule.getPreminedAccount(), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+        Assert.assertTrue(createResult.transactionStatus.isSuccess());
+        return new Address(createResult.copyOfTransactionOutput().orElseThrow());
     }
 
     private int callStaticInteger(Address dapp, String methodName, Object... arguments) {
@@ -104,8 +103,8 @@ public class AssertKeywordIntegrationTest {
 
     private byte[] callStaticResult(Address dapp, String methodName, Object... arguments) {
         byte[] argData = ABIUtil.encodeMethodArguments(methodName, arguments);
-        AvmTransactionResult result = avmRule.call(avmRule.getPreminedAccount(), dapp, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        return result.getReturnData();
+        TransactionResult result = avmRule.call(avmRule.getPreminedAccount(), dapp, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+        return result.copyOfTransactionOutput().orElseThrow();
     }
 }

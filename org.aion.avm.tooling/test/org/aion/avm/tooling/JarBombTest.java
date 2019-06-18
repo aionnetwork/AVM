@@ -11,8 +11,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.aion.avm.userlib.CodeAndArguments;
-import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.AvmTransactionResult.Code;
+import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
+import org.aion.types.TransactionResult;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -37,8 +37,8 @@ public class JarBombTest {
     @Test
     public void testVeryLargeSingleClassJarBomb() throws IOException {
         byte[] jar = makeBomb(1, TOO_LARGE_CLASS_SIZE);
-        AvmTransactionResult result = avmRule.deploy(deployer, BigInteger.ZERO, jar, 5_000_000, 1).getTransactionResult();
-        assertEquals(Code.FAILED_INVALID_DATA, result.getResultCode());
+        TransactionResult result = avmRule.deploy(deployer, BigInteger.ZERO, jar, 5_000_000, 1).getTransactionResult();
+        assertEquals(AvmInternalError.FAILED_INVALID_DATA.error, result.transactionStatus.causeOfError);
     }
 
     /**
@@ -50,8 +50,8 @@ public class JarBombTest {
     @Test
     public void testLargeMultiClassJarBomb() throws IOException {
         byte[] jar = makeBomb(10, LARGE_CLASS_SIZE);
-        AvmTransactionResult result = avmRule.deploy(deployer, BigInteger.ZERO, jar, 5_000_000, 1).getTransactionResult();
-        assertEquals(Code.FAILED_INVALID_DATA, result.getResultCode());
+        TransactionResult result = avmRule.deploy(deployer, BigInteger.ZERO, jar, 5_000_000, 1).getTransactionResult();
+        assertEquals(AvmInternalError.FAILED_INVALID_DATA.error, result.transactionStatus.causeOfError);
     }
 
 

@@ -10,7 +10,7 @@ import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.avm.userlib.CodeAndArguments;
-import org.aion.kernel.AvmTransactionResult;
+import org.aion.types.TransactionResult;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -77,8 +77,8 @@ public class DeploymentCostTest {
         for (Contract contract : Contract.values()) {
             System.out.println("-------------------------------------------------------");
             System.out.println("Results for deploying dApp: " + contract);
-            AvmTransactionResult result = deployContract(contract);
-            System.out.println("\tCost to deploy dApp = " + NumberFormat.getNumberInstance().format(result.getEnergyUsed()));
+            TransactionResult result = deployContract(contract);
+            System.out.println("\tCost to deploy dApp = " + NumberFormat.getNumberInstance().format(result.energyUsed));
         }
     }
 
@@ -145,9 +145,9 @@ public class DeploymentCostTest {
         return jarBytes;
     }
 
-    private AvmTransactionResult deployContract(Contract contract) {
+    private TransactionResult deployContract(Contract contract) {
         byte[] jar = getDeploymentJarBytesForContract(contract);
-        return (AvmTransactionResult) avmRule.deploy(DEPLOYER, BigInteger.ZERO, jar, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+        return avmRule.deploy(DEPLOYER, BigInteger.ZERO, jar, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
     }
 
     private byte[] classesToJarBytes(Class<?> main, Class<?>... others) {

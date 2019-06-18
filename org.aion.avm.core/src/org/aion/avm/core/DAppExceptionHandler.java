@@ -1,6 +1,8 @@
 package org.aion.avm.core;
 
-import org.aion.kernel.AvmTransactionResult;
+
+import org.aion.avm.core.util.TransactionResultUtil;
+import org.aion.kernel.AvmWrappedTransactionResult;
 
 /**
  * This class handles exceptions that were thrown at some point during contract deployment
@@ -25,14 +27,12 @@ public class DAppExceptionHandler {
      * @param throwable The exception that we have been asked to handle.
      * @param result The AvmTransactionResult object that we will return for this transaction.
      */
-    public static void handle(Throwable throwable, AvmTransactionResult result, long energyUsed, boolean verboseErrors) {
+    public static AvmWrappedTransactionResult handle(Throwable throwable, AvmWrappedTransactionResult result, long energyUsed, boolean verboseErrors) {
         // Anything else we couldn't handle more specifically needs to be passed further up to the top.
         if (verboseErrors) {
             System.err.println("Unknown error when executing this transaction: \"" + throwable.getMessage() + "\"");
             throwable.printStackTrace(System.err);
         }
-        result.setResultCode(AvmTransactionResult.Code.FAILED_UNEXPECTED);
-        result.setEnergyUsed(energyUsed);
-        result.setUncaughtException(throwable);
+        return TransactionResultUtil.setFailedUnexpected(result, throwable, energyUsed);
     }
 }

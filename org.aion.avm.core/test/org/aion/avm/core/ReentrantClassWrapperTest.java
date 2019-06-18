@@ -1,6 +1,6 @@
 package org.aion.avm.core;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
 import org.aion.kernel.TestingState;
@@ -11,9 +11,8 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
-import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.kernel.TestingBlock;
+import org.aion.types.TransactionResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,9 +38,9 @@ public class ReentrantClassWrapperTest {
         
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(ReentrantClassWrapperTestResource.class);
         Transaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, energyPrice);
-        AvmTransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx})[0].get();
-        assertEquals(Code.SUCCESS, txResult.getResultCode());
-        dappAddress = new AionAddress(txResult.getReturnData());
+        TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx})[0].getResult();
+        assertTrue(txResult.transactionStatus.isSuccess());
+        dappAddress = new AionAddress(txResult.copyOfTransactionOutput().orElseThrow());
     }
 
     @After
@@ -53,8 +52,8 @@ public class ReentrantClassWrapperTest {
     public void testReentrantClass() {
         byte[] data = new ABIStreamingEncoder().encodeOneString("testStringClass").toBytes();
         Transaction tx = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        AvmTransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx})[0].getResult();
 
-        assertEquals(Code.SUCCESS, txResult.getResultCode());
+        assertTrue(txResult.transactionStatus.isSuccess());
     }
 }

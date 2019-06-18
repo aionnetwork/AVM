@@ -13,6 +13,7 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.*;
+import org.aion.types.TransactionResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,10 +41,10 @@ public class Blake2bTest {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(Main.class, Blake2b.class);
         byte[] arguments = null;
         Transaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
-        AvmTransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx})[0].getResult();
         System.out.println(txResult);
 
-        dappAddress = new AionAddress(txResult.getReturnData());
+        dappAddress = new AionAddress(txResult.copyOfTransactionOutput().orElseThrow());
         assertNotNull(dappAddress);
     }
 
@@ -58,9 +59,9 @@ public class Blake2bTest {
         byte[] hash = mac.digest("input".getBytes());
 
         Transaction tx = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
-        AvmTransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx})[0].get();
+        TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx})[0].getResult();
         System.out.println(txResult);
 
-        assertArrayEquals(hash, txResult.getReturnData());
+        assertArrayEquals(hash, txResult.copyOfTransactionOutput().orElseThrow());
     }
 }

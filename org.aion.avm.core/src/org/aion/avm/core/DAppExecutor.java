@@ -1,5 +1,8 @@
 package org.aion.avm.core;
 
+import org.aion.avm.core.util.TransactionResultUtil;
+import org.aion.kernel.AvmWrappedTransactionResult;
+import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.RuntimeMethodFeeSchedule;
@@ -8,7 +11,6 @@ import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.persistence.ReentrantGraph;
 import org.aion.avm.core.util.Helpers;
 import i.*;
-import org.aion.kernel.AvmTransactionResult;
 import org.aion.parallel.TransactionTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,9 +20,10 @@ public class DAppExecutor {
 
     private static final Logger logger = LoggerFactory.getLogger(DAppExecutor.class);
 
-    public static void call(IExternalCapabilities capabilities, IExternalState externalState, AvmInternal avm, LoadedDApp dapp,
+    public static AvmWrappedTransactionResult call(IExternalCapabilities capabilities, IExternalState externalState, AvmInternal avm, LoadedDApp dapp,
                             ReentrantDAppStack.ReentrantState stateToResume, TransactionTask task,
-                            Transaction tx, AvmTransactionResult result, boolean verboseErrors, boolean readFromCache) {
+                            Transaction tx, AvmWrappedTransactionResult internalResult, boolean verboseErrors, boolean readFromCache) {
+        AvmWrappedTransactionResult result = internalResult;
         AionAddress dappAddress = tx.destinationAddress;
         
         // If this is a reentrant call, we need to serialize the graph of the parent frame.  This is required to both copy-back our changes but also
@@ -69,8 +72,8 @@ public class DAppExecutor {
         // to know if it is loading an instance
         ReentrantDAppStack.ReentrantState thisState = new ReentrantDAppStack.ReentrantState(dappAddress, dapp, nextHashCode, initialClassWrappers);
         task.getReentrantDAppStack().pushState(thisState);
-        
-        InstrumentationHelpers.pushNewStackFrame(dapp.runtimeSetup, dapp.loader, tx.energyLimit - result.getEnergyUsed(), nextHashCode, initialClassWrappers);
+
+        InstrumentationHelpers.pushNewStackFrame(dapp.runtimeSetup, dapp.loader, tx.energyLimit - result.energyUsed(), nextHashCode, initialClassWrappers);
         IBlockchainRuntime previousRuntime = dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(capabilities, externalState, avm, thisState, task, tx, tx.copyOfTransactionData(), dapp.runtimeSetup));
 
         try {
@@ -103,8 +106,7 @@ public class DAppExecutor {
                 dapp.setSerializedLength(postCallGraphData.length);
             }
 
-            result.setResultCode(AvmTransactionResult.Code.SUCCESS);
-            result.setReturnData(ret);
+            result = TransactionResultUtil.setSuccessfulOutput(result, ret);
             long refund = 0;
             long energyUsed = tx.energyLimit - threadInstrumentation.energyLeft();
             //refund is only calculated for the external transaction
@@ -123,7 +125,7 @@ public class DAppExecutor {
                 refund = Math.min(energyUsed / 2, selfDestructRefund + resetStorageRefund);
             }
 
-            result.setEnergyUsed(energyUsed - refund);
+            result = TransactionResultUtil.setEnergyUsed(result, energyUsed - refund);
         } catch (OutOfEnergyException e) {
             if (verboseErrors) {
                 System.err.println("DApp execution failed due to Out-of-Energy EXCEPTION: \"" + e.getMessage() + "\"");
@@ -132,8 +134,7 @@ public class DAppExecutor {
             if (null != stateToResume) {
                 dapp.revertToCallerState(initialClassWrappers, callerState);
             }
-            result.setResultCode(AvmTransactionResult.Code.FAILED_OUT_OF_ENERGY);
-            result.setEnergyUsed(tx.energyLimit);
+            result = TransactionResultUtil.setNonRevertedFailureAndEnergyUsed(result, AvmInternalError.FAILED_OUT_OF_ENERGY, tx.energyLimit);
 
         } catch (OutOfStackException e) {
             if (verboseErrors) {
@@ -143,8 +144,7 @@ public class DAppExecutor {
             if (null != stateToResume) {
                 dapp.revertToCallerState(initialClassWrappers, callerState);
             }
-            result.setResultCode(AvmTransactionResult.Code.FAILED_OUT_OF_STACK);
-            result.setEnergyUsed(tx.energyLimit);
+            result = TransactionResultUtil.setNonRevertedFailureAndEnergyUsed(result, AvmInternalError.FAILED_OUT_OF_STACK, tx.energyLimit);
 
         } catch (CallDepthLimitExceededException e) {
             if (verboseErrors) {
@@ -154,8 +154,7 @@ public class DAppExecutor {
             if (null != stateToResume) {
                 dapp.revertToCallerState(initialClassWrappers, callerState);
             }
-            result.setResultCode(AvmTransactionResult.Code.FAILED_CALL_DEPTH_LIMIT_EXCEEDED);
-            result.setEnergyUsed(tx.energyLimit);
+            result = TransactionResultUtil.setNonRevertedFailureAndEnergyUsed(result, AvmInternalError.FAILED_CALL_DEPTH_LIMIT, tx.energyLimit);
 
         } catch (RevertException e) {
             if (verboseErrors) {
@@ -165,8 +164,7 @@ public class DAppExecutor {
             if (null != stateToResume) {
                 dapp.revertToCallerState(initialClassWrappers, callerState);
             }
-            result.setResultCode(AvmTransactionResult.Code.FAILED_REVERT);
-            result.setEnergyUsed(tx.energyLimit - threadInstrumentation.energyLeft());
+            result = TransactionResultUtil.setRevertedFailureAndEnergyUsed(result, tx.energyLimit - threadInstrumentation.energyLeft());
 
         } catch (InvalidException e) {
             if (verboseErrors) {
@@ -176,8 +174,7 @@ public class DAppExecutor {
             if (null != stateToResume) {
                 dapp.revertToCallerState(initialClassWrappers, callerState);
             }
-            result.setResultCode(AvmTransactionResult.Code.FAILED_INVALID);
-            result.setEnergyUsed(tx.energyLimit);
+            result = TransactionResultUtil.setNonRevertedFailureAndEnergyUsed(result, AvmInternalError.FAILED_INVALID, tx.energyLimit);
 
         } catch (EarlyAbortException e) {
             if (verboseErrors) {
@@ -186,8 +183,7 @@ public class DAppExecutor {
             if (null != stateToResume) {
                 dapp.revertToCallerState(initialClassWrappers, callerState);
             }
-            result.setResultCode(AvmTransactionResult.Code.FAILED_ABORT);
-            result.setEnergyUsed(0);
+            result = TransactionResultUtil.abortUsingNoEnergy(result);
 
         } catch (UncaughtException e) {
             if (verboseErrors) {
@@ -197,9 +193,7 @@ public class DAppExecutor {
             if (null != stateToResume) {
                 dapp.revertToCallerState(initialClassWrappers, callerState);
             }
-            result.setResultCode(AvmTransactionResult.Code.FAILED_EXCEPTION);
-            result.setEnergyUsed(tx.energyLimit);
-            result.setUncaughtException(e.getCause());
+            result = TransactionResultUtil.setFailedException(result, e.getCause(), tx.energyLimit);
             logger.debug("Uncaught exception", e.getCause());
         } catch (AvmException e) {
             // We handle the generic AvmException as some failure within the contract.
@@ -210,8 +204,7 @@ public class DAppExecutor {
             if (null != stateToResume) {
                 dapp.revertToCallerState(initialClassWrappers, callerState);
             }
-            result.setResultCode(AvmTransactionResult.Code.FAILED);
-            result.setEnergyUsed(tx.energyLimit);
+            result = TransactionResultUtil.setNonRevertedFailureAndEnergyUsed(result, AvmInternalError.FAILED, tx.energyLimit);
         } catch (JvmError e) {
             // These are cases which we know we can't handle and have decided to handle by safely stopping the AVM instance so
             // re-throw this as the AvmImpl top-level loop will commute it into an asynchronous shutdown.
@@ -223,7 +216,7 @@ public class DAppExecutor {
         } catch (Throwable e) {
             // We don't know what went wrong in this case, but it is beyond our ability to handle it here.
             // We ship it off to the ExceptionHandler, which kills the transaction as a failure for unknown reasons.
-            DAppExceptionHandler.handle(e, result, tx.energyLimit, verboseErrors);
+            result = DAppExceptionHandler.handle(e, result, tx.energyLimit, verboseErrors);
         } finally {
             // Once we are done running this, no matter how it ended, we want to detach our thread from the DApp.
             InstrumentationHelpers.popExistingStackFrame(dapp.runtimeSetup);
@@ -233,5 +226,6 @@ public class DAppExecutor {
             // Re-attach the previously detached IBlockchainRuntime instance.
             dapp.attachBlockchainRuntime(previousRuntime);
         }
+        return result;
     }
 }

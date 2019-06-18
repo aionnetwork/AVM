@@ -1,7 +1,8 @@
 package org.aion.avm.tooling;
 
 import avm.Address;
-import org.aion.kernel.AvmTransactionResult;
+import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
+import org.aion.types.TransactionResult;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -28,7 +29,7 @@ public class ShadowEnergyLimitTest {
     public static void setup() {
         byte[] data = avmRule.getDappBytes(ShadowEnergyLimitTarget.class, null);
         AvmRule.ResultWrapper deployResult = avmRule.deploy(sender, value, data);
-        assertTrue(deployResult.getTransactionResult().getResultCode().isSuccess());
+        assertTrue(deployResult.getTransactionResult().transactionStatus.isSuccess());
         contract = deployResult.getDappAddress();
     }
 
@@ -87,8 +88,8 @@ public class ShadowEnergyLimitTest {
     private void callForEnergyFailure(String methodName, Object... args) {
         byte[] data = ABIUtil.encodeMethodArguments(methodName, args);
         AvmRule.ResultWrapper callResult = avmRule.call(sender, contract, value, data, 2_000_000, 1);
-        AvmTransactionResult result = (AvmTransactionResult)callResult.getTransactionResult();
-        Assert.assertEquals(AvmTransactionResult.Code.FAILED_OUT_OF_ENERGY, result.getResultCode());
+        TransactionResult result = callResult.getTransactionResult();
+        Assert.assertEquals(AvmInternalError.FAILED_OUT_OF_ENERGY.error, result.transactionStatus.causeOfError);
     }
 
     private long callStatic(String methodName, Object... args) {
@@ -97,7 +98,7 @@ public class ShadowEnergyLimitTest {
         AvmRule.ResultWrapper result = avmRule.call(sender, contract, value, data, 2_000_000, 1);
         long endTime = System.nanoTime();
         if (printValues)
-            System.out.println(methodName + " energy consumption " + (2000000 - result.getTransactionResult().getEnergyRemaining()));
+            System.out.println(methodName + " energy consumption " + (result.getTransactionResult().energyUsed));
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
         return endTime - startTime;
     }

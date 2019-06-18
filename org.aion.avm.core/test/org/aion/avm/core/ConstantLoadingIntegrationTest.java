@@ -9,8 +9,8 @@ import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
-import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
+import org.aion.types.TransactionResult;
 import org.junit.*;
 
 
@@ -83,10 +83,10 @@ public class ConstantLoadingIntegrationTest {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
         Transaction create = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        AvmTransactionResult createResult = (AvmTransactionResult) avm.run(kernel, new Transaction[] {create})[0].get();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
+        TransactionResult createResult = avm.run(kernel, new Transaction[] {create})[0].getResult();
+        Assert.assertTrue(createResult.transactionStatus.isSuccess());
 
-        return new AionAddress(createResult.getReturnData());
+        return new AionAddress(createResult.copyOfTransactionOutput().orElseThrow());
     }
 
     private byte[] callStatic(AionAddress contractAddr, int code) {
@@ -94,8 +94,8 @@ public class ConstantLoadingIntegrationTest {
         long energyLimit = 1_000_000l;
         byte[] argData = new byte[] { (byte)code };
         Transaction call = AvmTransactionUtil.call(deployer, contractAddr, kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(kernel, new Transaction[] {call})[0].get();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        return result.getReturnData();
+        TransactionResult result = avm.run(kernel, new Transaction[] {call})[0].getResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+        return result.copyOfTransactionOutput().orElseThrow();
     }
 }

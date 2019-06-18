@@ -25,7 +25,7 @@ public class ClassNameTest {
     public static void setup() {
         byte[] data = avmRule.getDappBytes(TestResource.class, null);
         AvmRule.ResultWrapper deployResult = avmRule.deploy(sender, value, data);
-        assertTrue(deployResult.getTransactionResult().getResultCode().isSuccess());
+        assertTrue(deployResult.getTransactionResult().transactionStatus.isSuccess());
         contract = deployResult.getDappAddress();
     }
 

@@ -9,7 +9,6 @@ import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
 import org.junit.Assert;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -53,6 +52,6 @@ public class EnumValuesTest {
         txDataMethodArguments = ABIUtil.encodeMethodArguments("testEnumAccessNotExist");
         AvmRule.ResultWrapper resultWrapper = avmRule.call(from, dappAddr, BigInteger.ZERO, txDataMethodArguments);
 
-        Assert.assertTrue(resultWrapper.getTransactionResult().getResultCode().isFailed());
+        Assert.assertTrue(resultWrapper.getTransactionResult().transactionStatus.isFailed());
     }
 }

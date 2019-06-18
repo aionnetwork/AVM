@@ -9,7 +9,7 @@ import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.*;
-import org.aion.kernel.AvmTransactionResult.Code;
+import org.aion.types.TransactionResult;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -93,7 +93,7 @@ public class CryptoUtilMethodFeeBenchmarkTest {
         this.kernel = new TestingState();
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
         Transaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        dappAddress = new AionAddress(avm.run(this.kernel, new Transaction[] {tx})[0].get().getReturnData());
+        dappAddress = new AionAddress(avm.run(this.kernel, new Transaction[] {tx})[0].getResult().copyOfTransactionOutput().orElseThrow());
         Assert.assertNotNull(dappAddress);
     }
 
@@ -317,10 +317,10 @@ public class CryptoUtilMethodFeeBenchmarkTest {
         Transaction tx = setupTransaction(methodName, arguments);
 
         st = System.nanoTime();
-        AvmTransactionResult result = avm.run(this.kernel, new Transaction[]{tx})[0].get();
+        TransactionResult result = avm.run(this.kernel, new Transaction[]{tx})[0].getResult();
         et = System.nanoTime();
 
-        Assert.assertEquals(Code.SUCCESS, result.getResultCode());
+        Assert.assertTrue(result.transactionStatus.isSuccess());
 
         return et - st;
     }

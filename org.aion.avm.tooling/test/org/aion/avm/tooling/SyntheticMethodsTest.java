@@ -5,7 +5,7 @@ import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.avm.userlib.abi.ABIDecoder;
-import org.aion.kernel.AvmTransactionResult;
+import org.aion.types.TransactionResult;
 import org.junit.*;
 
 import java.math.BigInteger;
@@ -35,55 +35,55 @@ public class SyntheticMethodsTest {
 
     @Test
     public void testDappWorking() {
-        AvmTransactionResult result = createAndRunTransaction("getCompareResult");
+        TransactionResult result = createAndRunTransaction("getCompareResult");
 
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        Assert.assertEquals(SyntheticMethodsTestTarget.DEFAULT_VALUE, new ABIDecoder(result.getReturnData()).decodeOneInteger());
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+        Assert.assertEquals(SyntheticMethodsTestTarget.DEFAULT_VALUE, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
     }
 
     @Test
     public void testCompareTo() {
         // BigInteger
-        AvmTransactionResult result1 = createAndRunTransaction("compareSomething", 1);
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
-        AvmTransactionResult result1Value = createAndRunTransaction("getCompareResult");
-        Assert.assertEquals(1, new ABIDecoder(result1Value.getReturnData()).decodeOneInteger());
+        TransactionResult result1 = createAndRunTransaction("compareSomething", 1);
+        Assert.assertTrue(result1.transactionStatus.isSuccess());
+        TransactionResult result1Value = createAndRunTransaction("getCompareResult");
+        Assert.assertEquals(1, new ABIDecoder(result1Value.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
 
-        AvmTransactionResult result2 = createAndRunTransaction("compareSomething", 2);
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result2.getResultCode());
-        AvmTransactionResult result2Value = createAndRunTransaction("getCompareResult");
-        Assert.assertEquals(0, new ABIDecoder(result2Value.getReturnData()).decodeOneInteger());
+        TransactionResult result2 = createAndRunTransaction("compareSomething", 2);
+        Assert.assertTrue(result2.transactionStatus.isSuccess());
+        TransactionResult result2Value = createAndRunTransaction("getCompareResult");
+        Assert.assertEquals(0, new ABIDecoder(result2Value.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
 
-        AvmTransactionResult result3 = createAndRunTransaction("compareSomething", 3);
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result3.getResultCode());
-        AvmTransactionResult result3Value = createAndRunTransaction("getCompareResult");
-        Assert.assertEquals(-1, new ABIDecoder(result3Value.getReturnData()).decodeOneInteger());
+        TransactionResult result3 = createAndRunTransaction("compareSomething", 3);
+        Assert.assertTrue(result3.transactionStatus.isSuccess());
+        TransactionResult result3Value = createAndRunTransaction("getCompareResult");
+        Assert.assertEquals(-1, new ABIDecoder(result3Value.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
 
-        AvmTransactionResult result4 = createAndRunTransaction("compareSomething", 4);
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result4.getResultCode());
-        AvmTransactionResult result4Value = createAndRunTransaction("getCompareResult");
-        Assert.assertEquals(100, new ABIDecoder(result4Value.getReturnData()).decodeOneInteger());
+        TransactionResult result4 = createAndRunTransaction("compareSomething", 4);
+        Assert.assertTrue(result4.transactionStatus.isSuccess());
+        TransactionResult result4Value = createAndRunTransaction("getCompareResult");
+        Assert.assertEquals(100, new ABIDecoder(result4Value.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
     }
 
     @Test
     public void testTarget(){
         // pick target1Impl
-        AvmTransactionResult result1 = createAndRunTransaction("pickTarget", 1);
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
+        TransactionResult result1 = createAndRunTransaction("pickTarget", 1);
+        Assert.assertTrue(result1.transactionStatus.isSuccess());
 
         // check for correctness in synthetic, should get impl1 name
-        AvmTransactionResult result2 = createAndRunTransaction("getName");
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result2.getResultCode());
-        Assert.assertEquals("TargetClassImplOne", new ABIDecoder(result2.getReturnData()).decodeOneString());
+        TransactionResult result2 = createAndRunTransaction("getName");
+        Assert.assertTrue(result2.transactionStatus.isSuccess());
+        Assert.assertEquals("TargetClassImplOne", new ABIDecoder(result2.copyOfTransactionOutput().orElseThrow()).decodeOneString());
 
         // pick target2Impl
-        AvmTransactionResult result3 = createAndRunTransaction("pickTarget", 2);
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result3.getResultCode());
+        TransactionResult result3 = createAndRunTransaction("pickTarget", 2);
+        Assert.assertTrue(result3.transactionStatus.isSuccess());
 
         // check for correctness in synthetic, should get abstract name
-        AvmTransactionResult result4 = createAndRunTransaction("getName");
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result4.getResultCode());
-        Assert.assertEquals("TargetAbstractClass", new ABIDecoder(result4.getReturnData()).decodeOneString());
+        TransactionResult result4 = createAndRunTransaction("getName");
+        Assert.assertTrue(result4.transactionStatus.isSuccess());
+        Assert.assertEquals("TargetAbstractClass", new ABIDecoder(result4.copyOfTransactionOutput().orElseThrow()).decodeOneString());
     }
 
     @Test
@@ -92,25 +92,25 @@ public class SyntheticMethodsTest {
         int inputOverrideGeneric = 20;
 
         // calling setup generics
-        AvmTransactionResult result1 = createAndRunTransaction("setGenerics",
+        TransactionResult result1 = createAndRunTransaction("setGenerics",
                 inputGeneric, inputOverrideGeneric);
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
+        Assert.assertTrue(result1.transactionStatus.isSuccess());
 
         // retrieve each object
-        AvmTransactionResult result2 = createAndRunTransaction("getIntGen");
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result2.getResultCode());
-        Assert.assertEquals(inputGeneric, new ABIDecoder(result2.getReturnData()).decodeOneInteger());
+        TransactionResult result2 = createAndRunTransaction("getIntGen");
+        Assert.assertTrue(result2.transactionStatus.isSuccess());
+        Assert.assertEquals(inputGeneric, new ABIDecoder(result2.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
 
-        AvmTransactionResult result3 = createAndRunTransaction("getIntGenSub");
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result3.getResultCode());
-        Assert.assertEquals(inputOverrideGeneric, new ABIDecoder(result3.getReturnData()).decodeOneInteger());
+        TransactionResult result3 = createAndRunTransaction("getIntGenSub");
+        Assert.assertTrue(result3.transactionStatus.isSuccess());
+        Assert.assertEquals(inputOverrideGeneric, new ABIDecoder(result3.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
 
-        AvmTransactionResult result4 = createAndRunTransaction("getSubCopy");
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result4.getResultCode());
-        Assert.assertEquals(inputOverrideGeneric, new ABIDecoder(result4.getReturnData()).decodeOneInteger());
+        TransactionResult result4 = createAndRunTransaction("getSubCopy");
+        Assert.assertTrue(result4.transactionStatus.isSuccess());
+        Assert.assertEquals(inputOverrideGeneric, new ABIDecoder(result4.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
     }
 
-    private AvmTransactionResult createAndRunTransaction(String methodName, Object ... args){
+    private TransactionResult createAndRunTransaction(String methodName, Object ... args){
         byte[] txData = ABIUtil.encodeMethodArguments(methodName, args);
         return avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
     }

@@ -5,7 +5,7 @@ import avm.Address;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.userlib.abi.ABIDecoder;
-import org.aion.kernel.AvmTransactionResult;
+import org.aion.types.TransactionResult;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -228,9 +228,9 @@ public class InternalCallAddressesTest {
     }
 
     private static Address deployInternalCallAddressTrackerContract() {
-        AvmTransactionResult result = avmRule.deploy(from, BigInteger.ZERO, avmRule.getDappBytes(InternalCallAddressesContract.class,new byte[0]), energyLimit, energyPrice).getTransactionResult();
-        assertTrue(result.getResultCode().isSuccess());
-        return new Address(result.getReturnData());
+        TransactionResult result = avmRule.deploy(from, BigInteger.ZERO, avmRule.getDappBytes(InternalCallAddressesContract.class,new byte[0]), energyLimit, energyPrice).getTransactionResult();
+        assertTrue(result.transactionStatus.isSuccess());
+        return new Address(result.copyOfTransactionOutput().orElseThrow());
     }
 
     private Address[] callInternalCallAddressesContract(Address contract, Address[] otherContracts, boolean recurseFirst) {
@@ -241,9 +241,9 @@ public class InternalCallAddressesTest {
             callData = ABIUtil.encodeMethodArguments("runInternalCallsAndTrackAddressGrabOwnAddressThenRecurse", (Object)otherContracts);
         }
 
-        AvmTransactionResult result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice).getTransactionResult();
-        assertTrue(result.getResultCode().isSuccess());
-        return new ABIDecoder(result.getReturnData()).decodeOneAddressArray();
+        TransactionResult result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice).getTransactionResult();
+        assertTrue(result.transactionStatus.isSuccess());
+        return new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneAddressArray();
     }
 
     private static Address[] joinArrays(Address[] array1, Address[] array2) {

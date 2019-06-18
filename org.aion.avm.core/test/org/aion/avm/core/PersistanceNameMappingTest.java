@@ -1,6 +1,6 @@
 package org.aion.avm.core;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
 import org.aion.types.AionAddress;
@@ -16,10 +16,10 @@ import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.userlib.abi.ABIException;
 import org.aion.avm.userlib.abi.ABIToken;
-import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingState;
 
+import org.aion.types.TransactionResult;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -75,18 +75,18 @@ public class PersistanceNameMappingTest {
         byte[] data = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         Transaction createTransaction = AvmTransactionUtil.create(deployer, externalState.getNonce(deployer), BigInteger.ZERO, data, 5_000_000L, 1L);
-        AvmTransactionResult result = avm.run(externalState, new Transaction[]{ createTransaction })[0].get();
-        assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
+        TransactionResult result = avm.run(externalState, new Transaction[]{ createTransaction })[0].getResult();
+        assertTrue(result.transactionStatus.isSuccess());
 
-        return new AionAddress(result.getReturnData());
+        return new AionAddress(result.copyOfTransactionOutput().orElseThrow());
     }
 
     private void callContract(AvmImpl avm, IExternalState externalState, AionAddress contract, String method) {
         byte[] data = ABIEncoder.encodeOneString(method);
         Transaction callTransaction = AvmTransactionUtil.call(deployer, contract, externalState.getNonce(deployer), BigInteger.ZERO, data, 2_000_000L, 1L);
-        AvmTransactionResult result = avm.run(externalState, new Transaction[]{ callTransaction })[0].get();
+        TransactionResult result = avm.run(externalState, new Transaction[]{ callTransaction })[0].getResult();
 
         // The tests will REVERT if what we want to test does not occur!
-        assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
+        assertTrue(result.transactionStatus.isSuccess());
     }
 }

@@ -3,7 +3,6 @@ package org.aion.avm.tooling.arraywrapping;
 import avm.Address;
 import org.aion.avm.tooling.AvmRule;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -23,13 +22,13 @@ public class InvalidArrayDimensionTest {
 
         byte[] data = avmRule.getDappBytes(InvalidDimensionPrimitiveTarget.class, null);
         AvmRule.ResultWrapper deployResult = avmRule.deploy(sender, value, data);
-        assertTrue(deployResult.getTransactionResult().getResultCode().isFailed());
+        assertTrue(deployResult.getTransactionResult().transactionStatus.isFailed());
     }
 
     @Test
     public void testObject(){
         byte[] data = avmRule.getDappBytes(InvalidDimensionObjectTarget.class, null);
         AvmRule.ResultWrapper deployResult = avmRule.deploy(sender, value, data);
-        assertTrue(deployResult.getTransactionResult().getResultCode().isFailed());
+        assertTrue(deployResult.getTransactionResult().transactionStatus.isFailed());
     }
 }

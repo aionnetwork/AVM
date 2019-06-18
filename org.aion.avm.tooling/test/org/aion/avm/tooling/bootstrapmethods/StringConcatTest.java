@@ -25,7 +25,7 @@ public class StringConcatTest {
     public static void setup() {
         byte[] data = avmRule.getDappBytes(StringConcatTarget.class, null);
         AvmRule.ResultWrapper deployResult = avmRule.deploy(sender, value, data);
-        assertTrue(deployResult.getTransactionResult().getResultCode().isSuccess());
+        assertTrue(deployResult.getTransactionResult().transactionStatus.isSuccess());
         contract = deployResult.getDappAddress();
     }
 

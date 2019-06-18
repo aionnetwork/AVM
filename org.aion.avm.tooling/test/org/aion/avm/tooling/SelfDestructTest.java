@@ -4,7 +4,7 @@ import org.aion.types.AionAddress;
 import org.aion.avm.userlib.abi.ABIDecoder;
 
 import avm.Address;
-import org.aion.kernel.AvmTransactionResult;
+import org.aion.types.TransactionResult;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -181,9 +181,9 @@ public class SelfDestructTest {
     private Address deployCommonResource(byte[] deployArgs) {
         byte[] txData = makeDeploymentData(deployArgs, SelfDestructResource.class);
 
-        AvmTransactionResult result1 = avmRule.deploy(deployer, BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
-        return new Address(result1.getReturnData());
+        TransactionResult result1 = avmRule.deploy(deployer, BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+        Assert.assertTrue(result1.transactionStatus.isSuccess());
+        return new Address(result1.copyOfTransactionOutput().orElseThrow());
     }
 
     private int callDAppInteger(Address dAppAddress, byte[] argData) {
@@ -202,17 +202,17 @@ public class SelfDestructTest {
     }
 
     private byte[] callDAppSuccess(Address dAppAddress, byte[] argData) {
-        AvmTransactionResult result = avmRule.call(deployer, dAppAddress, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        return result.getReturnData();
+        TransactionResult result = avmRule.call(deployer, dAppAddress, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+        return result.copyOfTransactionOutput().orElseThrow();
     }
 
     private void failToCall(Address dAppAddress) {
-        AvmTransactionResult result = avmRule.call(deployer, dAppAddress, BigInteger.ZERO, new byte[0], ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+        TransactionResult result = avmRule.call(deployer, dAppAddress, BigInteger.ZERO, new byte[0], ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
         // Sending a call to nobody is a success, since the data doesn't need to go anywhere.
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
+        Assert.assertTrue(result.transactionStatus.isSuccess());
         // That said, our tests will always return something on a real call so check that this is nothing.
-        Assert.assertEquals(null, result.getReturnData());
+        Assert.assertFalse(result.copyOfTransactionOutput().isPresent());
     }
 
     private byte[] makeDeploymentData(byte[] deployArgs, Class<?> classToDeploy) {
@@ -220,7 +220,7 @@ public class SelfDestructTest {
     }
 
     private void sendMoney(Address target, BigInteger value) {
-        AvmTransactionResult result = avmRule.call(deployer, target, value, new byte[0], ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
+        TransactionResult result = avmRule.call(deployer, target, value, new byte[0], ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
     }
 }

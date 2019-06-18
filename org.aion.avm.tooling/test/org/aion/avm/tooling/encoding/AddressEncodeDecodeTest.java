@@ -31,25 +31,25 @@ public class AddressEncodeDecodeTest {
     public void testAddressEncodeDecode(){
         byte[] data = ABIUtil.encodeMethodArguments("addressEncodeDecode");
         AvmRule.ResultWrapper r = avmRule.call(from, dappAddress, BigInteger.ZERO, data);
-        Assert.assertTrue(r.getTransactionResult().getResultCode().isSuccess());
+        Assert.assertTrue(r.getTransactionResult().transactionStatus.isSuccess());
     }
 
     @Test
     public void testCreateAddress(){
         byte[] data = ABIUtil.encodeMethodArguments("createAddress");
         AvmRule.ResultWrapper r = avmRule.call(from, dappAddress, BigInteger.ZERO, data);
-        Assert.assertTrue(r.getTransactionResult().getResultCode().isSuccess());
+        Assert.assertTrue(r.getTransactionResult().transactionStatus.isSuccess());
     }
 
     @Test
     public void testAddressArgumentReturn(){
         byte[] data = ABIUtil.encodeMethodArguments("saveAddress", randomAddress);
         AvmRule.ResultWrapper r = avmRule.call(from, dappAddress, BigInteger.ZERO, data);
-        Assert.assertTrue(r.getTransactionResult().getResultCode().isSuccess());
+        Assert.assertTrue(r.getTransactionResult().transactionStatus.isSuccess());
 
         data = ABIUtil.encodeMethodArguments("getStoredAddress");
         r = avmRule.call(from, dappAddress, BigInteger.ZERO, data);
-        Assert.assertTrue(r.getTransactionResult().getResultCode().isSuccess());
+        Assert.assertTrue(r.getTransactionResult().transactionStatus.isSuccess());
         Assert.assertEquals(randomAddress, r.getDecodedReturnData());
     }
 
@@ -61,14 +61,14 @@ public class AddressEncodeDecodeTest {
         }
         byte[] data = ABIUtil.encodeMethodArguments("checkAddressArrayArgument", (Object)tempArray);
         AvmRule.ResultWrapper r = avmRule.call(from, dappAddress, BigInteger.ZERO, data);
-        Assert.assertTrue(r.getTransactionResult().getResultCode().isSuccess());
+        Assert.assertTrue(r.getTransactionResult().transactionStatus.isSuccess());
     }
 
     @Test
     public void testAddressArrayReturn(){
         byte[] data = ABIUtil.encodeMethodArguments("getAddressArray", 5);
         AvmRule.ResultWrapper r = avmRule.call(from, dappAddress, BigInteger.ZERO, data);
-        Assert.assertTrue(r.getTransactionResult().getResultCode().isSuccess());
+        Assert.assertTrue(r.getTransactionResult().transactionStatus.isSuccess());
         Assert.assertEquals(5, ((Address []) r.getDecodedReturnData()).length);
     }
 
@@ -80,7 +80,7 @@ public class AddressEncodeDecodeTest {
         }
         byte[] data = ABIUtil.encodeMethodArguments("addressArrayEncodeDecode", (Object)tempArray);
         AvmRule.ResultWrapper r = avmRule.call(from, dappAddress, BigInteger.ZERO, data);
-        Assert.assertTrue(r.getTransactionResult().getResultCode().isSuccess());
+        Assert.assertTrue(r.getTransactionResult().transactionStatus.isSuccess());
         Assert.assertTrue(Arrays.equals(tempArray, (Address [])r.getDecodedReturnData()));
     }
 }

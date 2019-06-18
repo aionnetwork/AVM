@@ -2,7 +2,7 @@ package org.aion.avm.tooling.abi;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
@@ -11,10 +11,8 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.userlib.abi.ABIDecoder;
-import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.AvmTransactionResult.Code;
+import org.aion.types.TransactionResult;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 
 public class IntegTest {
@@ -28,7 +26,7 @@ public class IntegTest {
     private Address installTestDApp(byte[] jar) {
 
         // Deploy.
-        AvmTransactionResult createResult =
+        TransactionResult createResult =
                 avmRule.deploy(
                         avmRule.getPreminedAccount(),
                         BigInteger.ZERO,
@@ -36,8 +34,8 @@ public class IntegTest {
                         ENERGY_LIMIT,
                         ENERGY_PRICE)
                         .getTransactionResult();
-        assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
-        return new Address(createResult.getReturnData());
+        assertTrue(createResult.transactionStatus.isSuccess());
+        return new Address(createResult.copyOfTransactionOutput().orElseThrow());
     }
 
     private boolean callStaticBoolean(Address dapp, String methodName, Object... arguments) {
@@ -62,7 +60,7 @@ public class IntegTest {
 
     private byte[] callStaticResult(Address dapp, String methodName, Object... arguments) {
         byte[] argData = ABIUtil.encodeMethodArguments(methodName, arguments);
-        AvmTransactionResult result =
+        TransactionResult result =
                 avmRule.call(
                         avmRule.getPreminedAccount(),
                         dapp,
@@ -71,12 +69,12 @@ public class IntegTest {
                         ENERGY_LIMIT,
                         ENERGY_PRICE)
                         .getTransactionResult();
-        assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        return result.getReturnData();
+        assertTrue(result.transactionStatus.isSuccess());
+        return result.copyOfTransactionOutput().orElseThrow();
     }
 
     private void balanceTransfer(Address dapp) {
-        AvmTransactionResult result =
+        TransactionResult result =
             avmRule.call(
                 avmRule.getPreminedAccount(),
                 dapp,
@@ -85,8 +83,8 @@ public class IntegTest {
                 ENERGY_LIMIT,
                 ENERGY_PRICE)
                 .getTransactionResult();
-        assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        assertArrayEquals(new byte[0], result.getReturnData());
+        assertTrue(result.transactionStatus.isSuccess());
+        assertArrayEquals(new byte[0], result.copyOfTransactionOutput().orElseThrow());
     }
 
     //Simplest case.
@@ -195,7 +193,7 @@ public class IntegTest {
 
 
         byte[] argData = ABIUtil.encodeMethodArguments("noSuchMethod");
-        AvmTransactionResult result =
+        TransactionResult result =
             avmRule.call(
                 avmRule.getPreminedAccount(),
                 dapp,
@@ -204,8 +202,8 @@ public class IntegTest {
                 ENERGY_LIMIT,
                 ENERGY_PRICE)
                 .getTransactionResult();
-        assertEquals(Code.FAILED_REVERT, result.getResultCode());
-        assertNull(result.getReturnData());
+        assertTrue(result.transactionStatus.isReverted());
+        assertFalse(result.copyOfTransactionOutput().isPresent());
     }
 
     @Test

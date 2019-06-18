@@ -1,7 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.types.Transaction;
-import org.aion.kernel.AvmTransactionResult;
+import org.aion.kernel.AvmWrappedTransactionResult;
 import org.aion.parallel.AddressResourceMonitor;
 import org.aion.parallel.TransactionTask;
 
@@ -19,7 +19,7 @@ public interface AvmInternal {
      * @param tx The transaction to run.
      * @return The result of the transaction.
      */
-    AvmTransactionResult runInternalTransaction(IExternalState parentKernel, TransactionTask task, Transaction tx);
+    AvmWrappedTransactionResult runInternalTransaction(IExternalState parentKernel, TransactionTask task, Transaction tx);
 
     /**
      * Get the address resource monitor using by the current AVM.

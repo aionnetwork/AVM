@@ -3,6 +3,7 @@ package org.aion.avm.core;
 import avm.Address;
 import java.math.BigInteger;
 
+import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
@@ -22,9 +23,9 @@ import i.IRuntimeSetup;
 import i.InstrumentationHelpers;
 import i.JvmError;
 import i.OutOfEnergyException;
-import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingState;
+import org.aion.types.TransactionResult;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -39,8 +40,8 @@ import java.util.Map;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 
@@ -68,15 +69,14 @@ public class AvmImplTest {
         long energyLimit = 50_000L;
         long energyPrice = 1L;
         Transaction tx = AvmTransactionUtil.call(from, to, kernel.getNonce(from), value, data, energyLimit, energyPrice);
-        AvmTransactionResult result = avm.run(kernel, new Transaction[] { tx })[0].get();
+        TransactionResult result = avm.run(kernel, new Transaction[] { tx })[0].getResult();
 
         // verify results
-        assertTrue(result.getResultCode().isSuccess());
-        assertNull(result.getReturnData());
-        assertEquals(BillingRules.getBasicTransactionCost(tx.copyOfTransactionData()), result.getEnergyUsed());
-        assertEquals(energyLimit - BillingRules.getBasicTransactionCost(tx.copyOfTransactionData()), result.getEnergyRemaining());
-        assertEquals(0, result.getSideEffects().getExecutionLogs().size());
-        assertEquals(0, result.getSideEffects().getInternalTransactions().size());
+        assertTrue(result.transactionStatus.isSuccess());
+        assertFalse(result.copyOfTransactionOutput().isPresent());
+        assertEquals(BillingRules.getBasicTransactionCost(tx.copyOfTransactionData()), result.energyUsed);
+        assertEquals(0, result.logs.size());
+        assertEquals(0, result.internalTransactions.size());
 
         // verify state change
         assertEquals(1, kernel.getNonce(from).intValue());
@@ -190,10 +190,10 @@ public class AvmImplTest {
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
         Transaction tx1 = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        AvmTransactionResult result1 = avm.run(kernel, new Transaction[] {tx1})[0].get();
-        assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
+        TransactionResult result1 = avm.run(kernel, new Transaction[] {tx1})[0].getResult();
+        assertTrue(result1.transactionStatus.isSuccess());
 
-        AionAddress contractAddr = new AionAddress(result1.getReturnData());
+        AionAddress contractAddr = new AionAddress(result1.copyOfTransactionOutput().orElseThrow());
 
         // Account for the cost:  deployment, clinit, init call.
         long basicCost = BillingRules.getBasicTransactionCost(txData);
@@ -202,15 +202,14 @@ public class AvmImplTest {
         long clinitCost = 0L;
         long initialStorageCost = 222;
         long transactionCost = basicCost + codeInstantiationOfDeploymentFee + clinitCost + initialStorageCost;
-        assertEquals(transactionCost, result1.getEnergyUsed());
-        assertEquals(energyLimit - transactionCost, result1.getEnergyRemaining());
+        assertEquals(transactionCost, result1.energyUsed);
 
         // call (1 -> 2 -> 2)
         long transaction2EnergyLimit = 1_000_000l;
         Transaction tx2 = AvmTransactionUtil.call(deployer, contractAddr, kernel.getNonce(deployer), BigInteger.ZERO, contractAddr.toByteArray(), transaction2EnergyLimit, energyPrice);
-        AvmTransactionResult result2 = avm.run(kernel, new Transaction[] {tx2})[0].get();
-        assertEquals(AvmTransactionResult.Code.SUCCESS, result2.getResultCode());
-        assertArrayEquals("CALL".getBytes(), result2.getReturnData());
+        TransactionResult result2 = avm.run(kernel, new Transaction[] {tx2})[0].getResult();
+        assertTrue(result2.transactionStatus.isSuccess());
+        assertArrayEquals("CALL".getBytes(), result2.copyOfTransactionOutput().orElseThrow());
         // Account for the cost:  (blocks in call method) + runtime.call
         //code block cost for initial call
         long costOfBlocks = 51l + 31l + 321l;
@@ -221,8 +220,7 @@ public class AvmImplTest {
         // runtime cost of the initial call
         long runtimeCost = 100 + 100 + 600 + 100 + 100 + 5000 + 620;
         transactionCost = runtimeCost + BillingRules.getBasicTransactionCost(tx2.copyOfTransactionData()) + costOfBlocks + costOfRuntimeCall + runStorageCost;
-        assertEquals(transactionCost, result2.getEnergyUsed()); // NOTE: the numbers are not calculated, but for fee schedule change detection.
-        assertEquals(energyLimit - transactionCost, result2.getEnergyRemaining());
+        assertEquals(transactionCost, result2.energyUsed); // NOTE: the numbers are not calculated, but for fee schedule change detection.
 
         avm.shutdown();
     }
@@ -340,9 +338,9 @@ public class AvmImplTest {
         // Cause the failure.
         byte[] nearData = encodeNoArgCall("localFailAfterReentrant");
         Transaction tx = AvmTransactionUtil.call(deployer, contractAddr, kernel.getNonce(deployer), BigInteger.ZERO, nearData, energyLimit, 1L);
-        AvmTransactionResult result2 = avm.run(kernel, new Transaction[] {tx})[0].get();
-        assertEquals(AvmTransactionResult.Code.FAILED_OUT_OF_ENERGY, result2.getResultCode());
-        
+        TransactionResult result2 = avm.run(kernel, new Transaction[] {tx})[0].getResult();
+        assertEquals(AvmInternalError.FAILED_OUT_OF_ENERGY.error, result2.transactionStatus.causeOfError);
+
         // We shouldn't see any changes, since this failed.
         // We expect these to all fail, so they should be left with the initial values:  1.
         assertEquals(1, callReentrantAccess(kernel, avm, contractAddr, "getDirect", shouldFail));
@@ -421,8 +419,8 @@ public class AvmImplTest {
         // Verify the internal call depth limit is in effect.
         byte[] callData = encodeCallIntInt("recursiveChangeNested", 0, 10);
         Transaction tx = AvmTransactionUtil.call(deployer, contractAddr, kernel.getNonce(deployer), BigInteger.ZERO, callData, 20_000_000l, 1L);
-        AvmTransactionResult result2 = avm.run(kernel, new Transaction[] {tx})[0].get();
-        assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result2.getResultCode());
+        TransactionResult result2 = avm.run(kernel, new Transaction[] {tx})[0].getResult();
+        assertEquals(AvmInternalError.FAILED_EXCEPTION.error, result2.transactionStatus.causeOfError);
 
         avm.shutdown();
     }
@@ -511,8 +509,8 @@ public class AvmImplTest {
         byte[] spawnerCallData = encodeCallBool("spawnOnly", shouldFail);
         long energyLimit = 1_000_000l;
         Transaction tx = AvmTransactionUtil.call(TestingState.PREMINED_ADDRESS, spawnerAddress, kernel.getNonce(deployer), BigInteger.ZERO, spawnerCallData, energyLimit, 1L);
-        AvmTransactionResult result2 = avm.run(kernel, new Transaction[] {tx})[0].get();
-        assertEquals(AvmTransactionResult.Code.FAILED_INVALID, result2.getResultCode());
+        TransactionResult result2 = avm.run(kernel, new Transaction[] {tx})[0].getResult();
+        assertEquals(AvmInternalError.FAILED_INVALID.error, result2.transactionStatus.causeOfError);
         avm.shutdown();
     }
 
@@ -615,9 +613,9 @@ public class AvmImplTest {
         TestingState kernel = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
-        AvmTransactionResult createResult = createDAppCanFail(kernel, avm, spawnerCreateData);
-        assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
-        AionAddress spawnerAddress = new AionAddress(createResult.getReturnData());
+        TransactionResult createResult = createDAppCanFail(kernel, avm, spawnerCreateData);
+        assertTrue(createResult.transactionStatus.isSuccess());
+        AionAddress spawnerAddress = new AionAddress(createResult.copyOfTransactionOutput().orElseThrow());
         assertNotNull(spawnerAddress);
         avm.shutdown();
     }
@@ -631,9 +629,9 @@ public class AvmImplTest {
         TestingState kernel = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
-        AvmTransactionResult createResult = createDAppCanFail(kernel, avm, spawnerCreateData);
+        TransactionResult createResult = createDAppCanFail(kernel, avm, spawnerCreateData);
         // We are ultimately failing due to the AssertionError the class triggers if the create fails.
-        assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, createResult.getResultCode());
+        assertEquals(AvmInternalError.FAILED_EXCEPTION.error, createResult.transactionStatus.causeOfError);
         avm.shutdown();
     }
 
@@ -641,9 +639,9 @@ public class AvmImplTest {
     private int callRecursiveHash(IExternalState externalState, AvmImpl avm, long energyLimit, AionAddress contractAddr, int depth) {
         byte[] argData = encodeCallInt("getRecursiveHashCode", depth);
         Transaction call = AvmTransactionUtil.call(deployer, contractAddr, externalState.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1L);
-        AvmTransactionResult result = avm.run(externalState, new Transaction[] {call})[0].get();
-        assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        return new ABIDecoder(result.getReturnData()).decodeOneInteger();
+        TransactionResult result = avm.run(externalState, new Transaction[] {call})[0].getResult();
+        assertTrue(result.transactionStatus.isSuccess());
+        return new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneInteger();
     }
 
     private int callReentrantAccess(IExternalState externalState, AvmImpl avm, AionAddress contractAddr, String methodName, boolean shouldFail) {
@@ -652,16 +650,16 @@ public class AvmImplTest {
     }
 
     private AionAddress createDApp(IExternalState externalState, AvmImpl avm, byte[] createData) {
-        AvmTransactionResult result1 = createDAppCanFail(externalState, avm, createData);
-        assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
-        return new AionAddress(result1.getReturnData());
+        TransactionResult result1 = createDAppCanFail(externalState, avm, createData);
+        assertTrue(result1.transactionStatus.isSuccess());
+        return new AionAddress(result1.copyOfTransactionOutput().orElseThrow());
     }
 
-    private AvmTransactionResult createDAppCanFail(IExternalState externalState, AvmImpl avm, byte[] createData) {
+    private TransactionResult createDAppCanFail(IExternalState externalState, AvmImpl avm, byte[] createData) {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
         Transaction tx1 = AvmTransactionUtil.create(deployer, externalState.getNonce(deployer), BigInteger.ZERO, createData, energyLimit, energyPrice);
-        return avm.run(externalState, new Transaction[] {tx1})[0].get();
+        return avm.run(externalState, new Transaction[] {tx1})[0].getResult();
     }
 
     private void callDAppVoid(IExternalState externalState, AvmImpl avm, AionAddress dAppAddress, byte[] argData) {
@@ -692,9 +690,9 @@ public class AvmImplTest {
     private byte[] callDAppSuccess(IExternalState externalState, AvmImpl avm, AionAddress dAppAddress, byte[] argData) {
         long energyLimit = 5_000_000l;
         Transaction tx = AvmTransactionUtil.call(deployer, dAppAddress, externalState.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1L);
-        AvmTransactionResult result2 = avm.run(externalState, new Transaction[] {tx})[0].get();
-        assertEquals(AvmTransactionResult.Code.SUCCESS, result2.getResultCode());
-        return result2.getReturnData();
+        TransactionResult result2 = avm.run(externalState, new Transaction[] {tx})[0].getResult();
+        assertTrue(result2.transactionStatus.isSuccess());
+        return result2.copyOfTransactionOutput().orElseThrow();
     }
 
     private void deployInvalidJar(byte[] jar) {
@@ -704,9 +702,9 @@ public class AvmImplTest {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
         Transaction tx1 = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, deployment, energyLimit, energyPrice);
-        AvmTransactionResult result1 = avm.run(kernel, new Transaction[] {tx1})[0].get();
+        TransactionResult result1 = avm.run(kernel, new Transaction[] {tx1})[0].getResult();
         avm.shutdown();
-        assertEquals(AvmTransactionResult.Code.FAILED_INVALID_DATA, result1.getResultCode());
+        assertEquals(AvmInternalError.FAILED_INVALID_DATA.error, result1.transactionStatus.causeOfError);
     }
 
     private byte[] buildRecursiveCreate(int levelsToAdd) {

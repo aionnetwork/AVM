@@ -3,6 +3,7 @@ package org.aion.cli;
 import java.math.BigInteger;
 import org.aion.avm.core.FutureResult;
 import org.aion.avm.core.AvmTransactionUtil;
+import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.AvmConfiguration;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import org.aion.types.TransactionResult;
 
 
 public class AvmCLI {
@@ -53,15 +55,20 @@ public class AvmCLI {
         env.logLine("Sender       : " + sender);
     }
 
-    public static void reportDeployResult(IEnvironment env, AvmTransactionResult createResult){
-        String dappAddress = Helpers.bytesToHexString(createResult.getReturnData());
+    public static void reportDeployResult(IEnvironment env, FutureResult future){
+        TransactionResult createResult = future.getResult();
+        String dappAddress = Helpers.bytesToHexString(createResult.copyOfTransactionOutput().orElseThrow());
         env.noteRelevantAddress(dappAddress);
+
+        // In the case of SUCCESS, the causeOfError is the empty string. But we want to explicitly display SUCCESS.
+        String status = createResult.transactionStatus.causeOfError;
+        status = (status.isEmpty()) ? "SUCCESS" : status;
         
         lineSeparator(env);
         env.logLine("DApp deployment status");
-        env.logLine("Result status: " + createResult.getResultCode().name());
+        env.logLine("Result status: " + status);
         env.logLine("Dapp Address : " + dappAddress);
-        env.logLine("Energy cost  : " + createResult.getEnergyUsed());
+        env.logLine("Energy cost  : " + createResult.energyUsed);
     }
 
     public static Transaction setupOneCall(IEnvironment env, String storagePath, AionAddress contract, AionAddress sender, String method, Object[] args, long energyLimit, long nonceBias, BigInteger balance) {
@@ -101,15 +108,17 @@ public class AvmCLI {
         }
     }
 
-    private static void reportCallResult(IEnvironment env, AvmTransactionResult callResult){
+    private static void reportCallResult(IEnvironment env, FutureResult future){
+        TransactionResult callResult = future.getResult();
+
         lineSeparator(env);
         env.logLine("DApp call result");
-        env.logLine("Result status: " + callResult.getResultCode().name());
-        env.logLine("Return value : " + Helpers.bytesToHexString(callResult.getReturnData()));
-        env.logLine("Energy cost  : " + callResult.getEnergyUsed());
+        env.logLine("Result status: " + callResult.transactionStatus);
+        env.logLine("Return value : " + Helpers.bytesToHexString(callResult.copyOfTransactionOutput().orElseThrow()));
+        env.logLine("Energy cost  : " + callResult.energyUsed);
 
-        if (callResult.getResultCode() == AvmTransactionResult.Code.FAILED_EXCEPTION) {
-            env.dumpThrowable(callResult.getUncaughtException());
+        if (AvmInternalError.FAILED_EXCEPTION.error.equals(callResult.transactionStatus.causeOfError)) {
+            env.dumpThrowable(future.getException());
         }
     }
 
@@ -122,19 +131,21 @@ public class AvmCLI {
         env.logLine("Balance      : " + balance);
     }
 
-    private static void reportTransferResult(IEnvironment env, AvmTransactionResult transferResult){
+    private static void reportTransferResult(IEnvironment env, FutureResult future){
+        TransactionResult transferResult = future.getResult();
+
         lineSeparator(env);
         env.logLine("DApp balance transfer result");
-        env.logLine("Result status: " + transferResult.getResultCode().name());
-        if (transferResult.getReturnData() == null){
+        env.logLine("Result status: " + transferResult.transactionStatus);
+        if (!transferResult.copyOfTransactionOutput().isPresent()){
             env.logLine("Return value : " + "void");
         } else {
-            env.logLine("Return value : " + Helpers.bytesToHexString(transferResult.getReturnData()));
+            env.logLine("Return value : " + Helpers.bytesToHexString(transferResult.copyOfTransactionOutput().orElseThrow()));
         }
-        env.logLine("Energy cost  : " + transferResult.getEnergyUsed());
+        env.logLine("Energy cost  : " + transferResult.energyUsed);
 
-        if (transferResult.getResultCode() == AvmTransactionResult.Code.FAILED_EXCEPTION) {
-            env.dumpThrowable(transferResult.getUncaughtException());
+        if (AvmInternalError.FAILED_EXCEPTION.error.equals(transferResult.transactionStatus.causeOfError)) {
+            env.dumpThrowable(future.getException());
         }
     }
 
@@ -292,24 +303,19 @@ public class AvmCLI {
                 TestingState kernel = new TestingState(storageFile, block);
                 AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(capabilities, new AvmConfiguration());
                 FutureResult[] futures = avm.run(kernel, transactions);
-                AvmTransactionResult[] results = new AvmTransactionResult[futures.length];
-                for (int i = 0; i < futures.length; ++i) {
-                    results[i] = futures[i].get();
-                }
-                avm.shutdown();
                 
                 // Finish up with reporting.
                 for (int i = 0; i < invocation.commands.size(); ++i) {
                     ArgumentParser.Command command = invocation.commands.get(i);
                     switch (command.action) {
                     case CALL:
-                        reportCallResult(env, results[i]);
+                        reportCallResult(env, futures[i]);
                         break;
                     case DEPLOY:
-                        reportDeployResult(env, results[i]);
+                        reportDeployResult(env, futures[i]);
                         break;
                     case TRANSFER:
-                        reportTransferResult(env, results[i]);
+                        reportTransferResult(env, futures[i]);
                         break;
                     case OPEN:
                         // This should be in the non-batching path.
@@ -319,6 +325,8 @@ public class AvmCLI {
                         throw new AssertionError("Unknown option");
                     }
                 }
+
+                avm.shutdown();
             }
         } else {
             env.fail(invocation.errorString);

@@ -2,7 +2,7 @@ package org.aion.avm.tooling;
 
 import avm.Address;
 import org.aion.avm.tooling.AvmRule.ResultWrapper;
-import org.aion.kernel.AvmTransactionResult;
+import org.aion.types.TransactionResult;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -23,50 +23,50 @@ public class ShadowClassConstantsTest {
     public static void setup() {
         byte[] data = avmRule.getDappBytes(ShadowClassConstantsTarget.class, null);
         ResultWrapper deployResult = avmRule.deploy(sender, value, data);
-        assertTrue(deployResult.getTransactionResult().getResultCode().isSuccess());
+        assertTrue(deployResult.getTransactionResult().transactionStatus.isSuccess());
         contract = deployResult.getDappAddress();
     }
 
     @Test
     public void testIdentitiesOfBigIntegerConstants() {
         byte[] data = ABIUtil.encodeMethodArguments("checkBigIntegerConstants");
-        AvmTransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
-        assertTrue(result.getResultCode().isSuccess());
+        TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
+        assertTrue(result.transactionStatus.isSuccess());
     }
 
     @Test
     public void testIdentitiesOfRoundingModeConstants() {
         byte[] data = ABIUtil.encodeMethodArguments("checkRoundingModeConstants");
-        AvmTransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
-        assertTrue(result.getResultCode().isSuccess());
+        TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
+        assertTrue(result.transactionStatus.isSuccess());
     }
 
     @Test
     public void testIdentitiesOfMathContextConstants() {
         byte[] data = ABIUtil.encodeMethodArguments("checkMathContextConstants");
-        AvmTransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
-        assertTrue(result.getResultCode().isSuccess());
+        TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
+        assertTrue(result.transactionStatus.isSuccess());
     }
 
     @Test
     public void testIdentitiesOfBooleanConstants() {
         byte[] data = ABIUtil.encodeMethodArguments("checkBooleanConstants");
-        AvmTransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
-        assertTrue(result.getResultCode().isSuccess());
+        TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
+        assertTrue(result.transactionStatus.isSuccess());
     }
 
     @Test
     public void testIdentitiesOfPrimitiveTypeConstants() {
         byte[] data = ABIUtil.encodeMethodArguments("checkPrimitiveTypeConstants");
-        AvmTransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
-        assertTrue(result.getResultCode().isSuccess());
+        TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
+        assertTrue(result.transactionStatus.isSuccess());
     }
 
     @Test
     public void checkTimeUnitConstants() {
         byte[] data = ABIUtil.encodeMethodArguments("checkTimeUnitConstants");
-        AvmTransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
-        assertTrue(result.getResultCode().isSuccess());
+        TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
+        assertTrue(result.transactionStatus.isSuccess());
     }
 
 }

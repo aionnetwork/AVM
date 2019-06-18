@@ -20,7 +20,6 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 
 import i.RuntimeAssertionError;
-import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.TestingBlock;
 
 import java.math.BigInteger;
@@ -28,6 +27,7 @@ import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.aion.types.TransactionResult;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -96,8 +96,8 @@ public class DeploymentCostTest {
         for (Contract contract : Contract.values()) {
             System.out.println("-------------------------------------------------------");
             System.out.println("Results for deploying dApp: " + contract);
-            AvmTransactionResult result = deployContract(contract);
-            System.out.println("\tCost to deploy dApp = " + NumberFormat.getNumberInstance().format(result.getEnergyUsed()));
+            TransactionResult result = deployContract(contract);
+            System.out.println("\tCost to deploy dApp = " + NumberFormat.getNumberInstance().format(result.energyUsed));
         }
     }
 
@@ -136,13 +136,13 @@ public class DeploymentCostTest {
         return jarBytes;
     }
 
-    private AvmTransactionResult deployContract(Contract contract) {
+    private TransactionResult deployContract(Contract contract) {
         byte[] jar = getDeploymentJarBytesForContract(contract);
 
         //deploy in normal Mode
         Transaction create = AvmTransactionUtil.create(DEPLOYER, this.kernel.getNonce(DEPLOYER), BigInteger.ZERO, jar, ENERGY_LIMIT, ENERGY_PRICE);
-        AvmTransactionResult createResult = this.avm.run(this.kernel, new Transaction[] {create})[0].get();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
+        TransactionResult createResult = this.avm.run(this.kernel, new Transaction[] {create})[0].getResult();
+        Assert.assertTrue(createResult.transactionStatus.isSuccess());
         return createResult;
     }
 

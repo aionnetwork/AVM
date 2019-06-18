@@ -7,7 +7,7 @@ import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.tooling.hash.HashUtils;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.core.util.Helpers;
-import org.aion.kernel.AvmTransactionResult;
+import org.aion.types.TransactionResult;
 import org.junit.*;
 
 import java.math.BigInteger;
@@ -39,18 +39,18 @@ public class HashTest {
 
         // Call blake2b
         byte[] txData = ABIUtil.encodeMethodArguments(blake2bMethodName, hashMessage);
-        AvmTransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
+        TransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult.getResultCode());
-        Assert.assertEquals(true, new ABIDecoder(txResult.getReturnData()).decodeOneBoolean());
+        Assert.assertTrue(txResult.transactionStatus.isSuccess());
+        Assert.assertEquals(true, new ABIDecoder(txResult.copyOfTransactionOutput().orElseThrow()).decodeOneBoolean());
 
         // Retrieve hash
         byte[] txData2 = ABIUtil.encodeMethodArguments("getHashedVal");
-        AvmTransactionResult txResult2 = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData2, energyLimit, energyPrice).getTransactionResult();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult2.getResultCode());
+        TransactionResult txResult2 = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData2, energyLimit, energyPrice).getTransactionResult();
+        Assert.assertTrue(txResult2.transactionStatus.isSuccess());
 
         // check hash correctness
-        byte[] hash = new ABIDecoder(txResult2.getReturnData()).decodeOneByteArray();
+        byte[] hash = new ABIDecoder(txResult2.copyOfTransactionOutput().orElseThrow()).decodeOneByteArray();
         String decodedHash = Helpers.bytesToHexString(hash);
 
         // check decoded
@@ -66,19 +66,19 @@ public class HashTest {
 
         // Call sha256
         byte[] txData = ABIUtil.encodeMethodArguments(shaMethodName, hashMessage);
-        AvmTransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
+        TransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult.getResultCode());
-        Assert.assertEquals(true, new ABIDecoder(txResult.getReturnData()).decodeOneBoolean());
+        Assert.assertTrue(txResult.transactionStatus.isSuccess());
+        Assert.assertEquals(true, new ABIDecoder(txResult.copyOfTransactionOutput().orElseThrow()).decodeOneBoolean());
 
         // Retrieve hash
         byte[] txData2 = ABIUtil.encodeMethodArguments("getHashedVal");
-        AvmTransactionResult txResult2 = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData2, energyLimit, energyPrice).getTransactionResult();
+        TransactionResult txResult2 = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData2, energyLimit, energyPrice).getTransactionResult();
 
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult2.getResultCode());
+        Assert.assertTrue(txResult2.transactionStatus.isSuccess());
 
         // check hash correctness
-        byte[] hash = new ABIDecoder(txResult2.getReturnData()).decodeOneByteArray();
+        byte[] hash = new ABIDecoder(txResult2.copyOfTransactionOutput().orElseThrow()).decodeOneByteArray();
         String decodedHash = Helpers.bytesToHexString(hash);
 
         // check decoded
@@ -94,19 +94,19 @@ public class HashTest {
 
         // Call Keccak256
         byte[] txData = ABIUtil.encodeMethodArguments(keccakbMethodName, hashMessage);
-        AvmTransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
+        TransactionResult txResult = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData, energyLimit, energyPrice).getTransactionResult();
 
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult.getResultCode());
-        Assert.assertEquals(true, new ABIDecoder(txResult.getReturnData()).decodeOneBoolean());
+        Assert.assertTrue(txResult.transactionStatus.isSuccess());
+        Assert.assertEquals(true, new ABIDecoder(txResult.copyOfTransactionOutput().orElseThrow()).decodeOneBoolean());
 
         // Retrieve hash
         byte[] txData2 = ABIUtil.encodeMethodArguments("getHashedVal");
-        AvmTransactionResult txResult2 = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData2, energyLimit, energyPrice).getTransactionResult();
+        TransactionResult txResult2 = avmRule.call(deployer, dappAddress, BigInteger.ZERO, txData2, energyLimit, energyPrice).getTransactionResult();
 
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, txResult2.getResultCode());
+        Assert.assertTrue(txResult2.transactionStatus.isSuccess());
 
         // check hash correctness
-        byte[] hash = new ABIDecoder(txResult2.getReturnData()).decodeOneByteArray();
+        byte[] hash = new ABIDecoder(txResult2.copyOfTransactionOutput().orElseThrow()).decodeOneByteArray();
         String decodedHash = Helpers.bytesToHexString(hash);
 
         // check decoded

@@ -3,7 +3,7 @@ package org.aion.avm.tooling;
 import org.aion.avm.userlib.abi.ABIDecoder;
 
 import avm.Address;
-import org.aion.kernel.AvmTransactionResult;
+import org.aion.types.TransactionResult;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -107,20 +107,20 @@ public class AssertionErrorIntegrationTest {
         byte[] txData = avmRule.getDappBytes(testClass, new byte[0]);
         
         // Deploy.
-        AvmTransactionResult createResult = avmRule.deploy(avmRule.getPreminedAccount(), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
-        return new Address(createResult.getReturnData());
+        TransactionResult createResult = avmRule.deploy(avmRule.getPreminedAccount(), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+        Assert.assertTrue(createResult.transactionStatus.isSuccess());
+        return new Address(createResult.copyOfTransactionOutput().orElseThrow());
     }
 
     private String callStaticString(Address dapp, String methodName, Object... arguments) {
         byte[] argData = ABIUtil.encodeMethodArguments(methodName, arguments);
-        AvmTransactionResult result = avmRule.call(avmRule.getPreminedAccount(), dapp, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        byte[] resultData = result.getReturnData();
+        TransactionResult result = avmRule.call(avmRule.getPreminedAccount(), dapp, BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+        byte[] resultData = result.copyOfTransactionOutput().orElseThrow();
         if(null == resultData) {
             return null;
         }
-        byte[] utf8 = new ABIDecoder(result.getReturnData()).decodeOneByteArray();
+        byte[] utf8 = new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneByteArray();
         return (null != utf8)
                 ? new String(utf8)
                 : null;

@@ -6,7 +6,8 @@ import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIDecoder;
 
 import avm.Address;
-import org.aion.kernel.AvmTransactionResult;
+import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
+import org.aion.types.TransactionResult;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -35,31 +36,31 @@ public class ShadowRuntimeFailureTest {
             byte[] data = getDappBytesWithUserlib(ShadowRuntimeFailureTarget.class, new byte[] {(byte)i});
             
             // deploy
-            AvmTransactionResult result = avmRule.deploy(deployer, BigInteger.ZERO, data, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
-            Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
+            TransactionResult result = avmRule.deploy(deployer, BigInteger.ZERO, data, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+            Assert.assertEquals(AvmInternalError.FAILED_EXCEPTION.error, result.transactionStatus.causeOfError);
         }
         byte[] data = getDappBytesWithUserlib(ShadowRuntimeFailureTarget.class, new byte[] {(byte)8});
-        AvmTransactionResult result = avmRule.deploy(deployer, BigInteger.ZERO, data, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
+        TransactionResult result = avmRule.deploy(deployer, BigInteger.ZERO, data, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
     }
 
     @Test
     public void testFailuresInCall() {
         byte[] txData = getDappBytesWithUserlib(ShadowRuntimeFailureTarget.class, new byte[0]);
-        AvmTransactionResult result1 = avmRule.deploy(deployer, BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
-        Address contractAddr = new Address(result1.getReturnData());
+        TransactionResult result1 = avmRule.deploy(deployer, BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+        Assert.assertTrue(result1.transactionStatus.isSuccess());
+        Address contractAddr = new Address(result1.copyOfTransactionOutput().orElseThrow());
         
         // 0-7 are failures and 8 is a success.
         for (int i = 0; i < 8; ++i) {
             byte[] data =  new byte[] {(byte)i};
-            AvmTransactionResult result  = avmRule.call(deployer, contractAddr, BigInteger.ZERO, data, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
-            Assert.assertEquals(AvmTransactionResult.Code.FAILED_EXCEPTION, result.getResultCode());
+            TransactionResult result  = avmRule.call(deployer, contractAddr, BigInteger.ZERO, data, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+            Assert.assertEquals(AvmInternalError.FAILED_EXCEPTION.error, result.transactionStatus.causeOfError);
        }
         byte[] data = new byte[] {(byte)8};
-        AvmTransactionResult result  = avmRule.call(deployer, contractAddr, BigInteger.ZERO, data, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
-        Assert.assertEquals(true, new ABIDecoder(result.getReturnData()).decodeOneBoolean());
+        TransactionResult result  = avmRule.call(deployer, contractAddr, BigInteger.ZERO, data, ENERGY_LIMIT, ENERGY_PRICE).getTransactionResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+        Assert.assertEquals(true, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneBoolean());
         
     }
 

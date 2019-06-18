@@ -14,6 +14,7 @@ import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.*;
+import org.aion.types.TransactionResult;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -66,9 +67,9 @@ public class PerformanceTest {
 
             //deploying dapp
             Transaction create = AvmTransactionUtil.create(userAddress, kernel.getNonce(userAddress), BigInteger.ZERO, txData, energyLimit, energyPrice);
-            AvmTransactionResult createResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[]{create})[0].get();
-            Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
-            AionAddress contractAddr = new AionAddress(createResult.getReturnData());
+            TransactionResult createResult = avm.run(this.kernel, new Transaction[]{create})[0].getResult();
+            Assert.assertTrue(createResult.transactionStatus.isSuccess());
+            AionAddress contractAddr = new AionAddress(createResult.copyOfTransactionOutput().orElseThrow());
             contractAddrs[i] = contractAddr;
         }
 
@@ -117,8 +118,8 @@ public class PerformanceTest {
     private void callSingle(AionAddress sender, AionAddress contractAddr, String methodName) {
         byte[] argData = new ABIStreamingEncoder().encodeOneString(methodName).toBytes();
         Transaction call = AvmTransactionUtil.call(sender, contractAddr, kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {call})[0].get();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
+        TransactionResult result = avm.run(this.kernel, new Transaction[] {call})[0].getResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
     }
 
     /**
@@ -165,10 +166,10 @@ public class PerformanceTest {
             }
             FutureResult[] futures = avm.run(this.kernel, transactionArray);
             for (FutureResult future : futures) {
-                AvmTransactionResult result = future.get();
-                Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
+                TransactionResult result = future.getResult();
+                Assert.assertTrue(result.transactionStatus.isSuccess());
                 // These should all return an empty byte[] (void).
-                Assert.assertEquals(0, result.getReturnData().length);
+                Assert.assertEquals(0, result.copyOfTransactionOutput().orElseThrow().length);
             }
         }
     }

@@ -47,6 +47,6 @@ public class StringBuilderTest {
     private void callStatic(String methodName, Object... args) {
         byte[] data = ABIUtil.encodeMethodArguments(methodName, args);
         AvmRule.ResultWrapper result = avmRule.call(from, dappAddr, BigInteger.ZERO, data, 2_000_000, 1);
-        Assert.assertTrue(result.getTransactionResult().getResultCode().isSuccess());
+        Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
     }
 }

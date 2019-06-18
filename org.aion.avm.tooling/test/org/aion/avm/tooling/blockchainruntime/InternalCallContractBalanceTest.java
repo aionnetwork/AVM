@@ -134,7 +134,7 @@ public class InternalCallContractBalanceTest {
 
     private Address deployContract(BigInteger value) {
         AvmRule.ResultWrapper result = avmRule.deploy(from, value, getDappBytes(), energyLimit, energyPrice);
-        assertTrue(result.getTransactionResult().getResultCode().isSuccess());
+        assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
         return result.getDappAddress();
     }
 
@@ -142,7 +142,7 @@ public class InternalCallContractBalanceTest {
 
         byte[] callData = ABIUtil.encodeMethodArguments("getBalanceOfDappViaInternalCall", otherContracts, depthToQuery);
         AvmRule.ResultWrapper result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice);
-        assertTrue(result.getTransactionResult().getResultCode().isSuccess());
+        assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
         return new BigInteger((byte[]) result.getDecodedReturnData());
     }
 
@@ -152,14 +152,14 @@ public class InternalCallContractBalanceTest {
         byte[] callData = ABIUtil.encodeMethodArguments("createNewContractWithValue", dappBytes, amountToTransfer);
 
         AvmRule.ResultWrapper result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice);
-        assertTrue(result.getTransactionResult().getResultCode().isSuccess());
+        assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
         return new Address((byte[]) result.getDecodedReturnData());
     }
 
     private BigInteger getClinitBalanceOfContract(Address contract) {
         byte[] callData = ABIUtil.encodeMethodArguments("getBalanceOfThisContractDuringClinit");
         AvmRule.ResultWrapper result = avmRule.call(from, contract, BigInteger.ZERO, callData, energyLimit, energyPrice);
-        assertTrue(result.getTransactionResult().getResultCode().isSuccess());
+        assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
         return new BigInteger((byte[]) result.getDecodedReturnData());
     }
 

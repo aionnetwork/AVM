@@ -39,7 +39,7 @@ public class BlockchainTest {
         ByteBuffer returnData = getReturnData(dappAddress, txData);
 
         byte[] expected = Arrays.copyOfRange(returnData.array(), 0, returnData.position());
-        assertArrayEquals(expected, result.getTransactionResult().getReturnData());
+        assertArrayEquals(expected, result.getTransactionResult().copyOfTransactionOutput().orElseThrow());
     }
 
     @Test
@@ -53,7 +53,7 @@ public class BlockchainTest {
 
         assertTrue(result.getReceiptStatus().isSuccess());
         // We expect it to handle all the exceptions and return the data we initially sent in.
-        assertArrayEquals(txData, result.getTransactionResult().getReturnData());
+        assertArrayEquals(txData, result.getTransactionResult().copyOfTransactionOutput().orElseThrow());
     }
 
     @Test
@@ -69,16 +69,16 @@ public class BlockchainTest {
 
         byte[] txData = "tx_data".getBytes();
         AvmRule.ResultWrapper result = avmRule.call(premined, dappAddress, BigInteger.ONE, txData, energyLimit, energyPrice);
-        assertTrue(result.getTransactionResult().getResultCode().isSuccess());
+        assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
 
         ByteBuffer returnData = getReturnData(dappAddress, txData);
         byte[] expected = Arrays.copyOfRange(returnData.array(), 0, returnData.position());
-        assertArrayEquals(expected, result.getTransactionResult().getReturnData());
+        assertArrayEquals(expected, result.getTransactionResult().copyOfTransactionOutput().orElseThrow());
     }
 
     private Address installJarAsDApp(byte[] jar) {
         AvmRule.ResultWrapper result = avmRule.deploy(premined, BigInteger.ZERO, jar, energyLimit, energyPrice);
-        assertTrue(result.getTransactionResult().getResultCode().isSuccess());
+        assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
         return result.getDappAddress();
     }
 

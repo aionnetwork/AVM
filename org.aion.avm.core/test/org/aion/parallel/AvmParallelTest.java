@@ -1,5 +1,7 @@
 package org.aion.parallel;
 
+import static org.junit.Assert.assertTrue;
+
 import java.math.BigInteger;
 
 import avm.Address;
@@ -18,6 +20,7 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.*;
+import org.aion.types.TransactionResult;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -44,7 +47,7 @@ public class AvmParallelTest {
         Transaction[] batch = new Transaction[]{t0, t1, t2, t3, t4};
         FutureResult[] results = avm.run(kernel, batch);
         for (FutureResult f : results){
-            f.get();
+            f.getResult();
         }
 
         expected1 = expected1.add(BigInteger.valueOf(500_000 * 5));
@@ -63,7 +66,7 @@ public class AvmParallelTest {
         batch = new Transaction[]{t0, t1, t2, t3, t4};
         results = avm.run(kernel, batch);
         for (FutureResult f : results){
-            f.get();
+            f.getResult();
         }
 
         expected1 = expected1.subtract(BigInteger.valueOf(100_000 * 5)).subtract(BigInteger.valueOf(BillingRules.getBasicTransactionCost(t1.copyOfTransactionData()) * 5));
@@ -84,7 +87,7 @@ public class AvmParallelTest {
 
         results = avm.run(kernel, batch);
         for (FutureResult f : results){
-            f.get();
+            f.getResult();
         }
 
         expected1 = expected1.subtract(BigInteger.valueOf(BillingRules.getBasicTransactionCost(t0.copyOfTransactionData()) * iteration));
@@ -116,7 +119,7 @@ public class AvmParallelTest {
         Transaction[] batch = new Transaction[]{t0, t1, t2, t3, t4};
         FutureResult[] results = avm.run(kernel, batch);
         for (FutureResult f : results){
-            f.get();
+            f.getResult();
         }
 
         avm.shutdown();
@@ -144,11 +147,11 @@ public class AvmParallelTest {
         Transaction[] batch = new Transaction[]{t0, t1, t2, t3, t4};
         FutureResult[] results = avm.run(kernel, batch);
         for (FutureResult f : results){
-            f.get();
+            f.getResult();
         }
 
-        AvmTransactionResult res = results[4].get();
-        AionAddress contractAddr = new AionAddress(res.getReturnData());
+        TransactionResult res = results[4].getResult();
+        AionAddress contractAddr = new AionAddress(res.copyOfTransactionOutput().orElseThrow());
 
         byte[] args = encodeNoArgsMethodCall("doTransfer");
         byte[] args2 = encodeNoArgsMethodCall("addValue");
@@ -162,7 +165,7 @@ public class AvmParallelTest {
         batch = new Transaction[]{t0, t1, t2, t3, t4};
         results = avm.run(kernel, batch);
         for (FutureResult f : results){
-            f.get();
+            f.getResult();
         }
 
         avm.shutdown();
@@ -190,7 +193,7 @@ public class AvmParallelTest {
         }
             FutureResult[] results = avm.run(kernel, firstBatch);
         for (FutureResult f : results){
-            Assert.assertTrue(f.get().getResultCode().isSuccess());
+            Assert.assertTrue(f.getResult().transactionStatus.isSuccess());
         }
         
         // Second batch - collect funds.
@@ -200,7 +203,7 @@ public class AvmParallelTest {
         }
         results = avm.run(kernel, secondBatch);
         for (FutureResult f : results){
-            Assert.assertTrue(f.get().getResultCode().isSuccess());
+            Assert.assertTrue(f.getResult().transactionStatus.isSuccess());
         }
         
         // Check that this had the expected result.
@@ -227,7 +230,7 @@ public class AvmParallelTest {
         FutureResult[] results = avm.run(kernel, ctx);
         AionAddress[] contractAddresses = new AionAddress[results.length];
         for (int i = 0; i < results.length; i++) {
-            contractAddresses[i] = new AionAddress(results[i].get().getReturnData());
+            contractAddresses[i] = new AionAddress(results[i].getResult().copyOfTransactionOutput().orElseThrow());
         }
 
         Transaction[] tx = new Transaction[results.length - 1];
@@ -245,7 +248,7 @@ public class AvmParallelTest {
 
         results = avm.run(kernel, tx);
         for (FutureResult f : results) {
-            f.get();
+            f.getResult();
         }
 
         // validate the state of contracts
@@ -256,7 +259,7 @@ public class AvmParallelTest {
 
         results = avm.run(kernel, tx);
         for (FutureResult f : results) {
-            Assert.assertEquals(2, new ABIDecoder(f.get().getReturnData()).decodeOneInteger());
+            Assert.assertEquals(2, new ABIDecoder(f.getResult().copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
         }
 
         for (int i = 1; i < length - 1; i++) {
@@ -266,7 +269,7 @@ public class AvmParallelTest {
 
         results = avm.run(kernel, new Transaction[]{tx[1], tx[2], tx[3]});
         for (FutureResult f : results) {
-            Assert.assertEquals(1, new ABIDecoder(f.get().getReturnData()).decodeOneInteger());
+            Assert.assertEquals(1, new ABIDecoder(f.getResult().copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
         }
 
         avm.shutdown();
@@ -292,7 +295,7 @@ public class AvmParallelTest {
         FutureResult[] results = avm.run(kernel, ctx);
         AionAddress[] contractAddresses = new AionAddress[results.length];
         for (int i = 0; i < results.length; i++) {
-            contractAddresses[i] = new AionAddress(results[i].get().getReturnData());
+            contractAddresses[i] = new AionAddress(results[i].getResult().copyOfTransactionOutput().orElseThrow());
         }
 
         Transaction[] tx = new Transaction[results.length - 1];
@@ -309,7 +312,7 @@ public class AvmParallelTest {
 
         results = avm.run(kernel, tx);
         for (FutureResult f : results) {
-            f.get();
+            f.getResult();
         }
 
         // validate the state of contracts
@@ -320,7 +323,7 @@ public class AvmParallelTest {
 
         results = avm.run(kernel, tx);
         for (FutureResult f : results) {
-            Assert.assertEquals(1, new ABIDecoder(f.get().getReturnData()).decodeOneInteger());
+            Assert.assertEquals(1, new ABIDecoder(f.getResult().copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
         }
 
         for (int i = 1; i < length - 1; i++) {
@@ -330,7 +333,7 @@ public class AvmParallelTest {
         Transaction[] batch = new Transaction[]{tx[1], tx[2]};
         results = avm.run(kernel, batch);
         for (FutureResult f : results) {
-            Assert.assertEquals(1, new ABIDecoder(f.get().getReturnData()).decodeOneInteger());
+            Assert.assertEquals(1, new ABIDecoder(f.getResult().copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
         }
 
         avm.shutdown();

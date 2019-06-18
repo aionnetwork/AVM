@@ -31,7 +31,7 @@ public class BigIntegerTest {
     public static void setup() {
         byte[] data = avmRule.getDappBytes(BigIntegerTarget.class, null);
         AvmRule.ResultWrapper deployResult = avmRule.deploy(sender, value, data);
-        assertTrue(deployResult.getTransactionResult().getResultCode().isSuccess());
+        assertTrue(deployResult.getTransactionResult().transactionStatus.isSuccess());
         contract = deployResult.getDappAddress();
 
         byte[] arr2 = new byte[32];
@@ -130,25 +130,25 @@ public class BigIntegerTest {
     public void addOutOfRangeArg() {
         byte[] arr = new byte[33];
         Arrays.fill(arr, Byte.MAX_VALUE);
-        Assert.assertTrue(callStatic("add", new BigInteger(arr).toByteArray()).getTransactionResult().getResultCode().isFailed());
+        Assert.assertTrue(callStatic("add", new BigInteger(arr).toByteArray()).getTransactionResult().transactionStatus.isFailed());
     }
 
     @Test
     public void multiplyOutOfRangeResult() {
         BigInteger val = BigDecimal.valueOf(2261564242916331700000000000000000000000.7976931348623157d).toBigInteger();
-        Assert.assertTrue(callStatic("multiply", val.toByteArray()).getTransactionResult().getResultCode().isFailed());
+        Assert.assertTrue(callStatic("multiply", val.toByteArray()).getTransactionResult().transactionStatus.isFailed());
     }
 
     @Test
     public void bigDecimalToBigIntegerOutOfRange() {
-        Assert.assertTrue(callStatic("bigDecimalToBigIntegerException", new byte[0]).getTransactionResult().getResultCode().isFailed());
+        Assert.assertTrue(callStatic("bigDecimalToBigIntegerException", new byte[0]).getTransactionResult().transactionStatus.isFailed());
     }
 
     @Test
     public void newBigIntegerOutOfRange() {
         byte[] arr = new byte[33];
         Arrays.fill(arr, Byte.MAX_VALUE);
-        Assert.assertTrue(callStatic("newBigInteger", 0, 33, new BigInteger(arr).toByteArray()).getTransactionResult().getResultCode().isFailed());
+        Assert.assertTrue(callStatic("newBigInteger", 0, 33, new BigInteger(arr).toByteArray()).getTransactionResult().transactionStatus.isFailed());
     }
 
     @Test
@@ -158,20 +158,20 @@ public class BigIntegerTest {
 
     @Test
     public void setBit() {
-        Assert.assertTrue(callStatic("setBit", testValue32Bytes.toByteArray(), 270).getTransactionResult().getResultCode().isFailed());
+        Assert.assertTrue(callStatic("setBit", testValue32Bytes.toByteArray(), 270).getTransactionResult().transactionStatus.isFailed());
     }
 
     @Test
     public void shiftLeftException() {
         AvmRule.ResultWrapper wrapper = callStatic("shiftLeftException", 270);
-        Assert.assertTrue(wrapper.getTransactionResult().getResultCode().isSuccess());
+        Assert.assertTrue(wrapper.getTransactionResult().transactionStatus.isSuccess());
         Assert.assertTrue((boolean) wrapper.getDecodedReturnData());
     }
 
     @Test
     public void NPEThrownCorrectly() {
         AvmRule.ResultWrapper wrapper = callStatic("NPEThrownCorrectly");
-        Assert.assertTrue(wrapper.getTransactionResult().getResultCode().isSuccess());
+        Assert.assertTrue(wrapper.getTransactionResult().transactionStatus.isSuccess());
     }
 
     private AvmRule.ResultWrapper callStatic(String methodName, Object... args) {

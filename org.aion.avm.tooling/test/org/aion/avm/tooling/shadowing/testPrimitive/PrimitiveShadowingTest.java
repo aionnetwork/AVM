@@ -86,7 +86,7 @@ public class PrimitiveShadowingTest {
         ResultWrapper result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData,
             energyLimit, energyPrice);
 
-        Assert.assertTrue(result.getTransactionResult().getResultCode().isSuccess());
+        Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
         Assert.assertEquals(true, result.getDecodedReturnData());
 
     }

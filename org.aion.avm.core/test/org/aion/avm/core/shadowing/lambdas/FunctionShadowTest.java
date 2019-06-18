@@ -2,6 +2,7 @@ package org.aion.avm.core.shadowing.lambdas;
 
 import java.math.BigInteger;
 
+import java.util.Optional;
 import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
@@ -13,6 +14,7 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.*;
+import org.aion.types.TransactionResult;
 import org.junit.*;
 
 
@@ -152,15 +154,15 @@ public class FunctionShadowTest {
         byte[] testJar = JarBuilder.buildJarForMainAndClassesAndUserlib(testClass);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
         Transaction tx = AvmTransactionUtil.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ERNGY_PRICE);
-        byte[] returnData = avm.run(kernel, new Transaction[] {tx})[0].get().getReturnData();
-        return (null != returnData)
-                ? new AionAddress(returnData)
+        Optional<byte[]> optionalOutput = avm.run(kernel, new Transaction[] {tx})[0].getResult().copyOfTransactionOutput();
+        return (optionalOutput.isPresent())
+                ? new AionAddress(optionalOutput.get())
                 : null;
     }
 
     private void oneCall(AionAddress dappAddr, int transactionNumber) {
         Transaction tx = AvmTransactionUtil.call(FROM, dappAddr, kernel.getNonce(FROM), BigInteger.ZERO, new byte[] {(byte)transactionNumber}, ENERGY_LIMIT, ERNGY_PRICE);
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(kernel, new Transaction[] {tx})[0].get();
-        Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
+        TransactionResult result = avm.run(kernel, new Transaction[] {tx})[0].getResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
     }
 }

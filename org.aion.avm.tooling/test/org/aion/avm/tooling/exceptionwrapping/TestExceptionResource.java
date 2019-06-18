@@ -1,13 +1,43 @@
 package org.aion.avm.tooling.exceptionwrapping;
 
-import org.aion.avm.tooling.abi.Callable;
+import avm.Blockchain;
+import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 
 /**
  * Note that this class is just used as a resource by the other tests in this package.
  */
 public class TestExceptionResource {
 
-    @Callable
+    public static byte[] main() throws UserDefinedException {
+        ABIDecoder decoder = new ABIDecoder(Blockchain.getData());
+        String method = decoder.decodeMethodName();
+
+        if (method.equals("tryCatchLoop")) {
+            tryCatchLoop(decoder.decodeOneInteger());
+        } else if (method.equals("tryMultiCatchFinally")) {
+            return ABIEncoder.encodeOneInteger(tryMultiCatchFinally());
+        } else if (method.equals("tryMultiCatch")) {
+            return ABIEncoder.encodeOneInteger(tryMultiCatch());
+        } else if (method.equals("outerCatch")) {
+            return ABIEncoder.encodeOneInteger(outerCatch());
+        } else if (method.equals("innerCatch")) {
+            innerCatch();
+        } else if (method.equals("manuallyThrowNull")) {
+            manuallyThrowNull();
+        } else if (method.equals("userDefinedCatch")) {
+            return ABIEncoder.encodeOneString(userDefinedCatch());
+        } else if (method.equals("userDefinedThrow")) {
+            userDefinedThrow(decoder.decodeOneString());
+        } else if (method.equals("userDefinedThrowRuntime")) {
+            userDefinedThrowRuntime(decoder.decodeOneString());
+        } else if (method.equals("originalNull")) {
+            originalNull();
+        }
+
+        return null;
+    }
+
     public static void tryCatchLoop(int count) {
         for (int i = 0; i < count; i++) {
             try {
@@ -17,7 +47,6 @@ public class TestExceptionResource {
         }
     }
 
-    @Callable
     public static int tryMultiCatchFinally() {
         int r = 0;
         try {
@@ -38,7 +67,6 @@ public class TestExceptionResource {
      * This method tests that we actually did go into the exception hander.
      * The result will be 2.
      */
-    @Callable
     public static int tryMultiCatch() {
         int r = 0;
         try {
@@ -56,7 +84,6 @@ public class TestExceptionResource {
     /**
      * We this calls the innerCatch, below, to make sure that re-throwing VM-generated exceptions works.
      */
-    @Callable
     public static int outerCatch() {
         int result = 0;
         try {
@@ -75,7 +102,6 @@ public class TestExceptionResource {
     /**
      * Makes sure that we can re-throw an exception.
      */
-    @Callable
     public static void innerCatch() {
         try {
             // Cause the throw to happen.
@@ -86,12 +112,10 @@ public class TestExceptionResource {
         }
     }
 
-    @Callable
     public static void manuallyThrowNull() {
         throw new NullPointerException("faked");
     }
 
-    @Callable
     public static String userDefinedCatch() {
         String result = "one";
         try {
@@ -102,12 +126,10 @@ public class TestExceptionResource {
         return result;
     }
 
-    @Callable
     public static void userDefinedThrow(String message) throws UserDefinedException {
         throw new UserDefinedException(message);
     }
 
-    @Callable
     public static void userDefinedThrowRuntime(String message) {
         throw new UserDefinedRuntimeException(message);
     }
@@ -115,7 +137,6 @@ public class TestExceptionResource {
     /**
      * Used to demonstrate what happens when an NPE is thrown by the VM and we don't catch it (issue-141).
      */
-    @Callable
     public static void originalNull() {
         ((Object)null).hashCode();
     }

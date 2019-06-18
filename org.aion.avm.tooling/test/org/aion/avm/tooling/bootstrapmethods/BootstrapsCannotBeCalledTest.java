@@ -2,7 +2,7 @@ package org.aion.avm.tooling.bootstrapmethods;
 
 import avm.Address;
 import org.aion.avm.tooling.AvmRule;
-import org.aion.kernel.AvmTransactionResult;
+import org.aion.types.TransactionResult;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -17,23 +17,23 @@ public class BootstrapsCannotBeCalledTest {
 
     @Test
     public void testStringConcatFactoryMakeConcat() {
-        AvmTransactionResult result = deployContract(MakeConcatTarget.class);
-        assertTrue(result.getResultCode().isFailed());
+        TransactionResult result = deployContract(MakeConcatTarget.class);
+        assertTrue(result.transactionStatus.isFailed());
     }
 
     @Test
     public void testStringConcatFactoryMakeConcatWithConstants() {
-        AvmTransactionResult result = deployContract(MakeConcatWithConstantsTarget.class);
-        assertTrue(result.getResultCode().isFailed());
+        TransactionResult result = deployContract(MakeConcatWithConstantsTarget.class);
+        assertTrue(result.transactionStatus.isFailed());
     }
 
     @Test
     public void testLambdaMetaFactory() {
-        AvmTransactionResult result = deployContract(MetaFactoryTarget.class);
-        assertTrue(result.getResultCode().isFailed());
+        TransactionResult result = deployContract(MetaFactoryTarget.class);
+        assertTrue(result.transactionStatus.isFailed());
     }
 
-    private AvmTransactionResult deployContract(Class<?> contract) {
+    private TransactionResult deployContract(Class<?> contract) {
         return avmRule.deploy(deployer, BigInteger.ZERO, avmRule.getDappBytesWithoutOptimization(contract, null)).getTransactionResult();
     }
 

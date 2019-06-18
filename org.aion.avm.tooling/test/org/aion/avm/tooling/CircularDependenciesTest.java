@@ -11,10 +11,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.userlib.CodeAndArguments;
-import org.aion.kernel.AvmTransactionResult;
+import org.aion.types.TransactionResult;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -40,11 +41,11 @@ public class CircularDependenciesTest {
         DEPLOYER = new AionAddress(DEPLOYER_API.toByteArray());
     }
 
-    private AvmTransactionResult callContract(String method, Object... parameters) {
+    private TransactionResult callContract(String method, Object... parameters) {
         return callContract(DEPLOYER, method, parameters);
     }
 
-    private AvmTransactionResult callContract(AionAddress sender, String method, Object... parameters) {
+    private TransactionResult callContract(AionAddress sender, String method, Object... parameters) {
         byte[] callData = ABIUtil.encodeMethodArguments(method, parameters);
         Address contractAddress = new Address(contract.toByteArray());
         Address senderAddress = new Address(sender.toByteArray());
@@ -82,7 +83,7 @@ public class CircularDependenciesTest {
             SelfDestructSmallResource.class, classMap);
         CodeAndArguments codeAndArguments = new CodeAndArguments(jar, null);
         AvmRule.ResultWrapper result = avmRule.deploy(DEPLOYER_API, BigInteger.ZERO, codeAndArguments.encodeToBytes(), ENERGY_LIMIT, ENERGY_PRICE);
-        assertEquals(AvmTransactionResult.Code.FAILED_REJECTED, result.getReceiptStatus());
+        assertEquals(AvmInternalError.FAILED_REJECTED_CLASS.error, result.getReceiptStatus().causeOfError);
     }
 
     /**
@@ -99,7 +100,7 @@ public class CircularDependenciesTest {
             SelfDestructSmallResource.class, classMap);
         CodeAndArguments codeAndArguments = new CodeAndArguments(jar, null);
         AvmRule.ResultWrapper result = avmRule.deploy(DEPLOYER_API, BigInteger.ZERO, codeAndArguments.encodeToBytes(), ENERGY_LIMIT, ENERGY_PRICE);
-        assertEquals(AvmTransactionResult.Code.FAILED_REJECTED, result.getReceiptStatus());
+        assertEquals(AvmInternalError.FAILED_REJECTED_CLASS.error, result.getReceiptStatus().causeOfError);
     }
 
      /**

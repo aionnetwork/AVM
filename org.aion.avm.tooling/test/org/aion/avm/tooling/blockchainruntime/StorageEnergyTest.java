@@ -39,7 +39,7 @@ public class StorageEnergyTest {
         txDataMethodArguments = ABIUtil.encodeMethodArguments("resetStorage");
         resultWrapper = avmRule.call(from, dappAddr, BigInteger.ZERO, txDataMethodArguments, energyLimit, energyPrice);
         Assert.assertTrue(resultWrapper.getReceiptStatus().isSuccess());
-        Assert.assertEquals(58303 - 58303 / 2, energyLimit - resultWrapper.getTransactionResult().getEnergyRemaining());
+        Assert.assertEquals(58303 - 58303 / 2, resultWrapper.getTransactionResult().energyUsed);
     }
 
     /**
@@ -54,7 +54,7 @@ public class StorageEnergyTest {
         txDataMethodArguments = ABIUtil.encodeMethodArguments("resetStorageSelfDestruct");
         resultWrapper = avmRule.call(from, dappAddr, BigInteger.ZERO, txDataMethodArguments, energyLimit, energyPrice);
         Assert.assertTrue(resultWrapper.getReceiptStatus().isSuccess());
-        Assert.assertEquals(65168 - 65168 / 2, energyLimit - resultWrapper.getTransactionResult().getEnergyRemaining());
+        Assert.assertEquals(65168 - 65168 / 2, resultWrapper.getTransactionResult().energyUsed);
     }
 
     /**
@@ -67,7 +67,7 @@ public class StorageEnergyTest {
         Assert.assertTrue(resultWrapper.getReceiptStatus().isSuccess());
         Assert.assertEquals(35281 + 74 * 5 +
                 RuntimeMethodFeeSchedule.BlockchainRuntime_avm_setStorage +
-                4 * RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage + 500, energyLimit - resultWrapper.getTransactionResult().getEnergyRemaining());
+                4 * RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage + 500, resultWrapper.getTransactionResult().energyUsed);
     }
 
     /**
@@ -87,7 +87,7 @@ public class StorageEnergyTest {
         // cost before the refund is processed
         Assert.assertEquals(37271 + 29 * 5
                 + 5 * RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage
-                - RuntimeMethodFeeSchedule.BlockchainRuntime_avm_deleteStorage_refund, energyLimit - resultWrapper.getTransactionResult().getEnergyRemaining());
+                - RuntimeMethodFeeSchedule.BlockchainRuntime_avm_deleteStorage_refund, resultWrapper.getTransactionResult().energyUsed);
     }
 
     /**
@@ -107,7 +107,7 @@ public class StorageEnergyTest {
         // cost before the refund is processed
         long executionCost = 61934 + 29 * 5 +
                 5 * RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage;
-        Assert.assertEquals(executionCost - executionCost / 2, energyLimit - resultWrapper.getTransactionResult().getEnergyRemaining());
+        Assert.assertEquals(executionCost - executionCost / 2, resultWrapper.getTransactionResult().energyUsed);
     }
 
     /**
@@ -122,7 +122,7 @@ public class StorageEnergyTest {
         long costWithoutResettingStorage = 164702;
         long executionCost = costWithoutResettingStorage + 29 * 5 +
                 5 * RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage;
-        Assert.assertEquals(executionCost - 5 * RuntimeMethodFeeSchedule.BlockchainRuntime_avm_deleteStorage_refund, energyLimit - resultWrapper.getTransactionResult().getEnergyRemaining());
+        Assert.assertEquals(executionCost - 5 * RuntimeMethodFeeSchedule.BlockchainRuntime_avm_deleteStorage_refund, resultWrapper.getTransactionResult().energyUsed);
 
         byte[] key = new byte[32];
         key[0] = 0x1;
@@ -154,8 +154,8 @@ public class StorageEnergyTest {
         byte[] data = ABIUtil.encodeMethodArguments("resetStorage");
         txDataMethodArguments = ABIUtil.encodeMethodArguments("reentrantReset", newContract, data);
         resultWrapper = avmRule.call(from, dappAddr, BigInteger.ZERO, txDataMethodArguments, energyLimit, energyPrice);
-        Assert.assertTrue(resultWrapper.getTransactionResult().getResultCode().isSuccess());
-        Assert.assertEquals(114832 - 114832 / 2, energyLimit - resultWrapper.getTransactionResult().getEnergyRemaining());
+        Assert.assertTrue(resultWrapper.getTransactionResult().transactionStatus.isSuccess());
+        Assert.assertEquals(114832 - 114832 / 2, resultWrapper.getTransactionResult().energyUsed);
     }
 
     @Test
@@ -171,7 +171,7 @@ public class StorageEnergyTest {
         Assert.assertEquals(totalCost +
             3 * RuntimeMethodFeeSchedule.BlockchainRuntime_avm_setStorage +
             3 * RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage -
-            RuntimeMethodFeeSchedule.BlockchainRuntime_avm_deleteStorage_refund, energyLimit - resultWrapper.getTransactionResult().getEnergyRemaining());
+            RuntimeMethodFeeSchedule.BlockchainRuntime_avm_deleteStorage_refund, resultWrapper.getTransactionResult().energyUsed);
 
     }
 

@@ -104,7 +104,7 @@ public class SelfDestructTest {
         byte[] txData = ABIUtil.encodeMethodArguments(methodName, objects);
         AvmRule.ResultWrapper result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice);
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
-        return energyLimit - result.getTransactionResult().getEnergyRemaining();
+        return result.getTransactionResult().energyUsed;
     }
 
     public Address deploy() {

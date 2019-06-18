@@ -1,10 +1,9 @@
 package org.aion.avm.tooling;
 
 import avm.Address;
-import org.aion.kernel.AvmTransactionResult.Code;
 import org.aion.avm.core.AvmTransactionUtil;
+import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
-import org.aion.types.Log;
 import org.aion.types.Transaction;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
@@ -15,13 +14,13 @@ import org.aion.avm.tooling.abi.ABICompiler;
 import org.aion.avm.tooling.deploy.JarOptimizer;
 import org.aion.avm.tooling.deploy.eliminator.UnreachableMethodRemover;
 import org.aion.avm.userlib.CodeAndArguments;
-import org.aion.kernel.*;
+import org.aion.types.TransactionResult;
+import org.aion.types.TransactionStatus;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import java.math.BigInteger;
-import java.util.List;
 
 /**
  * TestRule to handle the boilerplate operations of testing with an embedded avm.
@@ -165,7 +164,7 @@ public final class AvmRule implements TestRule {
     public ResultWrapper balanceTransfer(Address from, Address to, BigInteger value, long energyLimit, long energyPrice) {
         Transaction tx = AvmTransactionUtil.call(new AionAddress(from.toByteArray()), new AionAddress(to.toByteArray()), kernel.getNonce(new AionAddress(from.toByteArray())), value, new byte[0], energyLimit, energyPrice);
 
-        return new ResultWrapper(avm.run(this.kernel, new Transaction[]{tx})[0].get());
+        return new ResultWrapper(avm.run(this.kernel, new Transaction[]{tx})[0].getResult());
     }
 
     /**
@@ -197,29 +196,27 @@ public final class AvmRule implements TestRule {
         if (automaticBlockGenerationEnabled) {
             this.kernel.generateBlock();
         }Transaction tx = AvmTransactionUtil.call(new AionAddress(from.toByteArray()), new AionAddress(dappAddress.toByteArray()), kernel.getNonce(new AionAddress(from.toByteArray())), value, transactionData, energyLimit, energyPrice);
-        return new ResultWrapper(avm.run(this.kernel, new Transaction[]{tx})[0].get());
+        return new ResultWrapper(avm.run(this.kernel, new Transaction[]{tx})[0].getResult());
     }
 
     private ResultWrapper deployDapp(Address from, BigInteger value, byte[] dappBytes, long energyLimit, long energyPrice) {
         if (automaticBlockGenerationEnabled) {
             this.kernel.generateBlock();
         }Transaction tx = AvmTransactionUtil.create(new AionAddress(from.toByteArray()), kernel.getNonce(new AionAddress(from.toByteArray())), value, dappBytes, energyLimit, energyPrice);
-        return new ResultWrapper(avm.run(this.kernel, new Transaction[]{tx})[0].get());
+        return new ResultWrapper(avm.run(this.kernel, new Transaction[]{tx})[0].getResult());
     }
 
     public static class ResultWrapper {
-        AvmTransactionResult result;
-        SideEffects sideEffects;
+        TransactionResult result;
 
-        ResultWrapper(AvmTransactionResult result) {
+        ResultWrapper(TransactionResult result) {
             this.result = result;
-            this.sideEffects = result.getSideEffects();
         }
 
         /**
          * @return Result of the transaction execution
          */
-        public AvmTransactionResult getTransactionResult(){
+        public TransactionResult getTransactionResult(){
             return result;
         }
 
@@ -227,32 +224,25 @@ public final class AvmRule implements TestRule {
          * @return Address of the Dapp deployed in this transaction, Null if the deploy transaction failed
          */
         public Address getDappAddress() {
-            if (!result.getResultCode().isSuccess()) {
-                System.out.println("Contract deployment failed with error " + result.getResultCode());
+            if (!result.transactionStatus.isSuccess()) {
+                System.out.println("Contract deployment failed with error " + result.transactionStatus.causeOfError);
                 return null;
             }
-            return new Address(result.getReturnData());
+            return new Address(result.copyOfTransactionOutput().orElseThrow());
         }
 
         /**
          * @return Decoded returned data of the call
          */
         public Object getDecodedReturnData() {
-            return ABIUtil.decodeOneObject(result.getReturnData());
+            return ABIUtil.decodeOneObject(result.copyOfTransactionOutput().orElseThrow());
         }
 
         /**
-         * @return Transaction execution result code, which can be SUCCESS, REJECTED, or FAILED.
+         * @return Transaction execution result code, which can be SUCCESS, REJECTED, FAILED, REVERT, or FATAL.
          */
-        public Code getReceiptStatus() {
-            return result.getResultCode();
-        }
-
-        /**
-         * @return List of log objects
-         */
-        public List<Log> getLogs(){
-            return sideEffects.getExecutionLogs();
+        public TransactionStatus getReceiptStatus() {
+            return result.transactionStatus;
         }
     }
 }

@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import java.util.Arrays;
+import org.aion.avm.core.util.TransactionResultUtil;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import s.java.math.BigInteger;
@@ -451,21 +452,19 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         // Create the Transaction.
         Transaction transaction = AvmTransactionUtil.fromInternalTransaction(internalTx);
 
-        // execute the internal transaction
-        AvmTransactionResult newResult;
-
         // Acquire the target of the internal transaction
         AionAddress destination = (transaction.isCreate) ? this.capabilities.generateContractAddress(transaction) : transaction.destinationAddress;
         boolean isAcquired = avm.getResourceMonitor().acquire(destination.toByteArray(), task);
 
+        // execute the internal transaction
+        AvmWrappedTransactionResult newResult = null;
         try {
             if(isAcquired) {
                 newResult = this.avm.runInternalTransaction(this.externalState, this.task, transaction);
             } else {
                 // Unsuccessful acquire means transaction task has been aborted.
                 // In abort case, internal transaction will not be executed.
-                newResult = new AvmTransactionResult(internalTx.energyLimit, 0);
-                newResult.setResultCode(AvmTransactionResult.Code.FAILED_ABORT);
+                newResult = TransactionResultUtil.newAbortedResultWithZeroEnergyUsed();
                 //todo check if this is necessary/correct in abort state
                 task.peekSideEffects().markAllInternalTransactionsAsRejected();
             }
@@ -480,11 +479,11 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         }
 
         // charge energy consumed
-        currentThreadInstrumentation.chargeEnergy(newResult.getEnergyUsed());
+        currentThreadInstrumentation.chargeEnergy(newResult.energyUsed());
 
         task.decrementTransactionStackDepth();
 
-        return new Result(newResult.getResultCode().isSuccess(),
-                newResult.getReturnData() == null ? null : new ByteArray(Arrays.copyOf(newResult.getReturnData(), newResult.getReturnData().length)));
+        byte[] output = newResult.output();
+        return new Result(newResult.isSuccess(), output == null ? null : new ByteArray(output));
     }
 }

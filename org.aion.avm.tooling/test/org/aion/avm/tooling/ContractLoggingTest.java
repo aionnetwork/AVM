@@ -9,8 +9,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import org.aion.avm.core.AvmTransactionUtil;
-import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.SideEffects;
 import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Log;
@@ -23,6 +21,7 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.LogSizeUtils;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.TestingBlock;
+import org.aion.types.TransactionResult;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -56,27 +55,25 @@ public class ContractLoggingTest {
     @Test
     public void testLogs() {
         Transaction transaction = generateTxForMethodCall("hitLogs");
-        AvmTransactionResult result = runTransaction(transaction);
-        assertTrue(result.getResultCode().isSuccess());
+        TransactionResult result = runTransaction(transaction);
+        assertTrue(result.transactionStatus.isSuccess());
 
-        SideEffects sideEffects = result.getSideEffects();
-        assertEquals(NUM_LOGS, sideEffects.getExecutionLogs().size());
-        assertEquals(0, sideEffects.getInternalTransactions().size());
+        assertEquals(NUM_LOGS, result.logs.size());
+        assertEquals(0, result.internalTransactions.size());
 
-        verifyLogs(sideEffects.getExecutionLogs(), 1);
+        verifyLogs(result.logs, 1);
     }
 
     @Test
     public void testLogsFireOffInDeepestInternalTransaction() {
         Transaction transaction = generateTxForMethodCall("spawnInternalTransactionsAndHitLogsAtBottomLevel", 9);
-        AvmTransactionResult result = runTransaction(transaction);
-        assertTrue(result.getResultCode().isSuccess());
+        TransactionResult result = runTransaction(transaction);
+        assertTrue(result.transactionStatus.isSuccess());
 
-        SideEffects sideEffects = result.getSideEffects();
-        assertEquals(NUM_LOGS, sideEffects.getExecutionLogs().size());
-        assertEquals(9, sideEffects.getInternalTransactions().size());
+        assertEquals(NUM_LOGS, result.logs.size());
+        assertEquals(9, result.internalTransactions.size());
 
-        verifyLogs(sideEffects.getExecutionLogs(), 1);
+        verifyLogs(result.logs, 1);
     }
 
     @Test
@@ -84,27 +81,25 @@ public class ContractLoggingTest {
         int depth = 9;
 
         Transaction transaction = generateTxForMethodCall("spawnInternalTransactionsAndHitLogsAtEachLevel", depth);
-        AvmTransactionResult result = runTransaction(transaction);
-        assertTrue(result.getResultCode().isSuccess());
+        TransactionResult result = runTransaction(transaction);
+        assertTrue(result.transactionStatus.isSuccess());
 
-        SideEffects sideEffects = result.getSideEffects();
-        assertEquals(NUM_LOGS * (depth + 1), sideEffects.getExecutionLogs().size());
-        assertEquals(depth, sideEffects.getInternalTransactions().size());
+        assertEquals(NUM_LOGS * (depth + 1), result.logs.size());
+        assertEquals(depth, result.internalTransactions.size());
 
-        verifyLogs(sideEffects.getExecutionLogs(), depth + 1);
+        verifyLogs(result.logs, depth + 1);
     }
 
     @Test
     public void testLogsFiredOffInEachInternalTransactionUptoFive() {
         Transaction transaction = generateTxForMethodCall("spawnInternalTransactionsAndFailAtDepth5", 9);
-        AvmTransactionResult result = runTransaction(transaction);
-        assertTrue(result.getResultCode().isSuccess());
+        TransactionResult result = runTransaction(transaction);
+        assertTrue(result.transactionStatus.isSuccess());
 
-        SideEffects sideEffects = result.getSideEffects();
-        assertEquals(NUM_LOGS * 5, sideEffects.getExecutionLogs().size());
-        assertEquals(5, sideEffects.getInternalTransactions().size());
+        assertEquals(NUM_LOGS * 5, result.logs.size());
+        assertEquals(5, result.internalTransactions.size());
 
-        verifyLogs(sideEffects.getExecutionLogs(), 5);
+        verifyLogs(result.logs, 5);
     }
 
     /**
@@ -176,14 +171,14 @@ public class ContractLoggingTest {
         jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         Transaction transaction = AvmTransactionUtil.create(from, kernel.getNonce(from), BigInteger.ZERO, jar, energyLimit, energyPrice);
-        AvmTransactionResult result = avm.run(ContractLoggingTest.kernel, new Transaction[] {transaction})[0].get();
+        TransactionResult result = avm.run(ContractLoggingTest.kernel, new Transaction[] {transaction})[0].getResult();
 
-        assertTrue(result.getResultCode().isSuccess());
-        contract = new AionAddress(result.getReturnData());
+        assertTrue(result.transactionStatus.isSuccess());
+        contract = new AionAddress(result.copyOfTransactionOutput().orElseThrow());
     }
 
-    private AvmTransactionResult runTransaction(Transaction tx) {
-        return avm.run(ContractLoggingTest.kernel, new Transaction[] {tx})[0].get();
+    private TransactionResult runTransaction(Transaction tx) {
+        return avm.run(ContractLoggingTest.kernel, new Transaction[] {tx})[0].getResult();
     }
 
     private Transaction generateTxForMethodCall(String methodName, Object... args) {

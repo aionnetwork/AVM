@@ -1,12 +1,19 @@
 package org.aion.avm.core;
 
 import i.RuntimeAssertionError;
-import org.aion.kernel.AvmTransactionResult;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
+import org.aion.avm.core.util.TransactionResultUtil;
+import org.aion.kernel.AvmWrappedTransactionResult;
+import org.aion.kernel.SideEffects;
 import org.aion.parallel.TransactionTask;
 
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
+import org.aion.types.AionAddress;
+import org.aion.types.InternalTransaction.RejectedStatus;
 
 
 /**
@@ -24,7 +31,7 @@ public class HandoffMonitor {
 
     private Queue<TransactionTask> taskQueue;
 
-    private AvmTransactionResult[] outgoingResults;
+    private AvmWrappedTransactionResult[] outgoingResults;
     private Throwable backgroundThrowable;
     //private int nextTransactionIndex;
 
@@ -58,7 +65,7 @@ public class HandoffMonitor {
             this.taskQueue.add(tasks[i]);
         }
 
-        this.outgoingResults = new AvmTransactionResult[tasks.length];
+        this.outgoingResults = new AvmWrappedTransactionResult[tasks.length];
         this.notifyAll();
         
         // Return the future result, which will do the waiting for us.
@@ -69,9 +76,12 @@ public class HandoffMonitor {
         return results;
     }
 
-    public synchronized AvmTransactionResult blockingConsumeResult(int index) {
+    public synchronized AvmWrappedTransactionResult blockingConsumeResult(int index) {
         // Wait until we have the result or something went wrong.
         while ((null == this.outgoingResults[index]) && (null == this.backgroundThrowable)) {
+            // It is an error to request a result while the avm is shut down.
+            RuntimeAssertionError.assertTrue(this.internalThreads != null);
+
             // Otherwise, wait until state changes.
             try {
                 this.wait();
@@ -85,8 +95,12 @@ public class HandoffMonitor {
         handleThrowable();
         
         // Consume the result and return it.
-        AvmTransactionResult result = this.outgoingResults[index];
-        result.getSideEffects().merge(incomingTransactionTasks[index].popSideEffects());
+        AvmWrappedTransactionResult result = this.outgoingResults[index];
+
+        // Merge the logs and internal transactions from the side effects into the result.
+        SideEffects sideEffects = incomingTransactionTasks[index].popSideEffects();
+        result = TransactionResultUtil.addLogsAndInternalTransactions(result, sideEffects.getExecutionLogs(), sideEffects.getInternalTransactions());
+
         RuntimeAssertionError.assertTrue(incomingTransactionTasks[index].isSideEffectsStackEmpty());
         this.incomingTransactionTasks[index] = null;
         this.outgoingResults[index] = null;
@@ -107,7 +121,8 @@ public class HandoffMonitor {
      * @param previousResult The result of the previous transaction returned by this call.
      * @return The next transaction to run or null if we should shut down.
      */
-    public synchronized TransactionTask blockingPollForTransaction(AvmTransactionResult previousResult, TransactionTask previousTask) {
+    public synchronized TransactionTask blockingPollForTransaction(
+        AvmWrappedTransactionResult previousResult, TransactionTask previousTask) {
         // We may have been given these transactions as a list but we hand them out to the caller individually.
         
         // First, write-back any results that we have and notify anyone listening for that, on the front.
