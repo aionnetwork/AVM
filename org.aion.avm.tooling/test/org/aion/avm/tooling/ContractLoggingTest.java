@@ -9,9 +9,9 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import org.aion.kernel.AvmTransactionResult;
-import org.aion.kernel.Log;
 import org.aion.kernel.SideEffects;
 import org.aion.types.AionAddress;
+import org.aion.types.Log;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -133,40 +133,40 @@ public class ContractLoggingTest {
      * Verifies that log is one of the 5 possible logging calls in the contract.
      */
     private void verifyLog(Log log) {
-        assertEquals(contract, log.getSourceAddress());
-        switch (log.getTopics().size()) {
+        assertEquals(contract, new AionAddress(log.copyOfAddress()));
+        switch (log.copyOfTopics().size()) {
             case 0:
-                assertArrayEquals(LoggingTarget.DATA1, log.getData());
+                assertArrayEquals(LoggingTarget.DATA1, log.copyOfData());
                 incrementCounter(0);
                 break;
             case 1:
-                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC1), log.getTopics().get(0));
-                assertArrayEquals(LoggingTarget.DATA2, log.getData());
+                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC1), log.copyOfTopics().get(0));
+                assertArrayEquals(LoggingTarget.DATA2, log.copyOfData());
                 incrementCounter(1);
                 break;
             case 2:
-                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC1), log.getTopics().get(0));
-                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC2), log.getTopics().get(1));
-                assertArrayEquals(LoggingTarget.DATA3, log.getData());
+                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC1), log.copyOfTopics().get(0));
+                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC2), log.copyOfTopics().get(1));
+                assertArrayEquals(LoggingTarget.DATA3, log.copyOfData());
                 incrementCounter(2);
                 break;
             case 3:
-                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC1), log.getTopics().get(0));
-                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC2), log.getTopics().get(1));
-                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC3), log.getTopics().get(2));
-                assertArrayEquals(LoggingTarget.DATA4, log.getData());
+                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC1), log.copyOfTopics().get(0));
+                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC2), log.copyOfTopics().get(1));
+                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC3), log.copyOfTopics().get(2));
+                assertArrayEquals(LoggingTarget.DATA4, log.copyOfData());
                 incrementCounter(3);
                 break;
             case 4:
-                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC1), log.getTopics().get(0));
-                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC2), log.getTopics().get(1));
-                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC3), log.getTopics().get(2));
-                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC4), log.getTopics().get(3));
-                assertArrayEquals(LoggingTarget.DATA5, log.getData());
+                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC1), log.copyOfTopics().get(0));
+                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC2), log.copyOfTopics().get(1));
+                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC3), log.copyOfTopics().get(2));
+                assertArrayEquals(LogSizeUtils.truncatePadTopic(LoggingTarget.TOPIC4), log.copyOfTopics().get(3));
+                assertArrayEquals(LoggingTarget.DATA5, log.copyOfData());
                 incrementCounter(4);
                 break;
             default:
-                fail("Log topic size should be in the range [0,4] but was: " + log.getTopics().size());
+                fail("Log topic size should be in the range [0,4] but was: " + log.copyOfTopics().size());
         }
     }
 

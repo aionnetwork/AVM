@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.aion.types.AionAddress;
+import org.aion.types.Log;
 import org.aion.vm.api.interfaces.InternalTransactionInterface;
 
 /**

@@ -73,9 +73,9 @@ public class JUnitRuleTest {
 
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
         Assert.assertEquals(2, result.getLogs().size());
-        assertEquals(dappAddr, new Address(result.getLogs().get(0).getSourceAddress().toByteArray()));
-        assertArrayEquals(new byte[]{ 0x1 }, result.getLogs().get(0).getData());
-        assertArrayEquals(LogSizeUtils.truncatePadTopic(new byte[]{ 0xf, 0xe, 0xd, 0xc, 0xb, 0xa }), result.getLogs().get(1).getTopics().get(0));
+        assertEquals(dappAddr, new Address(result.getLogs().get(0).copyOfAddress()));
+        assertArrayEquals(new byte[]{ 0x1 }, result.getLogs().get(0).copyOfData());
+        assertArrayEquals(LogSizeUtils.truncatePadTopic(new byte[]{ 0xf, 0xe, 0xd, 0xc, 0xb, 0xa }), result.getLogs().get(1).copyOfTopics().get(0));
     }
 
     @Test
