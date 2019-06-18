@@ -20,7 +20,7 @@ public class DAppExecutor {
 
     public static void call(IExternalCapabilities capabilities, KernelInterface kernel, AvmInternal avm, LoadedDApp dapp,
                             ReentrantDAppStack.ReentrantState stateToResume, TransactionTask task,
-                            AvmTransaction tx, AvmTransactionResult result, boolean verboseErrors) {
+                            AvmTransaction tx, AvmTransactionResult result, boolean verboseErrors, boolean readFromCache) {
         AionAddress dappAddress = tx.destinationAddress;
         
         // If this is a reentrant call, we need to serialize the graph of the parent frame.  This is required to both copy-back our changes but also
@@ -37,12 +37,32 @@ public class DAppExecutor {
             ? stateToResume.getInternedClassWrappers()
             : new InternedClasses();
 
-        // We are now ready to load the graph (note that we can't do any billing until after we install the InstrumentationHelpers new stack frame).
-        byte[] rawGraphData = (null != callerState)
-                ? callerState.rawState
-                : kernel.getObjectGraph(dappAddress);
-        int nextHashCode = dapp.loadEntireGraph(initialClassWrappers, rawGraphData);
-        
+        // Note that we can't do any billing until after we install the InstrumentationHelpers new stack frame
+        int nextHashCode;
+        // Used for deserialization billing
+        int rawGraphDataLength;
+
+        if (readFromCache) {
+            if (null != callerState) {
+                nextHashCode = stateToResume.getNextHashCode();
+                byte[] rawGraphData = callerState.rawState;
+                dapp.loadEntireGraph(initialClassWrappers, rawGraphData);
+                rawGraphDataLength = rawGraphData.length;
+
+            } else {
+                // If we have the DApp in cache, we can get the next hashcode and graph length from it. Otherwise, we have to load the entire graph
+                nextHashCode = dapp.getHashCode();
+                rawGraphDataLength = dapp.getSerializedLength();
+            }
+        } else {
+            byte[] rawGraphData = (null != callerState)
+                    ? callerState.rawState
+                    : kernel.getObjectGraph(dappAddress);
+            nextHashCode = dapp.loadEntireGraph(initialClassWrappers, rawGraphData);
+            rawGraphDataLength = rawGraphData.length;
+        }
+
+
         // Note that we need to store the state of this invocation on the reentrant stack in case there is another call into the same app.
         // This is required so that the call() mechanism can access it to save/reload its ContractEnvironmentState and so that the underlying
         // instance loader (ReentrantGraphProcessor/ReflectionStructureCodec) can be notified when it becomes active/inactive (since it needs
@@ -56,7 +76,7 @@ public class DAppExecutor {
         try {
             // It is now safe for us to bill for the cost of loading the graph (the cost is the same, whether this came from the caller or the disk).
             // (note that we do this under the try since aborts can happen here)
-            threadInstrumentation.chargeEnergy(StorageFees.READ_PRICE_PER_BYTE * rawGraphData.length);
+            threadInstrumentation.chargeEnergy(StorageFees.READ_PRICE_PER_BYTE * rawGraphDataLength);
             
             // Call the main within the DApp.
             byte[] ret = dapp.callMain();
@@ -73,10 +93,14 @@ public class DAppExecutor {
                 stateToResume.updateNextHashCode(updatedNextHashCode);
             } else {
                 // We are at the "top" so write this back to disk.
-                byte[] postCallGraphData = dapp.saveEntireGraph(threadInstrumentation.peekNextHashCode(), StorageFees.MAX_GRAPH_SIZE);
+                int newHashCode = threadInstrumentation.peekNextHashCode();
+                byte[] postCallGraphData = dapp.saveEntireGraph(newHashCode, StorageFees.MAX_GRAPH_SIZE);
                 // Bill for writing this size.
                 threadInstrumentation.chargeEnergy(StorageFees.WRITE_PRICE_PER_BYTE * postCallGraphData.length);
                 kernel.putObjectGraph(dappAddress, postCallGraphData);
+                // Update LoadedDApp state at the end of execution
+                dapp.setHashCode(newHashCode);
+                dapp.setSerializedLength(postCallGraphData.length);
             }
 
             result.setResultCode(AvmTransactionResult.Code.SUCCESS);

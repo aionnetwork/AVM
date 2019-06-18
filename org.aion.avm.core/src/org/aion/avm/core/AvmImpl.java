@@ -53,6 +53,10 @@ public class AvmImpl implements AvmInternal {
     private final boolean preserveDebuggability;
     private final boolean enableVerboseContractErrors;
     private final boolean enableVerboseConcurrentExecutor;
+    // todo: AKI-221: enable this base on the transaction type received from the kernel.
+    // Caching cannot be used while mining since the same transaction can run in different blocks.
+    // It also cannot be used for importing blocks from different sidechains.
+    private final boolean cachingEnabled = false;
 
     public AvmImpl(IInstrumentationFactory instrumentationFactory, IExternalCapabilities capabilities, AvmConfiguration configuration) {
         this.instrumentationFactory = instrumentationFactory;
@@ -380,12 +384,13 @@ public class AvmImpl implements AvmInternal {
             ReentrantDAppStack.ReentrantState stateToResume = task.getReentrantDAppStack().tryShareState(recipient);
 
             LoadedDApp dapp = null;
+            long currentBlockNumber = parentKernel.getBlockNumber();
             // The reentrant cache is obviously the first priority.
             // (note that we also want to check the kernel we were given to make sure that this DApp hasn't been deleted since we put it in the cache.
             if ((null != stateToResume) && (null != thisTransactionKernel.getTransformedCode(recipient))) {
                 dapp = stateToResume.dApp;
                 // Call directly and don't interact with DApp cache (we are reentering the state, not the origin of it).
-                DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, tx, result, this.enableVerboseContractErrors);
+                DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, tx, result, this.enableVerboseContractErrors, true);
             } else {
                 // If we didn't find it there (that is only for reentrant calls so it is rarely found in the stack), try the hot DApp cache.
                 ByteArrayWrapper addressWrapper = new ByteArrayWrapper(recipient.toByteArray());
@@ -401,19 +406,31 @@ public class AvmImpl implements AvmInternal {
 
                         // If the dapp is freshly loaded, we set the block num
                         if (null != dapp){
-                            dapp.setLoadedBlockNum(parentKernel.getBlockNumber());
+                            dapp.setLoadedCodeBlockNum(currentBlockNumber);
                         }
 
                     } catch (IOException e) {
                         unexpected(e); // the jar was created by AVM; IOException is unexpected
                     }
                 }
-                // Run the call and, if successful, check this into the hot DApp cache.
+
                 if (null != dapp) {
-                    DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, tx, result, this.enableVerboseContractErrors);
-                    if (AvmTransactionResult.Code.SUCCESS == result.getResultCode()) {
-                        dapp.cleanForCache();
-                        this.hotCache.checkin(addressWrapper, dapp);
+                    // This reflects if the DApp was loaded from the cache.
+                    // It is used in DAppExecutor to determine whether to load the data by making a call to the database or from DApp object
+                    // the loaded block number is checked to make sure DApp data is valid
+                    boolean readDataFromCache = cachingEnabled && dapp.hasValidCachedData(currentBlockNumber);
+
+                    DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, tx, result, this.enableVerboseContractErrors, readDataFromCache);
+
+                    if (cachingEnabled) {
+                        if (AvmTransactionResult.Code.SUCCESS == result.getResultCode()) {
+                            dapp.updateLoadedBlockForSuccessfulTransaction(currentBlockNumber);
+                            this.hotCache.checkin(addressWrapper, dapp);
+                        } else {
+                            dapp.updateLoadedBlockForFailedTransaction(currentBlockNumber);
+                            dapp.cleanForCodeCache();
+                            this.hotCache.checkin(addressWrapper, dapp);
+                        }
                     }
                 }
             }
@@ -438,7 +455,8 @@ public class AvmImpl implements AvmInternal {
     }
 
     private void validateCodeCache(long blockNum){
-        Predicate<SoftReference<LoadedDApp>> condition = (v) -> null != v.get() && v.get().getLoadedBlockNum() >= blockNum;
+        // getLoadedDataBlockNum will always be either equal or less than getLoadedCodeBlockNum
+        Predicate<SoftReference<LoadedDApp>> condition = (v) -> null != v.get() && v.get().getLoadedCodeBlockNum() >= blockNum;
         this.hotCache.removeValueIf(condition);
     }
 }

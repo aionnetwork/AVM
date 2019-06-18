@@ -81,9 +81,16 @@ public class LoadedDApp {
     private Class<?> mainClass;
     private Field runtimeBlockchainRuntimeField;
     private Method mainMethod;
-    private long loadedBlockNum;
+    private long loadedDataBlockNum;
+    private long loadedCodeBlockNum;
+
     private final ClassRenamer classRenamer;
     private final boolean preserveDebuggability;
+
+    // Next hashcode which can be used to resume the state or serialize the DApp
+    private int hashCode;
+    // Used for billing
+    private int serializedLength;
 
     /**
      * Creates the LoadedDApp to represent the classes related to DApp at address.
@@ -132,6 +139,8 @@ public class LoadedDApp {
             // We require that this be instantiated in this way.
             throw RuntimeAssertionError.unexpected(e);
         }
+        loadedDataBlockNum = -1;
+        loadedCodeBlockNum = -1;
     }
 
     /**
@@ -319,7 +328,7 @@ public class LoadedDApp {
     /**
      * Called before the DApp is about to be put into a cache.  This is so it can put itself into a "resumable" state.
      */
-    public void cleanForCache() {
+    public void cleanForCodeCache() {
         Deserializer.cleanClassStatics(this.fieldCache, this.sortedUserClasses, this.constantClass);
     }
 
@@ -386,13 +395,40 @@ public class LoadedDApp {
         Helpers.writeBytesToFile(bytecode, output);
     }
 
-    public void setLoadedBlockNum(long loadedBlockNum) {
-        this.loadedBlockNum = loadedBlockNum;
+    public void setLoadedCodeBlockNum(long loadedBlockNum) {
+        loadedCodeBlockNum = loadedBlockNum;
     }
 
-    public long getLoadedBlockNum() {
-        return loadedBlockNum;
+    public long getLoadedCodeBlockNum() {
+        return loadedCodeBlockNum;
     }
+
+    public void updateLoadedBlockForSuccessfulTransaction(long loadedBlockNum){
+        // Set the loaded code block number so that it can be invalidated if necessary
+        loadedCodeBlockNum = loadedBlockNum;
+
+        // Store the current block as the last number which the DApp data was loaded in
+        loadedDataBlockNum = loadedBlockNum;
+    }
+
+    public void updateLoadedBlockForFailedTransaction(long loadedBlockNum){
+        // Only the Code block number is updated because the data might not be valid. Thus, loadedDataBlockNum is reset
+        loadedCodeBlockNum = loadedBlockNum;
+        loadedDataBlockNum = -1;
+    }
+
+    public boolean hasValidCachedData(long loadedBlockNum){
+        // Ensure data has been updated before the current block and it has not been reset after.
+        return loadedDataBlockNum < loadedBlockNum && loadedDataBlockNum != -1;
+    }
+
+    public void setHashCode(int hashCode) { this.hashCode = hashCode; }
+
+    public void setSerializedLength(int serializedLength) { this.serializedLength = serializedLength; }
+
+    public int getHashCode() { return hashCode; }
+
+    public int getSerializedLength() { return serializedLength; }
 
     private Set<String> fetchPreRenameSlashStyleJclExceptions() {
         Set<String> jclExceptions = new HashSet<>();
