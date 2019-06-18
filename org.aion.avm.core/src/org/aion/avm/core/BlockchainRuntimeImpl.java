@@ -8,7 +8,7 @@ import p.avm.Address;
 import p.avm.Result;
 import i.*;
 import a.ByteArray;
-import org.aion.avm.core.types.InternalTransaction;
+import org.aion.types.InternalTransaction;
 import org.aion.avm.core.util.LogSizeUtils;
 import org.aion.kernel.*;
 import org.aion.parallel.TransactionTask;
@@ -240,7 +240,8 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         }
 
         // construct the internal transaction
-        InternalTransaction internalTx = InternalTransaction.buildTransactionOfTypeCall(
+        InternalTransaction internalTx = InternalTransaction.contractCallTransaction(
+                InternalTransaction.RejectedStatus.NOT_REJECTED,
                 this.transactionDestination,
                 target,
                 this.kernel.getNonce(this.transactionDestination),
@@ -268,7 +269,8 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         }
 
         // construct the internal transaction
-        InternalTransaction internalTx = InternalTransaction.buildTransactionOfTypeCreate(
+        InternalTransaction internalTx = InternalTransaction.contractCreateTransaction(
+                InternalTransaction.RejectedStatus.NOT_REJECTED,
                 this.transactionDestination,
                 this.kernel.getNonce(this.transactionDestination),
                 underlyingValue,
@@ -464,7 +466,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
             } else {
                 // Unsuccessful acquire means transaction task has been aborted.
                 // In abort case, internal transaction will not be executed.
-                newResult = new AvmTransactionResult(internalTx.getEnergyLimit(), 0);
+                newResult = new AvmTransactionResult(internalTx.energyLimit, 0);
                 newResult.setResultCode(AvmTransactionResult.Code.FAILED_ABORT);
                 //todo check if this is necessary/correct in abort state
                 task.peekSideEffects().markAllInternalTransactionsAsRejected();

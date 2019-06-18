@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.aion.avm.core.types.InternalTransaction;
+import org.aion.avm.core.InternalTransactionUtil;
+import org.aion.types.InternalTransaction;
 import org.aion.types.AionAddress;
 import org.aion.types.Log;
 
@@ -34,9 +35,11 @@ public class SideEffects {
     }
 
     public void markAllInternalTransactionsAsRejected() {
+        List<InternalTransaction> rejectedInternalTransactions = new ArrayList<>();
         for (InternalTransaction transaction : this.internalTransactions) {
-            transaction.markAsRejected();
+            rejectedInternalTransactions.add(InternalTransactionUtil.createRejectedTransaction(transaction));
         }
+        internalTransactions = rejectedInternalTransactions;
     }
 
     public void addInternalTransaction(InternalTransaction transaction) {

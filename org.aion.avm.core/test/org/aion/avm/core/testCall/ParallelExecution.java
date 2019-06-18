@@ -12,7 +12,7 @@ import org.aion.avm.core.SimpleAvm;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.blockchainruntime.TestingBlockchainRuntime;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
-import org.aion.avm.core.types.InternalTransaction;
+import org.aion.types.InternalTransaction;
 import org.aion.avm.core.util.Helpers;
 import i.RuntimeAssertionError;
 import org.slf4j.Logger;
@@ -99,8 +99,8 @@ public class ParallelExecution {
                     set.add(Helpers.bytesToHexString(tx.senderAddress.toByteArray()));
                     set.add(Helpers.bytesToHexString(tx.destinationAddress.toByteArray()));
                     for (InternalTransaction it : r.internalTransactions) {
-                        set.add(Helpers.bytesToHexString(it.getSenderAddress().toByteArray()));
-                        set.add(Helpers.bytesToHexString(it.getDestinationAddress().toByteArray()));
+                        set.add(Helpers.bytesToHexString(it.sender.toByteArray()));
+                        set.add(Helpers.bytesToHexString(it.destination.toByteArray()));
                     }
 
                     if (set.stream().anyMatch(k -> accounts.contains(k))) {
@@ -149,7 +149,8 @@ public class ParallelExecution {
             avm.attachBlockchainRuntime(new TestingBlockchainRuntime(new EmptyCapabilities()) {
                 @Override
                 public Result avm_call(Address targetAddress, s.java.math.BigInteger value, ByteArray payload, long energyLimit) {
-                    InternalTransaction internalTx = InternalTransaction.buildTransactionOfTypeCall(
+                    InternalTransaction internalTx = InternalTransaction.contractCallTransaction(
+                            InternalTransaction.RejectedStatus.NOT_REJECTED,
                             new AionAddress(tx.destinationAddress.toByteArray()),
                             new AionAddress(targetAddress.toByteArray()),
                             BigInteger.ZERO,

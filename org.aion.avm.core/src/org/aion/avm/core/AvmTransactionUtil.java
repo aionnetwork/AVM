@@ -1,7 +1,7 @@
 package org.aion.avm.core;
 
 import java.math.BigInteger;
-import org.aion.avm.core.types.InternalTransaction;
+import org.aion.types.InternalTransaction;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 
@@ -44,24 +44,24 @@ public class AvmTransactionUtil {
      * @throws IllegalArgumentException If any elements of external are statically invalid.
      */
     public static Transaction fromInternalTransaction(InternalTransaction internalTransaction) {
-        if (internalTransaction.isContractCreationTransaction()) {
-            return Transaction.contractCreateTransaction(internalTransaction.getSenderAddress()
-                    , internalTransaction.getTransactionHash()
-                    , new BigInteger(internalTransaction.getNonce())
-                    , new BigInteger(internalTransaction.getValue())
-                    , internalTransaction.getData()
-                    , internalTransaction.getEnergyLimit()
-                    , internalTransaction.getEnergyPrice()
+        if (internalTransaction.isCreate) {
+            return Transaction.contractCreateTransaction(internalTransaction.sender
+                    , new byte[32]
+                    , internalTransaction.senderNonce
+                    , internalTransaction.value
+                    , internalTransaction.copyOfData()
+                    , internalTransaction.energyLimit
+                    , internalTransaction.energyPrice
             );
         } else {
-            return Transaction.contractCallTransaction(internalTransaction.getSenderAddress()
-                    , internalTransaction.getDestinationAddress()
-                    , internalTransaction.getTransactionHash()
-                    , new BigInteger(internalTransaction.getNonce())
-                    , new BigInteger(internalTransaction.getValue())
-                    , internalTransaction.getData()
-                    , internalTransaction.getEnergyLimit()
-                    , internalTransaction.getEnergyPrice()
+            return Transaction.contractCallTransaction(internalTransaction.sender
+                    , internalTransaction.destination
+                    , new byte[32]
+                    , internalTransaction.senderNonce
+                    , internalTransaction.value
+                    , internalTransaction.copyOfData()
+                    , internalTransaction.energyLimit
+                    , internalTransaction.energyPrice
             );
         }
     }
