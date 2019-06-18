@@ -219,24 +219,31 @@ public class AvmImpl implements AvmInternal {
         AionAddress sender = tx.senderAddress;
         AionAddress target = tx.destinationAddress;
 
-        this.resourceMonitor.acquire(sender.toByteArray(), task);
-        this.resourceMonitor.acquire(target.toByteArray(), task);
-
-        // nonce check
-        if (!task.getThisTransactionalKernel().accountNonceEquals(sender, tx.nonce)) {
-            error = AvmTransactionResult.Code.REJECTED_INVALID_NONCE;
-        }
-
         AvmTransactionResult result = null;
-        if (null == error) {
-            // The CREATE/CALL case is handled via the common external invoke path.
-            result = runExternalInvoke(task.getThisTransactionalKernel(), task, tx);
+
+        boolean isSenderAcquired = this.resourceMonitor.acquire(sender.toByteArray(), task);
+        boolean isTargetAcquired = this.resourceMonitor.acquire(target.toByteArray(), task);
+
+        if (isSenderAcquired && isTargetAcquired) {
+            // nonce check
+            if (!task.getThisTransactionalKernel().accountNonceEquals(sender, tx.nonce)) {
+                error = AvmTransactionResult.Code.REJECTED_INVALID_NONCE;
+            }
+
+            if (null == error) {
+                // The CREATE/CALL case is handled via the common external invoke path.
+                result = runExternalInvoke(task.getThisTransactionalKernel(), task, tx);
+            } else {
+                result = new AvmTransactionResult(tx.energyLimit, tx.energyLimit);
+                result.setResultCode(error);
+            }
         } else {
-            result = new AvmTransactionResult(tx.energyLimit, tx.energyLimit);
-            result.setResultCode(error);
+            result = new AvmTransactionResult(tx.energyLimit, 0L);
+            result.setResultCode(AvmTransactionResult.Code.FAILED_ABORT);
         }
 
         // Task transactional kernel commits are serialized through address resource monitor
+        // This should be done for all transaction result cases, including FAILED_ABORT, because one of the addresses might have been acquired
         if (!this.resourceMonitor.commitKernelForTask(task, result.getResultCode().isRejected())){
             result.setResultCode(AvmTransactionResult.Code.FAILED_ABORT);
         }

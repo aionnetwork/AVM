@@ -60,8 +60,9 @@ public class AddressResourceMonitor {
      *
      * @param address The address requested.
      * @param task The requester task.
+     * @return true if the address was acquired by the task, false otherwise
      */
-    public void acquire(byte[] address, TransactionTask task){
+    public boolean acquire(byte[] address, TransactionTask task){
         synchronized (sync) {
             AddressWrapper addressWrapper = new AddressWrapper(address);
             AddressResource resource = getResource(addressWrapper);
@@ -93,7 +94,8 @@ public class AddressResourceMonitor {
                 }
             }
 
-            if (!task.inAbortState()) {
+            boolean isAborted = task.inAbortState();
+            if (!isAborted) {
                 if (DEBUG) {
                     endTime = System.nanoTime();
                     System.out.println("Acquire " + task.getIndex() + " " + resource.toString()
@@ -110,6 +112,7 @@ public class AddressResourceMonitor {
             }
 
             if (DEBUG) System.out.flush();
+            return !isAborted;
         }
     }
 

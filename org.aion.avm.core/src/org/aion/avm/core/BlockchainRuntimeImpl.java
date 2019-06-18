@@ -188,6 +188,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         require(null != address, "Address can't be NULL");
 
         // Acquire resource before reading
+        // Returned result of acquire is not checked, since an abort exception will be thrown by IInstrumentation during chargeEnergy if the task has been aborted
         avm.getResourceMonitor().acquire(address.toByteArray(), this.task);
         return new s.java.math.BigInteger(this.kernel.getBalance(new AionAddress(address.toByteArray())));
     }
@@ -198,6 +199,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         AionAddress contractAddress = this.tx.destinationAddress;
 
         // Acquire resource before reading
+        // Returned result of acquire is not checked, since an abort exception will be thrown by IInstrumentation during chargeEnergy if the task has been aborted
         avm.getResourceMonitor().acquire(contractAddress.toByteArray(), this.task);
         return new s.java.math.BigInteger(this.kernel.getBalance(contractAddress));
     }
@@ -207,6 +209,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         require(null != address, "Address can't be NULL");
 
         // Acquire resource before reading
+        // Returned result of acquire is not checked, since an abort exception will be thrown by IInstrumentation during chargeEnergy if the task has been aborted
         avm.getResourceMonitor().acquire(address.toByteArray(), this.task);
         byte[] vc = this.kernel.getCode(new AionAddress(address.toByteArray()));
         return vc == null ? 0 : vc.length;
@@ -295,6 +298,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         AionAddress contractAddress = this.tx.destinationAddress;
 
         // Acquire beneficiary address, the address of current contract is already locked at this stage.
+        // Returned result of acquire is not checked, since an abort exception will be thrown by IInstrumentation during chargeEnergy if the task has been aborted
         this.avm.getResourceMonitor().acquire(beneficiary.toByteArray(), this.task);
 
         // Value transfer
@@ -459,12 +463,22 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
         // Acquire the target of the internal transaction
         AionAddress target = avmTransaction.destinationAddress;
-        avm.getResourceMonitor().acquire(target.toByteArray(), task);
 
         // execute the internal transaction
-        AvmTransactionResult newResult = null;
+        AvmTransactionResult newResult;
+        boolean isAcquired = avm.getResourceMonitor().acquire(target.toByteArray(), task);
+
         try {
-            newResult = this.avm.runInternalTransaction(this.kernel, this.task, avmTransaction);
+            if(isAcquired) {
+                newResult = this.avm.runInternalTransaction(this.kernel, this.task, avmTransaction);
+            } else {
+                // Unsuccessful acquire means transaction task has been aborted.
+                // In abort case, internal transaction will not be executed.
+                newResult = new AvmTransactionResult(internalTx.getEnergyLimit(), 0);
+                newResult.setResultCode(AvmTransactionResult.Code.FAILED_ABORT);
+                //todo check if this is necessary/correct in abort state
+                task.peekSideEffects().markAllInternalTransactionsAsRejected();
+            }
         } finally {
             // Re-attach.
             InstrumentationHelpers.returnToExecutingFrame(this.thisDAppSetup);

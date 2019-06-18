@@ -1,6 +1,10 @@
 package org.aion.parallel;
 
 import java.math.BigInteger;
+import java.util.Arrays;
+
+import avm.Address;
+import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
@@ -203,6 +207,133 @@ public class AvmParallelTest {
         avm.shutdown();
     }
 
+    @Test
+    public void reentrantAbort() {
+        byte[] code = JarBuilder.buildJarForMainAndClassesAndUserlib(TestContract.class);
+
+        TestingKernel kernel = new TestingKernel(block);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
+
+        int length = 5;
+        AionAddress[] user = new AionAddress[length];
+        TestingTransaction[] ctx = new TestingTransaction[length];
+        for (int i = 0; i < user.length; i++) {
+            user[i] = Helpers.randomAddress();
+            kernel.adjustBalance(user[i], BigInteger.TEN.pow(20));
+            ctx[i] = TestingTransaction.create(user[i], BigInteger.ZERO, BigInteger.ZERO, new CodeAndArguments(code, null).encodeToBytes(), 5_000_000L, 1);
+        }
+
+        SimpleFuture<TransactionResult>[] results = avm.run(kernel, ctx);
+        AionAddress[] contractAddresses = new AionAddress[results.length];
+        for (int i = 0; i < results.length; i++) {
+            contractAddresses[i] = new AionAddress(results[i].get().getReturnData());
+        }
+
+        TestingTransaction[] tx = new TestingTransaction[results.length - 1];
+       // A->A->B, B->B->C, C->C->D
+        for (int i = 0; i < results.length - 1; i++) {
+            byte[] internalCallData = new ABIStreamingEncoder()
+                    .encodeOneString("doCallOther")
+                    .encodeOneAddress(new Address(contractAddresses[i + 1].toByteArray()))
+                    .encodeOneByteArray(new ABIStreamingEncoder().encodeOneString("addValue").toBytes())
+                    .toBytes();
+
+            byte[] data = new ABIStreamingEncoder().encodeOneString("doCallThis").encodeOneByteArray(internalCallData).toBytes();
+            tx[i] = TestingTransaction.call(user[i], contractAddresses[i], kernel.getNonce(user[i]), BigInteger.ZERO, data, 5_000_000, 1);
+        }
+
+        results = avm.run(kernel, tx);
+        for (SimpleFuture<TransactionResult> f : results) {
+            f.get();
+        }
+
+        // validate the state of contracts
+        for (int i = 0; i < length - 1; i++) {
+            byte[] getCallCount = new ABIStreamingEncoder().encodeOneString("getCallCount").toBytes();
+            tx[i] = TestingTransaction.call(user[i], contractAddresses[i], kernel.getNonce(user[i]), BigInteger.ZERO, getCallCount, 5_000_000, 1);
+        }
+
+        results = avm.run(kernel, tx);
+        for (SimpleFuture<TransactionResult> f : results) {
+            Assert.assertEquals(2, new ABIDecoder(f.get().getReturnData()).decodeOneInteger());
+        }
+
+        for (int i = 1; i < length - 1; i++) {
+            byte[] getValue = new ABIStreamingEncoder().encodeOneString("getValue").toBytes();
+            tx[i] = TestingTransaction.call(user[i], contractAddresses[i], kernel.getNonce(user[i]), BigInteger.ZERO, getValue, 5_000_000, 1);
+        }
+
+        results = avm.run(kernel, new TestingTransaction[]{tx[1], tx[2], tx[3]});
+        for (SimpleFuture<TransactionResult> f : results) {
+            Assert.assertEquals(1, new ABIDecoder(f.get().getReturnData()).decodeOneInteger());
+        }
+
+        avm.shutdown();
+    }
+
+    @Test
+    public void internalTransactionAbort() {
+
+        byte[] code = JarBuilder.buildJarForMainAndClassesAndUserlib(TestContract.class);
+
+        TestingKernel kernel = new TestingKernel(block);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
+
+        int length = 4;
+        AionAddress[] user = new AionAddress[length];
+        TestingTransaction[] ctx = new TestingTransaction[length];
+        for (int i = 0; i < length; i++) {
+            user[i] = Helpers.randomAddress();
+            kernel.adjustBalance(user[i], BigInteger.TEN.pow(20));
+            ctx[i] = TestingTransaction.create(user[i], BigInteger.ZERO, BigInteger.ZERO, new CodeAndArguments(code, null).encodeToBytes(), 5_000_000L, 1);
+        }
+
+        SimpleFuture<TransactionResult>[] results = avm.run(kernel, ctx);
+        AionAddress[] contractAddresses = new AionAddress[results.length];
+        for (int i = 0; i < results.length; i++) {
+            contractAddresses[i] = new AionAddress(results[i].get().getReturnData());
+        }
+
+        TestingTransaction[] tx = new TestingTransaction[results.length - 1];
+        // u1->A->B, u2->B->C, u3->C->D
+        for (int i = 0; i < results.length - 1; i++) {
+            byte[] callData = new ABIStreamingEncoder()
+                    .encodeOneString("doCallOther")
+                    .encodeOneAddress(new Address(contractAddresses[i + 1].toByteArray()))
+                    .encodeOneByteArray(new ABIStreamingEncoder().encodeOneString("addValue").toBytes())
+                    .toBytes();
+
+            tx[i] = TestingTransaction.call(user[i], contractAddresses[i], kernel.getNonce(user[i]), BigInteger.ZERO, callData, 5_000_000, 1);
+        }
+
+        results = avm.run(kernel, tx);
+        for (SimpleFuture<TransactionResult> f : results) {
+            f.get();
+        }
+
+        // validate the state of contracts
+        for (int i = 0; i < length - 1; i++) {
+            byte[] getCallCount = new ABIStreamingEncoder().encodeOneString("getCallCount").toBytes();
+            tx[i] = TestingTransaction.call(user[i], contractAddresses[i], kernel.getNonce(user[i]), BigInteger.ZERO, getCallCount, 5_000_000, 1);
+        }
+
+        results = avm.run(kernel, tx);
+        for (SimpleFuture<TransactionResult> f : results) {
+            Assert.assertEquals(1, new ABIDecoder(f.get().getReturnData()).decodeOneInteger());
+        }
+
+        for (int i = 1; i < length - 1; i++) {
+            byte[] getValue = new ABIStreamingEncoder().encodeOneString("getValue").toBytes();
+            tx[i] = TestingTransaction.call(user[i], contractAddresses[i], kernel.getNonce(user[i]), BigInteger.ZERO, getValue, 5_000_000, 1);
+        }
+        TestingTransaction[] batch = new TestingTransaction[]{tx[1], tx[2]};
+        results = avm.run(kernel, batch);
+        for (SimpleFuture<TransactionResult> f : results) {
+            Assert.assertEquals(1, new ABIDecoder(f.get().getReturnData()).decodeOneInteger());
+        }
+
+        avm.shutdown();
+    }
 
     private static byte[] encodeNoArgsMethodCall(String methodName) {
         return new ABIStreamingEncoder()
