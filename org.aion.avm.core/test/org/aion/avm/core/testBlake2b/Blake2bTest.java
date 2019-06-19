@@ -2,9 +2,9 @@ package org.aion.avm.core.testBlake2b;
 
 import java.math.BigInteger;
 
-import org.aion.avm.core.AvmTransaction;
 import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.types.AionAddress;
+import org.aion.types.Transaction;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -39,8 +39,8 @@ public class Blake2bTest {
         
         byte[] jar = JarBuilder.buildJarForMainAndClasses(Main.class, Blake2b.class);
         byte[] arguments = null;
-        AvmTransaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
-        AvmTransactionResult txResult = avm.run(this.kernel, new AvmTransaction[] {tx})[0].get();
+        Transaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
+        AvmTransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx})[0].get();
         System.out.println(txResult);
 
         dappAddress = new AionAddress(txResult.getReturnData());
@@ -57,8 +57,8 @@ public class Blake2bTest {
         Blake2b mac = Blake2b.Mac.newInstance("key".getBytes());
         byte[] hash = mac.digest("input".getBytes());
 
-        AvmTransaction tx = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
-        AvmTransactionResult txResult = avm.run(this.kernel, new AvmTransaction[] {tx})[0].get();
+        Transaction tx = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
+        AvmTransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx})[0].get();
         System.out.println(txResult);
 
         assertArrayEquals(hash, txResult.getReturnData());

@@ -3,8 +3,8 @@ package org.aion.avm.tooling;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
-import org.aion.avm.core.AvmTransaction;
-import org.aion.avm.core.types.InternalTransaction;
+
+import org.aion.types.Transaction;
 import org.aion.types.AionAddress;
 import org.aion.avm.tooling.hash.HashUtils;
 import org.aion.kernel.TestingKernel;
@@ -15,17 +15,9 @@ import org.aion.kernel.TestingKernel;
  * into the calling kernel (since it depends on the blockchain design, not the VM).
  */
 public class AddressUtil {
-    public static AionAddress generateContractAddress(InternalTransaction tx) {
-        return generateContractAddressInternal(tx.getSenderAddress(), tx.getNonce());
-    }
-
-    public static AionAddress generateContractAddress(AvmTransaction tx) {
-        return generateContractAddressInternal(tx.senderAddress, tx.nonce.toByteArray());
-    }
-
-    private static AionAddress generateContractAddressInternal(AionAddress sender, byte[] nonce) {
-        long nonceAsLong = new BigInteger(nonce).longValue();
-        ByteBuffer buffer = ByteBuffer.allocate(32 + 8).put(sender.toByteArray()).putLong(nonceAsLong);
+    public static AionAddress generateContractAddress(Transaction tx) {
+        long nonceAsLong = new BigInteger(tx.nonce.toByteArray()).longValue();
+        ByteBuffer buffer = ByteBuffer.allocate(32 + 8).put(tx.senderAddress.toByteArray()).putLong(nonceAsLong);
         byte[] hash = HashUtils.sha256(buffer.array());
         // NOTE: This implemenation assumes are being used on the testing kernel.
         hash[0] = TestingKernel.AVM_CONTRACT_PREFIX;

@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.math.BigInteger;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.types.AionAddress;
+import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
@@ -36,8 +37,8 @@ public class ApiSubclassingTest {
     @Test
     public void testDeployAndCallContractWithAbiSubclasses() {
         byte[] jar = new CodeAndArguments(JarBuilder.buildJarForMainAndClassesAndUserlib(ApiSubclassingTarget.class), null).encodeToBytes();
-        AvmTransaction transaction = AvmTransactionUtil.create(this.deployer, this.kernel.getNonce(deployer), BigInteger.ZERO, jar, 5_000_000, 1);
-        AvmTransactionResult result = this.avm.run(this.kernel, new AvmTransaction[] {transaction})[0].get();
+        Transaction transaction = AvmTransactionUtil.create(this.deployer, this.kernel.getNonce(deployer), BigInteger.ZERO, jar, 5_000_000, 1);
+        AvmTransactionResult result = this.avm.run(this.kernel, new Transaction[] {transaction})[0].get();
         assertEquals(Code.FAILED_REJECTED, result.getResultCode());
     }
 

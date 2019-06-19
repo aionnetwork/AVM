@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.math.BigInteger;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.types.AionAddress;
+import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
@@ -32,8 +33,8 @@ public class StackDepthTest {
 
         byte[] jar = new CodeAndArguments(JarBuilder.buildJarForMainAndClassesAndUserlib(StackDepthTarget.class), null).encodeToBytes();
 
-        AvmTransaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, jar, 5_000_000, 1);
-        AvmTransactionResult txResult = avm.run(kernel, new AvmTransaction[] {tx})[0].get();
+        Transaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, jar, 5_000_000, 1);
+        AvmTransactionResult txResult = avm.run(kernel, new Transaction[] {tx})[0].get();
         assertEquals(Code.SUCCESS, txResult.getResultCode());
         dappAddress = new AionAddress(txResult.getReturnData());
     }
@@ -48,8 +49,8 @@ public class StackDepthTest {
         kernel.generateBlock();
         byte[] data = encodeCall("recurse", 511);
 
-        AvmTransaction transaction = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, 2_000_000, 1);
-        AvmTransactionResult result = avm.run(kernel, new AvmTransaction[]{ transaction })[0].get();
+        Transaction transaction = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, 2_000_000, 1);
+        AvmTransactionResult result = avm.run(kernel, new Transaction[]{ transaction })[0].get();
         assertEquals(Code.SUCCESS, result.getResultCode());
     }
 
@@ -58,8 +59,8 @@ public class StackDepthTest {
         kernel.generateBlock();
         byte[] data = encodeCall("recurse", 512);
 
-        AvmTransaction transaction = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, 2_000_000, 1);
-        AvmTransactionResult result = avm.run(kernel, new AvmTransaction[]{ transaction })[0].get();
+        Transaction transaction = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, 2_000_000, 1);
+        AvmTransactionResult result = avm.run(kernel, new Transaction[]{ transaction })[0].get();
         assertEquals(Code.FAILED_OUT_OF_STACK, result.getResultCode());
     }
 
@@ -68,8 +69,8 @@ public class StackDepthTest {
         kernel.generateBlock();
         byte[] data = encodeCall("fibonacci", 20);
 
-        AvmTransaction transaction = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, 2_000_000, 1);
-        AvmTransactionResult result = avm.run(kernel, new AvmTransaction[]{ transaction })[0].get();
+        Transaction transaction = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, 2_000_000, 1);
+        AvmTransactionResult result = avm.run(kernel, new Transaction[]{ transaction })[0].get();
         assertEquals(Code.SUCCESS, result.getResultCode());
     }
 
@@ -78,8 +79,8 @@ public class StackDepthTest {
         kernel.generateBlock();
         byte[] data = encodeCall("fibonacci", 21);
 
-        AvmTransaction transaction = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, 2_000_000, 1);
-        AvmTransactionResult result = avm.run(kernel, new AvmTransaction[]{ transaction })[0].get();
+        Transaction transaction = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, 2_000_000, 1);
+        AvmTransactionResult result = avm.run(kernel, new Transaction[]{ transaction })[0].get();
         assertEquals(Code.FAILED_OUT_OF_ENERGY, result.getResultCode());
     }
 

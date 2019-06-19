@@ -3,77 +3,66 @@ package org.aion.avm.core;
 import java.math.BigInteger;
 import org.aion.avm.core.types.InternalTransaction;
 import org.aion.types.AionAddress;
+import org.aion.types.Transaction;
 
 public class AvmTransactionUtil {
 
     /**
-     * Factory method to create a 'call' AvmTransaction transaction.
+     * Factory method to create a 'call' Transaction.
      */
-    public static AvmTransaction call(AionAddress sender, AionAddress destination, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
-        return fromInternal(sender
+    public static Transaction call(AionAddress sender, AionAddress destination, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
+        return Transaction.contractCallTransaction(sender
             , destination
             , new byte[32]
-            , value.toByteArray()
-            , nonce.toByteArray()
-            , energyPrice
-            , energyLimit
-            , false
+            , nonce
+            , value
             , data
+            , energyLimit
+            , energyPrice
         );
     }
 
     /**
-     * Factory method to create a 'create' AvmTransaction transaction.
+     * Factory method to create a 'create' Transaction.
      */
-    public static AvmTransaction create(AionAddress sender, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
-        return fromInternal(sender
-            , null
+    public static Transaction create(AionAddress sender, BigInteger nonce, BigInteger value, byte[] data, long energyLimit, long energyPrice) {
+        return Transaction.contractCreateTransaction(sender
             , new byte[32]
-            , value.toByteArray()
-            , nonce.toByteArray()
-            , energyPrice
-            , energyLimit
-            , true
+            , nonce
+            , value
             , data
+            , energyLimit
+            , energyPrice
         );
     }
 
     /**
-     * Factory method to create the AvmTransaction data type from an InternalTransaction.
+     * Factory method to create the Transaction data type from an InternalTransaction.
      *
-     * @param capabilities The capabilities for generating a new contract address, if this is a create call.
-     * @param external The transaction we were given.
-     * @return The new AvmTransaction instance.
+     * @param internalTransaction The transaction we were given.
+     * @return The new Transaction instance.
      * @throws IllegalArgumentException If any elements of external are statically invalid.
      */
-    public static AvmTransaction fromInternalTransaction(IExternalCapabilities capabilities, InternalTransaction external) {
-        boolean isCreate = external.isContractCreationTransaction();
-        AionAddress destinationAddress = isCreate
-            ? capabilities.generateContractAddress(external)
-            : external.getDestinationAddress();
-
-        return fromInternal(external.getSenderAddress()
-            , destinationAddress
-            , external.getTransactionHash()
-            , external.getValue()
-            , external.getNonce()
-            , external.getEnergyPrice()
-            , external.getEnergyLimit()
-            , isCreate
-            , external.getData()
-        );
-    }
-
-    private static AvmTransaction fromInternal(AionAddress senderAddress, AionAddress destinationAddress, byte[] transactionHash, byte[] value, byte[] nonce, long energyPrice, long energyLimit, boolean isCreate, byte[] data) {
-        return new AvmTransaction(senderAddress
-            , destinationAddress
-            , transactionHash
-            , new BigInteger(1, value)
-            , new BigInteger(1, nonce)
-            , energyPrice
-            , energyLimit
-            , isCreate
-            , data
-        );
+    public static Transaction fromInternalTransaction(InternalTransaction internalTransaction) {
+        if (internalTransaction.isContractCreationTransaction()) {
+            return Transaction.contractCreateTransaction(internalTransaction.getSenderAddress()
+                    , internalTransaction.getTransactionHash()
+                    , new BigInteger(internalTransaction.getNonce())
+                    , new BigInteger(internalTransaction.getValue())
+                    , internalTransaction.getData()
+                    , internalTransaction.getEnergyLimit()
+                    , internalTransaction.getEnergyPrice()
+            );
+        } else {
+            return Transaction.contractCallTransaction(internalTransaction.getSenderAddress()
+                    , internalTransaction.getDestinationAddress()
+                    , internalTransaction.getTransactionHash()
+                    , new BigInteger(internalTransaction.getNonce())
+                    , new BigInteger(internalTransaction.getValue())
+                    , internalTransaction.getData()
+                    , internalTransaction.getEnergyLimit()
+                    , internalTransaction.getEnergyPrice()
+            );
+        }
     }
 }

@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.types.AionAddress;
+import org.aion.types.Transaction;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
 
@@ -158,7 +159,7 @@ public class AvmImpl implements AvmInternal {
         this.handoff.startExecutorThreads();
     }
 
-    public FutureResult[] run(KernelInterface kernel, AvmTransaction[] transactions) throws IllegalStateException {
+    public FutureResult[] run(KernelInterface kernel, Transaction[] transactions) throws IllegalStateException {
         if (null != this.backgroundFatalError) {
             throw this.backgroundFatalError;
         }
@@ -185,7 +186,7 @@ public class AvmImpl implements AvmInternal {
         AvmTransactionResult.Code error = null;
 
         RuntimeAssertionError.assertTrue(task != null);
-        AvmTransaction tx = task.getTransaction();
+        Transaction tx = task.getTransaction();
         RuntimeAssertionError.assertTrue(tx != null);
 
         // value/energyPrice/energyLimit sanity check
@@ -276,7 +277,7 @@ public class AvmImpl implements AvmInternal {
     }
 
     @Override
-    public AvmTransactionResult runInternalTransaction(KernelInterface parentKernel, TransactionTask task, AvmTransaction tx) {
+    public AvmTransactionResult runInternalTransaction(KernelInterface parentKernel, TransactionTask task, Transaction tx) {
         if (null != this.backgroundFatalError) {
             throw this.backgroundFatalError;
         }
@@ -292,7 +293,7 @@ public class AvmImpl implements AvmInternal {
         return result;
     }
 
-    private AvmTransactionResult runExternalInvoke(KernelInterface parentKernel, TransactionTask task, AvmTransaction tx) {
+    private AvmTransactionResult runExternalInvoke(KernelInterface parentKernel, TransactionTask task, Transaction tx) {
         // to capture any error during validation
         AvmTransactionResult.Code error = null;
 
@@ -321,7 +322,7 @@ public class AvmImpl implements AvmInternal {
         parentKernel.adjustBalance(sender, BigInteger.valueOf(tx.energyLimit).multiply(BigInteger.valueOf(energyPrice).negate()));
 
         // Run the common logic with the parent kernel as the top-level one.
-        AvmTransactionResult result = commonInvoke(parentKernel, task, tx, BillingRules.getBasicTransactionCost(tx.data));
+        AvmTransactionResult result = commonInvoke(parentKernel, task, tx, BillingRules.getBasicTransactionCost(tx.copyOfTransactionData()));
 
         // Refund energy for transaction
         BigInteger refund = BigInteger.valueOf(result.getEnergyRemaining()).multiply(BigInteger.valueOf(energyPrice));
@@ -338,13 +339,13 @@ public class AvmImpl implements AvmInternal {
         return result;
     }
 
-    private AvmTransactionResult commonInvoke(KernelInterface parentKernel, TransactionTask task, AvmTransaction tx, long transactionBaseCost) {
+    private AvmTransactionResult commonInvoke(KernelInterface parentKernel, TransactionTask task, Transaction tx, long transactionBaseCost) {
         if (logger.isDebugEnabled()) {
             logger.debug("Transaction: address = {}, caller = {}, value = {}, data = {}, energyLimit = {}",
                 tx.destinationAddress,
                 tx.senderAddress,
                 Helpers.bytesToHexString(tx.value.toByteArray()),
-                Helpers.bytesToHexString(tx.data),
+                Helpers.bytesToHexString(tx.copyOfTransactionData()),
                 tx.energyLimit);
         }
         // Invoke calls must build their transaction on top of an existing "parent" kernel.

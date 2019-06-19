@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.math.BigInteger;
 import org.aion.types.AionAddress;
+import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.instrument.BytecodeFeeScheduler;
@@ -27,8 +28,8 @@ public class ConstantBillingTest {
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         KernelInterface kernel = new TestingKernel(block);
-        AvmTransaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, new byte[0]).encodeToBytes(), energyLimit, 1);
-        AvmTransactionResult result = avm.run(kernel, new AvmTransaction[] { tx })[0].get();
+        Transaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, new byte[0]).encodeToBytes(), energyLimit, 1);
+        AvmTransactionResult result = avm.run(kernel, new Transaction[] { tx })[0].get();
         assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
 
         BytecodeFeeScheduler feeScheduler = new BytecodeFeeScheduler();
@@ -42,7 +43,7 @@ public class ConstantBillingTest {
 
         long clinitCost = ldcFee + putstaticFee + returnFee;
 
-        long basicTransactionCost = BillingRules.getBasicTransactionCost(tx.data);
+        long basicTransactionCost = BillingRules.getBasicTransactionCost(tx.copyOfTransactionData());
         long deploymentFee = BillingRules.getDeploymentFee(1, jar.length);
         long storageFee = 141;
 

@@ -1,8 +1,8 @@
 package org.aion.avm.tooling;
 
-import org.aion.avm.core.AvmTransaction;
 import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.types.AionAddress;
+import org.aion.types.Transaction;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -92,8 +92,8 @@ public class CryptoUtilMethodFeeBenchmarkTest {
 
         this.kernel = new TestingKernel();
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
-        AvmTransaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        dappAddress = new AionAddress(avm.run(this.kernel, new AvmTransaction[] {tx})[0].get().getReturnData());
+        Transaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        dappAddress = new AionAddress(avm.run(this.kernel, new Transaction[] {tx})[0].get().getReturnData());
         Assert.assertNotNull(dappAddress);
     }
 
@@ -314,10 +314,10 @@ public class CryptoUtilMethodFeeBenchmarkTest {
     private long getCallTime(String methodName, Object... arguments) {
         long st;
         long et;
-        AvmTransaction tx = setupTransaction(methodName, arguments);
+        Transaction tx = setupTransaction(methodName, arguments);
 
         st = System.nanoTime();
-        AvmTransactionResult result = avm.run(this.kernel, new AvmTransaction[]{tx})[0].get();
+        AvmTransactionResult result = avm.run(this.kernel, new Transaction[]{tx})[0].get();
         et = System.nanoTime();
 
         Assert.assertEquals(Code.SUCCESS, result.getResultCode());
@@ -325,7 +325,7 @@ public class CryptoUtilMethodFeeBenchmarkTest {
         return et - st;
     }
 
-    private AvmTransaction setupTransaction(String methodName, java.lang.Object... arguments){
+    private Transaction setupTransaction(String methodName, java.lang.Object... arguments){
         byte[] txData = ABIUtil.encodeMethodArguments(methodName, arguments);
         return AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
     }

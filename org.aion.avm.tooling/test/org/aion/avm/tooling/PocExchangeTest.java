@@ -1,8 +1,8 @@
 package org.aion.avm.tooling;
 
-import org.aion.avm.core.AvmTransaction;
 import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.types.AionAddress;
+import org.aion.types.Transaction;
 import avm.Address;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
@@ -69,8 +69,8 @@ public class PocExchangeTest {
         }
 
         private AionAddress initCoin(byte[] jar, byte[] arguments){
-            AvmTransaction createTransaction = AvmTransactionUtil.create(minter, kernel.getNonce(minter), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1L);
-            AvmTransactionResult createResult = avm.run(kernel, new AvmTransaction[] {createTransaction})[0].get();
+            Transaction createTransaction = AvmTransactionUtil.create(minter, kernel.getNonce(minter), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1L);
+            AvmTransactionResult createResult = avm.run(kernel, new Transaction[] {createTransaction})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
             return new AionAddress(createResult.getReturnData());
         }
@@ -111,8 +111,8 @@ public class PocExchangeTest {
         }
 
         private AvmTransactionResult call(AionAddress sender, byte[] args) {
-            AvmTransaction callTransaction = AvmTransactionUtil.call(sender, addr, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1l);
-            AvmTransactionResult callResult = avm.run(kernel, new AvmTransaction[] {callTransaction})[0].get();
+            Transaction callTransaction = AvmTransactionUtil.call(sender, addr, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1l);
+            AvmTransactionResult callResult = avm.run(kernel, new Transaction[] {callTransaction})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
             return callResult;
         }
@@ -129,8 +129,8 @@ public class PocExchangeTest {
         }
 
         private AionAddress initExchange(byte[] jar, byte[] arguments){
-            AvmTransaction createTransaction = AvmTransactionUtil.create(owner, kernel.getNonce(owner), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1L);
-            AvmTransactionResult createResult = avm.run(kernel, new AvmTransaction[] {createTransaction})[0].get();
+            Transaction createTransaction = AvmTransactionUtil.create(owner, kernel.getNonce(owner), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, 1L);
+            AvmTransactionResult createResult = avm.run(kernel, new Transaction[] {createTransaction})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
             return new AionAddress(createResult.getReturnData());
         }
@@ -151,8 +151,8 @@ public class PocExchangeTest {
         }
 
         private AvmTransactionResult call(AionAddress sender, byte[] args) {
-            AvmTransaction callTransaction = AvmTransactionUtil.call(sender, addr, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1l);
-            AvmTransactionResult callResult = avm.run(kernel, new AvmTransaction[] {callTransaction})[0].get();
+            Transaction callTransaction = AvmTransactionUtil.call(sender, addr, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1l);
+            AvmTransactionResult callResult = avm.run(kernel, new Transaction[] {callTransaction})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, callResult.getResultCode());
             return callResult;
         }

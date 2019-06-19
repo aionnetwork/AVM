@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
 import org.aion.types.AionAddress;
+import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
@@ -230,8 +231,8 @@ public class TransactionAccountBalanceTest {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(BasicAppTestTarget.class);
         jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
-        AvmTransaction transaction = AvmTransactionUtil.create(from, kernel.getNonce(from), value, jar, energyLimit, energyPrice);
-        return avm.run(TransactionAccountBalanceTest.kernel, new AvmTransaction[] {transaction})[0].get();
+        Transaction transaction = AvmTransactionUtil.create(from, kernel.getNonce(from), value, jar, energyLimit, energyPrice);
+        return avm.run(TransactionAccountBalanceTest.kernel, new Transaction[] {transaction})[0].get();
     }
 
     private AionAddress deployContractAndGetAddress() {
@@ -243,14 +244,14 @@ public class TransactionAccountBalanceTest {
     private AvmTransactionResult callContract(AionAddress contract, BigInteger value) {
         kernel.generateBlock();
         byte[] callData = new ABIStreamingEncoder().encodeOneString("allocateObjectArray").toBytes();
-        AvmTransaction transaction = AvmTransactionUtil.call(from, contract, kernel.getNonce(from), value, callData, energyLimit, energyPrice);
-        return avm.run(TransactionAccountBalanceTest.kernel, new AvmTransaction[] {transaction})[0].get();
+        Transaction transaction = AvmTransactionUtil.call(from, contract, kernel.getNonce(from), value, callData, energyLimit, energyPrice);
+        return avm.run(TransactionAccountBalanceTest.kernel, new Transaction[] {transaction})[0].get();
     }
 
     private AvmTransactionResult transferValue(AionAddress recipient, BigInteger value) {
         kernel.generateBlock();
-        AvmTransaction transaction = AvmTransactionUtil.call(from, recipient, kernel.getNonce(from), value, new byte[0], BillingRules.BASIC_TRANSACTION_COST, energyPrice);
-        return avm.run(TransactionAccountBalanceTest.kernel, new AvmTransaction[] {transaction})[0].get();
+        Transaction transaction = AvmTransactionUtil.call(from, recipient, kernel.getNonce(from), value, new byte[0], BillingRules.BASIC_TRANSACTION_COST, energyPrice);
+        return avm.run(TransactionAccountBalanceTest.kernel, new Transaction[] {transaction})[0].get();
     }
 
     private AionAddress createNewAccountWithBalance(BigInteger balance) {

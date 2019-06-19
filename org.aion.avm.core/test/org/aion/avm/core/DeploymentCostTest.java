@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.types.AionAddress;
+import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.testBlake2b.Blake2b;
@@ -139,8 +140,8 @@ public class DeploymentCostTest {
         byte[] jar = getDeploymentJarBytesForContract(contract);
 
         //deploy in normal Mode
-        AvmTransaction create = AvmTransactionUtil.create(DEPLOYER, this.kernel.getNonce(DEPLOYER), BigInteger.ZERO, jar, ENERGY_LIMIT, ENERGY_PRICE);
-        AvmTransactionResult createResult = this.avm.run(this.kernel, new AvmTransaction[] {create})[0].get();
+        Transaction create = AvmTransactionUtil.create(DEPLOYER, this.kernel.getNonce(DEPLOYER), BigInteger.ZERO, jar, ENERGY_LIMIT, ENERGY_PRICE);
+        AvmTransactionResult createResult = this.avm.run(this.kernel, new Transaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         return createResult;
     }

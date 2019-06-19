@@ -1,8 +1,8 @@
 package org.aion.avm.core.rejection.errors;
 
-import org.aion.avm.core.AvmTransaction;
 import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.types.AionAddress;
+import org.aion.types.Transaction;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -80,7 +80,7 @@ public class RejectVirtualMachineErrorIntegrationTest {
 
     private AvmTransactionResult deployJar(byte[] jar) {
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
-        AvmTransaction transaction = AvmTransactionUtil.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
-        return avm.run(RejectVirtualMachineErrorIntegrationTest.kernel, new AvmTransaction[] {transaction})[0].get();
+        Transaction transaction = AvmTransactionUtil.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
+        return avm.run(RejectVirtualMachineErrorIntegrationTest.kernel, new Transaction[] {transaction})[0].get();
     }
 }

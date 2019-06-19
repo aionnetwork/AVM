@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
+import org.aion.types.Transaction;
 import i.RuntimeAssertionError;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.AvmTransactionResult;
@@ -36,11 +37,11 @@ public class HandoffMonitorTest {
         thread.startAgainstMonitor(monitor);
         
         // Enqueue transaction.
-        monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new AvmTransaction[] {newFakeTransaction()}));
+        monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new Transaction[] {newFakeTransaction()}));
         // Second enqueue should fail with RuntimeAssertionError.
         boolean didFail = false;
         try {
-            monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new AvmTransaction[] {newFakeTransaction()}));
+            monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new Transaction[] {newFakeTransaction()}));
         } catch (RuntimeAssertionError e) {
             didFail = true;
         }
@@ -60,12 +61,12 @@ public class HandoffMonitorTest {
         thread.startAgainstMonitor(monitor);
         
         // Enqueue transaction and process result.
-        FutureResult[] results = monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new AvmTransaction[] {newFakeTransaction()}));
+        FutureResult[] results = monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new Transaction[] {newFakeTransaction()}));
         Assert.assertEquals(1, results.length);
         results[0].get();
         
         // Enqueue and process again.
-        results = monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new AvmTransaction[] {newFakeTransaction()}));
+        results = monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new Transaction[] {newFakeTransaction()}));
         Assert.assertEquals(1, results.length);
         results[0].get();
         
@@ -83,13 +84,13 @@ public class HandoffMonitorTest {
         thread.startAgainstMonitor(monitor);
         
         // Enqueue 2 transactions and verify the result array length.
-        FutureResult[] results = monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new AvmTransaction[] {newFakeTransaction(), newFakeTransaction()}));
+        FutureResult[] results = monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new Transaction[] {newFakeTransaction(), newFakeTransaction()}));
         Assert.assertEquals(2, results.length);
         results[0].get();
         results[1].get();
         
         // Enqueue another batch to make sure that we reset state correctly.
-        results = monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new AvmTransaction[] {newFakeTransaction(), newFakeTransaction(), newFakeTransaction()}));
+        results = monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new Transaction[] {newFakeTransaction(), newFakeTransaction(), newFakeTransaction()}));
         Assert.assertEquals(3, results.length);
         results[0].get();
         results[1].get();
@@ -120,7 +121,7 @@ public class HandoffMonitorTest {
         t4.startAgainstMonitor(monitor);
 
         // Enqueue 2 transactions and verify the result array length.
-        FutureResult[] results = monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new AvmTransaction[] {newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction()}));
+        FutureResult[] results = monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new Transaction[] {newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction()}));
         Assert.assertEquals(8, results.length);
 
         for (int i = 0; i < 8; i++){
@@ -128,7 +129,7 @@ public class HandoffMonitorTest {
         }
 
         // Enqueue another batch to make sure that we reset state correctly.
-        results = monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new AvmTransaction[] {newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction()}));
+        results = monitor.sendTransactionsAsynchronously(wrapTransactionInTasks(new Transaction[] {newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction(), newFakeTransaction()}));
         Assert.assertEquals(10, results.length);
 
         for (int i = 0; i < 10; i++){
@@ -159,7 +160,7 @@ public class HandoffMonitorTest {
             ((MonitorThread) t).startAgainstMonitor(monitor);
         }
 
-        AvmTransaction[] transactions = new AvmTransaction[128];
+        Transaction[] transactions = new Transaction[128];
         for (int i = 0; i < transactions.length; i++){
             transactions[i] = newFakeTransaction();
         }
@@ -223,11 +224,11 @@ public class HandoffMonitorTest {
         }
     }
 
-    private static AvmTransaction newFakeTransaction() {
+    private static Transaction newFakeTransaction() {
         return AvmTransactionUtil.call(Helpers.ZERO_ADDRESS, Helpers.ZERO_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, new byte[0], 1L, 1L);
     }
 
-    private static TransactionTask[] wrapTransactionInTasks(AvmTransaction[] transactions) {
+    private static TransactionTask[] wrapTransactionInTasks(Transaction[] transactions) {
         TransactionTask[] tasks = new TransactionTask[transactions.length];
         // (we don't consult the capabilities since there is no creation)
         IExternalCapabilities capabilities = null;

@@ -2,6 +2,7 @@ package org.aion.avm.core;
 
 import java.util.Arrays;
 import org.aion.types.AionAddress;
+import org.aion.types.Transaction;
 import s.java.math.BigInteger;
 import p.avm.Address;
 import p.avm.Result;
@@ -27,7 +28,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     private final AvmInternal avm;
     private final ReentrantDAppStack.ReentrantState reentrantState;
 
-    private AvmTransaction tx;
+    private Transaction tx;
     private final AionAddress transactionDestination;
     private final byte[] dAppData;
     private TransactionTask task;
@@ -42,7 +43,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     private BigInteger blockDifficultyCache;
 
 
-    public BlockchainRuntimeImpl(IExternalCapabilities capabilities, KernelInterface kernel, AvmInternal avm, ReentrantDAppStack.ReentrantState reentrantState, TransactionTask task, AvmTransaction tx, byte[] dAppData, IRuntimeSetup thisDAppSetup) {
+    public BlockchainRuntimeImpl(IExternalCapabilities capabilities, KernelInterface kernel, AvmInternal avm, ReentrantDAppStack.ReentrantState reentrantState, TransactionTask task, Transaction tx, byte[] dAppData, IRuntimeSetup thisDAppSetup) {
         this.capabilities = capabilities;
         this.kernel = kernel;
         this.avm = avm;
@@ -447,18 +448,19 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         // Temporarily detach from the DApp we were in.
         InstrumentationHelpers.temporarilyExitFrame(this.thisDAppSetup);
 
-        // Create the AvmTransaction.
-        AvmTransaction avmTransaction = AvmTransactionUtil.fromInternalTransaction(this.capabilities, internalTx);
+        // Create the Transaction.
+        Transaction transaction = AvmTransactionUtil.fromInternalTransaction(internalTx);
 
         // execute the internal transaction
         AvmTransactionResult newResult;
 
         // Acquire the target of the internal transaction
-        boolean isAcquired = avm.getResourceMonitor().acquire(avmTransaction.destinationAddress.toByteArray(), task);
+        AionAddress destination = (transaction.isCreate) ? this.capabilities.generateContractAddress(transaction) : transaction.destinationAddress;
+        boolean isAcquired = avm.getResourceMonitor().acquire(destination.toByteArray(), task);
 
         try {
             if(isAcquired) {
-                newResult = this.avm.runInternalTransaction(this.kernel, this.task, avmTransaction);
+                newResult = this.avm.runInternalTransaction(this.kernel, this.task, transaction);
             } else {
                 // Unsuccessful acquire means transaction task has been aborted.
                 // In abort case, internal transaction will not be executed.

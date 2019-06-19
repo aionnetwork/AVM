@@ -6,9 +6,9 @@ import avm.Address;
 import org.aion.avm.core.BillingRules;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.core.FutureResult;
-import org.aion.avm.core.AvmTransaction;
 import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.types.AionAddress;
+import org.aion.types.Transaction;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -35,13 +35,13 @@ public class AvmParallelTest {
         AionAddress usr1 = new AionAddress(Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111"));
         BigInteger expected1 = BigInteger.ZERO;
 
-        AvmTransaction t0 = AvmTransactionUtil.call(preminedAddress, usr1, BigInteger.ZERO, BigInteger.valueOf(500_000), new byte[0], 100000L, 1);
-        AvmTransaction t1 = AvmTransactionUtil.call(preminedAddress, usr1, BigInteger.ONE, BigInteger.valueOf(500_000), new byte[0], 100000L, 1);
-        AvmTransaction t2 = AvmTransactionUtil.call(preminedAddress, usr1, BigInteger.TWO, BigInteger.valueOf(500_000), new byte[0], 100000L, 1);
-        AvmTransaction t3 = AvmTransactionUtil.call(preminedAddress, usr1, BigInteger.valueOf(3), BigInteger.valueOf(500_000), new byte[0], 100000L, 1);
-        AvmTransaction t4 = AvmTransactionUtil.call(preminedAddress, usr1, BigInteger.valueOf(4), BigInteger.valueOf(500_000), new byte[0], 100000L, 1);
+        Transaction t0 = AvmTransactionUtil.call(preminedAddress, usr1, BigInteger.ZERO, BigInteger.valueOf(500_000), new byte[0], 100000L, 1);
+        Transaction t1 = AvmTransactionUtil.call(preminedAddress, usr1, BigInteger.ONE, BigInteger.valueOf(500_000), new byte[0], 100000L, 1);
+        Transaction t2 = AvmTransactionUtil.call(preminedAddress, usr1, BigInteger.TWO, BigInteger.valueOf(500_000), new byte[0], 100000L, 1);
+        Transaction t3 = AvmTransactionUtil.call(preminedAddress, usr1, BigInteger.valueOf(3), BigInteger.valueOf(500_000), new byte[0], 100000L, 1);
+        Transaction t4 = AvmTransactionUtil.call(preminedAddress, usr1, BigInteger.valueOf(4), BigInteger.valueOf(500_000), new byte[0], 100000L, 1);
 
-        AvmTransaction[] batch = new AvmTransaction[]{t0, t1, t2, t3, t4};
+        Transaction[] batch = new Transaction[]{t0, t1, t2, t3, t4};
         FutureResult[] results = avm.run(kernel, batch);
         for (FutureResult f : results){
             f.get();
@@ -60,13 +60,13 @@ public class AvmParallelTest {
         t3 = AvmTransactionUtil.call(usr1, usr2, BigInteger.valueOf(3), BigInteger.valueOf(100_000), new byte[0], 100000L, 1);
         t4 = AvmTransactionUtil.call(usr1, usr2, BigInteger.valueOf(4), BigInteger.valueOf(100_000), new byte[0], 100000L, 1);
 
-        batch = new AvmTransaction[]{t0, t1, t2, t3, t4};
+        batch = new Transaction[]{t0, t1, t2, t3, t4};
         results = avm.run(kernel, batch);
         for (FutureResult f : results){
             f.get();
         }
 
-        expected1 = expected1.subtract(BigInteger.valueOf(100_000 * 5)).subtract(BigInteger.valueOf(BillingRules.getBasicTransactionCost(t1.data) * 5));
+        expected1 = expected1.subtract(BigInteger.valueOf(100_000 * 5)).subtract(BigInteger.valueOf(BillingRules.getBasicTransactionCost(t1.copyOfTransactionData()) * 5));
         expected2 = BigInteger.valueOf(100_000 * 5);
 
         Assert.assertEquals(expected1, kernel.getBalance(usr1));
@@ -76,7 +76,7 @@ public class AvmParallelTest {
         t1 = AvmTransactionUtil.call(usr2, usr1, BigInteger.ONE, BigInteger.valueOf(100_000), new byte[0], 100000L, 1);
 
         int iteration = 10;
-        batch = new AvmTransaction[iteration * 2];
+        batch = new Transaction[iteration * 2];
         for (int i = 0; i < iteration; i++){
             batch[i * 2]     = AvmTransactionUtil.call(usr1, usr2, BigInteger.valueOf(5 + i), BigInteger.valueOf(100_000), new byte[0], 100000L, 1);
             batch[i * 2 + 1] = AvmTransactionUtil.call(usr2, usr1, BigInteger.valueOf(i), BigInteger.valueOf(100_000), new byte[0], 100000L, 1);
@@ -87,8 +87,8 @@ public class AvmParallelTest {
             f.get();
         }
 
-        expected1 = expected1.subtract(BigInteger.valueOf(BillingRules.getBasicTransactionCost(t0.data) * iteration));
-        expected2 = expected2.subtract(BigInteger.valueOf(BillingRules.getBasicTransactionCost(t1.data) * iteration));
+        expected1 = expected1.subtract(BigInteger.valueOf(BillingRules.getBasicTransactionCost(t0.copyOfTransactionData()) * iteration));
+        expected2 = expected2.subtract(BigInteger.valueOf(BillingRules.getBasicTransactionCost(t1.copyOfTransactionData()) * iteration));
 
         Assert.assertEquals(expected1, kernel.getBalance(usr1));
         Assert.assertEquals(expected2, kernel.getBalance(usr2));
@@ -107,13 +107,13 @@ public class AvmParallelTest {
         AionAddress usr3 = new AionAddress(Helpers.hexStringToBytes("3333333333333333333333333333333333333333333333333333333333333333"));
         AionAddress usr4 = new AionAddress(Helpers.hexStringToBytes("4444444444444444444444444444444444444444444444444444444444444444"));
 
-        AvmTransaction t0 = AvmTransactionUtil.call(preminedAddress, usr1, BigInteger.ZERO, BigInteger.valueOf(5_000_000), new byte[0], 100000L, 1);
-        AvmTransaction t1 = AvmTransactionUtil.call(usr1, usr2, BigInteger.ZERO, BigInteger.valueOf(4_000_000), new byte[0], 100000L, 1);
-        AvmTransaction t2 = AvmTransactionUtil.call(usr2, usr3, BigInteger.ZERO, BigInteger.valueOf(3_000_000), new byte[0], 100000L, 1);
-        AvmTransaction t3 = AvmTransactionUtil.call(usr3, usr4, BigInteger.ZERO, BigInteger.valueOf(2_000_000), new byte[0], 100000L, 1);
-        AvmTransaction t4 = AvmTransactionUtil.call(usr4, usr1, BigInteger.ZERO, BigInteger.valueOf(1_000_000), new byte[0], 100000L, 1);
+        Transaction t0 = AvmTransactionUtil.call(preminedAddress, usr1, BigInteger.ZERO, BigInteger.valueOf(5_000_000), new byte[0], 100000L, 1);
+        Transaction t1 = AvmTransactionUtil.call(usr1, usr2, BigInteger.ZERO, BigInteger.valueOf(4_000_000), new byte[0], 100000L, 1);
+        Transaction t2 = AvmTransactionUtil.call(usr2, usr3, BigInteger.ZERO, BigInteger.valueOf(3_000_000), new byte[0], 100000L, 1);
+        Transaction t3 = AvmTransactionUtil.call(usr3, usr4, BigInteger.ZERO, BigInteger.valueOf(2_000_000), new byte[0], 100000L, 1);
+        Transaction t4 = AvmTransactionUtil.call(usr4, usr1, BigInteger.ZERO, BigInteger.valueOf(1_000_000), new byte[0], 100000L, 1);
 
-        AvmTransaction[] batch = new AvmTransaction[]{t0, t1, t2, t3, t4};
+        Transaction[] batch = new Transaction[]{t0, t1, t2, t3, t4};
         FutureResult[] results = avm.run(kernel, batch);
         for (FutureResult f : results){
             f.get();
@@ -135,13 +135,13 @@ public class AvmParallelTest {
         AionAddress usr3 = new AionAddress(Helpers.hexStringToBytes("3333333333333333333333333333333333333333333333333333333333333333"));
         AionAddress usr4 = new AionAddress(Helpers.hexStringToBytes("4444444444444444444444444444444444444444444444444444444444444444"));
 
-        AvmTransaction t0 = AvmTransactionUtil.call(preminedAddress, usr1, BigInteger.ZERO, BigInteger.valueOf(5_000_000), new byte[0], 100000L, 1);
-        AvmTransaction t1 = AvmTransactionUtil.call(preminedAddress, usr2, BigInteger.ONE, BigInteger.valueOf(5_000_000), new byte[0], 100000L, 1);
-        AvmTransaction t2 = AvmTransactionUtil.call(preminedAddress, usr3, BigInteger.TWO, BigInteger.valueOf(5_000_000), new byte[0], 100000L, 1);
-        AvmTransaction t3 = AvmTransactionUtil.call(preminedAddress, usr4, BigInteger.valueOf(3), BigInteger.valueOf(15_000_000), new byte[0], 100000L, 1);
-        AvmTransaction t4 = AvmTransactionUtil.create(usr4, BigInteger.ZERO, BigInteger.ZERO, new CodeAndArguments(code, null).encodeToBytes(), 10_000_000L, 1);
+        Transaction t0 = AvmTransactionUtil.call(preminedAddress, usr1, BigInteger.ZERO, BigInteger.valueOf(5_000_000), new byte[0], 100000L, 1);
+        Transaction t1 = AvmTransactionUtil.call(preminedAddress, usr2, BigInteger.ONE, BigInteger.valueOf(5_000_000), new byte[0], 100000L, 1);
+        Transaction t2 = AvmTransactionUtil.call(preminedAddress, usr3, BigInteger.TWO, BigInteger.valueOf(5_000_000), new byte[0], 100000L, 1);
+        Transaction t3 = AvmTransactionUtil.call(preminedAddress, usr4, BigInteger.valueOf(3), BigInteger.valueOf(15_000_000), new byte[0], 100000L, 1);
+        Transaction t4 = AvmTransactionUtil.create(usr4, BigInteger.ZERO, BigInteger.ZERO, new CodeAndArguments(code, null).encodeToBytes(), 10_000_000L, 1);
 
-        AvmTransaction[] batch = new AvmTransaction[]{t0, t1, t2, t3, t4};
+        Transaction[] batch = new Transaction[]{t0, t1, t2, t3, t4};
         FutureResult[] results = avm.run(kernel, batch);
         for (FutureResult f : results){
             f.get();
@@ -159,7 +159,7 @@ public class AvmParallelTest {
         t3 = AvmTransactionUtil.call(usr3, contractAddr, BigInteger.ZERO, BigInteger.ZERO, args, 200000L, 1);
         t4 = AvmTransactionUtil.call(usr4, contractAddr, BigInteger.ONE, BigInteger.ZERO, args, 200000L, 1);
 
-        batch = new AvmTransaction[]{t0, t1, t2, t3, t4};
+        batch = new Transaction[]{t0, t1, t2, t3, t4};
         results = avm.run(kernel, batch);
         for (FutureResult f : results){
             f.get();
@@ -183,7 +183,7 @@ public class AvmParallelTest {
         AionAddress[] tempUsers = new AionAddress[iterations];
         
         // First batch - disperse funds.
-        AvmTransaction[] firstBatch = new AvmTransaction[iterations];
+        Transaction[] firstBatch = new Transaction[iterations];
         for (int i = 0; i < iterations; ++i) {
             tempUsers[i] = Helpers.randomAddress();
             firstBatch[i] = AvmTransactionUtil.call(preminedAddress, tempUsers[i], BigInteger.valueOf(i), BigInteger.valueOf(2L * valueToSend), new byte[0], 100_000L, 1L);
@@ -194,7 +194,7 @@ public class AvmParallelTest {
         }
         
         // Second batch - collect funds.
-        AvmTransaction[] secondBatch = new AvmTransaction[iterations];
+        Transaction[] secondBatch = new Transaction[iterations];
         for (int i = 0; i < iterations; ++i) {
             secondBatch[i] = AvmTransactionUtil.call(tempUsers[i], targetUser, BigInteger.ZERO, BigInteger.valueOf(valueToSend), new byte[0], 100_000L, 1L);
         }
@@ -217,7 +217,7 @@ public class AvmParallelTest {
 
         int length = 5;
         AionAddress[] user = new AionAddress[length];
-        AvmTransaction[] ctx = new AvmTransaction[length];
+        Transaction[] ctx = new Transaction[length];
         for (int i = 0; i < user.length; i++) {
             user[i] = Helpers.randomAddress();
             kernel.adjustBalance(user[i], BigInteger.TEN.pow(20));
@@ -230,7 +230,7 @@ public class AvmParallelTest {
             contractAddresses[i] = new AionAddress(results[i].get().getReturnData());
         }
 
-        AvmTransaction[] tx = new AvmTransaction[results.length - 1];
+        Transaction[] tx = new Transaction[results.length - 1];
        // A->A->B, B->B->C, C->C->D
         for (int i = 0; i < results.length - 1; i++) {
             byte[] internalCallData = new ABIStreamingEncoder()
@@ -264,7 +264,7 @@ public class AvmParallelTest {
             tx[i] = AvmTransactionUtil.call(user[i], contractAddresses[i], kernel.getNonce(user[i]), BigInteger.ZERO, getValue, 5_000_000, 1);
         }
 
-        results = avm.run(kernel, new AvmTransaction[]{tx[1], tx[2], tx[3]});
+        results = avm.run(kernel, new Transaction[]{tx[1], tx[2], tx[3]});
         for (FutureResult f : results) {
             Assert.assertEquals(1, new ABIDecoder(f.get().getReturnData()).decodeOneInteger());
         }
@@ -282,7 +282,7 @@ public class AvmParallelTest {
 
         int length = 4;
         AionAddress[] user = new AionAddress[length];
-        AvmTransaction[] ctx = new AvmTransaction[length];
+        Transaction[] ctx = new Transaction[length];
         for (int i = 0; i < length; i++) {
             user[i] = Helpers.randomAddress();
             kernel.adjustBalance(user[i], BigInteger.TEN.pow(20));
@@ -295,7 +295,7 @@ public class AvmParallelTest {
             contractAddresses[i] = new AionAddress(results[i].get().getReturnData());
         }
 
-        AvmTransaction[] tx = new AvmTransaction[results.length - 1];
+        Transaction[] tx = new Transaction[results.length - 1];
         // u1->A->B, u2->B->C, u3->C->D
         for (int i = 0; i < results.length - 1; i++) {
             byte[] callData = new ABIStreamingEncoder()
@@ -327,7 +327,7 @@ public class AvmParallelTest {
             byte[] getValue = new ABIStreamingEncoder().encodeOneString("getValue").toBytes();
             tx[i] = AvmTransactionUtil.call(user[i], contractAddresses[i], kernel.getNonce(user[i]), BigInteger.ZERO, getValue, 5_000_000, 1);
         }
-        AvmTransaction[] batch = new AvmTransaction[]{tx[1], tx[2]};
+        Transaction[] batch = new Transaction[]{tx[1], tx[2]};
         results = avm.run(kernel, batch);
         for (FutureResult f : results) {
             Assert.assertEquals(1, new ABIDecoder(f.get().getReturnData()).decodeOneInteger());

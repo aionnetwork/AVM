@@ -8,12 +8,12 @@ import static org.junit.Assert.fail;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import org.aion.avm.core.AvmTransaction;
 import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.kernel.SideEffects;
 import org.aion.types.AionAddress;
 import org.aion.types.Log;
+import org.aion.types.Transaction;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -55,7 +55,7 @@ public class ContractLoggingTest {
 
     @Test
     public void testLogs() {
-        AvmTransaction transaction = generateTxForMethodCall("hitLogs");
+        Transaction transaction = generateTxForMethodCall("hitLogs");
         AvmTransactionResult result = runTransaction(transaction);
         assertTrue(result.getResultCode().isSuccess());
 
@@ -68,7 +68,7 @@ public class ContractLoggingTest {
 
     @Test
     public void testLogsFireOffInDeepestInternalTransaction() {
-        AvmTransaction transaction = generateTxForMethodCall("spawnInternalTransactionsAndHitLogsAtBottomLevel", 9);
+        Transaction transaction = generateTxForMethodCall("spawnInternalTransactionsAndHitLogsAtBottomLevel", 9);
         AvmTransactionResult result = runTransaction(transaction);
         assertTrue(result.getResultCode().isSuccess());
 
@@ -83,7 +83,7 @@ public class ContractLoggingTest {
     public void testLogsFiredOffInEachInternalTransaction() {
         int depth = 9;
 
-        AvmTransaction transaction = generateTxForMethodCall("spawnInternalTransactionsAndHitLogsAtEachLevel", depth);
+        Transaction transaction = generateTxForMethodCall("spawnInternalTransactionsAndHitLogsAtEachLevel", depth);
         AvmTransactionResult result = runTransaction(transaction);
         assertTrue(result.getResultCode().isSuccess());
 
@@ -96,7 +96,7 @@ public class ContractLoggingTest {
 
     @Test
     public void testLogsFiredOffInEachInternalTransactionUptoFive() {
-        AvmTransaction transaction = generateTxForMethodCall("spawnInternalTransactionsAndFailAtDepth5", 9);
+        Transaction transaction = generateTxForMethodCall("spawnInternalTransactionsAndFailAtDepth5", 9);
         AvmTransactionResult result = runTransaction(transaction);
         assertTrue(result.getResultCode().isSuccess());
 
@@ -175,18 +175,18 @@ public class ContractLoggingTest {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(LoggingTarget.class);
         jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
-        AvmTransaction transaction = AvmTransactionUtil.create(from, kernel.getNonce(from), BigInteger.ZERO, jar, energyLimit, energyPrice);
-        AvmTransactionResult result = avm.run(ContractLoggingTest.kernel, new AvmTransaction[] {transaction})[0].get();
+        Transaction transaction = AvmTransactionUtil.create(from, kernel.getNonce(from), BigInteger.ZERO, jar, energyLimit, energyPrice);
+        AvmTransactionResult result = avm.run(ContractLoggingTest.kernel, new Transaction[] {transaction})[0].get();
 
         assertTrue(result.getResultCode().isSuccess());
         contract = new AionAddress(result.getReturnData());
     }
 
-    private AvmTransactionResult runTransaction(AvmTransaction tx) {
-        return avm.run(ContractLoggingTest.kernel, new AvmTransaction[] {tx})[0].get();
+    private AvmTransactionResult runTransaction(Transaction tx) {
+        return avm.run(ContractLoggingTest.kernel, new Transaction[] {tx})[0].get();
     }
 
-    private AvmTransaction generateTxForMethodCall(String methodName, Object... args) {
+    private Transaction generateTxForMethodCall(String methodName, Object... args) {
         kernel.generateBlock();
         byte[] callData = ABIUtil.encodeMethodArguments(methodName, args);
         return AvmTransactionUtil.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);

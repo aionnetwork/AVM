@@ -2,9 +2,9 @@ package org.aion.avm.core.testCall;
 
 import java.math.BigInteger;
 
-import org.aion.avm.core.AvmTransaction;
 import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.types.AionAddress;
+import org.aion.types.Transaction;
 import p.avm.Address;
 import p.avm.Result;
 import a.ByteArray;
@@ -56,12 +56,12 @@ public class ParallelExecution {
     private static final int NUM_THREADS = 4;
     private static ExecutorService threadPool = Executors.newFixedThreadPool(NUM_THREADS);
 
-    private List<AvmTransaction> transactions;
+    private List<Transaction> transactions;
     private State initState;
     private int parallelism;
     private int startFrom;
 
-    public ParallelExecution(List<AvmTransaction> transactions, State initState, int parallelism) {
+    public ParallelExecution(List<Transaction> transactions, State initState, int parallelism) {
         this.transactions = transactions;
         this.initState = initState;
         this.parallelism = parallelism;
@@ -92,7 +92,7 @@ public class ParallelExecution {
                 // detect conflicts
                 Set<String> accounts = new HashSet<>();
                 for (Future<TransactionResult> f : futures) {
-                    AvmTransaction tx = transactions.get(startFrom);
+                    Transaction tx = transactions.get(startFrom);
                     TransactionResult r = f.get();
 
                     Set<String> set = new HashSet<>();
@@ -127,11 +127,11 @@ public class ParallelExecution {
      */
     private static class Worker implements Callable<TransactionResult> {
 
-        private AvmTransaction tx;
+        private Transaction tx;
         private State track;
         private boolean preserveDebuggability = false;
 
-        public Worker(AvmTransaction tx, State track) {
+        public Worker(Transaction tx, State track) {
             this.tx = tx;
             this.track = track;
         }
@@ -161,7 +161,7 @@ public class ParallelExecution {
 
                     return new Result(true, new ByteArray(new byte[0]));
                 }
-            }.withCaller(tx.senderAddress.toByteArray()).withAddress(tx.destinationAddress.toByteArray()).withEnergyLimit(tx.energyLimit).withData(tx.data));
+            }.withCaller(tx.senderAddress.toByteArray()).withAddress(tx.destinationAddress.toByteArray()).withEnergyLimit(tx.energyLimit).withData(tx.copyOfTransactionData()));
             try {
                 Class<?> clazz = avm.getClassLoader().loadUserClassByOriginalName(Contract.class.getName(), this.preserveDebuggability);
                 clazz.getMethod(NamespaceMapper.mapMethodName("main")).invoke(null);
@@ -193,9 +193,9 @@ public class ParallelExecution {
     //============
 
     public static void simpleCall() {
-        AvmTransaction tx1 = AvmTransactionUtil.call(Helpers.address(1), Helpers.address(2), BigInteger.ZERO, BigInteger.ZERO, Helpers.address(3).toByteArray(), 1000000, 1);
-        AvmTransaction tx2 = AvmTransactionUtil.call(Helpers.address(3), Helpers.address(4), BigInteger.ZERO, BigInteger.ZERO, Helpers.address(1).toByteArray(), 1000000, 1);
-        AvmTransaction tx3 = AvmTransactionUtil.call(Helpers.address(3), Helpers.address(5), BigInteger.ZERO, BigInteger.ZERO, new byte[0], 1000000, 1);
+        Transaction tx1 = AvmTransactionUtil.call(Helpers.address(1), Helpers.address(2), BigInteger.ZERO, BigInteger.ZERO, Helpers.address(3).toByteArray(), 1000000, 1);
+        Transaction tx2 = AvmTransactionUtil.call(Helpers.address(3), Helpers.address(4), BigInteger.ZERO, BigInteger.ZERO, Helpers.address(1).toByteArray(), 1000000, 1);
+        Transaction tx3 = AvmTransactionUtil.call(Helpers.address(3), Helpers.address(5), BigInteger.ZERO, BigInteger.ZERO, new byte[0], 1000000, 1);
 
         ParallelExecution exec = new ParallelExecution(List.of(tx1, tx2, tx3), new State(), NUM_THREADS);
         exec.execute();
@@ -207,14 +207,14 @@ public class ParallelExecution {
         threadPool.shutdown();
         threadPool = Executors.newFixedThreadPool(numThreads);
 
-        List<AvmTransaction> transactions = new ArrayList<>();
+        List<Transaction> transactions = new ArrayList<>();
         Random r = new Random();
         for (int i = 0; i < numTransactions; i++) {
             int from = r.nextInt(numAccounts);
             int to = r.nextInt(numAccounts);
             int callee = r.nextInt(numAccounts);
 
-            AvmTransaction tx = AvmTransactionUtil.call(Helpers.address(from), Helpers.address(to), BigInteger.ZERO, BigInteger.ZERO, Helpers.address(callee).toByteArray(), 1000000, 1);
+            Transaction tx = AvmTransactionUtil.call(Helpers.address(from), Helpers.address(to), BigInteger.ZERO, BigInteger.ZERO, Helpers.address(callee).toByteArray(), 1000000, 1);
             transactions.add(tx);
         }
 

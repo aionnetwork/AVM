@@ -1,9 +1,9 @@
 package org.aion.avm.core.performance;
 
 import org.aion.avm.core.FutureResult;
-import org.aion.avm.core.AvmTransaction;
 import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.types.AionAddress;
+import org.aion.types.Transaction;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -65,8 +65,8 @@ public class PerformanceTest {
             userAddrs[i] = userAddress;
 
             //deploying dapp
-            AvmTransaction create = AvmTransactionUtil.create(userAddress, kernel.getNonce(userAddress), BigInteger.ZERO, txData, energyLimit, energyPrice);
-            AvmTransactionResult createResult = (AvmTransactionResult) avm.run(this.kernel, new AvmTransaction[]{create})[0].get();
+            Transaction create = AvmTransactionUtil.create(userAddress, kernel.getNonce(userAddress), BigInteger.ZERO, txData, energyLimit, energyPrice);
+            AvmTransactionResult createResult = (AvmTransactionResult) avm.run(this.kernel, new Transaction[]{create})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
             AionAddress contractAddr = new AionAddress(createResult.getReturnData());
             contractAddrs[i] = contractAddr;
@@ -116,8 +116,8 @@ public class PerformanceTest {
 
     private void callSingle(AionAddress sender, AionAddress contractAddr, String methodName) {
         byte[] argData = new ABIStreamingEncoder().encodeOneString(methodName).toBytes();
-        AvmTransaction call = AvmTransactionUtil.call(sender, contractAddr, kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
-        AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new AvmTransaction[] {call})[0].get();
+        Transaction call = AvmTransactionUtil.call(sender, contractAddr, kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
+        AvmTransactionResult result = (AvmTransactionResult) avm.run(this.kernel, new Transaction[] {call})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result.getResultCode());
     }
 
@@ -157,7 +157,7 @@ public class PerformanceTest {
     public void callBatch(String methodName, boolean Nto1){
         byte[] argData = new ABIStreamingEncoder().encodeOneString(methodName).toBytes();
         for(int j = 0; j < contextNum; ++j) {
-            AvmTransaction[] transactionArray = new AvmTransaction[transactionBlockSize];
+            Transaction[] transactionArray = new Transaction[transactionBlockSize];
             for (int i = 0; i < transactionBlockSize; ++i) {
                 AionAddress sender = userAddrs[i];
                 AionAddress contractAddr = Nto1 ? contractAddrs[0] : contractAddrs[i];

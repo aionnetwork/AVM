@@ -3,9 +3,9 @@ package org.aion.avm.core.shadowing.testString;
 import java.math.BigInteger;
 
 import org.aion.avm.core.FutureResult;
-import org.aion.avm.core.AvmTransaction;
 import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.types.AionAddress;
+import org.aion.types.Transaction;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -33,55 +33,55 @@ public class StringShadowingTest {
         // deploy it
         byte[] testJar = JarBuilder.buildJarForMainAndClassesAndUserlib(TestResource.class);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
-        AvmTransaction tx = AvmTransactionUtil.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        AionAddress dappAddr = new AionAddress(avm.run(kernel, new AvmTransaction[] {tx})[0].get().getReturnData());
+        Transaction tx = AvmTransactionUtil.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        AionAddress dappAddr = new AionAddress(avm.run(kernel, new Transaction[] {tx})[0].get().getReturnData());
         kernel.generateBlock();
 
         // call transactions and validate the results
         txData = encodeNoArgsMethodCall("singleStringReturnInt");
         tx = AvmTransactionUtil.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        AvmTransactionResult result = avm.run(kernel, new AvmTransaction[] {tx})[0].get();
+        AvmTransactionResult result = avm.run(kernel, new Transaction[] {tx})[0].get();
         Assert.assertTrue(java.util.Arrays.equals(new int[]{96354, 3, 1, -1}, new ABIDecoder(result.getReturnData()).decodeOneIntegerArray()));
         kernel.generateBlock();
 
         txData = encodeNoArgsMethodCall("singleStringReturnBoolean");
         tx = AvmTransactionUtil.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        result = avm.run(kernel, new AvmTransaction[] {tx})[0].get();
+        result = avm.run(kernel, new Transaction[] {tx})[0].get();
         Assert.assertTrue(java.util.Arrays.equals(new boolean[]{true, false, true, false, true, false, false}, new ABIDecoder(result.getReturnData()).decodeOneBooleanArray()));
         kernel.generateBlock();
 
         txData = encodeNoArgsMethodCall("singleStringReturnChar");
         tx = AvmTransactionUtil.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        result = avm.run(kernel, new AvmTransaction[] {tx})[0].get();
+        result = avm.run(kernel, new Transaction[] {tx})[0].get();
         Assert.assertEquals('a', new ABIDecoder(result.getReturnData()).decodeOneCharacter());
         kernel.generateBlock();
 
         txData = encodeNoArgsMethodCall("singleStringReturnBytes");
         tx = AvmTransactionUtil.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        result = avm.run(kernel, new AvmTransaction[] {tx})[0].get();
+        result = avm.run(kernel, new Transaction[] {tx})[0].get();
         Assert.assertTrue(java.util.Arrays.equals(new byte[]{'a', 'b', 'c'}, new ABIDecoder(result.getReturnData()).decodeOneByteArray()));
         kernel.generateBlock();
 
         txData = encodeNoArgsMethodCall("singleStringReturnLowerCase");
         tx = AvmTransactionUtil.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        result = avm.run(kernel, new AvmTransaction[] {tx})[0].get();
+        result = avm.run(kernel, new Transaction[] {tx})[0].get();
         Assert.assertEquals("abc", new ABIDecoder(result.getReturnData()).decodeOneString());
         kernel.generateBlock();
 
         txData = encodeNoArgsMethodCall("singleStringReturnUpperCase");
         tx = AvmTransactionUtil.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        result = avm.run(kernel, new AvmTransaction[] {tx})[0].get();
+        result = avm.run(kernel, new Transaction[] {tx})[0].get();
         Assert.assertEquals("ABC", new ABIDecoder(result.getReturnData()).decodeOneString());
         kernel.generateBlock();
 
         txData = encodeNoArgsMethodCall("stringReturnSubSequence");
         tx = AvmTransactionUtil.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        result = avm.run(kernel, new AvmTransaction[] {tx})[0].get();
+        result = avm.run(kernel, new Transaction[] {tx})[0].get();
         Assert.assertEquals("Sub", new ABIDecoder(result.getReturnData()).decodeOneString());
 
         txData = encodeNoArgsMethodCall("equalsIgnoreCase");
         tx = AvmTransactionUtil.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        result = avm.run(kernel, new AvmTransaction[] {tx})[0].get();
+        result = avm.run(kernel, new Transaction[] {tx})[0].get();
         Assert.assertEquals(false, new ABIDecoder(result.getReturnData()).decodeOneBoolean());
 
         avm.shutdown();
@@ -103,11 +103,11 @@ public class StringShadowingTest {
         // We do the deployment, first, since we need the resultant DApp address for the other calls.
         byte[] testJar = JarBuilder.buildJarForMainAndClassesAndUserlib(TestResource.class);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
-        AvmTransaction tx = AvmTransactionUtil.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        AionAddress dappAddr = new AionAddress(avm.run(kernel, new AvmTransaction[] {tx})[0].get().getReturnData());
+        Transaction tx = AvmTransactionUtil.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        AionAddress dappAddr = new AionAddress(avm.run(kernel, new Transaction[] {tx})[0].get().getReturnData());
 
         // Now, batch the other 6 transactions together and verify that the result is the same (note that the nonces are artificially incremented since these all have the same sender).
-        AvmTransaction[] batch = new AvmTransaction[6];
+        Transaction[] batch = new Transaction[6];
         
         txData = encodeNoArgsMethodCall("singleStringReturnInt");
         batch[0] = AvmTransactionUtil.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);

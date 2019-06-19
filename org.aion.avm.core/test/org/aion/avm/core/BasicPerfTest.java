@@ -3,6 +3,7 @@ package org.aion.avm.core;
 import java.math.BigInteger;
 
 import org.aion.types.AionAddress;
+import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
@@ -71,8 +72,8 @@ public class BasicPerfTest {
             TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
             this.kernel = new TestingKernel(block);
             long transaction1EnergyLimit = 1_000_000_000l;
-            AvmTransaction tx1 = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), transaction1EnergyLimit, 1L);
-            AvmTransactionResult result1 = this.avm.run(this.kernel, new AvmTransaction[] {tx1})[0].get();
+            Transaction tx1 = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), transaction1EnergyLimit, 1L);
+            AvmTransactionResult result1 = this.avm.run(this.kernel, new Transaction[] {tx1})[0].get();
             Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
             this.contractAddress = new AionAddress(result1.getReturnData());
         }
@@ -95,8 +96,8 @@ public class BasicPerfTest {
             int blockStart = 2;
             for (int i = blockStart; i < (COUNT + blockStart); ++i) {
                 long transaction1EnergyLimit = 1_000_000_000l;
-                AvmTransaction tx1 = AvmTransactionUtil.call(deployer, this.contractAddress, kernel.getNonce(deployer), BigInteger.ZERO, new byte[0], transaction1EnergyLimit, 1L);
-                AvmTransactionResult result1 = this.avm.run(this.kernel, new AvmTransaction[] {tx1})[0].get();
+                Transaction tx1 = AvmTransactionUtil.call(deployer, this.contractAddress, kernel.getNonce(deployer), BigInteger.ZERO, new byte[0], transaction1EnergyLimit, 1L);
+                AvmTransactionResult result1 = this.avm.run(this.kernel, new Transaction[] {tx1})[0].get();
                 Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, result1.getResultCode());
             }
         }

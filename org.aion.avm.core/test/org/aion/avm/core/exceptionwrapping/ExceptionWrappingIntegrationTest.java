@@ -1,9 +1,9 @@
 package org.aion.avm.core.exceptionwrapping;
 
 import org.aion.kernel.AvmTransactionResult.Code;
-import org.aion.avm.core.AvmTransaction;
 import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.types.AionAddress;
+import org.aion.types.Transaction;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmFailedException;
 import org.aion.avm.core.AvmImpl;
@@ -43,8 +43,8 @@ public class ExceptionWrappingIntegrationTest {
         // Deploy.
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
-        AvmTransaction create = AvmTransactionUtil.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        AvmTransactionResult createResult = avm.run(kernel, new AvmTransaction[] {create})[0].get();
+        Transaction create = AvmTransactionUtil.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
+        AvmTransactionResult createResult = avm.run(kernel, new Transaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         AionAddress contractAddr = new AionAddress(createResult.getReturnData());
         
@@ -75,8 +75,8 @@ public class ExceptionWrappingIntegrationTest {
         // Deploy.
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
-        AvmTransaction create = AvmTransactionUtil.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        AvmTransactionResult createResult = avm.run(kernel, new AvmTransaction[] {create})[0].get();
+        Transaction create = AvmTransactionUtil.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
+        AvmTransactionResult createResult = avm.run(kernel, new Transaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         AionAddress contractAddr = new AionAddress(createResult.getReturnData());
         
@@ -97,8 +97,8 @@ public class ExceptionWrappingIntegrationTest {
         // Deploy.
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
-        AvmTransaction create = AvmTransactionUtil.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        AvmTransactionResult createResult = avm.run(kernel, new AvmTransaction[] {create})[0].get();
+        Transaction create = AvmTransactionUtil.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
+        AvmTransactionResult createResult = avm.run(kernel, new Transaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         AionAddress contractAddr = new AionAddress(createResult.getReturnData());
         
@@ -119,8 +119,8 @@ public class ExceptionWrappingIntegrationTest {
         // Deploy.
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
-        AvmTransaction create = AvmTransactionUtil.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        AvmTransactionResult createResult = avm.run(kernel, new AvmTransaction[] {create})[0].get();
+        Transaction create = AvmTransactionUtil.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
+        AvmTransactionResult createResult = avm.run(kernel, new Transaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         AionAddress contractAddr = new AionAddress(createResult.getReturnData());
         
@@ -157,8 +157,8 @@ public class ExceptionWrappingIntegrationTest {
         // Deploy.
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
-        AvmTransaction create = AvmTransactionUtil.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        AvmTransactionResult createResult = avm.run(kernel, new AvmTransaction[] {create})[0].get();
+        Transaction create = AvmTransactionUtil.create(TestingKernel.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
+        AvmTransactionResult createResult = avm.run(kernel, new Transaction[] {create})[0].get();
         Assert.assertEquals(AvmTransactionResult.Code.SUCCESS, createResult.getResultCode());
         AionAddress contractAddr = new AionAddress(createResult.getReturnData());
         // The next call will spin in a loop, thus triggering our failure.
@@ -212,7 +212,7 @@ public class ExceptionWrappingIntegrationTest {
         byte[] argData = (null != methodName)
                 ? new ABIStreamingEncoder().encodeOneString(methodName).toBytes()
                 : new byte[0];
-        AvmTransaction call = AvmTransactionUtil.call(from, contractAddr, kernel.getNonce(from), BigInteger.ZERO, argData, energyLimit, 1l);
-        return avm.run(kernel, new AvmTransaction[] {call})[0].get();
+        Transaction call = AvmTransactionUtil.call(from, contractAddr, kernel.getNonce(from), BigInteger.ZERO, argData, energyLimit, 1l);
+        return avm.run(kernel, new Transaction[] {call})[0].get();
     }
 }

@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.aion.types.AionAddress;
-import org.aion.avm.core.AvmTransaction;
+import org.aion.types.Transaction;
 import org.aion.avm.core.ReentrantDAppStack;
 import org.aion.avm.core.types.Pair;
 import org.aion.avm.core.util.ByteArrayWrapper;
@@ -27,7 +27,7 @@ import org.aion.vm.api.interfaces.KernelInterface;
  */
 public class TransactionTask implements Comparable<TransactionTask>{
     private final KernelInterface parentKernel;
-    private AvmTransaction externalTransaction;
+    private Transaction externalTransaction;
     private volatile boolean abortState;
     private IInstrumentation threadOwningTask;
     private ReentrantDAppStack reentrantDAppStack;
@@ -41,7 +41,7 @@ public class TransactionTask implements Comparable<TransactionTask>{
     private Set<Pair<AionAddress, ByteArrayWrapper>> resetStorageKeys;
 
 
-    public TransactionTask(KernelInterface parentKernel, AvmTransaction tx, int index, AionAddress origin){
+    public TransactionTask(KernelInterface parentKernel, Transaction tx, int index, AionAddress origin){
         this.parentKernel = parentKernel;
         this.externalTransaction = tx;
         this.index = index;
@@ -128,7 +128,7 @@ public class TransactionTask implements Comparable<TransactionTask>{
      *
      * @return The entry (external) transaction of the task.
      */
-    public AvmTransaction getTransaction() {
+    public Transaction getTransaction() {
         return externalTransaction;
     }
 
@@ -191,7 +191,7 @@ public class TransactionTask implements Comparable<TransactionTask>{
 
     void outputFlush(){
         if (this.outBuffer.length() > 0) {
-            System.out.println("Output from transaction " + Helpers.bytesToHexString(externalTransaction.transactionHash));
+            System.out.println("Output from transaction " + Helpers.bytesToHexString(externalTransaction.copyOfTransactionHash()));
             System.out.println(this.outBuffer);
             System.out.flush();
         }

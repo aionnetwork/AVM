@@ -1,7 +1,7 @@
 package org.aion.avm.core;
 
-import org.aion.avm.core.types.InternalTransaction;
 import org.aion.types.AionAddress;
+import org.aion.types.Transaction;
 
 
 /**
@@ -51,14 +51,5 @@ public interface IExternalCapabilities {
      * @param tx The transaction performing the creation.
      * @return The address of the new contract this transaction would create.
      */
-    AionAddress generateContractAddress(InternalTransaction tx);
-
-    /**
-     * Determines the new contract address of the given transaction.
-     * Note that this call must have NO SIDE-EFFECTS as it may be called multiple times on the same transaction.
-     *
-     * @param tx The transaction performing the creation.
-     * @return The address of the new contract this transaction would create.
-     */
-    AionAddress generateContractAddress(AvmTransaction tx);
+    AionAddress generateContractAddress(Transaction tx);
 }

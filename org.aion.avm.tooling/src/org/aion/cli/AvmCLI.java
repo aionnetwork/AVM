@@ -2,9 +2,9 @@ package org.aion.cli;
 
 import java.math.BigInteger;
 import org.aion.avm.core.FutureResult;
-import org.aion.avm.core.AvmTransaction;
 import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.types.AionAddress;
+import org.aion.types.Transaction;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -26,7 +26,7 @@ import java.nio.file.Paths;
 public class AvmCLI {
     static TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
 
-    public static AvmTransaction setupOneDeploy(IEnvironment env, String storagePath, String jarPath, AionAddress sender, long energyLimit, BigInteger balance) {
+    public static Transaction setupOneDeploy(IEnvironment env, String storagePath, String jarPath, AionAddress sender, long energyLimit, BigInteger balance) {
 
         reportDeployRequest(env, storagePath, jarPath, sender);
 
@@ -64,20 +64,20 @@ public class AvmCLI {
         env.logLine("Energy cost  : " + createResult.getEnergyUsed());
     }
 
-    public static AvmTransaction setupOneCall(IEnvironment env, String storagePath, AionAddress contract, AionAddress sender, String method, Object[] args, long energyLimit, long nonceBias, BigInteger balance) {
+    public static Transaction setupOneCall(IEnvironment env, String storagePath, AionAddress contract, AionAddress sender, String method, Object[] args, long energyLimit, long nonceBias, BigInteger balance) {
         reportCallRequest(env, storagePath, contract, sender, method, args);
 
         byte[] arguments = ABIUtil.encodeMethodArguments(method, args);
         return commonSetupTransaction(env, storagePath, contract, sender, arguments, energyLimit, nonceBias, balance);
     }
 
-    public static AvmTransaction setupOneTransfer(IEnvironment env, String storagePath, AionAddress recipient, AionAddress sender, long energyLimit, long nonceBias, BigInteger balance) {
+    public static Transaction setupOneTransfer(IEnvironment env, String storagePath, AionAddress recipient, AionAddress sender, long energyLimit, long nonceBias, BigInteger balance) {
         reportTransferRequest(env, storagePath, recipient, sender, balance);
 
         return commonSetupTransaction(env, storagePath, recipient, sender, new byte[0], energyLimit, nonceBias, balance);
     }
 
-    private static AvmTransaction commonSetupTransaction(IEnvironment env, String storagePath, AionAddress target, AionAddress sender, byte[] data, long energyLimit, long nonceBias, BigInteger balance) {
+    private static Transaction commonSetupTransaction(IEnvironment env, String storagePath, AionAddress target, AionAddress sender, byte[] data, long energyLimit, long nonceBias, BigInteger balance) {
 
         File storageFile = new File(storagePath);
 
@@ -240,7 +240,7 @@ public class AvmCLI {
                 }
             } else {
                 // Setup the transactions.
-                AvmTransaction[] transactions = new AvmTransaction[invocation.commands.size()];
+                Transaction[] transactions = new Transaction[invocation.commands.size()];
                 for (int i = 0; i < invocation.commands.size(); ++i) {
                     ArgumentParser.Command command = invocation.commands.get(i);
                     switch (command.action) {

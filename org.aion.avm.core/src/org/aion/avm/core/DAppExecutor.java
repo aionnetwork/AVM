@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.types.AionAddress;
+import org.aion.types.Transaction;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 import org.aion.avm.StorageFees;
 import org.aion.avm.core.persistence.LoadedDApp;
@@ -20,7 +21,7 @@ public class DAppExecutor {
 
     public static void call(IExternalCapabilities capabilities, KernelInterface kernel, AvmInternal avm, LoadedDApp dapp,
                             ReentrantDAppStack.ReentrantState stateToResume, TransactionTask task,
-                            AvmTransaction tx, AvmTransactionResult result, boolean verboseErrors, boolean readFromCache) {
+                            Transaction tx, AvmTransactionResult result, boolean verboseErrors, boolean readFromCache) {
         AionAddress dappAddress = tx.destinationAddress;
         
         // If this is a reentrant call, we need to serialize the graph of the parent frame.  This is required to both copy-back our changes but also
@@ -71,7 +72,7 @@ public class DAppExecutor {
         task.getReentrantDAppStack().pushState(thisState);
         
         InstrumentationHelpers.pushNewStackFrame(dapp.runtimeSetup, dapp.loader, tx.energyLimit - result.getEnergyUsed(), nextHashCode, initialClassWrappers);
-        IBlockchainRuntime previousRuntime = dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(capabilities, kernel, avm, thisState, task, tx, tx.data, dapp.runtimeSetup));
+        IBlockchainRuntime previousRuntime = dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(capabilities, kernel, avm, thisState, task, tx, tx.copyOfTransactionData(), dapp.runtimeSetup));
 
         try {
             // It is now safe for us to bill for the cost of loading the graph (the cost is the same, whether this came from the caller or the disk).
@@ -181,7 +182,7 @@ public class DAppExecutor {
 
         } catch (EarlyAbortException e) {
             if (verboseErrors) {
-                System.err.println("FYI - concurrent abort (will retry) in transaction \"" + Helpers.bytesToHexString(tx.transactionHash) + "\"");
+                System.err.println("FYI - concurrent abort (will retry) in transaction \"" + Helpers.bytesToHexString(tx.copyOfTransactionHash()) + "\"");
             }
             if (null != stateToResume) {
                 dapp.revertToCallerState(initialClassWrappers, callerState);

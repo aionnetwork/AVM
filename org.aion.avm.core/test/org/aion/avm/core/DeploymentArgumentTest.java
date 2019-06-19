@@ -2,6 +2,7 @@ package org.aion.avm.core;
 
 import avm.Address;
 import org.aion.types.AionAddress;
+import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
@@ -114,14 +115,14 @@ public class DeploymentArgumentTest {
 
     private AvmTransactionResult deployContract(byte[] args) {
         byte[] payload = new CodeAndArguments(JAR, args).encodeToBytes();
-        AvmTransaction create = AvmTransactionUtil.create(DEPLOYER, kernel.getNonce(DEPLOYER), BigInteger.ZERO, payload, ENERGY_LIMIT, ENERGY_PRICE);
-        return avm.run(kernel, new AvmTransaction[] {create})[0].get();
+        Transaction create = AvmTransactionUtil.create(DEPLOYER, kernel.getNonce(DEPLOYER), BigInteger.ZERO, payload, ENERGY_LIMIT, ENERGY_PRICE);
+        return avm.run(kernel, new Transaction[] {create})[0].get();
     }
 
     private AvmTransactionResult callContract(AionAddress target, String methodName) {
         byte[] argData = new ABIStreamingEncoder().encodeOneString(methodName).toBytes();
-        AvmTransaction call = AvmTransactionUtil.call(DEPLOYER, target, kernel.getNonce(DEPLOYER), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
-        AvmTransactionResult result = avm.run(kernel, new AvmTransaction[] {call})[0].get();
+        Transaction call = AvmTransactionUtil.call(DEPLOYER, target, kernel.getNonce(DEPLOYER), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
+        AvmTransactionResult result = avm.run(kernel, new Transaction[] {call})[0].get();
         return result;
     }
 }

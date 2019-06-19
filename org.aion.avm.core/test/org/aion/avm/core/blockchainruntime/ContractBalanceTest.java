@@ -6,10 +6,10 @@ import static org.junit.Assert.assertTrue;
 import avm.Address;
 import java.math.BigInteger;
 import avm.Blockchain;
-import org.aion.avm.core.AvmTransaction;
 import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.kernel.AvmTransactionResult;
 import org.aion.types.AionAddress;
+import org.aion.types.Transaction;
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.CommonAvmFactory;
@@ -106,8 +106,8 @@ public class ContractBalanceTest {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(ContractBalanceTarget.class);
         jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
-        AvmTransaction transaction = AvmTransactionUtil.create(from, kernel.getNonce(from), value, jar, energyLimit, energyPrice);
-        AvmTransactionResult result = avm.run(ContractBalanceTest.kernel, new AvmTransaction[] {transaction})[0].get();
+        Transaction transaction = AvmTransactionUtil.create(from, kernel.getNonce(from), value, jar, energyLimit, energyPrice);
+        AvmTransactionResult result = avm.run(ContractBalanceTest.kernel, new Transaction[] {transaction})[0].get();
         assertTrue(result.getResultCode().isSuccess());
         return new AionAddress(result.getReturnData());
     }
@@ -117,8 +117,8 @@ public class ContractBalanceTest {
         byte[] callData = new ABIStreamingEncoder()
                 .encodeOneString("getBalanceOfThisContract")
                 .toBytes();
-        AvmTransaction transaction = AvmTransactionUtil.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
-        AvmTransactionResult result = avm.run(ContractBalanceTest.kernel, new AvmTransaction[] {transaction})[0].get();
+        Transaction transaction = AvmTransactionUtil.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
+        AvmTransactionResult result = avm.run(ContractBalanceTest.kernel, new Transaction[] {transaction})[0].get();
         assertTrue(result.getResultCode().isSuccess());
         return new BigInteger(new ABIDecoder(result.getReturnData()).decodeOneByteArray());
     }
@@ -128,8 +128,8 @@ public class ContractBalanceTest {
         byte[] callData = new ABIStreamingEncoder()
                 .encodeOneString("getBalanceOfThisContractDuringClinit")
                 .toBytes();
-        AvmTransaction transaction = AvmTransactionUtil.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
-        AvmTransactionResult result = avm.run(ContractBalanceTest.kernel, new AvmTransaction[] {transaction})[0].get();
+        Transaction transaction = AvmTransactionUtil.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
+        AvmTransactionResult result = avm.run(ContractBalanceTest.kernel, new Transaction[] {transaction})[0].get();
         assertTrue(result.getResultCode().isSuccess());
         return new BigInteger(new ABIDecoder(result.getReturnData()).decodeOneByteArray());
     }
@@ -139,8 +139,8 @@ public class ContractBalanceTest {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(RedirectContract.class);
         jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
-        AvmTransaction transaction = AvmTransactionUtil.create(from, kernel.getNonce(from), BigInteger.ZERO, jar, energyLimit, energyPrice);
-        AvmTransactionResult result = avm.run(ContractBalanceTest.kernel, new AvmTransaction[] {transaction})[0].get();
+        Transaction transaction = AvmTransactionUtil.create(from, kernel.getNonce(from), BigInteger.ZERO, jar, energyLimit, energyPrice);
+        AvmTransactionResult result = avm.run(ContractBalanceTest.kernel, new Transaction[] {transaction})[0].get();
         assertTrue(result.getResultCode().isSuccess());
         return new AionAddress(result.getReturnData());
     }
@@ -161,8 +161,8 @@ public class ContractBalanceTest {
 
     private BigInteger runTransactionAndInterpretOutputAsBigInteger(AionAddress contract, byte[] callData) {
         kernel.generateBlock();
-        AvmTransaction transaction = AvmTransactionUtil.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
-        AvmTransactionResult result = avm.run(ContractBalanceTest.kernel, new AvmTransaction[] {transaction})[0].get();
+        Transaction transaction = AvmTransactionUtil.call(from, contract, kernel.getNonce(from), BigInteger.ZERO, callData, energyLimit, energyPrice);
+        AvmTransactionResult result = avm.run(ContractBalanceTest.kernel, new Transaction[] {transaction})[0].get();
         assertTrue(result.getResultCode().isSuccess());
         return new BigInteger(new ABIDecoder(result.getReturnData()).decodeOneByteArray());
     }
