@@ -50,5 +50,7 @@ public class ConstantBillingTest {
         long cost = basicTransactionCost + deploymentFee + clinitCost + storageFee;
 
         assertEquals(cost, energyLimit - result.getEnergyRemaining());
+
+        avm.shutdown();
     }
 }
