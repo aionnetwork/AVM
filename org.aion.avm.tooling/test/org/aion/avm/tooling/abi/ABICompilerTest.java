@@ -13,9 +13,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.Helpers;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.aion.avm.tooling.abi.ABICompiler;
+import org.aion.avm.tooling.abi.ABICompilerException;
 import org.aion.avm.tooling.deploy.eliminator.TestUtil;
+import org.aion.avm.tooling.util.JarBuilder;
+import org.aion.avm.tooling.util.Utilities;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
@@ -153,8 +158,8 @@ public class ABICompilerTest {
     @Test(expected = ABICompilerException.class)
     public void testGetMissingUserlibClassesFail() {
         String qualifiedClassName = ChattyCalculatorTarget.class.getName();
-        String internalName = Helpers.fulllyQualifiedNameToInternalName(qualifiedClassName);
-        byte[] mainClassBytes = Helpers.loadRequiredResourceAsBytes(internalName + ".class");
+        String internalName = Utilities.fulllyQualifiedNameToInternalName(qualifiedClassName);
+        byte[] mainClassBytes = Utilities.loadRequiredResourceAsBytes(internalName + ".class");
         Map<String, byte[]> classMap = new HashMap<>();
         classMap.put("org.aion.avm.userlib.AionList", new byte[10]);
         byte[] jar = JarBuilder.buildJarForExplicitClassNamesAndBytecode(qualifiedClassName, mainClassBytes, classMap);

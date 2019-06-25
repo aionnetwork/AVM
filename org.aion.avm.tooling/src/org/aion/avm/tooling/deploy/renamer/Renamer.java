@@ -1,9 +1,9 @@
 package org.aion.avm.tooling.deploy.renamer;
 
-import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.deploy.eliminator.ClassInfo;
 import org.aion.avm.tooling.deploy.eliminator.MethodReachabilityDetector;
+import org.aion.avm.tooling.util.JarBuilder;
+import org.aion.avm.tooling.util.Utilities;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.commons.ClassRemapper;
@@ -54,7 +54,7 @@ public class Renamer {
         byte[] mainClassBytes = classNameByteCodeMap.get(newMainClassName);
         classNameByteCodeMap.remove(newMainClassName, mainClassBytes);
 
-        return JarBuilder.buildJarForExplicitClassNamesAndBytecode(Helpers.internalNameToFulllyQualifiedName(newMainClassName), mainClassBytes, classNameByteCodeMap);
+        return JarBuilder.buildJarForExplicitClassNamesAndBytecode(Utilities.internalNameToFulllyQualifiedName(newMainClassName), mainClassBytes, classNameByteCodeMap);
     }
 
     public static Map<String, ClassNode> sortBasedOnInnerClassLevel(Map<String, ClassNode> classMap) {
@@ -98,7 +98,7 @@ public class Renamer {
 
         Manifest manifest = jarReader.getManifest();
         if (null != manifest && manifest.getMainAttributes() != null) {
-            return Helpers.fulllyQualifiedNameToInternalName(manifest.getMainAttributes().getValue(Attributes.Name.MAIN_CLASS));
+            return Utilities.fulllyQualifiedNameToInternalName(manifest.getMainAttributes().getValue(Attributes.Name.MAIN_CLASS));
         } else {
             throw new RuntimeException("Manifest file required");
         }

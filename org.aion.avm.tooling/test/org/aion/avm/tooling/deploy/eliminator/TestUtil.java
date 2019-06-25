@@ -5,17 +5,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.Helpers;
+import org.aion.avm.tooling.util.JarBuilder;
+import org.aion.avm.tooling.util.Utilities;
+
 
 public class TestUtil {
-
     public static Map<String, byte[]> makeClassMap(Class<?>... classes) {
         Map<String, byte[]> classMap = new HashMap<>();
 
         for (Class<?> clazz : classes) {
-            String slashName = Helpers.fulllyQualifiedNameToInternalName(clazz.getName());
-            byte[] classBytes = Helpers.loadRequiredResourceAsBytes(slashName + ".class");
+            String slashName = Utilities.fulllyQualifiedNameToInternalName(clazz.getName());
+            byte[] classBytes = Utilities.loadRequiredResourceAsBytes(slashName + ".class");
             classMap.put(slashName, classBytes);
         }
 
@@ -25,10 +25,10 @@ public class TestUtil {
     public static byte[] serializeClassesAsJar(Class<?> mainClass, Class<?>... others) {
         Map<String, byte[]> loadedClasses = Arrays.stream(others)
             .map(c -> c.getName())
-            .collect(Collectors.toMap(c -> c, c -> Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(c) + ".class")));
+            .collect(Collectors.toMap(c -> c, c -> Utilities.loadRequiredResourceAsBytes(Utilities.fulllyQualifiedNameToInternalName(c) + ".class")));
         String qualifiedClassName = mainClass.getName();
-        String internalName = Helpers.fulllyQualifiedNameToInternalName(qualifiedClassName);
-        byte[] mainClassBytes = Helpers.loadRequiredResourceAsBytes(internalName + ".class");
+        String internalName = Utilities.fulllyQualifiedNameToInternalName(qualifiedClassName);
+        byte[] mainClassBytes = Utilities.loadRequiredResourceAsBytes(internalName + ".class");
         return JarBuilder.buildJarForExplicitClassNamesAndBytecode(qualifiedClassName, mainClassBytes, loadedClasses);
     }
 }

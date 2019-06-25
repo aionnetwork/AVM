@@ -10,8 +10,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
-import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.Helpers;
+
+import org.aion.avm.tooling.util.JarBuilder;
+import org.aion.avm.tooling.util.Utilities;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
@@ -204,8 +205,8 @@ public class ABICompiler {
         List<Class> classesToAdd = new ArrayList<>();
         for (Class clazz: requiredUserlibClasses) {
             String fullyQualifiedName = clazz.getName();
-            String internalName = Helpers.fulllyQualifiedNameToInternalName(fullyQualifiedName);
-            byte[] expectedBytes = Helpers.loadRequiredResourceAsBytes(internalName + ".class");
+            String internalName = Utilities.fulllyQualifiedNameToInternalName(fullyQualifiedName);
+            byte[] expectedBytes = Utilities.loadRequiredResourceAsBytes(internalName + ".class");
             
             if (originalClassMap.containsKey(fullyQualifiedName)) {
                 if (!Arrays.equals(expectedBytes, originalClassMap.get(fullyQualifiedName))) {

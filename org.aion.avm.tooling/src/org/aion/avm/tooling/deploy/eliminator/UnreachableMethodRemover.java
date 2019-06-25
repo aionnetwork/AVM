@@ -8,8 +8,9 @@ import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
-import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.Helpers;
+
+import org.aion.avm.tooling.util.JarBuilder;
+import org.aion.avm.tooling.util.Utilities;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -25,7 +26,7 @@ public class UnreachableMethodRemover {
         JarInputStream jarReader;
 
         jarReader = new JarInputStream(new ByteArrayInputStream(jarBytes), true);
-        String mainClassName = Helpers.fulllyQualifiedNameToInternalName(extractMainClassName(jarReader));
+        String mainClassName = Utilities.fulllyQualifiedNameToInternalName(extractMainClassName(jarReader));
         inputClassMap = extractClasses(jarReader);
 
         // Use the MethodReachabilityDetector to get the information about reachability
@@ -37,11 +38,11 @@ public class UnreachableMethodRemover {
             ClassUnreachabilityVisitor classVisitor = new ClassUnreachabilityVisitor(classWriter,
                 classInfoMap.get(entry.getKey()).getMethodMap());
             reader.accept(classVisitor, 0);
-            outputClassMap.put(Helpers.internalNameToFulllyQualifiedName(entry.getKey()), classWriter.toByteArray());
+            outputClassMap.put(Utilities.internalNameToFulllyQualifiedName(entry.getKey()), classWriter.toByteArray());
         }
 
-        byte[] mainClassBytes = outputClassMap.remove(Helpers.internalNameToFulllyQualifiedName(mainClassName));
-        return JarBuilder.buildJarForExplicitClassNamesAndBytecode(Helpers.internalNameToFulllyQualifiedName(mainClassName), mainClassBytes, outputClassMap);
+        byte[] mainClassBytes = outputClassMap.remove(Utilities.internalNameToFulllyQualifiedName(mainClassName));
+        return JarBuilder.buildJarForExplicitClassNamesAndBytecode(Utilities.internalNameToFulllyQualifiedName(mainClassName), mainClassBytes, outputClassMap);
     }
 
     private static String extractMainClassName(JarInputStream jarReader) {

@@ -9,7 +9,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
-import org.aion.avm.core.util.Helpers;
+
+import org.aion.avm.tooling.deploy.eliminator.ClassInfo;
+import org.aion.avm.tooling.deploy.eliminator.MethodInfo;
+import org.aion.avm.tooling.deploy.eliminator.MethodReachabilityDetector;
+import org.aion.avm.tooling.deploy.eliminator.UnreachableMethodRemover;
 import org.aion.avm.tooling.deploy.eliminator.resources.ClassD;
 import org.aion.avm.tooling.deploy.eliminator.resources.ClassE;
 import org.aion.avm.tooling.deploy.eliminator.resources.ClassF;
@@ -17,6 +21,7 @@ import org.aion.avm.tooling.deploy.eliminator.resources.ClassG;
 import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceA;
 import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceB;
 import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceC;
+import org.aion.avm.tooling.util.Utilities;
 import org.junit.Test;
 
 public class UnreachableMethodRemoverTest {
@@ -92,7 +97,7 @@ public class UnreachableMethodRemoverTest {
                     && !name.equals("module-info.class")) {
 
                     String internalClassName = name.replaceAll(".class$", "");
-                    String qualifiedClassName = Helpers.internalNameToFulllyQualifiedName(internalClassName);
+                    String qualifiedClassName = Utilities.internalNameToFulllyQualifiedName(internalClassName);
                     int readSize = jarReader.readNBytes(tempReadingBuffer, 0, tempReadingBuffer.length);
 
                     if (0 != jarReader.available()) {
@@ -112,13 +117,12 @@ public class UnreachableMethodRemoverTest {
     private static Map<String, byte[]> turnDotsToSlashes(Map<String, byte[]> inputClassMap) {
         Map<String, byte[]> outputClassMap = new HashMap<>();
         for (Map.Entry<String, byte[]> entry : inputClassMap.entrySet()) {
-            outputClassMap
-                .put(Helpers.fulllyQualifiedNameToInternalName(entry.getKey()), entry.getValue());
+            outputClassMap.put(Utilities.fulllyQualifiedNameToInternalName(entry.getKey()), entry.getValue());
         }
         return outputClassMap;
     }
 
     private static String getInternalNameForClass(Class<?> clazz) {
-        return Helpers.fulllyQualifiedNameToInternalName(clazz.getName());
+        return Utilities.fulllyQualifiedNameToInternalName(clazz.getName());
     }
 }

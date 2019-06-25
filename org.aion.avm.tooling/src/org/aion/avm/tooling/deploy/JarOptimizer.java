@@ -1,7 +1,7 @@
 package org.aion.avm.tooling.deploy;
 
-import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.Helpers;
+import org.aion.avm.tooling.util.JarBuilder;
+import org.aion.avm.tooling.util.Utilities;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -95,7 +95,7 @@ public class JarOptimizer {
                     && !name.equals("module-info.class")) {
 
                 String internalClassName = name.replaceAll(".class$", "");
-                String qualifiedClassName = Helpers.internalNameToFulllyQualifiedName(internalClassName);
+                String qualifiedClassName = Utilities.internalNameToFulllyQualifiedName(internalClassName);
                 int readSize = jarReader.readNBytes(tempReadingBuffer, 0, tempReadingBuffer.length);
 
                 if (0 != jarReader.available()) {

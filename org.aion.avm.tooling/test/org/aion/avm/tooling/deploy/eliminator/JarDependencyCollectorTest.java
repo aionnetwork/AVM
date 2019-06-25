@@ -6,14 +6,18 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Map;
-import org.aion.avm.tooling.deploy.eliminator.resources.ClassG;
-import org.aion.avm.tooling.deploy.eliminator.resources.ClassF;
-import org.aion.avm.tooling.deploy.eliminator.resources.ClassE;
-import org.aion.avm.core.util.Helpers;
+
+import org.aion.avm.tooling.deploy.eliminator.ClassInfo;
+import org.aion.avm.tooling.deploy.eliminator.JarDependencyCollector;
+import org.aion.avm.tooling.deploy.eliminator.MethodInfo;
 import org.aion.avm.tooling.deploy.eliminator.resources.ClassD;
-import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceC;
-import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceB;
+import org.aion.avm.tooling.deploy.eliminator.resources.ClassE;
+import org.aion.avm.tooling.deploy.eliminator.resources.ClassF;
+import org.aion.avm.tooling.deploy.eliminator.resources.ClassG;
 import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceA;
+import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceB;
+import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceC;
+import org.aion.avm.tooling.util.Utilities;
 import org.junit.Test;
 
 public class JarDependencyCollectorTest {
@@ -157,6 +161,6 @@ public class JarDependencyCollectorTest {
 
 
     private static String getInternalNameForClass(Class<?> clazz) {
-        return Helpers.fulllyQualifiedNameToInternalName(clazz.getName());
+        return Utilities.fulllyQualifiedNameToInternalName(clazz.getName());
     }
 }

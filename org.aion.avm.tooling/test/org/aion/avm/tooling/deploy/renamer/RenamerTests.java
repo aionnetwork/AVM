@@ -1,10 +1,10 @@
 package org.aion.avm.tooling.deploy.renamer;
 
-import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.deploy.eliminator.ClassInfo;
 import org.aion.avm.tooling.deploy.eliminator.MethodReachabilityDetector;
 import org.aion.avm.tooling.deploy.eliminator.TestUtil;
 import org.aion.avm.tooling.deploy.renamer.resources.*;
+import org.aion.avm.tooling.util.Utilities;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.ClassWriter;
@@ -27,7 +27,7 @@ public class RenamerTests {
 
         Map<String, ClassNode> classMap = Renamer.sortBasedOnInnerClassLevel(extractClasses(jarReader));
 
-        String mainClassName = Helpers.fulllyQualifiedNameToInternalName(RenameTarget.class.getName());
+        String mainClassName = Utilities.fulllyQualifiedNameToInternalName(RenameTarget.class.getName());
         Map<String, String> newClasses = ClassRenamer.renameClasses(classMap, mainClassName);
 
         Assert.assertEquals(NameGenerator.getNewMainClassName(), newClasses.get(mainClassName));
@@ -42,7 +42,7 @@ public class RenamerTests {
         byte[] jarBytes = TestUtil.serializeClassesAsJar(RenameTarget.class, ClassA.class, ClassB.class, ClassC.class, InterfaceD.class);
         JarInputStream jarReader = new JarInputStream(new ByteArrayInputStream(jarBytes), true);
 
-        String mainClassName = Helpers.fulllyQualifiedNameToInternalName(RenameTarget.class.getName());
+        String mainClassName = Utilities.fulllyQualifiedNameToInternalName(RenameTarget.class.getName());
         Map<String, ClassNode> classMap = Renamer.sortBasedOnInnerClassLevel(extractClasses(jarReader));
 
         Map<String, ClassInfo> classInfoMap = MethodReachabilityDetector.getClassInfoMap(mainClassName, getClassBytes(classMap));
@@ -63,7 +63,7 @@ public class RenamerTests {
         byte[] jarBytes = TestUtil.serializeClassesAsJar(RenameTarget.class);
         JarInputStream jarReader = new JarInputStream(new ByteArrayInputStream(jarBytes), true);
 
-        String mainClassName = Helpers.fulllyQualifiedNameToInternalName(RenameTarget.class.getName());
+        String mainClassName = Utilities.fulllyQualifiedNameToInternalName(RenameTarget.class.getName());
         Map<String, ClassNode> classMap = Renamer.sortBasedOnInnerClassLevel(extractClasses(jarReader));
 
         Map<String, ClassInfo> classInfoMap = MethodReachabilityDetector.getClassInfoMap(mainClassName, getClassBytes(classMap));
@@ -101,7 +101,7 @@ public class RenamerTests {
         byte[] jarBytes = TestUtil.serializeClassesAsJar(RenameTarget.class);
         JarInputStream jarReader = new JarInputStream(new ByteArrayInputStream(jarBytes), true);
 
-        String mainClassName = Helpers.fulllyQualifiedNameToInternalName(RenameTarget.class.getName());
+        String mainClassName = Utilities.fulllyQualifiedNameToInternalName(RenameTarget.class.getName());
         Map<String, ClassNode> classMap = Renamer.sortBasedOnInnerClassLevel(extractClasses(jarReader));
 
         Map<String, ClassInfo> classInfoMap = MethodReachabilityDetector.getClassInfoMap(mainClassName, getClassBytes(classMap));
@@ -122,11 +122,11 @@ public class RenamerTests {
     }
 
     private static String makeMethodFullName(String className, String method) {
-        return Helpers.fulllyQualifiedNameToInternalName(className) + '.' + method;
+        return Utilities.fulllyQualifiedNameToInternalName(className) + '.' + method;
     }
 
     private static String makeFullFieldName(String className, String fieldName) {
-        return Helpers.fulllyQualifiedNameToInternalName(className) + "." + fieldName;
+        return Utilities.fulllyQualifiedNameToInternalName(className) + "." + fieldName;
     }
 
     private static Map<String, byte[]> getClassBytes(Map<String, ClassNode> classMap) {
