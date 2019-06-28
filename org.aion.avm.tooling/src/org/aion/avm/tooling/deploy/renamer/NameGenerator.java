@@ -3,16 +3,18 @@ package org.aion.avm.tooling.deploy.renamer;
 import java.util.Set;
 
 public class NameGenerator {
-    private static char[] characters;
+    private static final char[] CHARACTERS = new char[26];
+    static {
+        for (int i = 97; i <= 122; i++) {
+            CHARACTERS[i - 97] = ((char) i);
+        }
+    }
+
     private int currentClassIndex;
     private int currentInstructionIndex;
 
     public NameGenerator() {
-        characters = new char[26];
         currentClassIndex = 1;
-        for (int i = 97; i <= 122; i++) {
-            characters[i - 97] = ((char) i);
-        }
     }
 
     public String getNextClassName() {
@@ -23,7 +25,7 @@ public class NameGenerator {
 
     // main class will always be mapped to A
     public static String getNewMainClassName() {
-        return String.valueOf(characters[0]).toUpperCase();
+        return String.valueOf(CHARACTERS[0]).toUpperCase();
     }
 
     public String getNextMethodOrFieldName(Set<String> restrictions) {
@@ -38,7 +40,7 @@ public class NameGenerator {
         return name;
     }
 
-    private String nextString(int i) {
-        return i < 0 ? "" : nextString((i / 26) - 1) + characters[i % 26];
+    private static String nextString(int i) {
+        return i < 0 ? "" : nextString((i / 26) - 1) + CHARACTERS[i % 26];
     }
 }

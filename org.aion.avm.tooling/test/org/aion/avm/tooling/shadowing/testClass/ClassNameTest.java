@@ -75,7 +75,7 @@ public class ClassNameTest {
 
     @Test
     public void getObjectToString(){
-        assertEquals("org.aion.avm.tooling.shadowing.testClass.TestResource$Child@14", callStatic("getObjectToString"));
+        assertEquals(TestResource.Child.class.getName() + "@14", callStatic("getObjectToString"));
     }
 
     @Test

@@ -1,9 +1,9 @@
 package org.aion.avm.tooling.deploy.renamer;
 
-import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.deploy.eliminator.ClassInfo;
 import org.aion.avm.tooling.deploy.eliminator.MethodReachabilityDetector;
+import org.aion.avm.tooling.deploy.eliminator.TestUtil;
 import org.aion.avm.tooling.deploy.renamer.resources.*;
 import org.junit.Assert;
 import org.junit.Test;
@@ -22,25 +22,24 @@ public class RenamerTests {
 
     @Test
     public void testRenameInnerClasses() throws IOException {
-        byte[] jarBytes = JarBuilder.buildJarForMainAndClasses(RenameTarget.class);
+        byte[] jarBytes = TestUtil.serializeClassesAsJar(RenameTarget.class);
         JarInputStream jarReader = new JarInputStream(new ByteArrayInputStream(jarBytes), true);
 
         Map<String, ClassNode> classMap = Renamer.sortBasedOnInnerClassLevel(extractClasses(jarReader));
 
-        NameGenerator generator = new NameGenerator();
         String mainClassName = Helpers.fulllyQualifiedNameToInternalName(RenameTarget.class.getName());
         Map<String, String> newClasses = ClassRenamer.renameClasses(classMap, mainClassName);
 
-        Assert.assertEquals(generator.getNewMainClassName(), newClasses.get(mainClassName));
-        Assert.assertEquals(generator.getNewMainClassName() + "$J", newClasses.get(mainClassName + "$ClassB"));
-        Assert.assertEquals(generator.getNewMainClassName() + "$J$K", newClasses.get(mainClassName + "$ClassB$ClassC"));
-        Assert.assertEquals(generator.getNewMainClassName() + "$J$K$L", newClasses.get(mainClassName + "$ClassB$ClassC$ClassD"));
-        Assert.assertEquals(generator.getNewMainClassName() + "$J$K$L$M", newClasses.get(mainClassName + "$ClassB$ClassC$ClassD$ClassE"));
+        Assert.assertEquals(NameGenerator.getNewMainClassName(), newClasses.get(mainClassName));
+        Assert.assertEquals(NameGenerator.getNewMainClassName() + "$J", newClasses.get(mainClassName + "$ClassB"));
+        Assert.assertEquals(NameGenerator.getNewMainClassName() + "$J$K", newClasses.get(mainClassName + "$ClassB$ClassC"));
+        Assert.assertEquals(NameGenerator.getNewMainClassName() + "$J$K$L", newClasses.get(mainClassName + "$ClassB$ClassC$ClassD"));
+        Assert.assertEquals(NameGenerator.getNewMainClassName() + "$J$K$L$M", newClasses.get(mainClassName + "$ClassB$ClassC$ClassD$ClassE"));
     }
 
     @Test
     public void testJclMethodNotRenamed() throws Exception {
-        byte[] jarBytes = JarBuilder.buildJarForMainAndClasses(RenameTarget.class, ClassA.class, ClassB.class, ClassC.class, InterfaceD.class);
+        byte[] jarBytes = TestUtil.serializeClassesAsJar(RenameTarget.class, ClassA.class, ClassB.class, ClassC.class, InterfaceD.class);
         JarInputStream jarReader = new JarInputStream(new ByteArrayInputStream(jarBytes), true);
 
         String mainClassName = Helpers.fulllyQualifiedNameToInternalName(RenameTarget.class.getName());
@@ -61,7 +60,7 @@ public class RenamerTests {
 
     @Test
     public void testRenameInheritedMethods() throws Exception {
-        byte[] jarBytes = JarBuilder.buildJarForMainAndClasses(RenameTarget.class);
+        byte[] jarBytes = TestUtil.serializeClassesAsJar(RenameTarget.class);
         JarInputStream jarReader = new JarInputStream(new ByteArrayInputStream(jarBytes), true);
 
         String mainClassName = Helpers.fulllyQualifiedNameToInternalName(RenameTarget.class.getName());
@@ -99,7 +98,7 @@ public class RenamerTests {
 
     @Test
     public void testRenameFields() throws Exception {
-        byte[] jarBytes = JarBuilder.buildJarForMainAndClasses(RenameTarget.class);
+        byte[] jarBytes = TestUtil.serializeClassesAsJar(RenameTarget.class);
         JarInputStream jarReader = new JarInputStream(new ByteArrayInputStream(jarBytes), true);
 
         String mainClassName = Helpers.fulllyQualifiedNameToInternalName(RenameTarget.class.getName());

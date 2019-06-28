@@ -1,6 +1,5 @@
 package org.aion.avm.tooling.deploy.eliminator;
 
-import static org.aion.avm.core.util.Helpers.internalNameToFulllyQualifiedName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -10,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
-import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.deploy.eliminator.resources.ClassD;
 import org.aion.avm.tooling.deploy.eliminator.resources.ClassE;
@@ -19,33 +17,23 @@ import org.aion.avm.tooling.deploy.eliminator.resources.ClassG;
 import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceA;
 import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceB;
 import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceC;
-import org.junit.Before;
 import org.junit.Test;
 
 public class UnreachableMethodRemoverTest {
-
-    private UnreachableMethodRemover unreachableMethodRemover;
-
-    private static String InterfaceAname = "org/aion/avm/tooling/deploy/eliminator/resources/InterfaceA";
-    private static String InterfaceBname = "org/aion/avm/tooling/deploy/eliminator/resources/InterfaceB";
-    private static String InterfaceCname = "org/aion/avm/tooling/deploy/eliminator/resources/InterfaceC";
-    private static String ClassDname = "org/aion/avm/tooling/deploy/eliminator/resources/ClassD";
-    private static String ClassEname = "org/aion/avm/tooling/deploy/eliminator/resources/ClassE";
-    private static String ClassFname = "org/aion/avm/tooling/deploy/eliminator/resources/ClassF";
-    private static String ClassGname = "org/aion/avm/tooling/deploy/eliminator/resources/ClassG";
-
-    @Before
-    public void setup() {
-        unreachableMethodRemover = new UnreachableMethodRemover();
-    }
+    private static String InterfaceAname = getInternalNameForClass(InterfaceA.class);
+    private static String InterfaceBname = getInternalNameForClass(InterfaceB.class);
+    private static String InterfaceCname = getInternalNameForClass(InterfaceC.class);
+    private static String ClassDname = getInternalNameForClass(ClassD.class);
+    private static String ClassEname = getInternalNameForClass(ClassE.class);
+    private static String ClassFname = getInternalNameForClass(ClassF.class);
+    private static String ClassGname = getInternalNameForClass(ClassG.class);
 
     @Test
     public void testMethodRemoval() throws Exception {
 
-        byte[] jar = JarBuilder
-            .buildJarForMainAndClasses(ClassG.class, ClassF.class, ClassE.class, ClassD.class,
+        byte[] jar = TestUtil.serializeClassesAsJar(ClassG.class, ClassF.class, ClassE.class, ClassD.class,
                 InterfaceC.class, InterfaceB.class, InterfaceA.class);
-        byte[] optimizedJar = unreachableMethodRemover.optimize(jar);
+        byte[] optimizedJar = UnreachableMethodRemover.optimize(jar);
         assertNotNull(optimizedJar);
 
         Map<String, byte[]> classMap = extractClasses(optimizedJar);
@@ -91,35 +79,33 @@ public class UnreachableMethodRemoverTest {
 
 
     private static Map<String, byte[]> extractClasses(byte[] jarBytes) throws IOException {
-
-        JarInputStream jarReader = null;
         Map<String, byte[]> classMap = new HashMap<>();
 
-        jarReader = new JarInputStream(new ByteArrayInputStream(jarBytes), true);
+        try (JarInputStream jarReader = new JarInputStream(new ByteArrayInputStream(jarBytes), true)) {
+            byte[] tempReadingBuffer = new byte[1024 * 1024];
+            JarEntry entry;
+            while (null != (entry = jarReader.getNextJarEntry())) {
+                String name = entry.getName();
 
-        byte[] tempReadingBuffer = new byte[1024 * 1024];
+                if (name.endsWith(".class")
+                    && !name.equals("package-info.class")
+                    && !name.equals("module-info.class")) {
 
-        JarEntry entry;
-        while (null != (entry = jarReader.getNextJarEntry())) {
-            String name = entry.getName();
+                    String internalClassName = name.replaceAll(".class$", "");
+                    String qualifiedClassName = Helpers.internalNameToFulllyQualifiedName(internalClassName);
+                    int readSize = jarReader.readNBytes(tempReadingBuffer, 0, tempReadingBuffer.length);
 
-            if (name.endsWith(".class")
-                && !name.equals("package-info.class")
-                && !name.equals("module-info.class")) {
+                    if (0 != jarReader.available()) {
+                        throw new RuntimeException("Class file too big: " + name);
+                    }
 
-                String internalClassName = name.replaceAll(".class$", "");
-                String qualifiedClassName = internalNameToFulllyQualifiedName(internalClassName);
-                int readSize = jarReader.readNBytes(tempReadingBuffer, 0, tempReadingBuffer.length);
-
-                if (0 != jarReader.available()) {
-                    throw new RuntimeException("Class file too big: " + name);
+                    byte[] classBytes = new byte[readSize];
+                    System.arraycopy(tempReadingBuffer, 0, classBytes, 0, readSize);
+                    classMap.put(qualifiedClassName, classBytes);
                 }
-
-                byte[] classBytes = new byte[readSize];
-                System.arraycopy(tempReadingBuffer, 0, classBytes, 0, readSize);
-                classMap.put(qualifiedClassName, classBytes);
             }
         }
+
         return classMap;
     }
 
@@ -130,5 +116,9 @@ public class UnreachableMethodRemoverTest {
                 .put(Helpers.fulllyQualifiedNameToInternalName(entry.getKey()), entry.getValue());
         }
         return outputClassMap;
+    }
+
+    private static String getInternalNameForClass(Class<?> clazz) {
+        return Helpers.fulllyQualifiedNameToInternalName(clazz.getName());
     }
 }

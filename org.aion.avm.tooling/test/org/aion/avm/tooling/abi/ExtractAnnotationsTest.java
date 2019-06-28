@@ -5,7 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.tooling.deploy.eliminator.TestUtil;
 import org.junit.Test;
 
 
@@ -14,7 +14,7 @@ public class ExtractAnnotationsTest {
     public void testOneClass() {
         List<String> callables = new ArrayList<>();
         try {
-            byte[] jar = JarBuilder.buildJarForMainAndClasses(DAppWithMainNoFallbackTarget.class);
+            byte[] jar = TestUtil.serializeClassesAsJar(DAppWithMainNoFallbackTarget.class);
 
             ABICompiler compiler = ABICompiler.compileJarBytes(jar);
             callables = compiler.getCallables();
@@ -31,7 +31,7 @@ public class ExtractAnnotationsTest {
 
     @Test(expected = ABICompilerException.class)
     public void testNonPublicCallable() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(DAppProtectedCallableTarget.class);
+        byte[] jar = TestUtil.serializeClassesAsJar(DAppProtectedCallableTarget.class);
         try {
             ABICompiler.compileJarBytes(jar);
         } catch(ABICompilerException e) {
@@ -41,8 +41,8 @@ public class ExtractAnnotationsTest {
     }
 
     @Test(expected = ABICompilerException.class)
-        public void testNonStaticCallable() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(DAppNonstaticCallableTarget.class);
+    public void testNonStaticCallable() {
+        byte[] jar = TestUtil.serializeClassesAsJar(DAppNonstaticCallableTarget.class);
         try {
             ABICompiler.compileJarBytes(jar);
         } catch(ABICompilerException e) {
@@ -55,7 +55,7 @@ public class ExtractAnnotationsTest {
     public void testMultiClasses() {
         List<String> callables = new ArrayList<>();
         try {
-            byte[] jar = JarBuilder.buildJarForMainAndClasses(DAppWithMainNoFallbackTarget.class, DAppNoMainWithFallbackTarget.class);
+            byte[] jar = TestUtil.serializeClassesAsJar(DAppWithMainNoFallbackTarget.class, DAppNoMainWithFallbackTarget.class);
 
             ABICompiler compiler = ABICompiler.compileJarBytes(jar);
             callables = compiler.getCallables();

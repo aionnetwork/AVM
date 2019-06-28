@@ -1,7 +1,5 @@
 package org.aion.avm.tooling.deploy.eliminator;
 
-import static org.aion.avm.core.util.Helpers.internalNameToFulllyQualifiedName;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -39,14 +37,11 @@ public class UnreachableMethodRemover {
             ClassUnreachabilityVisitor classVisitor = new ClassUnreachabilityVisitor(classWriter,
                 classInfoMap.get(entry.getKey()).getMethodMap());
             reader.accept(classVisitor, 0);
-            outputClassMap
-                .put(internalNameToFulllyQualifiedName(entry.getKey()), classWriter.toByteArray());
+            outputClassMap.put(Helpers.internalNameToFulllyQualifiedName(entry.getKey()), classWriter.toByteArray());
         }
 
-        byte[] mainClassBytes = outputClassMap
-            .remove(internalNameToFulllyQualifiedName(mainClassName));
-        return JarBuilder.buildJarForExplicitClassNamesAndBytecode(
-            internalNameToFulllyQualifiedName(mainClassName), mainClassBytes, outputClassMap);
+        byte[] mainClassBytes = outputClassMap.remove(Helpers.internalNameToFulllyQualifiedName(mainClassName));
+        return JarBuilder.buildJarForExplicitClassNamesAndBytecode(Helpers.internalNameToFulllyQualifiedName(mainClassName), mainClassBytes, outputClassMap);
     }
 
     private static String extractMainClassName(JarInputStream jarReader) {

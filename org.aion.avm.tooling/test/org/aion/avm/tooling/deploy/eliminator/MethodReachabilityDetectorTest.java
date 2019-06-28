@@ -6,6 +6,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
+
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.deploy.eliminator.resources.ClassD;
 import org.aion.avm.tooling.deploy.eliminator.resources.ClassE;
 import org.aion.avm.tooling.deploy.eliminator.resources.ClassF;
@@ -15,19 +17,18 @@ import org.aion.avm.tooling.deploy.eliminator.resources.FakeMapUser;
 import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceA;
 import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceB;
 import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceC;
-import org.junit.Before;
 import org.junit.Test;
 
 public class MethodReachabilityDetectorTest {
 
-    private static String InterfaceAname = "org/aion/avm/tooling/deploy/eliminator/resources/InterfaceA";
-    private static String InterfaceBname = "org/aion/avm/tooling/deploy/eliminator/resources/InterfaceB";
-    private static String InterfaceCname = "org/aion/avm/tooling/deploy/eliminator/resources/InterfaceC";
-    private static String ClassDname = "org/aion/avm/tooling/deploy/eliminator/resources/ClassD";
-    private static String ClassEname = "org/aion/avm/tooling/deploy/eliminator/resources/ClassE";
-    private static String ClassFname = "org/aion/avm/tooling/deploy/eliminator/resources/ClassF";
-    private static String ClassGname = "org/aion/avm/tooling/deploy/eliminator/resources/ClassG";
-    private static String FakeMapUsername = "org/aion/avm/tooling/deploy/eliminator/resources/FakeMapUser";
+    private static String InterfaceAname = getInternalNameForClass(InterfaceA.class);
+    private static String InterfaceBname = getInternalNameForClass(InterfaceB.class);
+    private static String InterfaceCname = getInternalNameForClass(InterfaceC.class);
+    private static String ClassDname = getInternalNameForClass(ClassD.class);
+    private static String ClassEname = getInternalNameForClass(ClassE.class);
+    private static String ClassFname = getInternalNameForClass(ClassF.class);
+    private static String ClassGname = getInternalNameForClass(ClassG.class);
+    private static String FakeMapUsername = getInternalNameForClass(FakeMapUser.class);
 
     @Test
     public void testMethodReachability() throws Exception {
@@ -141,12 +142,9 @@ public class MethodReachabilityDetectorTest {
 
         Map<String, ClassInfo> classInfoMap = MethodReachabilityDetector.getClassInfoMap(FakeMapUsername, classMap);
 
-        ClassInfo fakeMapInfo = classInfoMap
-            .get("org/aion/avm/tooling/deploy/eliminator/resources/FakeMap");
-        ClassInfo fakeMapUserInfo = classInfoMap
-            .get("org/aion/avm/tooling/deploy/eliminator/resources/FakeMapUser");
-        ClassInfo mapInfo = classInfoMap
-            .get("java/util/Map");
+        ClassInfo fakeMapInfo = classInfoMap.get(getInternalNameForClass(FakeMap.class));
+        ClassInfo fakeMapUserInfo = classInfoMap.get(getInternalNameForClass(FakeMapUser.class));
+        ClassInfo mapInfo = classInfoMap.get(getInternalNameForClass(Map.class));
         assertNotNull(fakeMapInfo);
         assertNotNull(fakeMapUserInfo);
         assertNotNull(mapInfo);
@@ -174,7 +172,10 @@ public class MethodReachabilityDetectorTest {
         methodInfo = fakeMapInfo.getMethodMap().get("isEmpty()Z");
         assertNotNull(methodInfo);
         assertFalse(methodInfo.isReachable);
+    }
 
 
+    private static String getInternalNameForClass(Class<?> clazz) {
+        return Helpers.fulllyQualifiedNameToInternalName(clazz.getName());
     }
 }

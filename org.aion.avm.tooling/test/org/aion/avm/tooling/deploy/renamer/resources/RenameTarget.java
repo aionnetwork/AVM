@@ -1,12 +1,10 @@
 package org.aion.avm.tooling.deploy.renamer.resources;
 
 import avm.Blockchain;
-import org.aion.avm.tooling.abi.Callable;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.avm.userlib.abi.ABIDecoder;
-import s.java.lang.Enum;
 
 import java.math.BigInteger;
 import java.util.Map;

@@ -1,53 +1,46 @@
 package org.aion.avm.tooling.shadowing.testEnum;
 
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.Attribute;
-import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.ConstantDynamic;
 import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.Handle;
-import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.TypePath;
+
 
 public class TestEnumForEclipseCompilerDump implements Opcodes {
+    private static final String PACKAGE_NAME_INTERNAL = "org/aion/avm/tooling/shadowing/testEnum";
 
     public static byte[] generateBytecode() {
-
         ClassWriter classWriter = new ClassWriter(0);
         FieldVisitor fieldVisitor;
         MethodVisitor methodVisitor;
-        AnnotationVisitor annotationVisitor0;
 
-        classWriter.visit(V10, ACC_PUBLIC | ACC_FINAL | ACC_SUPER | ACC_ENUM, "org/aion/avm/tooling/shadowing/testEnum/TestEnumForValues", "Ljava/lang/Enum<Lorg/aion/avm/tooling/shadowing/testEnum/TestEnumForValues;>;", "java/lang/Enum", null);
+        classWriter.visit(V10, ACC_PUBLIC | ACC_FINAL | ACC_SUPER | ACC_ENUM, PACKAGE_NAME_INTERNAL + "/TestEnumForValues", "Ljava/lang/Enum<L" + PACKAGE_NAME_INTERNAL + "/TestEnumForValues;>;", "java/lang/Enum", null);
 
         {
-            fieldVisitor = classWriter.visitField(ACC_PUBLIC | ACC_FINAL | ACC_STATIC | ACC_ENUM, "TEST", "Lorg/aion/avm/tooling/shadowing/testEnum/TestEnumForValues;", null, null);
+            fieldVisitor = classWriter.visitField(ACC_PUBLIC | ACC_FINAL | ACC_STATIC | ACC_ENUM, "TEST", "L" + PACKAGE_NAME_INTERNAL + "/TestEnumForValues;", null, null);
             fieldVisitor.visitEnd();
         }
         {
-            fieldVisitor = classWriter.visitField(ACC_PRIVATE | ACC_FINAL | ACC_STATIC | ACC_SYNTHETIC, "ENUM$VALUES", "[Lorg/aion/avm/tooling/shadowing/testEnum/TestEnumForValues;", null, null);
+            fieldVisitor = classWriter.visitField(ACC_PRIVATE | ACC_FINAL | ACC_STATIC | ACC_SYNTHETIC, "ENUM$VALUES", "[L" + PACKAGE_NAME_INTERNAL + "/TestEnumForValues;", null, null);
             fieldVisitor.visitEnd();
         }
         {
             methodVisitor = classWriter.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
             methodVisitor.visitCode();
-            methodVisitor.visitTypeInsn(NEW, "org/aion/avm/tooling/shadowing/testEnum/TestEnumForValues");
+            methodVisitor.visitTypeInsn(NEW, PACKAGE_NAME_INTERNAL + "/TestEnumForValues");
             methodVisitor.visitInsn(DUP);
             methodVisitor.visitLdcInsn("TEST");
             methodVisitor.visitInsn(ICONST_0);
-            methodVisitor.visitMethodInsn(INVOKESPECIAL, "org/aion/avm/tooling/shadowing/testEnum/TestEnumForValues", "<init>", "(Ljava/lang/String;I)V", false);
-            methodVisitor.visitFieldInsn(PUTSTATIC, "org/aion/avm/tooling/shadowing/testEnum/TestEnumForValues", "TEST", "Lorg/aion/avm/tooling/shadowing/testEnum/TestEnumForValues;");
+            methodVisitor.visitMethodInsn(INVOKESPECIAL, PACKAGE_NAME_INTERNAL + "/TestEnumForValues", "<init>", "(Ljava/lang/String;I)V", false);
+            methodVisitor.visitFieldInsn(PUTSTATIC, PACKAGE_NAME_INTERNAL + "/TestEnumForValues", "TEST", "L" + PACKAGE_NAME_INTERNAL + "/TestEnumForValues;");
             methodVisitor.visitInsn(ICONST_1);
-            methodVisitor.visitTypeInsn(ANEWARRAY, "org/aion/avm/tooling/shadowing/testEnum/TestEnumForValues");
+            methodVisitor.visitTypeInsn(ANEWARRAY, PACKAGE_NAME_INTERNAL + "/TestEnumForValues");
             methodVisitor.visitInsn(DUP);
             methodVisitor.visitInsn(ICONST_0);
-            methodVisitor.visitFieldInsn(GETSTATIC, "org/aion/avm/tooling/shadowing/testEnum/TestEnumForValues", "TEST", "Lorg/aion/avm/tooling/shadowing/testEnum/TestEnumForValues;");
+            methodVisitor.visitFieldInsn(GETSTATIC, PACKAGE_NAME_INTERNAL + "/TestEnumForValues", "TEST", "L" + PACKAGE_NAME_INTERNAL + "/TestEnumForValues;");
             methodVisitor.visitInsn(AASTORE);
-            methodVisitor.visitFieldInsn(PUTSTATIC, "org/aion/avm/tooling/shadowing/testEnum/TestEnumForValues", "ENUM$VALUES", "[Lorg/aion/avm/tooling/shadowing/testEnum/TestEnumForValues;");
+            methodVisitor.visitFieldInsn(PUTSTATIC, PACKAGE_NAME_INTERNAL + "/TestEnumForValues", "ENUM$VALUES", "[L" + PACKAGE_NAME_INTERNAL + "/TestEnumForValues;");
             methodVisitor.visitInsn(RETURN);
             methodVisitor.visitMaxs(4, 0);
             methodVisitor.visitEnd();
@@ -64,9 +57,9 @@ public class TestEnumForEclipseCompilerDump implements Opcodes {
             methodVisitor.visitEnd();
         }
         {
-            methodVisitor = classWriter.visitMethod(ACC_PUBLIC | ACC_STATIC, "values", "()[Lorg/aion/avm/tooling/shadowing/testEnum/TestEnumForValues;", null, null);
+            methodVisitor = classWriter.visitMethod(ACC_PUBLIC | ACC_STATIC, "values", "()[L" + PACKAGE_NAME_INTERNAL + "/TestEnumForValues;", null, null);
             methodVisitor.visitCode();
-            methodVisitor.visitFieldInsn(GETSTATIC, "org/aion/avm/tooling/shadowing/testEnum/TestEnumForValues", "ENUM$VALUES", "[Lorg/aion/avm/tooling/shadowing/testEnum/TestEnumForValues;");
+            methodVisitor.visitFieldInsn(GETSTATIC, PACKAGE_NAME_INTERNAL + "/TestEnumForValues", "ENUM$VALUES", "[L" + PACKAGE_NAME_INTERNAL + "/TestEnumForValues;");
             methodVisitor.visitInsn(DUP);
             methodVisitor.visitVarInsn(ASTORE, 0);
             methodVisitor.visitInsn(ICONST_0);
@@ -74,7 +67,7 @@ public class TestEnumForEclipseCompilerDump implements Opcodes {
             methodVisitor.visitInsn(ARRAYLENGTH);
             methodVisitor.visitInsn(DUP);
             methodVisitor.visitVarInsn(ISTORE, 1);
-            methodVisitor.visitTypeInsn(ANEWARRAY, "org/aion/avm/tooling/shadowing/testEnum/TestEnumForValues");
+            methodVisitor.visitTypeInsn(ANEWARRAY, PACKAGE_NAME_INTERNAL + "/TestEnumForValues");
             methodVisitor.visitInsn(DUP);
             methodVisitor.visitVarInsn(ASTORE, 2);
             methodVisitor.visitInsn(ICONST_0);
@@ -86,12 +79,12 @@ public class TestEnumForEclipseCompilerDump implements Opcodes {
             methodVisitor.visitEnd();
         }
         {
-            methodVisitor = classWriter.visitMethod(ACC_PUBLIC | ACC_STATIC, "valueOf", "(Ljava/lang/String;)Lorg/aion/avm/tooling/shadowing/testEnum/TestEnumForValues;", null, null);
+            methodVisitor = classWriter.visitMethod(ACC_PUBLIC | ACC_STATIC, "valueOf", "(Ljava/lang/String;)L" + PACKAGE_NAME_INTERNAL + "/TestEnumForValues;", null, null);
             methodVisitor.visitCode();
-            methodVisitor.visitLdcInsn(Type.getType("Lorg/aion/avm/tooling/shadowing/testEnum/TestEnumForValues;"));
+            methodVisitor.visitLdcInsn(Type.getType("L" + PACKAGE_NAME_INTERNAL + "/TestEnumForValues;"));
             methodVisitor.visitVarInsn(ALOAD, 0);
             methodVisitor.visitMethodInsn(INVOKESTATIC, "java/lang/Enum", "valueOf", "(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Enum;", false);
-            methodVisitor.visitTypeInsn(CHECKCAST, "org/aion/avm/tooling/shadowing/testEnum/TestEnumForValues");
+            methodVisitor.visitTypeInsn(CHECKCAST, PACKAGE_NAME_INTERNAL + "/TestEnumForValues");
             methodVisitor.visitInsn(ARETURN);
             methodVisitor.visitMaxs(2, 1);
             methodVisitor.visitEnd();

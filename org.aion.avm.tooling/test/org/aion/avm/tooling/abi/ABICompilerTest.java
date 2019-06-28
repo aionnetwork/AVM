@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.util.Helpers;
+import org.aion.avm.tooling.deploy.eliminator.TestUtil;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
@@ -31,7 +33,7 @@ import org.junit.Test;
 
 public class ABICompilerTest {
     private static final String CHATTY_CALCULATOR_ABI = ABICompiler.getVersionNumber()
-        + "\norg.aion.avm.tooling.abi.ChattyCalculatorTarget"
+        + "\n" + ChattyCalculatorTarget.class.getName()
         + "\nClinit: ()"
         + "\npublic static String amIGreater(int, int)\n";
 
@@ -51,9 +53,7 @@ public class ABICompilerTest {
     @Test
     public void testMainMethod() throws IOException {
 
-        byte[] jar =
-            JarBuilder
-                .buildJarForMainAndClasses(TestDAppTarget.class);
+        byte[] jar = TestUtil.serializeClassesAsJar(TestDAppTarget.class);
         Path tempDir = Files.createTempDirectory("tempResources");
         DataOutputStream dout =
             new DataOutputStream(new FileOutputStream(tempDir.toString() + "/dapp.jar"));
@@ -63,7 +63,7 @@ public class ABICompilerTest {
         ABICompiler.main(new String[]{tempDir.toString() + "/dapp.jar"});
         Assert.assertEquals(
             ABICompiler.getVersionNumber()
-                + "\norg.aion.avm.tooling.abi.TestDAppTarget"
+                + "\n" + TestDAppTarget.class.getName()
                 + "\nClinit: ()"
                 + "\npublic static String returnHelloWorld()"
                 + "\npublic static String returnGoodbyeWorld()"
@@ -86,10 +86,7 @@ public class ABICompilerTest {
     @Test
     public void testMainMethodCalculator() throws IOException {
 
-        byte[] jar =
-            JarBuilder
-                .buildJarForMainAndClasses(ChattyCalculatorTarget.class,
-                    SilentCalculatorTarget.class);
+        byte[] jar = TestUtil.serializeClassesAsJar(ChattyCalculatorTarget.class, SilentCalculatorTarget.class);
         Path tempDir = Files.createTempDirectory("tempResources");
         DataOutputStream dout =
             new DataOutputStream(new FileOutputStream(tempDir.toString() + "/dapp.jar"));
@@ -106,10 +103,7 @@ public class ABICompilerTest {
 
     @Test
     public void testEmbeddedUsesOfCalculator() {
-        byte[] jar =
-            JarBuilder
-                .buildJarForMainAndClasses(ChattyCalculatorTarget.class,
-                    SilentCalculatorTarget.class);
+        byte[] jar = TestUtil.serializeClassesAsJar(ChattyCalculatorTarget.class, SilentCalculatorTarget.class);
         
         ABICompiler embeddedCompiler = ABICompiler.compileJarBytes(jar);
         // Write the ABI to a stream we can explore.
@@ -122,10 +116,7 @@ public class ABICompilerTest {
     @Test
     public void testStaticInitializers() throws IOException {
 
-        byte[] jar =
-            JarBuilder
-                .buildJarForMainAndClasses(StaticInitializersTarget.class,
-                    SilentCalculatorTarget.class);
+        byte[] jar = TestUtil.serializeClassesAsJar(StaticInitializersTarget.class, SilentCalculatorTarget.class);
         Path tempDir = Files.createTempDirectory("tempResources");
         DataOutputStream dout =
             new DataOutputStream(new FileOutputStream(tempDir.toString() + "/dapp.jar"));
@@ -135,7 +126,7 @@ public class ABICompilerTest {
         ABICompiler.main(new String[]{tempDir.toString() + "/dapp.jar"});
         Assert.assertEquals(
             ABICompiler.getVersionNumber()
-                + "\norg.aion.avm.tooling.abi.StaticInitializersTarget"
+                + "\n" + StaticInitializersTarget.class.getName()
                 + "\nClinit: (int, String)"
                 + "\npublic static int getInt()"
                 + "\npublic static String getString()"
@@ -148,27 +139,25 @@ public class ABICompilerTest {
 
     @Test
     public void testGetMissingUserlibClasses() {
-        byte[] jar =
-            JarBuilder
-                .buildJarForMainAndClasses(ChattyCalculatorTarget.class,
-                    SilentCalculatorTarget.class, AionList.class, AionBuffer.class);
+        byte[] jar = TestUtil.serializeClassesAsJar(ChattyCalculatorTarget.class, SilentCalculatorTarget.class, AionList.class, AionBuffer.class);
 
         Class[] expectedMissingClasses = new Class[] {ABIDecoder.class, ABIEncoder.class,
             ABIStreamingEncoder.class, ABIException.class, ABIToken.class, AionMap.class, AionSet.class};
 
         ABICompiler compiler = ABICompiler.compileJarBytes(jar);
-        Class[] actualMissingClasses = compiler.getMissingUserlibClasses();
+        Class[] actualMissingClasses = ABICompiler.getMissingUserlibClasses(compiler.getClassMap());
         checkArrays(expectedMissingClasses, actualMissingClasses);
     }
 
     // Compilation should fail because of garbage AionList.class
     @Test(expected = ABICompilerException.class)
     public void testGetMissingUserlibClassesFail() {
+        String qualifiedClassName = ChattyCalculatorTarget.class.getName();
+        String internalName = Helpers.fulllyQualifiedNameToInternalName(qualifiedClassName);
+        byte[] mainClassBytes = Helpers.loadRequiredResourceAsBytes(internalName + ".class");
         Map<String, byte[]> classMap = new HashMap<>();
         classMap.put("org.aion.avm.userlib.AionList", new byte[10]);
-        byte[] jar =
-            JarBuilder
-                .buildJarForMainClassAndExplicitClassNamesAndBytecode(ChattyCalculatorTarget.class, classMap);
+        byte[] jar = JarBuilder.buildJarForExplicitClassNamesAndBytecode(qualifiedClassName, mainClassBytes, classMap);
         ABICompiler.compileJarBytes(jar);
     }
 

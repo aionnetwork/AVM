@@ -9,6 +9,7 @@ import java.util.Map;
 import org.aion.avm.tooling.deploy.eliminator.resources.ClassG;
 import org.aion.avm.tooling.deploy.eliminator.resources.ClassF;
 import org.aion.avm.tooling.deploy.eliminator.resources.ClassE;
+import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.deploy.eliminator.resources.ClassD;
 import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceC;
 import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceB;
@@ -16,16 +17,13 @@ import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceA;
 import org.junit.Test;
 
 public class JarDependencyCollectorTest {
-
-    private JarDependencyCollector jarDependencyCollector;
-
-    private static String InterfaceAname = "org/aion/avm/tooling/deploy/eliminator/resources/InterfaceA";
-    private static String InterfaceBname = "org/aion/avm/tooling/deploy/eliminator/resources/InterfaceB";
-    private static String InterfaceCname = "org/aion/avm/tooling/deploy/eliminator/resources/InterfaceC";
-    private static String ClassDname = "org/aion/avm/tooling/deploy/eliminator/resources/ClassD";
-    private static String ClassEname = "org/aion/avm/tooling/deploy/eliminator/resources/ClassE";
-    private static String ClassFname = "org/aion/avm/tooling/deploy/eliminator/resources/ClassF";
-    private static String ClassGname = "org/aion/avm/tooling/deploy/eliminator/resources/ClassG";
+    private static String InterfaceAname = getInternalNameForClass(InterfaceA.class);
+    private static String InterfaceBname = getInternalNameForClass(InterfaceB.class);
+    private static String InterfaceCname = getInternalNameForClass(InterfaceC.class);
+    private static String ClassDname = getInternalNameForClass(ClassD.class);
+    private static String ClassEname = getInternalNameForClass(ClassE.class);
+    private static String ClassFname = getInternalNameForClass(ClassF.class);
+    private static String ClassGname = getInternalNameForClass(ClassG.class);
 
     @Test
     public void testTypeRelationships() throws IOException {
@@ -155,5 +153,10 @@ public class JarDependencyCollectorTest {
         // - ClassF::interfaceC()V
         // - ClassF::classFStaticMethod()I
         assertEquals(9, mainMethodInfo.methodInvocations.size());
+    }
+
+
+    private static String getInternalNameForClass(Class<?> clazz) {
+        return Helpers.fulllyQualifiedNameToInternalName(clazz.getName());
     }
 }

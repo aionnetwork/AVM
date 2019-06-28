@@ -119,17 +119,9 @@ public class ABICompiler {
         initializables = classVisitor.getInitializableTypes();
         mainClassBytes = classWriter.toByteArray();
 
-        outputJarFile = JarBuilder.buildJarForExplicitClassNamesAndBytecode(mainClassName, mainClassBytes, classMap, getMissingUserlibClasses());
 
-//        DataOutputStream dout = null;
-//        try {
-//            dout = new DataOutputStream(
-//                new FileOutputStream(getMainClassName() + ".class"));
-//            dout.write(getMainClassBytes());
-//            dout.close();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        Class<?>[] missingUserlib = getMissingUserlibClasses(this.classMap);
+        outputJarFile = JarBuilder.buildJarForExplicitClassNamesAndBytecode(mainClassName, mainClassBytes, this.classMap, missingUserlib); 
     }
 
     public void writeAbi(OutputStream rawStream) {
@@ -207,13 +199,17 @@ public class ABICompiler {
         return internalName.replaceAll("/", ".");
     }
 
-    protected Class[] getMissingUserlibClasses() {
+    // This is public only because some tests use it to verify behaviour.
+    public static Class<?>[] getMissingUserlibClasses(Map<String, byte[]> originalClassMap) {
         List<Class> classesToAdd = new ArrayList<>();
         for (Class clazz: requiredUserlibClasses) {
-            byte[] expectedBytes = Helpers.loadRequiredResourceAsBytes(clazz.getName().replaceAll("\\.", "/") + ".class");
-            if (classMap.containsKey(clazz.getName())) {
-                if (!Arrays.equals(expectedBytes, classMap.get(clazz.getName()))) {
-                    throw new ABICompilerException("Input jar contains class " + clazz.getName() + " but does not have expect contents");
+            String fullyQualifiedName = clazz.getName();
+            String internalName = Helpers.fulllyQualifiedNameToInternalName(fullyQualifiedName);
+            byte[] expectedBytes = Helpers.loadRequiredResourceAsBytes(internalName + ".class");
+            
+            if (originalClassMap.containsKey(fullyQualifiedName)) {
+                if (!Arrays.equals(expectedBytes, originalClassMap.get(fullyQualifiedName))) {
+                    throw new ABICompilerException("Input jar contains class " + fullyQualifiedName + " but does not have expect contents");
                 }
             } else {
                 classesToAdd.add(clazz);
