@@ -1,6 +1,7 @@
 package org.aion.avm.tooling;
 
 import avm.Address;
+import org.aion.avm.tooling.deploy.renamer.Renamer;
 import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
@@ -80,6 +81,12 @@ public final class AvmRule implements TestRule {
             optimizedDappBytes = UnreachableMethodRemover.optimize(optimizedDappBytes);
         } catch (Exception exception) {
             System.err.println("UnreachableMethodRemover crashed, packaging code without this optimization");
+        }
+
+        try {
+            optimizedDappBytes = Renamer.rename(optimizedDappBytes);
+        } catch (Exception exception) {
+            System.err.println("Renaming crashed, packaging code without this optimization");
         }
         return new CodeAndArguments(optimizedDappBytes, arguments).encodeToBytes();
     }

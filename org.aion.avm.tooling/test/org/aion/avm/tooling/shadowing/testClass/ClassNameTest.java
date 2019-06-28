@@ -2,10 +2,17 @@ package org.aion.avm.tooling.shadowing.testClass;
 
 import avm.Address;
 
+import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.AvmRule;
+import org.aion.avm.tooling.abi.ABICompiler;
+import org.aion.avm.tooling.deploy.JarOptimizer;
+import org.aion.avm.tooling.deploy.eliminator.UnreachableMethodRemover;
+import org.aion.avm.tooling.deploy.renamer.Renamer;
+import org.aion.avm.userlib.CodeAndArguments;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -22,8 +29,13 @@ public class ClassNameTest {
     private static Address contract;
 
     @BeforeClass
-    public static void setup() {
-        byte[] data = avmRule.getDappBytes(TestResource.class, null);
+    public static void setup() throws Exception{
+        // class and method renaming is not used
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(TestResource.class);
+        ABICompiler compiler = ABICompiler.compileJarBytes(jar);
+        byte[] optimizedDappBytes = new JarOptimizer(true).optimize(compiler.getJarFileBytes());
+        optimizedDappBytes = UnreachableMethodRemover.optimize(optimizedDappBytes);
+        byte[] data = new CodeAndArguments(optimizedDappBytes, null).encodeToBytes();
         AvmRule.ResultWrapper deployResult = avmRule.deploy(sender, value, data);
         assertTrue(deployResult.getTransactionResult().transactionStatus.isSuccess());
         contract = deployResult.getDappAddress();

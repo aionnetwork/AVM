@@ -6,6 +6,7 @@ import org.aion.types.AionAddress;
 import org.aion.avm.tooling.AvmRule;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -27,7 +28,7 @@ public class SelfDestructClinitTest {
         AvmRule.ResultWrapper result = deploy(args);
         byte[] code = avmRule.kernel.getCode(new AionAddress(result.getDappAddress().toByteArray()));
         Assert.assertNull(code);
-        Assert.assertEquals(392691 - refundPerContract, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(359696 - refundPerContract, result.getTransactionResult().energyUsed);
     }
 
     @Test
@@ -43,7 +44,7 @@ public class SelfDestructClinitTest {
         AvmRule.ResultWrapper result = deploy(args);
         byte[] code = avmRule.kernel.getCode(new AionAddress(toBeDestroyed.toByteArray()));
         Assert.assertNull(code);
-        Assert.assertEquals(422055 - refundPerContract, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(389060 - refundPerContract, result.getTransactionResult().energyUsed);
     }
 
     private AvmRule.ResultWrapper deploy(byte[] args) {

@@ -76,6 +76,8 @@ public class WhitelistPopulator {
         methodDependencies.put(methodName, new MethodInfo(methodName, false));
         methodName = "addAll(Ljava/util/Collection;)Z";
         methodDependencies.put(methodName, new MethodInfo(methodName, false));
+        methodName = "clear()V";
+        methodDependencies.put(methodName, new MethodInfo(methodName, false));
         ClassInfo collectionInfo = new ClassInfo(collectionName, true, false, methodDependencies, new ArrayList<>());
 
         String setName = "java/util/Set";

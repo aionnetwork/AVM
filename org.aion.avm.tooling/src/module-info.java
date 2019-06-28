@@ -16,5 +16,6 @@ module org.aion.avm.tooling {
     //Dependency for Junit Rule
     requires junit;
     requires org.objectweb.asm.tree;
+    requires org.objectweb.asm.commons;
     requires aion.types;
 }
