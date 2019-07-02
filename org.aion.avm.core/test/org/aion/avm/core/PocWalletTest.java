@@ -82,7 +82,7 @@ public class PocWalletTest {
         byte[] testWalletArguments = new byte[0];
 
         Transaction createTransaction = AvmTransactionUtil.create(from, externalState.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(externalState, new Transaction[] {createTransaction})[0].getResult();
+        TransactionResult createResult = avm.run(externalState, new Transaction[] {createTransaction}, ExecutionType.ASSUME_MAINCHAIN, externalState.getBlockNumber()-1)[0].getResult();
 
         Assert.assertTrue(createResult.transactionStatus.isSuccess());
         Assert.assertNotNull(externalState.getTransformedCode(new AionAddress(createResult.copyOfTransactionOutput().orElseThrow())));
@@ -102,7 +102,7 @@ public class PocWalletTest {
         byte[] testWalletJar = buildTestWalletJar();
         byte[] testWalletArguments = new byte[0];
         Transaction createTransaction = AvmTransactionUtil.create(from, externalState.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(externalState, new Transaction[] {createTransaction})[0].getResult();
+        TransactionResult createResult = avm.run(externalState, new Transaction[] {createTransaction}, ExecutionType.ASSUME_MAINCHAIN, externalState.getBlockNumber()-1)[0].getResult();
         Assert.assertTrue(createResult.transactionStatus.isSuccess());
 
         // contract address is stored in return data
@@ -110,7 +110,7 @@ public class PocWalletTest {
 
         byte[] initArgs = CallEncoder.init(new Address(extra1.toByteArray()), new Address(extra2.toByteArray()), requiredVotes, dailyLimit);
         Transaction initTransaction = AvmTransactionUtil.call(from, contractAddress, externalState.getNonce(from), BigInteger.ZERO, initArgs, energyLimit, energyPrice);
-        TransactionResult initResult = avm.run(externalState, new Transaction[] {initTransaction})[0].getResult();
+        TransactionResult initResult = avm.run(externalState, new Transaction[] {initTransaction}, ExecutionType.ASSUME_MAINCHAIN, externalState.getBlockNumber()-1)[0].getResult();
         Assert.assertTrue(initResult.transactionStatus.isSuccess());
     }
 
@@ -136,7 +136,7 @@ public class PocWalletTest {
         byte[] data = Helpers.randomBytes(AionAddress.LENGTH);
         byte[] execArgs = CallEncoder.execute(new Address(to.toByteArray()), dailyLimit + 1, data);
         Transaction executeTransaction = AvmTransactionUtil.call(from, contractAddress, externalState.getNonce(from), BigInteger.ZERO, execArgs, energyLimit, energyPrice);
-        TransactionResult executeResult = avm.run(externalState, new Transaction[] {executeTransaction})[0].getResult();
+        TransactionResult executeResult = avm.run(externalState, new Transaction[] {executeTransaction}, ExecutionType.ASSUME_MAINCHAIN, externalState.getBlockNumber()-1)[0].getResult();
         Assert.assertTrue(executeResult.transactionStatus.isSuccess());
         byte[] toConfirm = new ABIDecoder(executeResult.copyOfTransactionOutput().orElseThrow()).decodeOneByteArray();
 
@@ -144,7 +144,7 @@ public class PocWalletTest {
         externalState.adjustBalance(extra1, BigInteger.valueOf(1_000_000_000_000L));
         byte[] confirmArgs = CallEncoder.confirm(toConfirm);
         Transaction confirmTransaction = AvmTransactionUtil.call(extra1, contractAddress, externalState.getNonce(extra1), BigInteger.ZERO, confirmArgs, energyLimit, energyPrice);
-        TransactionResult confirmResult = avm.run(externalState, new Transaction[] {confirmTransaction})[0].getResult();
+        TransactionResult confirmResult = avm.run(externalState, new Transaction[] {confirmTransaction}, ExecutionType.ASSUME_MAINCHAIN, externalState.getBlockNumber()-1)[0].getResult();
         Assert.assertTrue(confirmResult.transactionStatus.isSuccess()); // transfer to non-existing accounts
     }
 
@@ -152,7 +152,7 @@ public class PocWalletTest {
     private void runInit(AionAddress contractAddress, Address extra1, Address extra2, int requiredVotes, long dailyLimit) throws Exception {
         byte[] initArgs = CallEncoder.init(extra1, extra2, requiredVotes, dailyLimit);
         Transaction initTransaction = AvmTransactionUtil.call(from, contractAddress, externalState.getNonce(from), BigInteger.ZERO, initArgs, energyLimit, energyPrice);
-        TransactionResult initResult = avm.run(externalState, new Transaction[] {initTransaction})[0].getResult();
+        TransactionResult initResult = avm.run(externalState, new Transaction[] {initTransaction}, ExecutionType.ASSUME_MAINCHAIN, externalState.getBlockNumber()-1)[0].getResult();
         Assert.assertTrue(initResult.transactionStatus.isSuccess());
     }
 
@@ -161,7 +161,7 @@ public class PocWalletTest {
         byte[] testWalletArguments = new byte[0];
 
         Transaction createTransaction = AvmTransactionUtil.create(from, externalState.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testWalletJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(externalState, new Transaction[] {createTransaction})[0].getResult();
+        TransactionResult createResult = avm.run(externalState, new Transaction[] {createTransaction}, ExecutionType.ASSUME_MAINCHAIN, externalState.getBlockNumber()-1)[0].getResult();
         Assert.assertTrue(createResult.transactionStatus.isSuccess());
 
         // contract address is stored in return data

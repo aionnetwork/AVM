@@ -141,7 +141,7 @@ public class DeploymentCostTest {
 
         //deploy in normal Mode
         Transaction create = AvmTransactionUtil.create(DEPLOYER, this.kernel.getNonce(DEPLOYER), BigInteger.ZERO, jar, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult createResult = this.avm.run(this.kernel, new Transaction[] {create})[0].getResult();
+        TransactionResult createResult = this.avm.run(this.kernel, new Transaction[] {create}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(createResult.transactionStatus.isSuccess());
         return createResult;
     }

@@ -1,11 +1,7 @@
 package org.aion.avm.core.persistence;
 
 
-import org.aion.avm.core.AvmConfiguration;
-import org.aion.avm.core.AvmImpl;
-import org.aion.avm.core.AvmTransactionUtil;
-import org.aion.avm.core.CommonAvmFactory;
-import org.aion.avm.core.FutureResult;
+import org.aion.avm.core.*;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
@@ -71,7 +67,7 @@ public class HotObjectTest {
         //read from DB
         Transaction tx3 = AvmTransactionUtil.call(kernel.getMinerAddress(), dappAddress, kernel.getNonce(kernel.getMinerAddress()), BigInteger.ZERO, data, energyLimit, energyPrice);
 
-        FutureResult[] result2 = avm.run(kernel, new Transaction[]{tx2, tx3});
+        FutureResult[] result2 = avm.run(kernel, new Transaction[]{tx2, tx3}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1);
         Assert.assertEquals(20, new ABIDecoder((result2[0].getResult()).copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
         Assert.assertEquals(40, new ABIDecoder((result2[1].getResult()).copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
     }
@@ -241,7 +237,7 @@ public class HotObjectTest {
 
         byte[] txData = new ABIStreamingEncoder().encodeOneString("makeCall").encodeOneAddress(new Address(dappAddress.toByteArray())).encodeOneByteArray(data).toBytes();
         Transaction tx = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        result = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+        result = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
 
         kernel.generateBlock();
@@ -272,7 +268,7 @@ public class HotObjectTest {
         byte[] data = new ABIStreamingEncoder().encodeOneString("doubleStaticValue").toBytes();
         byte[] txData = new ABIStreamingEncoder().encodeOneString("makeCall").encodeOneAddress(new Address(dappAddress.toByteArray())).encodeOneByteArray(data).toBytes();
         Transaction tx = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        result = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+        result = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
 
         kernel.generateBlock();
@@ -294,7 +290,7 @@ public class HotObjectTest {
         //307168 bytes
         byte[] data = new ABIStreamingEncoder().encodeOneString("writeToObjectArray").encodeOneInteger(150).encodeOneInteger(500).toBytes();
         Transaction tx = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        TransactionResult result = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+        TransactionResult result = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
 
         kernel.generateBlock();
@@ -308,7 +304,7 @@ public class HotObjectTest {
         // 8308 bytes
         data = new ABIStreamingEncoder().encodeOneString("writeToObjectArray").encodeOneInteger(15).encodeOneInteger(55).toBytes();
         tx = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        result = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+        result = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
 
         kernel.generateBlock();
@@ -346,7 +342,7 @@ public class HotObjectTest {
         byte[] data = new ABIStreamingEncoder().encodeOneString("doubleStaticValue").toBytes();
         byte[] txData = new ABIStreamingEncoder().encodeOneString("makeCall").encodeOneAddress(new Address(dappAddresses[1].toByteArray())).encodeOneByteArray(data).toBytes();
         Transaction tx = AvmTransactionUtil.call(deployer, dappAddresses[0], kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult result = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+        TransactionResult result = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
 
         kernel.generateBlock();
@@ -396,7 +392,7 @@ public class HotObjectTest {
 
         byte[] ForCallFrom1To2 = new ABIStreamingEncoder().encodeOneString("makeCall").encodeOneAddress(new Address(dappAddresses[1].toByteArray())).encodeOneByteArray(dataForCallFrom2To1).toBytes();
         Transaction tx = AvmTransactionUtil.call(deployer, dappAddresses[0], kernel.getNonce(deployer), BigInteger.ZERO, ForCallFrom1To2, energyLimit, energyPrice);
-        TransactionResult result = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+        TransactionResult result = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
 
         kernel.generateBlock();
@@ -449,13 +445,13 @@ public class HotObjectTest {
         for (int i = 0; i < length; i++) {
             byte[] data = new ABIStreamingEncoder().encodeOneString("updateIntArray").encodeOneInteger(i).toBytes();
             Transaction tx = AvmTransactionUtil.call(deployer, dappAddresses[i], kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-            TransactionResult result = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+            TransactionResult result = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
             Assert.assertTrue(result.transactionStatus.isSuccess());
             kernel.generateBlock();
         }
 
         // read from cache while executing concurrently
-        FutureResult[] results = avm.run(kernel, txs);
+        FutureResult[] results = avm.run(kernel, txs, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1);
 
         for (int i = 0; i < length; i++) {
             TransactionResult r = results[i].getResult();
@@ -487,7 +483,7 @@ public class HotObjectTest {
             txs[i] = AvmTransactionUtil.call(deployer, dappAddresses[i], kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
         }
 
-        FutureResult[] results = avm.run(kernel, txs);
+        FutureResult[] results = avm.run(kernel, txs, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1);
 
         for (int i = 0; i < length; i++) {
             TransactionResult r = results[i].getResult();
@@ -499,7 +495,7 @@ public class HotObjectTest {
         for (int i = 0; i < length; i++) {
             byte[] data = new ABIStreamingEncoder().encodeOneString("readIntArray").toBytes();
             Transaction tx = AvmTransactionUtil.call(deployer, dappAddresses[i], kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-            TransactionResult result = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+            TransactionResult result = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
             Assert.assertTrue(result.transactionStatus.isSuccess());
             int[] expectedResult = new int[length];
             expectedResult[i] = 10;
@@ -508,8 +504,6 @@ public class HotObjectTest {
         }
     }
 
-    //todo Will be updated after the fix to AddressResourceMonitor
-    @Ignore
     @Test
     public void abortException() {
         int length = 4;
@@ -525,14 +519,13 @@ public class HotObjectTest {
             AionAddress deployer = Helpers.randomAddress();
             kernel.adjustBalance(deployer, BigInteger.TEN.pow(20));
             dappAddresses[i] = deploy(deployer, kernel, deployData);
-            System.out.println(dappAddresses[i]);
             if (i > 0) {
                 byte[] txData = new ABIStreamingEncoder().encodeOneString("makeCall").encodeOneAddress(new Address(dappAddresses[i].toByteArray())).encodeOneByteArray(dataForInternalCall).toBytes();
                 txs[i - 1] = AvmTransactionUtil.call(deployer, dappAddresses[i - 1], kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
             }
         }
 
-        FutureResult[] results = avm.run(kernel, txs);
+        FutureResult[] results = avm.run(kernel, txs, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1);
 
         for (int i = 0; i < length; i++) {
             TransactionResult r = results[i].getResult();
@@ -544,7 +537,7 @@ public class HotObjectTest {
         byte[] data = new ABIStreamingEncoder().encodeOneString("getValue").toBytes();
         for (int i = 1; i < length; i++) {
             Transaction tx = AvmTransactionUtil.call(deployer, dappAddresses[i], kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-            TransactionResult result = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+            TransactionResult result = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
             Assert.assertTrue(result.transactionStatus.isSuccess());
             Assert.assertEquals(10, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
         }
@@ -602,7 +595,7 @@ public class HotObjectTest {
         byte[] data = new ABIStreamingEncoder().encodeOneString("revert").toBytes();
         byte[] txData = new ABIStreamingEncoder().encodeOneString("makeCall").encodeOneAddress(new Address(dappAddresses[1].toByteArray())).encodeOneByteArray(data).toBytes();
         Transaction tx = AvmTransactionUtil.call(deployer, dappAddresses[0], kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        result = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+        result = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
 
         kernel.generateBlock();
@@ -640,7 +633,7 @@ public class HotObjectTest {
 
     private static AionAddress deploy(AionAddress deployer, TestingState kernel, byte[] txData) {
         Transaction tx1 = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, 5_000_000, energyPrice);
-        TransactionResult result = avm.run(kernel, new Transaction[]{tx1})[0].getResult();
+        TransactionResult result = avm.run(kernel, new Transaction[]{tx1}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         assertTrue(result.transactionStatus.isSuccess());
         return new AionAddress(result.copyOfTransactionOutput().orElseThrow());
     }
@@ -652,6 +645,6 @@ public class HotObjectTest {
         }
         byte[] data = encoder.toBytes();
         Transaction tx = AvmTransactionUtil.call(sender, dappAddress, kernel.getNonce(sender), BigInteger.ZERO, data, energyLimit, energyPrice);
-        return avm.run(kernel, new Transaction[]{tx})[0].getResult();
+        return avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
     }
 }

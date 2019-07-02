@@ -48,7 +48,7 @@ public class HashCodeIntegrationTest {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
         Transaction create = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(this.kernel, new Transaction[] {create})[0].getResult();
+        TransactionResult createResult = avm.run(this.kernel, new Transaction[] {create}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(createResult.transactionStatus.isSuccess());
 
         AionAddress contractAddr = new AionAddress(createResult.copyOfTransactionOutput().orElseThrow());
@@ -66,7 +66,7 @@ public class HashCodeIntegrationTest {
         long energyLimit = 1_000_000l;
         byte[] argData = new ABIStreamingEncoder().encodeOneString(methodName).toBytes();
         Transaction call = AvmTransactionUtil.call(deployer,contractAddr, kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
-        TransactionResult result = avm.run(this.kernel, new Transaction[] {call})[0].getResult();
+        TransactionResult result = avm.run(this.kernel, new Transaction[] {call}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
         ABIDecoder decoder = new ABIDecoder(result.copyOfTransactionOutput().orElseThrow());
         return decoder.decodeOneInteger();

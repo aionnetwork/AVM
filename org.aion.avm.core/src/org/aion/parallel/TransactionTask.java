@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
 
+import org.aion.avm.core.ExecutionType;
 import org.aion.avm.core.IExternalState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
@@ -39,9 +40,11 @@ public class TransactionTask implements Comparable<TransactionTask>{
     private int depth;
     private Set<AionAddress> selfDestructedAddresses;
     private Set<Pair<AionAddress, ByteArrayWrapper>> resetStorageKeys;
+    public final ExecutionType executionType;
+    public final long commonMainchainBlockNumber;
 
 
-    public TransactionTask(IExternalState parentKernel, Transaction tx, int index, AionAddress origin){
+    public TransactionTask(IExternalState parentKernel, Transaction tx, int index, AionAddress origin, ExecutionType executionType, long commonMainchainBlockNumber){
         this.parentKernel = parentKernel;
         this.externalTransaction = tx;
         this.index = index;
@@ -55,6 +58,8 @@ public class TransactionTask implements Comparable<TransactionTask>{
         this.sideEffectsStack.push(new SideEffects());
         this.selfDestructedAddresses = new HashSet<>();
         this.resetStorageKeys = new HashSet<>();
+        this.executionType = executionType;
+        this.commonMainchainBlockNumber = commonMainchainBlockNumber;
     }
 
     public void startNewTransaction() {

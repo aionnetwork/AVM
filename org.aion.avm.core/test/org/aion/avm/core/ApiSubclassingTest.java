@@ -38,7 +38,7 @@ public class ApiSubclassingTest {
     public void testDeployAndCallContractWithAbiSubclasses() {
         byte[] jar = new CodeAndArguments(JarBuilder.buildJarForMainAndClassesAndUserlib(ApiSubclassingTarget.class), null).encodeToBytes();
         Transaction transaction = AvmTransactionUtil.create(this.deployer, this.kernel.getNonce(deployer), BigInteger.ZERO, jar, 5_000_000, 1);
-        TransactionResult result = this.avm.run(this.kernel, new Transaction[] {transaction})[0].getResult();
+        TransactionResult result = this.avm.run(this.kernel, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         assertEquals(AvmInternalError.FAILED_REJECTED_CLASS.error, result.transactionStatus.causeOfError);
     }
 

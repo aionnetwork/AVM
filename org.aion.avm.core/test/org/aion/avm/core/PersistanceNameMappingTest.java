@@ -75,7 +75,7 @@ public class PersistanceNameMappingTest {
         byte[] data = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         Transaction createTransaction = AvmTransactionUtil.create(deployer, externalState.getNonce(deployer), BigInteger.ZERO, data, 5_000_000L, 1L);
-        TransactionResult result = avm.run(externalState, new Transaction[]{ createTransaction })[0].getResult();
+        TransactionResult result = avm.run(externalState, new Transaction[]{ createTransaction }, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertTrue(result.transactionStatus.isSuccess());
 
         return new AionAddress(result.copyOfTransactionOutput().orElseThrow());
@@ -84,7 +84,7 @@ public class PersistanceNameMappingTest {
     private void callContract(AvmImpl avm, IExternalState externalState, AionAddress contract, String method) {
         byte[] data = ABIEncoder.encodeOneString(method);
         Transaction callTransaction = AvmTransactionUtil.call(deployer, contract, externalState.getNonce(deployer), BigInteger.ZERO, data, 2_000_000L, 1L);
-        TransactionResult result = avm.run(externalState, new Transaction[]{ callTransaction })[0].getResult();
+        TransactionResult result = avm.run(externalState, new Transaction[]{ callTransaction }, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
 
         // The tests will REVERT if what we want to test does not occur!
         assertTrue(result.transactionStatus.isSuccess());

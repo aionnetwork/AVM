@@ -3,12 +3,9 @@ package org.aion.avm.core.shadowing.lambdas;
 import java.math.BigInteger;
 
 import java.util.Optional;
-import org.aion.avm.core.AvmTransactionUtil;
+import org.aion.avm.core.*;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
-import org.aion.avm.core.AvmConfiguration;
-import org.aion.avm.core.AvmImpl;
-import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
@@ -154,7 +151,7 @@ public class FunctionShadowTest {
         byte[] testJar = JarBuilder.buildJarForMainAndClassesAndUserlib(testClass);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
         Transaction tx = AvmTransactionUtil.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ERNGY_PRICE);
-        Optional<byte[]> optionalOutput = avm.run(kernel, new Transaction[] {tx})[0].getResult().copyOfTransactionOutput();
+        Optional<byte[]> optionalOutput = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult().copyOfTransactionOutput();
         return (optionalOutput.isPresent())
                 ? new AionAddress(optionalOutput.get())
                 : null;
@@ -162,7 +159,7 @@ public class FunctionShadowTest {
 
     private void oneCall(AionAddress dappAddr, int transactionNumber) {
         Transaction tx = AvmTransactionUtil.call(FROM, dappAddr, kernel.getNonce(FROM), BigInteger.ZERO, new byte[] {(byte)transactionNumber}, ENERGY_LIMIT, ERNGY_PRICE);
-        TransactionResult result = avm.run(kernel, new Transaction[] {tx})[0].getResult();
+        TransactionResult result = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
     }
 }

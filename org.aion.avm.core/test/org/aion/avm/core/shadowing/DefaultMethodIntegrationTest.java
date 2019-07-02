@@ -1,12 +1,9 @@
 package org.aion.avm.core.shadowing;
 
-import org.aion.avm.core.AvmTransactionUtil;
+import org.aion.avm.core.*;
 import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.types.Transaction;
 import org.aion.types.AionAddress;
-import org.aion.avm.core.AvmConfiguration;
-import org.aion.avm.core.AvmImpl;
-import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
@@ -50,7 +47,7 @@ public class DefaultMethodIntegrationTest {
         Transaction create = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
         
         // The NoSuchMethodError triggers a "FAILED_EXCEPTION" state.
-        TransactionResult result = avm.run(kernel, new Transaction[] {create})[0].getResult();
+        TransactionResult result = avm.run(kernel, new Transaction[] {create}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         Assert.assertEquals(AvmInternalError.FAILED_EXCEPTION.error, result.transactionStatus.causeOfError);
     }
 
@@ -63,7 +60,7 @@ public class DefaultMethodIntegrationTest {
         long energyLimit = 2_000_000l;
         long energyPrice = 1l;
         Transaction create = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new Transaction[] {create})[0].getResult();
+        TransactionResult createResult = avm.run(kernel, new Transaction[] {create}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         Assert.assertTrue(createResult.transactionStatus.isSuccess());
         AionAddress contractAddr = new AionAddress(createResult.copyOfTransactionOutput().orElseThrow());
 
@@ -72,7 +69,7 @@ public class DefaultMethodIntegrationTest {
         Transaction call = AvmTransactionUtil.call(deployer, contractAddr, kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
         
         // The NoSuchMethodError triggers a "FAILED_EXCEPTION" state.
-        TransactionResult result = avm.run(kernel, new Transaction[] {call})[0].getResult();
+        TransactionResult result = avm.run(kernel, new Transaction[] {call}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         Assert.assertEquals(AvmInternalError.FAILED_EXCEPTION.error, result.transactionStatus.causeOfError);
     }
 }

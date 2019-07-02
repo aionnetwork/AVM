@@ -1,13 +1,9 @@
 package org.aion.avm.core.collection;
 
 import java.math.BigInteger;
-import org.aion.avm.core.AvmTransactionUtil;
-import org.aion.avm.core.IExternalState;
+import org.aion.avm.core.*;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
-import org.aion.avm.core.AvmConfiguration;
-import org.aion.avm.core.AvmImpl;
-import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
@@ -43,7 +39,7 @@ public class AionCollectionPerfTest {
 
         byte[] testWalletArguments = new byte[0];
         Transaction createTransaction = AvmTransactionUtil.create(from, externalState.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(externalState, new Transaction[] {createTransaction})[0].getResult();
+        TransactionResult createResult = avm.run(externalState, new Transaction[] {createTransaction}, ExecutionType.ASSUME_MAINCHAIN, externalState.getBlockNumber()-1)[0].getResult();
 
         Assert.assertTrue(createResult.transactionStatus.isSuccess());
 
@@ -53,7 +49,7 @@ public class AionCollectionPerfTest {
 
     private TransactionResult call(IExternalState externalState, AvmImpl avm, AionAddress contract, AionAddress sender, byte[] args) {
         Transaction callTransaction = AvmTransactionUtil.call(sender, contract, externalState.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1l);
-        TransactionResult callResult = avm.run(externalState, new Transaction[] {callTransaction})[0].getResult();
+        TransactionResult callResult = avm.run(externalState, new Transaction[] {callTransaction}, ExecutionType.ASSUME_MAINCHAIN, externalState.getBlockNumber()-1)[0].getResult();
         Assert.assertTrue(callResult.transactionStatus.isSuccess());
         return callResult;
     }

@@ -35,7 +35,7 @@ public class StackDepthTest {
         byte[] jar = new CodeAndArguments(JarBuilder.buildJarForMainAndClassesAndUserlib(StackDepthTarget.class), null).encodeToBytes();
 
         Transaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, jar, 5_000_000, 1);
-        TransactionResult txResult = avm.run(kernel, new Transaction[] {tx})[0].getResult();
+        TransactionResult txResult = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertTrue(txResult.transactionStatus.isSuccess());
         dappAddress = new AionAddress(txResult.copyOfTransactionOutput().orElseThrow());
     }
@@ -51,7 +51,7 @@ public class StackDepthTest {
         byte[] data = encodeCall("recurse", 511);
 
         Transaction transaction = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, 2_000_000, 1);
-        TransactionResult result = avm.run(kernel, new Transaction[]{ transaction })[0].getResult();
+        TransactionResult result = avm.run(kernel, new Transaction[]{ transaction }, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertTrue(result.transactionStatus.isSuccess());
     }
 
@@ -61,7 +61,7 @@ public class StackDepthTest {
         byte[] data = encodeCall("recurse", 512);
 
         Transaction transaction = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, 2_000_000, 1);
-        TransactionResult result = avm.run(kernel, new Transaction[]{ transaction })[0].getResult();
+        TransactionResult result = avm.run(kernel, new Transaction[]{ transaction }, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertEquals(AvmInternalError.FAILED_OUT_OF_STACK.error, result.transactionStatus.causeOfError);
     }
 
@@ -71,7 +71,7 @@ public class StackDepthTest {
         byte[] data = encodeCall("fibonacci", 20);
 
         Transaction transaction = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, 2_000_000, 1);
-        TransactionResult result = avm.run(kernel, new Transaction[]{ transaction })[0].getResult();
+        TransactionResult result = avm.run(kernel, new Transaction[]{ transaction }, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertTrue(result.transactionStatus.isSuccess());
     }
 
@@ -81,7 +81,7 @@ public class StackDepthTest {
         byte[] data = encodeCall("fibonacci", 21);
 
         Transaction transaction = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, 2_000_000, 1);
-        TransactionResult result = avm.run(kernel, new Transaction[]{ transaction })[0].getResult();
+        TransactionResult result = avm.run(kernel, new Transaction[]{ transaction }, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertEquals(AvmInternalError.FAILED_OUT_OF_ENERGY.error, result.transactionStatus.causeOfError);
     }
 

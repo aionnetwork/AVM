@@ -1,13 +1,9 @@
 package org.aion.avm.core.rejection.errors;
 
-import org.aion.avm.core.AvmTransactionUtil;
-import org.aion.avm.core.IExternalState;
+import org.aion.avm.core.*;
 import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
-import org.aion.avm.core.AvmConfiguration;
-import org.aion.avm.core.AvmImpl;
-import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
@@ -82,6 +78,6 @@ public class RejectVirtualMachineErrorIntegrationTest {
     private TransactionResult deployJar(byte[] jar) {
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         Transaction transaction = AvmTransactionUtil.create(FROM, externalState.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
-        return avm.run(RejectVirtualMachineErrorIntegrationTest.externalState, new Transaction[] {transaction})[0].getResult();
+        return avm.run(RejectVirtualMachineErrorIntegrationTest.externalState, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, externalState.getBlockNumber()-1)[0].getResult();
     }
 }

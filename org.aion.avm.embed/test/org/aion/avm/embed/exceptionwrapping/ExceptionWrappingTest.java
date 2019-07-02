@@ -1,11 +1,7 @@
 package org.aion.avm.embed.exceptionwrapping;
 
 import i.PackageConstants;
-import org.aion.avm.core.AvmConfiguration;
-import org.aion.avm.core.AvmImpl;
-import org.aion.avm.core.AvmTransactionUtil;
-import org.aion.avm.core.CommonAvmFactory;
-import org.aion.avm.core.FutureResult;
+import org.aion.avm.core.*;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.embed.StandardCapabilities;
@@ -39,7 +35,7 @@ public class ExceptionWrappingTest {
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(TestExceptionResource.class);
         byte[] arguments = null;
         Transaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult txResult = avm.run(kernel, new Transaction[] {tx})[0].getResult();
+        TransactionResult txResult = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, 0)[0].getResult();
         dappAddress = new AionAddress(txResult.copyOfTransactionOutput().orElseThrow());
     }
 
@@ -51,7 +47,7 @@ public class ExceptionWrappingTest {
         byte[] txData = ABIUtil.encodeMethodArguments("tryMultiCatchFinally");
         Transaction transaction = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
 
-        TransactionResult result = avm.run(kernel, new Transaction[]{transaction})[0].getResult();
+        TransactionResult result = avm.run(kernel, new Transaction[]{transaction}, ExecutionType.ASSUME_MAINCHAIN, 0)[0].getResult();
         Object decodedOutput = ABIUtil.decodeOneObject(result.copyOfTransactionOutput().orElseThrow());
         Assert.assertEquals(3, decodedOutput);
     }
@@ -64,7 +60,7 @@ public class ExceptionWrappingTest {
         byte[] txData = ABIUtil.encodeMethodArguments("manuallyThrowNull");
         Transaction transaction = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
 
-        FutureResult future = avm.run(kernel, new Transaction[]{transaction})[0];
+        FutureResult future = avm.run(kernel, new Transaction[]{transaction}, ExecutionType.ASSUME_MAINCHAIN, 0)[0];
         Assert.assertEquals(AvmInternalError.FAILED_EXCEPTION.error, future.getResult().transactionStatus.causeOfError);
         Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + PackageConstants.kShadowDotPrefix + NullPointerException.class.getName()).equals(future.getException().getClass().getName()));
     }
@@ -77,7 +73,7 @@ public class ExceptionWrappingTest {
         byte[] txData = ABIUtil.encodeMethodArguments("tryMultiCatch");
         Transaction transaction = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
 
-        TransactionResult result = avm.run(kernel, new Transaction[]{transaction})[0].getResult();
+        TransactionResult result = avm.run(kernel, new Transaction[]{transaction}, ExecutionType.ASSUME_MAINCHAIN, 0)[0].getResult();
         Object decodedOutput = ABIUtil.decodeOneObject(result.copyOfTransactionOutput().orElseThrow());
         Assert.assertEquals(2, decodedOutput);
     }
@@ -90,7 +86,7 @@ public class ExceptionWrappingTest {
         byte[] txData = ABIUtil.encodeMethodArguments("outerCatch");
         Transaction transaction = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
 
-        TransactionResult result = avm.run(kernel, new Transaction[]{transaction})[0].getResult();
+        TransactionResult result = avm.run(kernel, new Transaction[]{transaction}, ExecutionType.ASSUME_MAINCHAIN, 0)[0].getResult();
         Object decodedOutput = ABIUtil.decodeOneObject(result.copyOfTransactionOutput().orElseThrow());
         Assert.assertEquals(2, decodedOutput);
     }
@@ -103,7 +99,7 @@ public class ExceptionWrappingTest {
         byte[] txData = ABIUtil.encodeMethodArguments("userDefinedCatch");
         Transaction transaction = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
 
-        TransactionResult result = avm.run(kernel, new Transaction[]{transaction})[0].getResult();
+        TransactionResult result = avm.run(kernel, new Transaction[]{transaction}, ExecutionType.ASSUME_MAINCHAIN, 0)[0].getResult();
         Object decodedOutput = ABIUtil.decodeOneObject(result.copyOfTransactionOutput().orElseThrow());
         Assert.assertEquals("two", decodedOutput);
     }
@@ -116,7 +112,7 @@ public class ExceptionWrappingTest {
         byte[] txData = ABIUtil.encodeMethodArguments("originalNull");
         Transaction transaction = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
 
-        FutureResult future = avm.run(kernel, new Transaction[]{transaction})[0];
+        FutureResult future = avm.run(kernel, new Transaction[]{transaction}, ExecutionType.ASSUME_MAINCHAIN, 0)[0];
         Assert.assertEquals(AvmInternalError.FAILED_EXCEPTION.error, future.getResult().transactionStatus.causeOfError);
         Assert.assertTrue(NullPointerException.class.getName().equals(future.getException().getClass().getName()));
     }
@@ -129,7 +125,7 @@ public class ExceptionWrappingTest {
         byte[] txData = ABIUtil.encodeMethodArguments("innerCatch");
         Transaction transaction = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
 
-        FutureResult future = avm.run(kernel, new Transaction[]{transaction})[0];
+        FutureResult future = avm.run(kernel, new Transaction[]{transaction}, ExecutionType.ASSUME_MAINCHAIN, 0)[0];
         Assert.assertEquals(AvmInternalError.FAILED_EXCEPTION.error, future.getResult().transactionStatus.causeOfError);
         Assert.assertTrue((PackageConstants.kExceptionWrapperDotPrefix + PackageConstants.kShadowDotPrefix + NullPointerException.class.getName()).equals(future.getException().getClass().getName()));
     }
@@ -139,7 +135,7 @@ public class ExceptionWrappingTest {
         byte[] txData = ABIUtil.encodeMethodArguments("tryCatchLoop", 20000);
         Transaction transaction = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
 
-        TransactionResult result = avm.run(kernel, new Transaction[]{transaction})[0].getResult();
+        TransactionResult result = avm.run(kernel, new Transaction[]{transaction}, ExecutionType.ASSUME_MAINCHAIN, 0)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
         System.out.println(result.energyUsed);
     }

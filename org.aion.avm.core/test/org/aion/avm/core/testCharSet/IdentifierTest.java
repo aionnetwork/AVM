@@ -4,13 +4,10 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.math.BigInteger;
-import org.aion.avm.core.AvmTransactionUtil;
+import org.aion.avm.core.*;
 import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
-import org.aion.avm.core.AvmConfiguration;
-import org.aion.avm.core.AvmImpl;
-import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
@@ -50,7 +47,7 @@ public class IdentifierTest {
         kernel.generateBlock();
         Transaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO,
             new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult txResult = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+        TransactionResult txResult = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
 
         dappAddress = new AionAddress(txResult.copyOfTransactionOutput().orElseThrow());
         assertNotNull(dappAddress);
@@ -61,7 +58,7 @@ public class IdentifierTest {
         tx = AvmTransactionUtil
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
                 energyLimit, energyPrice);
-        txResult = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+        txResult = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertArrayEquals("Hello!".getBytes(), txResult.copyOfTransactionOutput().orElseThrow());
 
         argData = encodeNoArgsMethodCall("sayHelloTC");
@@ -70,7 +67,7 @@ public class IdentifierTest {
         tx = AvmTransactionUtil
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
                 energyLimit, energyPrice);
-        txResult = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+        txResult = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertArrayEquals("哈囉!".getBytes(), txResult.copyOfTransactionOutput().orElseThrow());
 
         argData = encodeNoArgsMethodCall("sayHelloExtendChar");
@@ -79,7 +76,7 @@ public class IdentifierTest {
         tx = AvmTransactionUtil
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
                 energyLimit, energyPrice);
-        txResult = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+        txResult = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
 
         char[] charArray = new char[]{'n', 'i', '\\', '3', '6', '1', 'o', '!'};
         assertArrayEquals(String.valueOf(charArray).getBytes(), txResult.copyOfTransactionOutput().orElseThrow());
@@ -90,7 +87,7 @@ public class IdentifierTest {
         tx = AvmTransactionUtil
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
                 energyLimit, energyPrice);
-        txResult = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+        txResult = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertArrayEquals("����!".getBytes(), txResult.copyOfTransactionOutput().orElseThrow());
 
         argData = encodeNoArgsMethodCall("sayHelloExtendChar3");
@@ -99,7 +96,7 @@ public class IdentifierTest {
         tx = AvmTransactionUtil
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
                 energyLimit, energyPrice);
-        txResult = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+        txResult = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertArrayEquals("sayHelloÿ!".getBytes(), txResult.copyOfTransactionOutput().orElseThrow());
 
         argData = encodeNoArgsMethodCall("ÿ");
@@ -108,7 +105,7 @@ public class IdentifierTest {
         tx = AvmTransactionUtil
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
                 energyLimit, energyPrice);
-        txResult = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+        txResult = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertArrayEquals("ÿÿÿÿ!".getBytes(), txResult.copyOfTransactionOutput().orElseThrow());
 
         argData = encodeNoArgsMethodCall("哈囉");
@@ -117,7 +114,7 @@ public class IdentifierTest {
         tx = AvmTransactionUtil
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
                 energyLimit, energyPrice);
-        txResult = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+        txResult = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertArrayEquals("哈囉!".getBytes(), txResult.copyOfTransactionOutput().orElseThrow());
     }
 
@@ -128,7 +125,7 @@ public class IdentifierTest {
         kernel.generateBlock();
         Transaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO,
             new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult txResult = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+        TransactionResult txResult = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
 
         dappAddress = new AionAddress(txResult.copyOfTransactionOutput().orElseThrow());
         assertNotNull(dappAddress);
@@ -139,7 +136,7 @@ public class IdentifierTest {
         tx = AvmTransactionUtil
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
                 energyLimit, energyPrice);
-        txResult = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+        txResult = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertArrayEquals("哈囉!".getBytes(), txResult.copyOfTransactionOutput().orElseThrow());
 
         argData = encodeNoArgsMethodCall("callInnerClass2");
@@ -148,7 +145,7 @@ public class IdentifierTest {
         tx = AvmTransactionUtil
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
                 energyLimit, energyPrice);
-        txResult = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+        txResult = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertArrayEquals("ÿ!".getBytes(), txResult.copyOfTransactionOutput().orElseThrow());
     }
 
@@ -159,7 +156,7 @@ public class IdentifierTest {
         kernel.generateBlock();
         Transaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO,
             new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult txResult = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+        TransactionResult txResult = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         dappAddress = new AionAddress(txResult.copyOfTransactionOutput().orElseThrow());
         assertNotNull(dappAddress);
 
@@ -174,7 +171,7 @@ public class IdentifierTest {
         tx = AvmTransactionUtil
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
                 energyLimit, energyPrice);
-        txResult = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+        txResult = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertArrayEquals("Invalid method name!".getBytes(), txResult.copyOfTransactionOutput().orElseThrow());
 
         invalidCode = new byte[]{(byte) 0xf1, (byte) 0xf0, (byte) 0xfa, (byte) 0xfb,
@@ -188,7 +185,7 @@ public class IdentifierTest {
         tx = AvmTransactionUtil
             .call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, argData,
                 energyLimit, energyPrice);
-        txResult = avm.run(kernel, new Transaction[]{tx})[0].getResult();
+        txResult = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertArrayEquals("Invalid method name!".getBytes(), txResult.copyOfTransactionOutput().orElseThrow());
     }
 

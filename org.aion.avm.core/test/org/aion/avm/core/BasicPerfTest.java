@@ -72,7 +72,7 @@ public class BasicPerfTest {
             this.externalState = new TestingState(block);
             long transaction1EnergyLimit = 1_000_000_000l;
             Transaction tx1 = AvmTransactionUtil.create(deployer, externalState.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), transaction1EnergyLimit, 1L);
-            TransactionResult result1 = this.avm.run(this.externalState, new Transaction[] {tx1})[0].getResult();
+            TransactionResult result1 = this.avm.run(this.externalState, new Transaction[] {tx1}, ExecutionType.ASSUME_MAINCHAIN, externalState.getBlockNumber() - 1)[0].getResult();
             Assert.assertTrue(result1.transactionStatus.isSuccess());
             this.contractAddress = new AionAddress(result1.copyOfTransactionOutput().orElseThrow());
         }
@@ -96,7 +96,7 @@ public class BasicPerfTest {
             for (int i = blockStart; i < (COUNT + blockStart); ++i) {
                 long transaction1EnergyLimit = 1_000_000_000l;
                 Transaction tx1 = AvmTransactionUtil.call(deployer, this.contractAddress, externalState.getNonce(deployer), BigInteger.ZERO, new byte[0], transaction1EnergyLimit, 1L);
-                TransactionResult result1 = this.avm.run(this.externalState, new Transaction[] {tx1})[0].getResult();
+                TransactionResult result1 = this.avm.run(this.externalState, new Transaction[] {tx1}, ExecutionType.ASSUME_MAINCHAIN, externalState.getBlockNumber() - 1)[0].getResult();
                 Assert.assertTrue(result1.transactionStatus.isSuccess());
             }
         }

@@ -247,7 +247,7 @@ public class HandoffMonitorTest {
         // (we don't consult the capabilities since there is no creation)
         IExternalCapabilities capabilities = null;
         for (int i = 0; i < transactions.length; ++i) {
-            tasks[i] = new TransactionTask(null, transactions[i], i, Helpers.ZERO_ADDRESS);
+            tasks[i] = new TransactionTask(null, transactions[i], i, Helpers.ZERO_ADDRESS, ExecutionType.ASSUME_MAINCHAIN, 0);
         }
         return tasks;
     }

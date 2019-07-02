@@ -83,7 +83,7 @@ public class ConstantLoadingIntegrationTest {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
         Transaction create = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new Transaction[] {create})[0].getResult();
+        TransactionResult createResult = avm.run(kernel, new Transaction[] {create}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         Assert.assertTrue(createResult.transactionStatus.isSuccess());
 
         return new AionAddress(createResult.copyOfTransactionOutput().orElseThrow());
@@ -94,7 +94,7 @@ public class ConstantLoadingIntegrationTest {
         long energyLimit = 1_000_000l;
         byte[] argData = new byte[] { (byte)code };
         Transaction call = AvmTransactionUtil.call(deployer, contractAddr, kernel.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1l);
-        TransactionResult result = avm.run(kernel, new Transaction[] {call})[0].getResult();
+        TransactionResult result = avm.run(kernel, new Transaction[] {call}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
         return result.copyOfTransactionOutput().orElseThrow();
     }

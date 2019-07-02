@@ -8,14 +8,11 @@ import static org.junit.Assert.fail;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import org.aion.avm.core.AvmTransactionUtil;
+import org.aion.avm.core.*;
 import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Log;
 import org.aion.types.Transaction;
-import org.aion.avm.core.AvmConfiguration;
-import org.aion.avm.core.AvmImpl;
-import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.LogSizeUtils;
@@ -172,14 +169,14 @@ public class ContractLoggingTest {
         jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         Transaction transaction = AvmTransactionUtil.create(from, kernel.getNonce(from), BigInteger.ZERO, jar, energyLimit, energyPrice);
-        TransactionResult result = avm.run(ContractLoggingTest.kernel, new Transaction[] {transaction})[0].getResult();
+        TransactionResult result = avm.run(ContractLoggingTest.kernel, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, 0)[0].getResult();
 
         assertTrue(result.transactionStatus.isSuccess());
         contract = new AionAddress(result.copyOfTransactionOutput().orElseThrow());
     }
 
     private TransactionResult runTransaction(Transaction tx) {
-        return avm.run(ContractLoggingTest.kernel, new Transaction[] {tx})[0].getResult();
+        return avm.run(ContractLoggingTest.kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
     }
 
     private Transaction generateTxForMethodCall(String methodName, Object... args) {

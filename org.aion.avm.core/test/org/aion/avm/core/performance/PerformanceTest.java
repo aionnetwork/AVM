@@ -1,12 +1,8 @@
 package org.aion.avm.core.performance;
 
-import org.aion.avm.core.FutureResult;
-import org.aion.avm.core.AvmTransactionUtil;
+import org.aion.avm.core.*;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
-import org.aion.avm.core.AvmConfiguration;
-import org.aion.avm.core.AvmImpl;
-import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
@@ -67,7 +63,7 @@ public class PerformanceTest {
 
             //deploying dapp
             Transaction create = AvmTransactionUtil.create(userAddress, kernel.getNonce(userAddress), BigInteger.ZERO, txData, energyLimit, energyPrice);
-            TransactionResult createResult = avm.run(this.kernel, new Transaction[]{create})[0].getResult();
+            TransactionResult createResult = avm.run(this.kernel, new Transaction[]{create}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
             Assert.assertTrue(createResult.transactionStatus.isSuccess());
             AionAddress contractAddr = new AionAddress(createResult.copyOfTransactionOutput().orElseThrow());
             contractAddrs[i] = contractAddr;
@@ -118,7 +114,7 @@ public class PerformanceTest {
     private void callSingle(AionAddress sender, AionAddress contractAddr, String methodName) {
         byte[] argData = new ABIStreamingEncoder().encodeOneString(methodName).toBytes();
         Transaction call = AvmTransactionUtil.call(sender, contractAddr, kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
-        TransactionResult result = avm.run(this.kernel, new Transaction[] {call})[0].getResult();
+        TransactionResult result = avm.run(this.kernel, new Transaction[] {call}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
     }
 
@@ -164,7 +160,7 @@ public class PerformanceTest {
                 AionAddress contractAddr = Nto1 ? contractAddrs[0] : contractAddrs[i];
                 transactionArray[i] = AvmTransactionUtil.call(sender, contractAddr, kernel.getNonce(sender), BigInteger.ZERO, argData, energyLimit, energyPrice);
             }
-            FutureResult[] futures = avm.run(this.kernel, transactionArray);
+            FutureResult[] futures = avm.run(this.kernel, transactionArray, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1);
             for (FutureResult future : futures) {
                 TransactionResult result = future.getResult();
                 Assert.assertTrue(result.transactionStatus.isSuccess());

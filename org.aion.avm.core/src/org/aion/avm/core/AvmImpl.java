@@ -159,7 +159,7 @@ public class AvmImpl implements AvmInternal {
         this.handoff.startExecutorThreads();
     }
 
-    public FutureResult[] run(IExternalState kernel, Transaction[] transactions) throws IllegalStateException {
+    public FutureResult[] run(IExternalState kernel, Transaction[] transactions, ExecutionType executionType, long commonMainchainBlockNumber) throws IllegalStateException {
         if (null != this.backgroundFatalError) {
             throw this.backgroundFatalError;
         }
@@ -175,7 +175,7 @@ public class AvmImpl implements AvmInternal {
         // Create tasks for these new transactions and send them off to be asynchronously executed.
         TransactionTask[] tasks = new TransactionTask[transactions.length];
         for (int i = 0; i < transactions.length; i++){
-            tasks[i] = new TransactionTask(kernel, transactions[i], i, transactions[i].senderAddress);
+            tasks[i] = new TransactionTask(kernel, transactions[i], i, transactions[i].senderAddress, executionType, commonMainchainBlockNumber);
         }
 
         return this.handoff.sendTransactionsAsynchronously(tasks);

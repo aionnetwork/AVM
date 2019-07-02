@@ -29,7 +29,7 @@ public class ConstantBillingTest {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         IExternalState externalState = new TestingState(block);
         Transaction tx = AvmTransactionUtil.create(deployer, externalState.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, new byte[0]).encodeToBytes(), energyLimit, 1);
-        TransactionResult result = avm.run(externalState, new Transaction[] { tx })[0].getResult();
+        TransactionResult result = avm.run(externalState, new Transaction[] { tx }, ExecutionType.ASSUME_MAINCHAIN, externalState.getBlockNumber() - 1)[0].getResult();
         assertTrue(result.transactionStatus.isSuccess());
 
         BytecodeFeeScheduler feeScheduler = new BytecodeFeeScheduler();

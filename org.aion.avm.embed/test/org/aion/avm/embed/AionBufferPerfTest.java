@@ -1,13 +1,9 @@
 package org.aion.avm.embed;
 
 import java.math.BigInteger;
-import org.aion.avm.core.AvmTransactionUtil;
-import org.aion.avm.core.IExternalState;
+import org.aion.avm.core.*;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
-import org.aion.avm.core.AvmConfiguration;
-import org.aion.avm.core.AvmImpl;
-import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
@@ -33,7 +29,7 @@ public class AionBufferPerfTest {
     private TransactionResult deploy(IExternalState kernel, AvmImpl avm, byte[] testJar){
         byte[] testWalletArguments = new byte[0];
         Transaction createTransaction = AvmTransactionUtil.create(from, kernel.getNonce(from), BigInteger.ZERO, new CodeAndArguments(testJar, testWalletArguments).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new Transaction[] {createTransaction})[0].getResult();
+        TransactionResult createResult = avm.run(kernel, new Transaction[] {createTransaction}, ExecutionType.ASSUME_MAINCHAIN, 0)[0].getResult();
 
         Assert.assertTrue(createResult.transactionStatus.isSuccess());
         return createResult;
@@ -41,7 +37,7 @@ public class AionBufferPerfTest {
 
     private TransactionResult call(IExternalState kernel, AvmImpl avm, AionAddress contract, AionAddress sender, byte[] args) {
         Transaction callTransaction = AvmTransactionUtil.call(sender, contract, kernel.getNonce(sender), BigInteger.ZERO, args, energyLimit, 1L);
-        TransactionResult callResult = avm.run(kernel, new Transaction[] {callTransaction})[0].getResult();
+        TransactionResult callResult = avm.run(kernel, new Transaction[] {callTransaction}, ExecutionType.ASSUME_MAINCHAIN, 0)[0].getResult();
         Assert.assertTrue(callResult.transactionStatus.isSuccess());
         return callResult;
     }

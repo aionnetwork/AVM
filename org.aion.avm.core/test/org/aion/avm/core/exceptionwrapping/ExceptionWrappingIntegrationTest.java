@@ -1,15 +1,9 @@
 package org.aion.avm.core.exceptionwrapping;
 
-import org.aion.avm.core.AvmTransactionUtil;
+import org.aion.avm.core.*;
 import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
-import org.aion.avm.core.AvmConfiguration;
-import org.aion.avm.core.AvmFailedException;
-import org.aion.avm.core.AvmImpl;
-import org.aion.avm.core.CommonAvmFactory;
-import org.aion.avm.core.MockFailureInstrumentationFactory;
-import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
@@ -46,7 +40,7 @@ public class ExceptionWrappingIntegrationTest {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
         Transaction create = AvmTransactionUtil.create(TestingState.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new Transaction[] {create})[0].getResult();
+        TransactionResult createResult = avm.run(kernel, new Transaction[] {create}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         Assert.assertTrue(createResult.transactionStatus.isSuccess());
         AionAddress contractAddr = new AionAddress(createResult.copyOfTransactionOutput().orElseThrow());
 
@@ -78,7 +72,7 @@ public class ExceptionWrappingIntegrationTest {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
         Transaction create = AvmTransactionUtil.create(TestingState.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new Transaction[] {create})[0].getResult();
+        TransactionResult createResult = avm.run(kernel, new Transaction[] {create}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         Assert.assertTrue(createResult.transactionStatus.isSuccess());
         AionAddress contractAddr = new AionAddress(createResult.copyOfTransactionOutput().orElseThrow());
 
@@ -100,7 +94,7 @@ public class ExceptionWrappingIntegrationTest {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
         Transaction create = AvmTransactionUtil.create(TestingState.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new Transaction[] {create})[0].getResult();
+        TransactionResult createResult = avm.run(kernel, new Transaction[] {create}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         Assert.assertTrue(createResult.transactionStatus.isSuccess());
         AionAddress contractAddr = new AionAddress(createResult.copyOfTransactionOutput().orElseThrow());
 
@@ -122,7 +116,7 @@ public class ExceptionWrappingIntegrationTest {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
         Transaction create = AvmTransactionUtil.create(TestingState.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new Transaction[] {create})[0].getResult();
+        TransactionResult createResult = avm.run(kernel, new Transaction[] {create}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         Assert.assertTrue(createResult.transactionStatus.isSuccess());
         AionAddress contractAddr = new AionAddress(createResult.copyOfTransactionOutput().orElseThrow());
 
@@ -160,7 +154,7 @@ public class ExceptionWrappingIntegrationTest {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
         Transaction create = AvmTransactionUtil.create(TestingState.PREMINED_ADDRESS, BigInteger.ZERO, BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult createResult = avm.run(kernel, new Transaction[] {create})[0].getResult();
+        TransactionResult createResult = avm.run(kernel, new Transaction[] {create}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         Assert.assertTrue(createResult.transactionStatus.isSuccess());
         AionAddress contractAddr = new AionAddress(createResult.copyOfTransactionOutput().orElseThrow());
         // The next call will spin in a loop, thus triggering our failure.
@@ -215,6 +209,6 @@ public class ExceptionWrappingIntegrationTest {
                 ? new ABIStreamingEncoder().encodeOneString(methodName).toBytes()
                 : new byte[0];
         Transaction call = AvmTransactionUtil.call(from, contractAddr, kernel.getNonce(from), BigInteger.ZERO, argData, energyLimit, 1l);
-        return avm.run(kernel, new Transaction[] {call})[0].getResult();
+        return avm.run(kernel, new Transaction[] {call}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
     }
 }

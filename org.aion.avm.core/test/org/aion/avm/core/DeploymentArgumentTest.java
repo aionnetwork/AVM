@@ -117,13 +117,13 @@ public class DeploymentArgumentTest {
     private TransactionResult deployContract(byte[] args) {
         byte[] payload = new CodeAndArguments(JAR, args).encodeToBytes();
         Transaction create = AvmTransactionUtil.create(DEPLOYER, kernel.getNonce(DEPLOYER), BigInteger.ZERO, payload, ENERGY_LIMIT, ENERGY_PRICE);
-        return avm.run(kernel, new Transaction[] {create})[0].getResult();
+        return avm.run(kernel, new Transaction[] {create}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
     }
 
     private TransactionResult callContract(AionAddress target, String methodName) {
         byte[] argData = new ABIStreamingEncoder().encodeOneString(methodName).toBytes();
         Transaction call = AvmTransactionUtil.call(DEPLOYER, target, kernel.getNonce(DEPLOYER), BigInteger.ZERO, argData, ENERGY_LIMIT, ENERGY_PRICE);
-        TransactionResult result = avm.run(kernel, new Transaction[] {call})[0].getResult();
+        TransactionResult result = avm.run(kernel, new Transaction[] {call}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         return result;
     }
 }

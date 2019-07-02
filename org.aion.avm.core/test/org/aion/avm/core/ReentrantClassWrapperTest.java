@@ -38,7 +38,7 @@ public class ReentrantClassWrapperTest {
         
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(ReentrantClassWrapperTestResource.class);
         Transaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, energyPrice);
-        TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx})[0].getResult();
+        TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertTrue(txResult.transactionStatus.isSuccess());
         dappAddress = new AionAddress(txResult.copyOfTransactionOutput().orElseThrow());
     }
@@ -52,7 +52,7 @@ public class ReentrantClassWrapperTest {
     public void testReentrantClass() {
         byte[] data = new ABIStreamingEncoder().encodeOneString("testStringClass").toBytes();
         Transaction tx = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
-        TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx})[0].getResult();
+        TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
 
         assertTrue(txResult.transactionStatus.isSuccess());
     }

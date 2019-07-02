@@ -69,7 +69,7 @@ public class AvmImplTest {
         long energyLimit = 50_000L;
         long energyPrice = 1L;
         Transaction tx = AvmTransactionUtil.call(from, to, kernel.getNonce(from), value, data, energyLimit, energyPrice);
-        TransactionResult result = avm.run(kernel, new Transaction[] { tx })[0].getResult();
+        TransactionResult result = avm.run(kernel, new Transaction[] { tx }, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
 
         // verify results
         assertTrue(result.transactionStatus.isSuccess());
@@ -190,7 +190,7 @@ public class AvmImplTest {
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;
         Transaction tx1 = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
-        TransactionResult result1 = avm.run(kernel, new Transaction[] {tx1})[0].getResult();
+        TransactionResult result1 = avm.run(kernel, new Transaction[] {tx1}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         assertTrue(result1.transactionStatus.isSuccess());
 
         AionAddress contractAddr = new AionAddress(result1.copyOfTransactionOutput().orElseThrow());
@@ -207,7 +207,7 @@ public class AvmImplTest {
         // call (1 -> 2 -> 2)
         long transaction2EnergyLimit = 1_000_000l;
         Transaction tx2 = AvmTransactionUtil.call(deployer, contractAddr, kernel.getNonce(deployer), BigInteger.ZERO, contractAddr.toByteArray(), transaction2EnergyLimit, energyPrice);
-        TransactionResult result2 = avm.run(kernel, new Transaction[] {tx2})[0].getResult();
+        TransactionResult result2 = avm.run(kernel, new Transaction[] {tx2}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         assertTrue(result2.transactionStatus.isSuccess());
         assertArrayEquals("CALL".getBytes(), result2.copyOfTransactionOutput().orElseThrow());
         // Account for the cost:  (blocks in call method) + runtime.call
@@ -338,7 +338,7 @@ public class AvmImplTest {
         // Cause the failure.
         byte[] nearData = encodeNoArgCall("localFailAfterReentrant");
         Transaction tx = AvmTransactionUtil.call(deployer, contractAddr, kernel.getNonce(deployer), BigInteger.ZERO, nearData, energyLimit, 1L);
-        TransactionResult result2 = avm.run(kernel, new Transaction[] {tx})[0].getResult();
+        TransactionResult result2 = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         assertEquals(AvmInternalError.FAILED_OUT_OF_ENERGY.error, result2.transactionStatus.causeOfError);
 
         // We shouldn't see any changes, since this failed.
@@ -419,7 +419,7 @@ public class AvmImplTest {
         // Verify the internal call depth limit is in effect.
         byte[] callData = encodeCallIntInt("recursiveChangeNested", 0, 10);
         Transaction tx = AvmTransactionUtil.call(deployer, contractAddr, kernel.getNonce(deployer), BigInteger.ZERO, callData, 20_000_000l, 1L);
-        TransactionResult result2 = avm.run(kernel, new Transaction[] {tx})[0].getResult();
+        TransactionResult result2 = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         assertEquals(AvmInternalError.FAILED_EXCEPTION.error, result2.transactionStatus.causeOfError);
 
         avm.shutdown();
@@ -509,7 +509,7 @@ public class AvmImplTest {
         byte[] spawnerCallData = encodeCallBool("spawnOnly", shouldFail);
         long energyLimit = 1_000_000l;
         Transaction tx = AvmTransactionUtil.call(TestingState.PREMINED_ADDRESS, spawnerAddress, kernel.getNonce(deployer), BigInteger.ZERO, spawnerCallData, energyLimit, 1L);
-        TransactionResult result2 = avm.run(kernel, new Transaction[] {tx})[0].getResult();
+        TransactionResult result2 = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         assertEquals(AvmInternalError.FAILED_INVALID.error, result2.transactionStatus.causeOfError);
         avm.shutdown();
     }
@@ -639,7 +639,7 @@ public class AvmImplTest {
     private int callRecursiveHash(IExternalState externalState, AvmImpl avm, long energyLimit, AionAddress contractAddr, int depth) {
         byte[] argData = encodeCallInt("getRecursiveHashCode", depth);
         Transaction call = AvmTransactionUtil.call(deployer, contractAddr, externalState.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1L);
-        TransactionResult result = avm.run(externalState, new Transaction[] {call})[0].getResult();
+        TransactionResult result = avm.run(externalState, new Transaction[] {call}, ExecutionType.ASSUME_MAINCHAIN, externalState.getBlockNumber() - 1)[0].getResult();
         assertTrue(result.transactionStatus.isSuccess());
         return new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneInteger();
     }
@@ -659,7 +659,7 @@ public class AvmImplTest {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
         Transaction tx1 = AvmTransactionUtil.create(deployer, externalState.getNonce(deployer), BigInteger.ZERO, createData, energyLimit, energyPrice);
-        return avm.run(externalState, new Transaction[] {tx1})[0].getResult();
+        return avm.run(externalState, new Transaction[] {tx1}, ExecutionType.ASSUME_MAINCHAIN, externalState.getBlockNumber() - 1)[0].getResult();
     }
 
     private void callDAppVoid(IExternalState externalState, AvmImpl avm, AionAddress dAppAddress, byte[] argData) {
@@ -690,7 +690,7 @@ public class AvmImplTest {
     private byte[] callDAppSuccess(IExternalState externalState, AvmImpl avm, AionAddress dAppAddress, byte[] argData) {
         long energyLimit = 5_000_000l;
         Transaction tx = AvmTransactionUtil.call(deployer, dAppAddress, externalState.getNonce(deployer), BigInteger.ZERO, argData, energyLimit, 1L);
-        TransactionResult result2 = avm.run(externalState, new Transaction[] {tx})[0].getResult();
+        TransactionResult result2 = avm.run(externalState, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, externalState.getBlockNumber() - 1)[0].getResult();
         assertTrue(result2.transactionStatus.isSuccess());
         return result2.copyOfTransactionOutput().orElseThrow();
     }
@@ -702,7 +702,7 @@ public class AvmImplTest {
         long energyLimit = 10_000_000l;
         long energyPrice = 1l;
         Transaction tx1 = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, deployment, energyLimit, energyPrice);
-        TransactionResult result1 = avm.run(kernel, new Transaction[] {tx1})[0].getResult();
+        TransactionResult result1 = avm.run(kernel, new Transaction[] {tx1}, ExecutionType.ASSUME_MAINCHAIN, 0)[0].getResult();
         avm.shutdown();
         assertEquals(AvmInternalError.FAILED_INVALID_DATA.error, result1.transactionStatus.causeOfError);
     }

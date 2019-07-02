@@ -1,15 +1,11 @@
 package org.aion.cli;
 
 import java.math.BigInteger;
-import org.aion.avm.core.FutureResult;
-import org.aion.avm.core.AvmTransactionUtil;
+
+import org.aion.avm.core.*;
 import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
-import org.aion.avm.core.AvmConfiguration;
-import org.aion.avm.core.AvmImpl;
-import org.aion.avm.core.CommonAvmFactory;
-import org.aion.avm.core.IExternalCapabilities;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.embed.StandardCapabilities;
 import org.aion.avm.tooling.ABIUtil;
@@ -302,7 +298,7 @@ public class AvmCLI {
                 File storageFile = new File(invocation.storagePath);
                 TestingState kernel = new TestingState(storageFile, block);
                 AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(capabilities, new AvmConfiguration());
-                FutureResult[] futures = avm.run(kernel, transactions);
+                FutureResult[] futures = avm.run(kernel, transactions, ExecutionType.ASSUME_MAINCHAIN, 0);
                 
                 // Finish up with reporting.
                 for (int i = 0; i < invocation.commands.size(); ++i) {
