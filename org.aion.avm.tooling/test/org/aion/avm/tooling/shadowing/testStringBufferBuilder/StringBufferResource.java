@@ -181,5 +181,61 @@ public class StringBufferResource {
         Blockchain.require(sb3.toString().equals("MyString"));
     }
 
+    @Callable
+    public static void stringBufferInvalidConstructor() {
+        long energyRemaining = 0l;
+        boolean exceptionThrown = false;
+        try {
+            energyRemaining = Blockchain.getRemainingEnergy();
+            StringBuffer sb = new StringBuffer(-10000000);
+        } catch (NegativeArraySizeException e) {
+            exceptionThrown = true;
+            Blockchain.require(energyRemaining > Blockchain.getRemainingEnergy());
+        }
+        Blockchain.require(exceptionThrown);
+    }
+
+    @Callable
+    public static void stringBufferInvalidAppend(){
+        long energyRemaining = 0l;
+        boolean exceptionThrown = false;
+        try {
+            StringBuffer sb = new StringBuffer();
+            char[] arr = new char[]{'a', 'b', 'c'};
+            energyRemaining = Blockchain.getRemainingEnergy();
+            sb.append(arr, 1, -10000000);
+        } catch (IndexOutOfBoundsException e) {
+            exceptionThrown = true;
+            Blockchain.require(energyRemaining > Blockchain.getRemainingEnergy());
+        }
+        Blockchain.require(exceptionThrown);
+    }
+
+
+    @Callable
+    public static void stringBufferInsert(){
+        StringBuffer sb = new StringBuffer()
+                .insert(0, new char[]{'a', 'b', 'c'}, 0, 1)
+                .insert(1, 1)
+                .insert(2, 10l)
+                .insert(3, 1.4d)
+                .insert(4, 1.2f)
+                .insert(5, "Hello")
+                .insert(6, new SampleClass());
+        Blockchain.require(sb.toString().length() == 105);
+    }
+
+    @Callable
+    public static void stringBufferAppend(){
+        StringBuffer sb = new StringBuffer()
+                .append("Hello ")
+                .append("World!")
+                .append(123)
+                .append(true)
+                .append(new char[]{'a', 'b', 'c'}, 0, 1)
+                .append(new SampleClass());
+        Blockchain.require(sb.toString().length() == 110);
+    }
+
     public static class SampleClass{}
 }

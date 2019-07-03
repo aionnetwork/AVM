@@ -88,4 +88,44 @@ public class RejectionIntegrationTest {
         TransactionResult createResult = avm.run(RejectionIntegrationTest.kernel, new Transaction[] {transaction})[0].getResult();
         Assert.assertEquals(AvmInternalError.FAILED_REJECTED_CLASS.error, createResult.transactionStatus.causeOfError);
     }
+
+    @Test
+    public void accept31Variables() throws Exception {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(RejectClass31Variables.class);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        
+        Transaction transaction = AvmTransactionUtil.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
+        TransactionResult createResult = avm.run(RejectionIntegrationTest.kernel, new Transaction[] {transaction})[0].getResult();
+        Assert.assertTrue(createResult.transactionStatus.isSuccess());
+    }
+
+    @Test
+    public void reject32Variables() throws Exception {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(RejectClass32Variables.class);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        
+        Transaction transaction = AvmTransactionUtil.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
+        TransactionResult createResult = avm.run(RejectionIntegrationTest.kernel, new Transaction[] {transaction})[0].getResult();
+        Assert.assertEquals(AvmInternalError.FAILED_REJECTED_CLASS.error, createResult.transactionStatus.causeOfError);
+    }
+
+    @Test
+    public void reject32VariablesSubclass() throws Exception {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(RejectClassExtend31Variables.class, RejectClass31Variables.class);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        
+        Transaction transaction = AvmTransactionUtil.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
+        TransactionResult createResult = avm.run(RejectionIntegrationTest.kernel, new Transaction[] {transaction})[0].getResult();
+        Assert.assertEquals(AvmInternalError.FAILED_REJECTED_CLASS.error, createResult.transactionStatus.causeOfError);
+    }
+
+    @Test
+    public void accept32VariablesSubclass() throws Exception {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(RejectClassExtend31VariablesSafe.class, RejectClass31Variables.class);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        
+        Transaction transaction = AvmTransactionUtil.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
+        TransactionResult createResult = avm.run(RejectionIntegrationTest.kernel, new Transaction[] {transaction})[0].getResult();
+        Assert.assertTrue(createResult.transactionStatus.isSuccess());
+    }
 }

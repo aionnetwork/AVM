@@ -22,6 +22,8 @@ import org.aion.avm.core.miscvisitors.StrictFPVisitor;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.persistence.AutomaticGraphVisitor;
 import org.aion.avm.core.persistence.LoadedDApp;
+import org.aion.avm.core.rejection.InstanceVariableCountManager;
+import org.aion.avm.core.rejection.InstanceVariableCountingVisitor;
 import org.aion.avm.core.rejection.MainMethodChecker;
 import org.aion.avm.core.rejection.RejectedClassException;
 import org.aion.avm.core.rejection.RejectionClassVisitor;
@@ -361,6 +363,9 @@ public class DAppCreator {
     }
 
     private static Map<String, byte[]> rejectionAndRenameInputClasses(Map<String, byte[]> inputClasses, ClassHierarchy classHierarchy, ClassRenamer classRenamer, boolean preserveDebuggability) {
+        // By this point, we at least know that the classHierarchy is internally consistent.
+        // This also means we can safely count instance variables to make sure we haven't reached our limit.
+        InstanceVariableCountManager manager = new InstanceVariableCountManager();
         Map<String, byte[]> safeClasses = new HashMap<>();
 
         Set<String> preRenameUserClassAndInterfaceSet = classHierarchy.getPreRenameUserDefinedClassesAndInterfaces();
@@ -375,9 +380,11 @@ public class DAppCreator {
 
             int parsingOptions = preserveDebuggability ? 0: ClassReader.SKIP_DEBUG;
             try {
+                InstanceVariableCountingVisitor variableCounter = new InstanceVariableCountingVisitor(manager);
                 byte[] bytecode = new ClassToolchain.Builder(inputClasses.get(name), parsingOptions)
                     .addNextVisitor(new RejectionClassVisitor(preRenameClassAccessRules, namespaceMapper, preserveDebuggability))
                     .addNextVisitor(new LoopingExceptionStrippingVisitor())
+                    .addNextVisitor(variableCounter)
                     .addNextVisitor(new UserClassMappingVisitor(namespaceMapper, preserveDebuggability))
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, classRenamer))
                     .build()
@@ -388,6 +395,8 @@ public class DAppCreator {
                 throw new RejectedClassException(e.getMessage());
             }
         }
+        // Before we return, make sure we didn't exceed the instance variable limits (will throw RejectedClassException on failure).
+        manager.verifyAllCounts();
         return safeClasses;
     }
 }

@@ -80,6 +80,25 @@ public class StringBufferTest {
         callStatic("stringBufferConstructor");
     }
 
+    @Test
+    public void stringBufferInvalidConstructor(){
+        callStatic("stringBufferInvalidConstructor");
+    }
+
+    @Test
+    public void stringBufferInvalidAppend(){
+        callStatic("stringBufferInvalidAppend");
+    }
+
+    @Test
+    public void stringBufferAppend(){
+        callStatic("stringBufferAppend");
+    }
+
+    @Test
+    public void stringBufferInsert(){
+        callStatic("stringBufferInsert");
+    }
 
     private void callStatic(String methodName, Object... args) {
         byte[] data = ABIUtil.encodeMethodArguments(methodName, args);

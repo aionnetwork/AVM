@@ -85,6 +85,15 @@ public class StringShadowingTest {
         result = avm.run(kernel, new Transaction[] {tx})[0].getResult();
         Assert.assertEquals(false, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneBoolean());
 
+        txData = encodeNoArgsMethodCall("regionMatches");
+        tx = AvmTransactionUtil.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        result = avm.run(kernel, new Transaction[] {tx})[0].getResult();
+        Assert.assertEquals(true, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneBoolean());
+
+        txData = encodeNoArgsMethodCall("valueOf");
+        tx = AvmTransactionUtil.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        result = avm.run(kernel, new Transaction[] {tx})[0].getResult();
+        Assert.assertEquals(true, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneBoolean());
         avm.shutdown();
     }
 
@@ -139,6 +148,44 @@ public class StringShadowingTest {
         Assert.assertEquals("abc", new ABIDecoder(results[4].getResult().copyOfTransactionOutput().orElseThrow()).decodeOneString());
         Assert.assertEquals("ABC", new ABIDecoder(results[5].getResult().copyOfTransactionOutput().orElseThrow()).decodeOneString());
         
+        avm.shutdown();
+    }
+
+    @Test
+    public void testInvalidCases() {
+        AionAddress from = TestingState.PREMINED_ADDRESS;
+        TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        long energyLimit = 5_000_0000;
+        long energyPrice = 1;
+        TestingState kernel = new TestingState(block);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
+
+        // We do the deployment, first, since we need the resultant DApp address for the other calls.
+        byte[] testJar = JarBuilder.buildJarForMainAndClassesAndUserlib(TestResource.class);
+        byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
+        Transaction tx = AvmTransactionUtil.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        AionAddress dappAddr = new AionAddress(avm.run(kernel, new Transaction[] {tx})[0].getResult().copyOfTransactionOutput().orElseThrow());
+
+        txData = encodeNoArgsMethodCall("regionMatchesInvalidLength");
+        tx = AvmTransactionUtil.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        TransactionResult result = avm.run(kernel, new Transaction[] {tx})[0].getResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+
+        txData = encodeNoArgsMethodCall("regionMatchesDoNotIgnoreInvalidLength");
+        tx = AvmTransactionUtil.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        result = avm.run(kernel, new Transaction[] {tx})[0].getResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+
+        txData = encodeNoArgsMethodCall("copyValueOfInvalidCount");
+        tx = AvmTransactionUtil.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        result = avm.run(kernel, new Transaction[] {tx})[0].getResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+
+        txData = encodeNoArgsMethodCall("valueOfInvalidCount");
+        tx = AvmTransactionUtil.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        result = avm.run(kernel, new Transaction[] {tx})[0].getResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+
         avm.shutdown();
     }
 

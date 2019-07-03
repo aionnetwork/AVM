@@ -18,7 +18,7 @@ public final class StringBuffer extends Object implements CharSequence, Serializ
     }
 
     public StringBuffer(int capacity) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_constructor_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * capacity);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_constructor_1 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(capacity, 0));
         this.v = new java.lang.StringBuffer(capacity);
     }
 
@@ -139,7 +139,7 @@ public final class StringBuffer extends Object implements CharSequence, Serializ
     }
 
     public StringBuffer avm_append(CharArray str, int offset, int len) {
-        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_6 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * len);
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.StringBuffer_avm_append_6 + RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR * java.lang.Math.max(len, 0));
         this.v = this.v.append(str.getUnderlying(), offset, len);
         return this;
     }
