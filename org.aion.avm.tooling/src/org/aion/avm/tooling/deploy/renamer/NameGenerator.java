@@ -15,12 +15,8 @@ public class NameGenerator {
         }
     }
 
-    public String getNextClassName(Set<String> internalClassNames) {
+    public String getNextClassName() {
         String className = nextString(currentClassIndex).toUpperCase();
-        while (internalClassNames.contains(className)) {
-            currentClassIndex++;
-            className = nextString(currentClassIndex).toUpperCase();
-        }
         currentClassIndex++;
         return className.toUpperCase();
     }

@@ -19,7 +19,7 @@ import static org.junit.Assert.assertTrue;
 public class RenameDeployTest {
 
     @ClassRule
-    public static AvmRule avmRule = new AvmRule(true);
+    public static AvmRule avmRule = new AvmRule(false);
 
     private static final Address sender = avmRule.getPreminedAccount();
     private static final BigInteger value = BigInteger.ZERO;

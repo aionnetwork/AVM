@@ -83,10 +83,14 @@ public final class AvmRule implements TestRule {
             System.err.println("UnreachableMethodRemover crashed, packaging code without this optimization");
         }
 
-        try {
-            optimizedDappBytes = Renamer.rename(optimizedDappBytes);
-        } catch (Exception exception) {
-            System.err.println("Renaming crashed, packaging code without this optimization");
+        // renaming is disabled in debug mode.
+        // This is because only field and method renaming can work correctly in debug mode, but the new names in those cases can cause confusion.
+        if(!debugMode) {
+            try {
+                optimizedDappBytes = Renamer.rename(optimizedDappBytes);
+            } catch (Exception exception) {
+                System.err.println("Renaming crashed, packaging code without this optimization");
+            }
         }
         return new CodeAndArguments(optimizedDappBytes, arguments).encodeToBytes();
     }
