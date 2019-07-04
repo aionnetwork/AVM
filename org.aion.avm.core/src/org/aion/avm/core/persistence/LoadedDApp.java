@@ -303,7 +303,7 @@ public class LoadedDApp {
 
     /**
      * The exception could be any {@link i.AvmThrowable}, any {@link java.lang.RuntimeException},
-     * or a {@link e.java.lang.Throwable}.
+     * or a {@link e.s.java.lang.Throwable}.
      */
     private void handleUncaughtException(Throwable cause) throws Throwable {
         // thrown by us
@@ -328,7 +328,8 @@ public class LoadedDApp {
     /**
      * Called before the DApp is about to be put into a cache.  This is so it can put itself into a "resumable" state.
      */
-    public void cleanForCodeCache() {
+    public void clearDataState() {
+        loadedDataBlockNum = -1;
         Deserializer.cleanClassStatics(this.fieldCache, this.sortedUserClasses, this.constantClass);
     }
 
@@ -404,22 +405,19 @@ public class LoadedDApp {
     }
 
     public void updateLoadedBlockForSuccessfulTransaction(long loadedBlockNum){
-        // Set the loaded code block number so that it can be invalidated if necessary
-        loadedCodeBlockNum = loadedBlockNum;
-
         // Store the current block as the last number which the DApp data was loaded in
         loadedDataBlockNum = loadedBlockNum;
     }
 
-    public void updateLoadedBlockForFailedTransaction(long loadedBlockNum){
-        // Only the Code block number is updated because the data might not be valid. Thus, loadedDataBlockNum is reset
-        loadedCodeBlockNum = loadedBlockNum;
-        loadedDataBlockNum = -1;
-    }
-
     public boolean hasValidCachedData(long loadedBlockNum){
         // Ensure data has been updated before the current block and it has not been reset after.
+        // Note that from the time the data cache is updated, loadedDataBlockNum >= loadedCodeBlockNum
         return loadedDataBlockNum < loadedBlockNum && loadedDataBlockNum != -1;
+    }
+
+    public boolean hasValidCachedCode(long loadedBlockNum){
+        // Ensure data has been updated before the current block and it has not been reset after.
+        return loadedCodeBlockNum < loadedBlockNum && loadedCodeBlockNum != -1;
     }
 
     public void setHashCode(int hashCode) { this.hashCode = hashCode; }

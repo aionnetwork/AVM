@@ -12,6 +12,7 @@ import java.lang.ref.SoftReference;
 import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import org.aion.avm.core.persistence.LoadedDApp;
@@ -26,8 +27,6 @@ import org.aion.parallel.AddressResourceMonitor;
 import org.aion.parallel.TransactionTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static i.RuntimeAssertionError.unexpected;
 
 
 public class AvmImpl implements AvmInternal {
@@ -53,10 +52,6 @@ public class AvmImpl implements AvmInternal {
     private final boolean preserveDebuggability;
     private final boolean enableVerboseContractErrors;
     private final boolean enableVerboseConcurrentExecutor;
-    // todo: AKI-221: enable this base on the transaction type received from the kernel.
-    // Caching cannot be used while mining since the same transaction can run in different blocks.
-    // It also cannot be used for importing blocks from different sidechains.
-    private final boolean cachingEnabled = false;
 
     public AvmImpl(IInstrumentationFactory instrumentationFactory, IExternalCapabilities capabilities, AvmConfiguration configuration) {
         this.instrumentationFactory = instrumentationFactory;
@@ -160,17 +155,36 @@ public class AvmImpl implements AvmInternal {
     }
 
     public FutureResult[] run(IExternalState kernel, Transaction[] transactions, ExecutionType executionType, long commonMainchainBlockNumber) throws IllegalStateException {
+        long currentBlockNum = kernel.getBlockNumber();
+
+        if (transactions.length <= 0) {
+            throw new IllegalArgumentException("Number of transactions must be larger than 0");
+        }
+
+        // validate commonMainchainBlockNumber based on execution type
+        if (executionType == ExecutionType.ASSUME_MAINCHAIN || executionType == ExecutionType.ASSUME_SIDECHAIN || executionType == ExecutionType.MINING) {
+            // This check generally true for mining but it's added for rare cases of mining on top of an imported block which is not the latest
+            if (currentBlockNum != commonMainchainBlockNumber + 1) {
+                throw new IllegalArgumentException("Invalid commonMainchainBlockNumber for " + executionType + " currentBlock = " + currentBlockNum + " , commonMainchainBlockNumber = " + commonMainchainBlockNumber);
+            }
+        } else if (executionType == ExecutionType.ASSUME_DEEP_SIDECHAIN && commonMainchainBlockNumber != 0) {
+            throw new IllegalArgumentException("commonMainchainBlockNumber must be zero for " + executionType);
+        }
+
+        // validate cache based on execution type
+        if (executionType == ExecutionType.ASSUME_MAINCHAIN || executionType == ExecutionType.MINING) {
+            validateCodeCache(currentBlockNum);
+        } else if (executionType == ExecutionType.SWITCHING_MAINCHAIN) {
+            // commonMainchainBlockNumber is the last valid block so anything after that should be removed from the cache
+            validateCodeCache(commonMainchainBlockNumber + 1);
+            purgeDataCache();
+        }
+
         if (null != this.backgroundFatalError) {
             throw this.backgroundFatalError;
         }
         // Clear the states of resources
         this.resourceMonitor.clear();
-
-        // Clear the hot cache
-        if (transactions.length > 0) {
-            long currentBlockNum = kernel.getBlockNumber();
-            validateCodeCache(currentBlockNum);
-        }
 
         // Create tasks for these new transactions and send them off to be asynchronously executed.
         TransactionTask[] tasks = new TransactionTask[transactions.length];
@@ -372,25 +386,78 @@ public class AvmImpl implements AvmInternal {
             ReentrantDAppStack.ReentrantState stateToResume = task.getReentrantDAppStack().tryShareState(recipient);
 
             LoadedDApp dapp = null;
-            long currentBlockNumber = parentKernel.getBlockNumber();
+            byte[] transformedCode = thisTransactionKernel.getTransformedCode(recipient);
             // The reentrant cache is obviously the first priority.
             // (note that we also want to check the kernel we were given to make sure that this DApp hasn't been deleted since we put it in the cache.
-            if ((null != stateToResume) && (null != thisTransactionKernel.getTransformedCode(recipient))) {
+            if ((null != stateToResume) && (null != transformedCode)) {
                 dapp = stateToResume.dApp;
                 // Call directly and don't interact with DApp cache (we are reentering the state, not the origin of it).
                 result = DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, tx, result, this.enableVerboseContractErrors, true);
             } else {
+                long currentBlockNumber = parentKernel.getBlockNumber();
+
                 // If we didn't find it there (that is only for reentrant calls so it is rarely found in the stack), try the hot DApp cache.
                 ByteArrayWrapper addressWrapper = new ByteArrayWrapper(recipient.toByteArray());
-                LoadedDApp dappInHotCache = this.hotCache.checkout(addressWrapper);
+                LoadedDApp dappInHotCache = null;
+
+                // This reflects if the dapp should be checked back into either cache after transaction execution
+                boolean writeToCacheEnabled;
+
+                // This reflects if the DApp data can be loaded from the cache.
+                // It is used in DAppExecutor to determine whether to load the data by making a call to the database or from DApp object
+                boolean readFromDataCacheEnabled;
+
+                boolean updateDataCache;
+
+                // there are no interactions with either cache in ASSUME_DEEP_SIDECHAIN
+                if (task.executionType != ExecutionType.ASSUME_DEEP_SIDECHAIN) {
+                    dappInHotCache = this.hotCache.checkout(addressWrapper);
+                }
+
+                if (task.executionType == ExecutionType.ASSUME_MAINCHAIN || task.executionType == ExecutionType.SWITCHING_MAINCHAIN) {
+                    // cache has been validated for these two types before getting here
+                    writeToCacheEnabled = true;
+                    readFromDataCacheEnabled = dappInHotCache != null && dappInHotCache.hasValidCachedData(currentBlockNumber);
+                    updateDataCache = true;
+                } else if (task.executionType == ExecutionType.ASSUME_SIDECHAIN || task.executionType == ExecutionType.ETH_CALL) {
+                    if (dappInHotCache != null) {
+                        // Check if the code is valid at this height. The last valid block for code cache is the CommonMainchainBlockNumber
+                        if (!dappInHotCache.hasValidCachedCode(task.commonMainchainBlockNumber + 1)) {
+                            // if we cannot use the cache, put the dapp back and work with the database
+                            this.hotCache.checkin(addressWrapper, dappInHotCache);
+                            writeToCacheEnabled = false;
+                            dappInHotCache = null;
+                        } else {
+                            // only dapp code is written back to the cache.
+                            // this is enabled only if the dapp has valid code cache at current height
+                            writeToCacheEnabled = true;
+                        }
+                    } else {
+                        // if the dapp could not be found in the cache, do not write to the cache
+                        writeToCacheEnabled = false;
+                    }
+                    readFromDataCacheEnabled = dappInHotCache != null && dappInHotCache.hasValidCachedData(task.commonMainchainBlockNumber + 1);
+                    updateDataCache = false;
+                } else if (task.executionType == ExecutionType.ASSUME_DEEP_SIDECHAIN) {
+                    writeToCacheEnabled = false;
+                    readFromDataCacheEnabled = false;
+                    updateDataCache = false;
+                } else {
+                    // ExecutionType.MINING
+                    // if the dapp was already present in the cache, its code is written back to the cache.
+                    writeToCacheEnabled = dappInHotCache != null;
+                    readFromDataCacheEnabled = false;
+                    updateDataCache = false;
+                }
+
                 //'parentKernel.getTransformedCode(recipient) != null' means this recipient's DApp is not self-destructed.
-                if (thisTransactionKernel.getTransformedCode(recipient) != null) {
+                if (transformedCode != null) {
                     dapp = dappInHotCache;
                 }
                 if (null == dapp) {
                     // If we didn't find it there, just load it.
                     try {
-                        dapp = DAppLoader.loadFromGraph(thisTransactionKernel.getTransformedCode(recipient), this.preserveDebuggability);
+                        dapp = DAppLoader.loadFromGraph(transformedCode, this.preserveDebuggability);
 
                         // If the dapp is freshly loaded, we set the block num
                         if (null != dapp){
@@ -398,25 +465,20 @@ public class AvmImpl implements AvmInternal {
                         }
 
                     } catch (IOException e) {
-                        unexpected(e); // the jar was created by AVM; IOException is unexpected
+                        throw RuntimeAssertionError.unexpected(e); // the jar was created by AVM; IOException is unexpected
                     }
                 }
 
                 if (null != dapp) {
-                    // This reflects if the DApp was loaded from the cache.
-                    // It is used in DAppExecutor to determine whether to load the data by making a call to the database or from DApp object
-                    // the loaded block number is checked to make sure DApp data is valid
-                    boolean readDataFromCache = cachingEnabled && dapp.hasValidCachedData(currentBlockNumber);
+                    result = DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, tx, result, this.enableVerboseContractErrors, readFromDataCacheEnabled);
 
-                    result = DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, tx, result, this.enableVerboseContractErrors, readDataFromCache);
-
-                    if (cachingEnabled) {
-                        if (result.isSuccess()) {
+                    if (writeToCacheEnabled) {
+                        if (result.isSuccess() && updateDataCache) {
                             dapp.updateLoadedBlockForSuccessfulTransaction(currentBlockNumber);
                             this.hotCache.checkin(addressWrapper, dapp);
                         } else {
-                            dapp.updateLoadedBlockForFailedTransaction(currentBlockNumber);
-                            dapp.cleanForCodeCache();
+                            // For ASSUME_SIDECHAIN, ETH_CALL, MINING cases.
+                            dapp.clearDataState();
                             this.hotCache.checkin(addressWrapper, dapp);
                         }
                     }
@@ -444,7 +506,20 @@ public class AvmImpl implements AvmInternal {
 
     private void validateCodeCache(long blockNum){
         // getLoadedDataBlockNum will always be either equal or less than getLoadedCodeBlockNum
-        Predicate<SoftReference<LoadedDApp>> condition = (v) -> null != v.get() && v.get().getLoadedCodeBlockNum() >= blockNum;
+        Predicate<SoftReference<LoadedDApp>> condition = (v) -> {
+            LoadedDApp dapp = v.get();
+            return null != dapp  && dapp.getLoadedCodeBlockNum() >= blockNum;
+        };
         this.hotCache.removeValueIf(condition);
+    }
+
+    private void purgeDataCache(){
+        Consumer<SoftReference<LoadedDApp>> softReferenceConsumer = (value) -> {
+            LoadedDApp dapp = value.get();
+            if(dapp != null){
+                dapp.clearDataState();
+            }
+        };
+        this.hotCache.apply(softReferenceConsumer);
     }
 }

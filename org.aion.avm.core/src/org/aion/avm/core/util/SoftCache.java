@@ -2,6 +2,7 @@ package org.aion.avm.core.util;
 
 import java.lang.ref.SoftReference;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import i.RuntimeAssertionError;
@@ -42,5 +43,9 @@ public class SoftCache<K, V> {
 
     public void removeValueIf(Predicate<SoftReference<V>> condition){
         this.underlyingMap.values().removeIf(condition);
+    }
+
+    public void apply(Consumer<SoftReference<V>> consumer){
+        this.underlyingMap.values().forEach(consumer);
     }
 }

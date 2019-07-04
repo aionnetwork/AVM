@@ -21,8 +21,6 @@ import java.math.BigInteger;
 
 import static org.junit.Assert.assertTrue;
 
-// todo: AKI-221: enable this once caching has been enabled.
-@Ignore
 public class HotObjectTest {
     private static AionAddress deployer = TestingState.PREMINED_ADDRESS;
     private static TestingBlock block;
@@ -561,7 +559,7 @@ public class HotObjectTest {
 
         result = callDapp(kernel, deployer, dappAddress, "doubleStaticValue");
         Assert.assertTrue(result.transactionStatus.isSuccess());
-        Assert.assertNull(result.copyOfTransactionOutput().orElseThrow());
+        Assert.assertFalse(result.copyOfTransactionOutput().isPresent());
     }
 
     /**
