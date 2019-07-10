@@ -12,6 +12,7 @@ import org.aion.avm.tooling.deploy.JarOptimizer;
 import org.aion.avm.tooling.deploy.eliminator.UnreachableMethodRemover;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.*;
 import org.aion.types.TransactionResult;
 import org.junit.Assert;
@@ -27,6 +28,12 @@ import java.math.BigInteger;
  * It may be worth relying on some more coarse-grained information, should it become available.
  */
 public class GraphReachabilityIntegrationTest {
+    private static final int GRAPH_SIZE_INITIAL = 1045;
+    private static final int GRAPH_SIZE_BEFORE = 1464;
+    private static final int GRAPH_SIZE_AFTER  = 1460;
+    private static final int JAR_SIZE_JDK10 = 4069;
+    private static final int JAR_SIZE_JDK11 = 4067;
+
     @Rule
     public AvmRule avmRule = new AvmRule(false);
 
@@ -45,18 +52,16 @@ public class GraphReachabilityIntegrationTest {
         callStaticVoid(block, contractAddr, getCost_check249(true), "check249", 4);
         
         // Run test.
-        long modify_basicCost = adjustBasicCost(21708L);
-        long modify_miscCharges = 95L + 300L + 100L + 37234L + 65L + 29L + 85L;
-        int graphSizeBefore = 4950;
-        int graphSizeAfter = 4946;
-        int readCost = StorageFees.READ_PRICE_PER_BYTE * graphSizeBefore;
-        int writeCost = StorageFees.WRITE_PRICE_PER_BYTE * graphSizeAfter;
-        long modify_storageCharges = readCost + writeCost;
-
-        // This number is an adjustment factor for the cost changes associated with the various ABI improvements
-        // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -42120L;
-        callStaticVoid(block, contractAddr, modify_basicCost + modify_miscCharges + modify_storageCharges + userlibCost, "modify249");
+        long transactionCost = BillingRules.getBasicTransactionCost(new ABIStreamingEncoder().encodeOneString("modify249").toBytes());
+        Assert.assertEquals(21708L, transactionCost);
+        
+        long storageReadCost = GRAPH_SIZE_BEFORE * StorageFees.READ_PRICE_PER_BYTE;
+        long executionCost = getCost_modify249();
+        long storageWriteCost = GRAPH_SIZE_AFTER * StorageFees.WRITE_PRICE_PER_BYTE;
+        
+        long storageCosts = storageReadCost + storageWriteCost;
+        
+        callStaticVoid(block, contractAddr, transactionCost + storageCosts + executionCost, "modify249");
         
         // Verify after.
         callStaticVoid(block, contractAddr, getCost_check249(false), "check249", 5);
@@ -76,24 +81,30 @@ public class GraphReachabilityIntegrationTest {
         callStaticVoid(block, contractAddr, getCost_check249(true), "check249", 4);
         
         // Run test.
-        long run_basicCost = adjustBasicCost(22796L);
-        long run_miscCharges = 0L
-                + 95L + 300L + 100L + 37234L + 88L + 187L + 100L + 17372L + 600L + 5000L + 100L
-                + 95L + 100L + 37234L + 65L + 29L + 85L
-                + 100L + 60L + 100L + 23L + 29L + 23L
-                ;
-        int graphSizeBefore = 4950;
-        int graphSizeAfter = 4946;
-        int readCost = StorageFees.READ_PRICE_PER_BYTE * graphSizeBefore;
-        int writeCost = StorageFees.WRITE_PRICE_PER_BYTE * graphSizeAfter;
-        // 2 reads/writes of the same cost.
-        long run_storageCharges = 2 * readCost + 2 * writeCost;
-
-        // This number is an adjustment factor for the cost changes associated with the various ABI improvements
-        // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -102714L;
-
-        callStaticVoid(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + userlibCost, "run249_reentrant_notLoaded");
+        long transactionCost = BillingRules.getBasicTransactionCost(new ABIStreamingEncoder().encodeOneString("run249_reentrant_notLoaded").toBytes());
+        Assert.assertEquals(22796L, transactionCost);
+        
+        long storageReadCost = GRAPH_SIZE_BEFORE * StorageFees.READ_PRICE_PER_BYTE;
+        long main = cost_mainPreamble();
+        long decodeMethodName = cost_decodeMethodNamePre() + 78L + 100L + 1526L + cost_decodeMethodNamePost();
+        long main2 = (3 * (63L + 730L)) + 94L;
+        long run249_reentrant_notLoaded = 88L + 134L + 29L + 223L + 645L + 36L + 100L + 1509L + 26L + 100L + 5000L;
+        
+        long nested_storageReadCost = GRAPH_SIZE_BEFORE * StorageFees.READ_PRICE_PER_BYTE;
+        long nested_modify249 = getCost_modify249();
+        long nested_storageWriteCost = GRAPH_SIZE_AFTER * StorageFees.WRITE_PRICE_PER_BYTE;
+        long nestedCost = nested_storageReadCost + nested_modify249 + nested_storageWriteCost;
+        Assert.assertEquals(15576L, nestedCost);
+        
+        long newResult = 100L;
+        long run249_reentrant_notLoaded2 = 60L + 100L + 23L + 29L + 23L;
+        long main3 = cost_mainPostamble();
+        long storageWriteCost = GRAPH_SIZE_AFTER * StorageFees.WRITE_PRICE_PER_BYTE;
+        
+        long storageCosts = storageReadCost + storageWriteCost;
+        long executionCost = main + decodeMethodName + main2 + run249_reentrant_notLoaded + nestedCost + newResult + run249_reentrant_notLoaded2 + main3;
+        
+        callStaticVoid(block, contractAddr, transactionCost + storageCosts + executionCost, "run249_reentrant_notLoaded");
         
         // Verify after.
         callStaticVoid(block, contractAddr, getCost_check249(false), "check249", 5);
@@ -113,24 +124,30 @@ public class GraphReachabilityIntegrationTest {
         callStaticVoid(block, contractAddr, getCost_check249(true), "check249", 4);
         
         // Run test.
-        long run_basicCost = adjustBasicCost(22604L);
-        long run_miscCharges = 0L
-            + 95L + 300L + 100L + 37234L + 65L + 29L + 88L + 187L + 100L + 17372L + 600L + 5000L + 100L
-            + 95L + 100L + 37234L + 65L + 29L + 85L
-            + 100L + 60L + 100L + 23L + 29L + 23L
-            ;
-        int graphSizeBefore = 4950;
-        int graphSizeAfter = 4946;
-        int readCost = StorageFees.READ_PRICE_PER_BYTE * graphSizeBefore;
-        int writeCost = StorageFees.WRITE_PRICE_PER_BYTE * graphSizeAfter;
-        // 2 reads/writes of the same cost.
-        long run_storageCharges = 2 * readCost + 2 * writeCost;
-
-        // This number is an adjustment factor for the cost changes associated with the various ABI improvements
-        // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -101993;
-
-        callStaticVoid(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + userlibCost, "run249_reentrant_loaded");
+        long transactionCost = BillingRules.getBasicTransactionCost(new ABIStreamingEncoder().encodeOneString("run249_reentrant_loaded").toBytes());
+        Assert.assertEquals(22604L, transactionCost);
+        
+        long storageReadCost = GRAPH_SIZE_BEFORE * StorageFees.READ_PRICE_PER_BYTE;
+        long main = cost_mainPreamble();
+        long decodeMethodName = cost_decodeMethodNamePre() + 69L + 100L + 1523L + cost_decodeMethodNamePost();
+        long main2 = (4 * (63L + 715L)) + 94L;
+        long run249_reentrant_loaded = 65L + 29L + 88L + 134L + 29L + 223L + 645L + 36L + 100L + 1509L + 26L + 100L + 5000L;
+        
+        long nested_storageReadCost = GRAPH_SIZE_BEFORE * StorageFees.READ_PRICE_PER_BYTE;
+        long nested_modify249 = getCost_modify249();
+        long nested_storageWriteCost = GRAPH_SIZE_AFTER * StorageFees.WRITE_PRICE_PER_BYTE;
+        long nestedCost = nested_storageReadCost + nested_modify249 + nested_storageWriteCost;
+        Assert.assertEquals(15576L, nestedCost);
+        
+        long newResult = 100L;
+        long run249_reentrant_loaded2 = 60L + 100L + 23L + 29L + 23L;
+        long main3 = cost_mainPostamble();
+        long storageWriteCost = GRAPH_SIZE_AFTER * StorageFees.WRITE_PRICE_PER_BYTE;
+        
+        long storageCosts = storageReadCost + storageWriteCost;
+        long executionCost = main + decodeMethodName + main2 + run249_reentrant_loaded + nestedCost + newResult + run249_reentrant_loaded2 + main3;
+        
+        callStaticVoid(block, contractAddr, transactionCost + storageCosts + executionCost, "run249_reentrant_loaded");
         
         // Verify after.
         callStaticVoid(block, contractAddr, getCost_check249(false), "check249", 5);
@@ -146,36 +163,14 @@ public class GraphReachabilityIntegrationTest {
         Address contractAddr = doInitialDeploymentAndSetup(block);
         
         // Run test.
-        long run_basicCost = adjustBasicCost(22668L);
-        long run_miscCharges = 0L
-                + 95L + 300L + 100L + 37234L + 187L + 100L + 17372L + 600L + 5000L + 100L
-                + 95L + 100L + 37234L + 194L + 63L
-                + 100L + 60L + 100L + 23L
-                ;
-        int graphSizeBefore = 4950;
-        int graphSizeAfter = 4946;
-        int readCost = StorageFees.READ_PRICE_PER_BYTE * graphSizeBefore;
-        int writeCost = StorageFees.WRITE_PRICE_PER_BYTE * graphSizeAfter;
-        // 2 reads/writes of the same cost.
-        long run_storageCharges = 2 * readCost + 2 * writeCost;
-
-        // This number is an adjustment factor for the cost changes associated with the various ABI improvements
-        // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long run_userlibCost = -100014L;
-
-        callStaticVoid(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + run_userlibCost, "runNewInstance_reentrant");
+        long transactionCost = BillingRules.getBasicTransactionCost(new ABIStreamingEncoder().encodeOneString("runNewInstance_reentrant").toBytes());
+        Assert.assertEquals(22668L, transactionCost);
         
-        // Verify result.
-        long check_basicCost = adjustBasicCost(22156L);
-        long check_miscCharges = 0L + 95L + 300L + 100L + 37234L + 63L + 600L;
-        long check_storageCharges = (StorageFees.READ_PRICE_PER_BYTE * graphSizeAfter) + writeCost;
-
-        // This number is an adjustment factor for the cost changes associated with the various ABI improvements
-        // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long check_userlibCost = -42953L;
-
-        int value = callStaticInt(block, contractAddr, check_basicCost + check_miscCharges + check_storageCharges + check_userlibCost, "checkNewInstance");
-        Assert.assertEquals(5, value);
+        long combinedCost = getCost_runNewInstance_reentrant(transactionCost);
+        
+        callStaticVoid(block, contractAddr, combinedCost, "runNewInstance_reentrant");
+        
+        verifyResult(block, contractAddr);
     }
 
     /**
@@ -187,39 +182,29 @@ public class GraphReachabilityIntegrationTest {
         Address contractAddr = doInitialDeploymentAndSetup(block);
         
         // Run test.
-        long run_basicCost = adjustBasicCost(22732L);
-        long run_miscCharges = 0L
-                + 95L + 300L + 100L + 37234L + 187L + 100L + 17372L + 600L + 5000L + 100L
-                + 95L + 100L + 37234L + 187L + 100L + 17372L + 600L + 5000L + 100L
-                + 95L + 100L + 37234L + 194L + 63L
-                + 100L + 60L + 100L + 23L
-                + 100L + 60L + 100L + 23L
-                ;
-        int graphSizeBefore = 4950;
-        int graphSizeAfter = 4946;
-        int readCost = StorageFees.READ_PRICE_PER_BYTE * graphSizeBefore;
-        int writeCost = StorageFees.WRITE_PRICE_PER_BYTE * graphSizeAfter;
-        // 3 reads/writes of the same cost.
-        long run_storageCharges = 3 * readCost + 3 * writeCost;
-
-        // This number is an adjustment factor for the cost changes associated with the various ABI improvements
-        // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long run_userlibCost = -158128;
-
-        callStaticVoid(block, contractAddr, run_basicCost + run_miscCharges + run_storageCharges + run_userlibCost, "runNewInstance_reentrant2");
+        long transactionCost = BillingRules.getBasicTransactionCost(new ABIStreamingEncoder().encodeOneString("runNewInstance_reentrant2").toBytes());
+        Assert.assertEquals(22732L, transactionCost);
         
-        // Verify result.
-        long check_basicCost = adjustBasicCost(22156L);
-        long check_miscCharges = 95L + 300L + 100L + 37234L + 63L + 600L;
-        // Reads/write of the same cost.
-        long check_storageCharges = (StorageFees.READ_PRICE_PER_BYTE * graphSizeAfter) + writeCost;
-
-        // This number is an adjustment factor for the cost changes associated with the various ABI improvements
-        // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long check_userlibCost = -42953;
-
-        int value = callStaticInt(block, contractAddr, check_basicCost + check_miscCharges + check_storageCharges + check_userlibCost, "checkNewInstance");
-        Assert.assertEquals(5, value);
+        long storageReadCost = GRAPH_SIZE_BEFORE * StorageFees.READ_PRICE_PER_BYTE;
+        long main = cost_mainPreamble();
+        long decodeMethodName = cost_decodeMethodNamePre() + 75L + 100L + 1525L + cost_decodeMethodNamePost();
+        long main2 = (6 * (63L + 725L)) + 94L;
+        long runNewInstance_reentrant = 134L + 29L + 223L + 720L + 81L + 100L + 1524L + 26L + 100L + 5000L;
+        
+        long nestedCost = getCost_runNewInstance_reentrant(0);
+        Assert.assertEquals(38619L, nestedCost);
+        
+        long newResult = 100L;
+        long runNewInstance_reentrant2 = 60L + 100L + 23L;
+        long main3 = cost_mainPostamble();
+        long storageWriteCost = GRAPH_SIZE_AFTER * StorageFees.WRITE_PRICE_PER_BYTE;
+        
+        long storageCosts = storageReadCost + storageWriteCost;
+        long executionCost = main + decodeMethodName + main2 + runNewInstance_reentrant + nestedCost + newResult + runNewInstance_reentrant2 + main3;
+        
+        callStaticVoid(block, contractAddr, transactionCost + storageCosts + executionCost, "runNewInstance_reentrant2");
+        
+        verifyResult(block, contractAddr);
     }
 
 
@@ -231,6 +216,12 @@ public class GraphReachabilityIntegrationTest {
         ABICompiler compiler = ABICompiler.compileJarBytes(JarBuilder.buildJarForMainAndClasses(GraphReachabilityIntegrationTestTarget.class));
         byte[] optimizedJar = optimizer.optimize(compiler.getJarFileBytes());
         optimizedJar = UnreachableMethodRemover.optimize(optimizedJar);
+        // The size of the JAR shifts between versions of the JDK since they changed the line wrapping of the MANIFEST.MF in JDK 11, for some reason.
+        boolean isNewManifest = (JAR_SIZE_JDK11 == optimizedJar.length);
+        if (!isNewManifest) {
+            // This needs to be the old size.
+            Assert.assertEquals(JAR_SIZE_JDK10, optimizedJar.length);
+        }
         byte[] txData = new CodeAndArguments(optimizedJar, new byte[0]).encodeToBytes();
 
         // Deploy.
@@ -244,19 +235,19 @@ public class GraphReachabilityIntegrationTest {
         // Check that the deployment cost is what we expected.
         // The first three numbers here are: basic cost of tx, processing cost and storage cost
         long basicCost = BillingRules.getBasicTransactionCost(txData);
-        long codeInstantiationOfDeploymentFee = BillingRules.getDeploymentFee(11, optimizedJar.length);
-        long clinit = 83L;
+        long expectedTransactionCost = isNewManifest ? 266920L : 267048;
+        Assert.assertEquals(expectedTransactionCost, basicCost);
+        int numberOfClasses = 4;
+        long codeInstantiationOfDeploymentFee = BillingRules.getDeploymentFee(numberOfClasses, optimizedJar.length);
+        long expectedDeploymentFee = isNewManifest ? 208067L : 208069;
+        Assert.assertEquals(expectedDeploymentFee, codeInstantiationOfDeploymentFee);
+        long clinit = 60L;
         long assertionStatus = 100L;
         long clinit2 = 3L + 31L;
         long miscCharges = basicCost + codeInstantiationOfDeploymentFee + clinit + assertionStatus + clinit2;
-        // One write of 13563L.
-        long storageCharges = 13563L;
+        long storageCharges = GRAPH_SIZE_INITIAL * StorageFees.WRITE_PRICE_PER_BYTE;
 
-        // This number is an adjustment factor for the cost changes associated with the various ABI improvements
-        // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -17451L;
-
-        long totalExpectedCost = miscCharges + storageCharges + userlibCost;
+        long totalExpectedCost = miscCharges + storageCharges;
 
         Assert.assertEquals(totalExpectedCost, createResult.energyUsed);
 
@@ -285,44 +276,121 @@ public class GraphReachabilityIntegrationTest {
     }
 
     private static long getCost_check249(boolean before) {
-        long basicCost = adjustBasicCost(21784L);
-        long miscCharges = 95L + 300L + 100L + 37234L + 65L + 29L + 50L;
-        // We end up with a slightly different cost before/after changes.
-        if (before) {
-            miscCharges += 30L + 71L + 23L;
-        } else {
-            miscCharges += 23L;
-        }
-        int graphSizeBefore = 4950;
-        int graphSizeAfter = 4946;
-        long storageCharges = before
-                ? (StorageFees.READ_PRICE_PER_BYTE * graphSizeBefore) + (StorageFees.WRITE_PRICE_PER_BYTE * graphSizeBefore)
-                : (StorageFees.READ_PRICE_PER_BYTE * graphSizeAfter) + (StorageFees.WRITE_PRICE_PER_BYTE * graphSizeAfter);
-
-        // This number is an adjustment factor for the cost changes associated with the various ABI improvements
-        // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -45775L;
-        return basicCost + miscCharges + storageCharges + userlibCost;
+        int graphSize = before ? GRAPH_SIZE_BEFORE : GRAPH_SIZE_AFTER;
+        
+        // (Just pass in any integer for this sizing)
+        long transactionCost = BillingRules.getBasicTransactionCost(new ABIStreamingEncoder().encodeOneString("check249").encodeOneInteger(4).toBytes());
+        long storageReadCost = graphSize * StorageFees.READ_PRICE_PER_BYTE;
+        long main = cost_mainPreamble();
+        long decodeMethodName = cost_decodeMethodNamePre() + 24L + 100L + 1508L + cost_decodeMethodNamePost();
+        long main2 = 63L + 640L + 63L + 640L + 140L;
+        long decodeOneInteger = 79L + 37L + 39L + 23L + 76L + 49L + 258L;
+        long main3 = 65L + 29L + 50L;
+        long main4 = before
+                ? 30L + 71L
+                : 0L;
+        long main5 = 23L + cost_mainPostamble();
+        long storageWriteCost = graphSize * StorageFees.WRITE_PRICE_PER_BYTE;
+        
+        long storageCosts = storageReadCost + storageWriteCost;
+        long executionCost = main + decodeMethodName + main2 + decodeOneInteger + main3 + main4 + main5;
+        
+        return transactionCost + storageCosts + executionCost;
     }
 
     private static long getCost_setup249() {
-
-        long basicCost = adjustBasicCost(21644L);
-        long miscCharges = 95L + 300L + 100L + 37234L + 716L + 63L + 63L + 63L + 63L + 63L;
-        int graphSizeBefore = 4521;
-        int graphSizeAfter = 4950;
-        int readCost = StorageFees.READ_PRICE_PER_BYTE * graphSizeBefore;
-        int writeCost = StorageFees.WRITE_PRICE_PER_BYTE * graphSizeAfter;
-        long storageCharges = readCost + writeCost;
-
-        // This number is an adjustment factor for the cost changes associated with the various ABI improvements
-        // TODO (AKI-120): Get rid of this number, by adjusting the precise measures in the factors above
-        long userlibCost = -47075L;
-
-        return basicCost + miscCharges + storageCharges + userlibCost;
+        long transactionCost = BillingRules.getBasicTransactionCost(new ABIStreamingEncoder().encodeOneString("setup249").toBytes());
+        Assert.assertEquals(21644L, transactionCost);
+        long storageReadCost = GRAPH_SIZE_INITIAL * StorageFees.READ_PRICE_PER_BYTE;
+        long main = cost_mainPreamble() + 37L + 39L + 41L + 114L;
+        long checkNullEmptyData = 37L + 39L + 23L;
+        long checkMinLengthForObject = 53L + 23L;
+        long decodeMethodName = 76L + 53L + 82L + 148L + 256L + 24L + 100L + 1508L + cost_decodeMethodNamePost();
+        long main2 = 63L + 640L + 94L;
+        long setup249 = 716L + (5 * 63L);
+        long main3 = cost_mainPostamble();
+        long storageWriteCost = GRAPH_SIZE_BEFORE * StorageFees.WRITE_PRICE_PER_BYTE;
+        
+        long storageCosts = storageReadCost + storageWriteCost;
+        long executionCost = main + checkNullEmptyData + checkMinLengthForObject + decodeMethodName + main2 + setup249 + main3;
+        
+        return transactionCost + storageCosts + executionCost;
     }
 
-    private static long adjustBasicCost(long cost) {
-        return cost;
+    private long getCost_modify249() {
+        long main = cost_mainPreamble();
+        long decodeMethodName = cost_decodeMethodNamePre() + 27L + 100L + 1509L + cost_decodeMethodNamePost();
+        long main2 = (8 * (63L + 645L)) + 94L;
+        long modify249 = 65L + 29L + 85L;
+        long main3 = cost_mainPostamble();
+        return main + decodeMethodName + main2 + modify249 + main3;
+    }
+
+    private long getCost_modifyNewInstance() {
+        long main = cost_mainPreamble();
+        long decodeMethodName = cost_decodeMethodNamePre() + 51L + 100L + 1517L + cost_decodeMethodNamePost();
+        long main2 = (9 * (63L + 685L)) + 94L;
+        long modifyNewInstance = 194L + 63L;
+        long main3 = cost_mainPostamble();
+        return main + decodeMethodName + main2 + modifyNewInstance + main3;
+    }
+
+    private long getCost_runNewInstance_reentrant(long transactionCost) {
+        long storageReadCost = GRAPH_SIZE_BEFORE * StorageFees.READ_PRICE_PER_BYTE;
+        long main = cost_mainPreamble();
+        long decodeMethodName = cost_decodeMethodNamePre() + 72L + 100L + 1524L + cost_decodeMethodNamePost();
+        long main2 = (5 * (63L + 720L)) + 94L;
+        long runNewInstance_reentrant = 134L + 29L + 223L + 685L + 60L + 100L + 1517L + 26L + 100L + 5000L;
+        
+        long nested_storageReadCost = GRAPH_SIZE_BEFORE * StorageFees.READ_PRICE_PER_BYTE;
+        long nested_modifyNewInstance = getCost_modifyNewInstance();
+        long nested_storageWriteCost = GRAPH_SIZE_AFTER * StorageFees.WRITE_PRICE_PER_BYTE;
+        long nestedCost = nested_storageReadCost + nested_modifyNewInstance + nested_storageWriteCost;
+        Assert.assertEquals(16754L, nestedCost);
+        
+        long newResult = 100L;
+        long runNewInstance_reentrant2 = 60L + 100L + 23L;
+        long main3 = cost_mainPostamble();
+        long storageWriteCost = GRAPH_SIZE_AFTER * StorageFees.WRITE_PRICE_PER_BYTE;
+        
+        long storageCosts = storageReadCost + storageWriteCost;
+        long executionCost = main + decodeMethodName + main2 + runNewInstance_reentrant + nestedCost + newResult + runNewInstance_reentrant2 + main3;
+        return transactionCost + storageCosts + executionCost;
+    }
+
+    private void verifyResult(TestingBlock block, Address contractAddr) {
+        long check_transactionCost = BillingRules.getBasicTransactionCost(new ABIStreamingEncoder().encodeOneString("checkNewInstance").toBytes());
+        Assert.assertEquals(22156L, check_transactionCost);
+        long check_storageReadCost = GRAPH_SIZE_AFTER * StorageFees.READ_PRICE_PER_BYTE;
+        long check_main = cost_mainPreamble();
+        long check_decodeMethodName = cost_decodeMethodNamePre() + 48L + 100L + 1516L + cost_decodeMethodNamePost();
+        long check_main2 = (7 * (63L + 680L)) + 69L;
+        long checkNewInstance = 63L;
+        long check_main3 = 212L + 15L + 100L;
+        long check_storageWriteCost = GRAPH_SIZE_AFTER * StorageFees.WRITE_PRICE_PER_BYTE;
+        
+        long check_storageCosts = check_storageReadCost + check_storageWriteCost;
+        long check_executionCost = check_main + check_decodeMethodName + check_main2 + checkNewInstance + check_main3;
+        
+        int value = callStaticInt(block, contractAddr, check_transactionCost + check_storageCosts + check_executionCost, "checkNewInstance");
+        Assert.assertEquals(5, value);
+    }
+
+    // Observed energy charges for common idioms: (cost_* methods).
+
+    private static long cost_decodeMethodNamePre() {
+        return 37L + 39L + 41L + 114L + 37L + 39L + 23L + 53L + 23L + 76L + 53L + 82L + 148L + 256L;
+    }
+
+    private static long cost_decodeMethodNamePost() {
+        return 600L + 26L + 26L;
+    }
+
+    private static long cost_mainPostamble() {
+        return 0L + 100L;
+    }
+
+    private static long cost_mainPreamble() {
+        return 209L + 100L + 77L;
     }
 }
