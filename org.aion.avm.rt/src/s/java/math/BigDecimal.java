@@ -19,12 +19,24 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
 
     public BigDecimal(String val){
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigDecimal_avm_constructor_4);
-        v = new java.math.BigDecimal(val.getUnderlying());
+
+        java.lang.String underlying = val.getUnderlying();
+        if (!isValidString(underlying)) {
+            throw new NumberFormatException();
+        }
+
+        v = new java.math.BigDecimal(underlying);
     }
 
     public BigDecimal(String val, MathContext mc){
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BigDecimal_avm_constructor_5);
-        v = new java.math.BigDecimal(val.getUnderlying(), mc.getUnderlying());
+
+        java.lang.String underlying = val.getUnderlying();
+        if (!isValidString(underlying)) {
+            throw new NumberFormatException();
+        }
+
+        v = new java.math.BigDecimal(underlying, mc.getUnderlying());
     }
 
     public BigDecimal(double val){
@@ -203,6 +215,46 @@ public class BigDecimal extends Number implements Comparable<BigDecimal>{
         CodecIdioms.serializeString(serializer, this.v.toString());
     }
 
+    /**
+     * Returns true only if the given string is a valid string to create a BigDecimal with. A valid
+     * string must be:
+     *
+     * 1. Length 78 or less. Length 78 is the smallest length at which a conversion to BigInteger fails
+     * when a sign character is present.
+     * Note that there are still a subset of length 78 strings that convert to valid BigInteger's.
+     *
+     * 2. All characters in the string must be ASCII digits (zero through nine) with the exception of
+     * the initial character, which may also be one of the two sign characters '+' or '-'. Nothing
+     * else is permitted.
+     *
+     * These changes have been put in place as a result of AKI-254.
+     *
+     * @param string The string.
+     * @return whether the string is valid or not.
+     */
+    private static boolean isValidString(java.lang.String string) {
+        boolean isValid = true;
+
+        if (string.length() > 78) {
+            isValid = false;
+        } else {
+            boolean isFirstChar = true;
+            for (char character : string.toCharArray()) {
+                if (isFirstChar) {
+                    if ((character < '0' || character > '9') && (character != '+') && (character != '-')) {
+                        isValid = false;
+                    }
+                } else {
+                    if (character < '0' || character > '9') {
+                        isValid = false;
+                    }
+                }
+                isFirstChar = false;
+            }
+        }
+
+        return isValid;
+    }
 
     //========================================================
     // Methods below are deprecated
