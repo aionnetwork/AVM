@@ -10,8 +10,7 @@ import i.RuntimeAssertionError;
 
 /**
  * A simple concurrent cache, based on SoftReferences.  There is currently no maximum size.
- * NOTE:  Keys in this implementation are NOT cleaned up when the values are cleared.  We could change this, in the future, by introducing
- * a clearing thread.
+ * Keys associated wih cleared SoftReferences are cleaned up using removeValueIf method. If the referent of the map value is null, that entry is removed.
  *
  * @param <K> The key type (should have sensible hashCode() and equals() implementations).
  * @param <V> The value type.
@@ -35,10 +34,6 @@ public class SoftCache<K, V> {
         // We don't expect collisions in this cache - that would imply that consumers disagree about cache state.
         // (in the future, we probably want to change this).
         RuntimeAssertionError.assertTrue(null == previous);
-    }
-
-    public void removeKeyIf(Predicate<K> condition){
-        this.underlyingMap.keySet().removeIf(condition);
     }
 
     public void removeValueIf(Predicate<SoftReference<V>> condition){

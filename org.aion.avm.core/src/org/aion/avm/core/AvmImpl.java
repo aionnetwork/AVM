@@ -508,7 +508,8 @@ public class AvmImpl implements AvmInternal {
         // getLoadedDataBlockNum will always be either equal or less than getLoadedCodeBlockNum
         Predicate<SoftReference<LoadedDApp>> condition = (v) -> {
             LoadedDApp dapp = v.get();
-            return null != dapp  && dapp.getLoadedCodeBlockNum() >= blockNum;
+            // remove the map entry if the soft reference has been cleared and the referent is null, or dapp has been loaded after blockNum
+            return dapp == null || dapp.getLoadedCodeBlockNum() >= blockNum;
         };
         this.hotCache.removeValueIf(condition);
     }
