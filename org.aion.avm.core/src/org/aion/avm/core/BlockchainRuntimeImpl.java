@@ -465,8 +465,6 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
                 // Unsuccessful acquire means transaction task has been aborted.
                 // In abort case, internal transaction will not be executed.
                 newResult = TransactionResultUtil.newAbortedResultWithZeroEnergyUsed();
-                //todo check if this is necessary/correct in abort state
-                task.peekSideEffects().markAllInternalTransactionsAsRejected();
             }
         } finally {
             // Re-attach.

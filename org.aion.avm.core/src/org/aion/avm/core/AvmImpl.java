@@ -302,6 +302,7 @@ public class AvmImpl implements AvmInternal {
         SideEffects txSideEffects = task.popSideEffects();
         if (!result.isSuccess()) {
             txSideEffects.getExecutionLogs().clear();
+            // unsuccessful transaction result can either be due to an error or an abort case. In abort case the rejection status will be overridden.
             txSideEffects.markAllInternalTransactionsAsRejected();
         }
         task.peekSideEffects().merge(txSideEffects);
@@ -346,6 +347,7 @@ public class AvmImpl implements AvmInternal {
 
         if (!result.isSuccess()) {
             task.peekSideEffects().getExecutionLogs().clear();
+            // unsuccessful transaction result can either be due to an error or an abort case. In abort case the rejection status will be overridden.
             task.peekSideEffects().markAllInternalTransactionsAsRejected();
         }
 
