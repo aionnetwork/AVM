@@ -178,25 +178,6 @@ public interface IExternalState {
     public void incrementNonce(AionAddress address);
 
     /**
-     * Deducts the specified cost from the balance of the given address.
-     *
-     * This method is equivalent to calling {@code adjustBalance(address, cost.negate())}.
-     *
-     * This method is only ever invoked when deducting the cost of energy used.
-     *
-     * It is the responsibility of the caller to ensure that this method does not cause the balance
-     * of the provided address to become negative. Any class implementing this method may choose to
-     * react to this situation however they deem fit, either doing nothing or throwing an exception,
-     * etc.
-     *
-     * TODO: see AKI-232
-     *
-     * @param address The address whose balance is to be updated.
-     * @param cost The amount by which to decrease the account balance.
-     */
-    public void deductEnergyCost(AionAddress address, BigInteger cost);
-
-    /**
      * Refunds the given address by the specified refund amount.
      *
      * This method is equivalent to calling {@code adjustBalance(address, refund)}.
@@ -207,20 +188,6 @@ public interface IExternalState {
      * @param refund The amount by which to increase the account balance.
      */
     public void refundAccount(AionAddress address, BigInteger refund);
-
-    /**
-     * Adds the specified mining fee to the given account.
-     *
-     * This method is equivalent to calling {@code adjustBalance(address, fee)}.
-     *
-     * This method is only ever invoked when paying the miner fee at the end of a transaction.
-     *
-     * TODO: see AKI-232
-     *
-     * @param address The address whose balance is to be updated.
-     * @param fee The amount by which to increase the account balance.
-     */
-    public void payMiningFee(AionAddress address, BigInteger fee);
 
     /**
      * Returns the hash of the block whose number is the specified number.

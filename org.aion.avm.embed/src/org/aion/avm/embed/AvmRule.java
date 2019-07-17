@@ -128,7 +128,7 @@ public final class AvmRule implements TestRule {
      * @return Result of the operation
      */
     public ResultWrapper deploy(Address from, BigInteger value, byte[] dappBytes) {
-        long energyLimit = 10_000_000L;
+        long energyLimit = 5_000_000L;
         long energyPrice = 1L;
         return deployDapp(from, value, dappBytes, energyLimit, energyPrice);
     }

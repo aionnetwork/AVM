@@ -287,18 +287,6 @@ public class TransactionalState implements IExternalState {
     }
 
     @Override
-    public void deductEnergyCost(AionAddress address, BigInteger cost) {
-        // This method may have special logic in the externalState. Here it is just adjustBalance.
-        adjustBalance(address, cost);
-    }
-
-    @Override
-    public void payMiningFee(AionAddress address, BigInteger fee) {
-        // This method may have special logic in the externalState. Here it is just adjustBalance.
-        adjustBalance(address, fee);
-    }
-
-    @Override
     public byte[] getBlockHashByNumber(long blockNumber) {
         throw new AssertionError("No equivalent concept in the Avm.");
     }

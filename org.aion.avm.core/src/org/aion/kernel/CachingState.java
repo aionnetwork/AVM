@@ -200,19 +200,6 @@ public class CachingState implements IExternalState {
         internalAdjustBalance(address, amount);
     }
 
-    @Override
-    public void deductEnergyCost(AionAddress address, BigInteger cost) {
-        // This method may have special logic in the kernel. Here it is just adjustBalance.
-        internalAdjustBalance(address, cost);
-    }
-
-    @Override
-    public void payMiningFee(AionAddress address, BigInteger fee) {
-        // This method may have special logic in the kernel. Here it is just adjustBalance.
-        internalAdjustBalance(address, fee);
-    }
-
-
     private IAccountStore lazyCreateAccount(byte[] address) {
         IAccountStore account = this.dataStore.openAccount(address);
         if (null == account) {

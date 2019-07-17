@@ -23,8 +23,6 @@ import java.math.BigInteger;
 
 import static org.junit.Assert.assertTrue;
 
-//todo AKI-232: test cases related to ethcall can be updated
-
 public class ExecutionTypeCacheTest {
 
     private static AionAddress deployer = TestingState.PREMINED_ADDRESS;
