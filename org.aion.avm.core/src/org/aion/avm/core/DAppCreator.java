@@ -332,7 +332,7 @@ public class DAppCreator {
             if (verboseErrors) {
                 System.err.println("FYI - concurrent abort (will retry) in transaction \"" + Helpers.bytesToHexString(tx.copyOfTransactionHash()) + "\"");
             }
-            result = TransactionResultUtil.abortUsingNoEnergy(result);
+            result = TransactionResultUtil.newAbortedResultWithZeroEnergyUsed();
 
         } catch (AvmException e) {
             // We handle the generic AvmException as some failure within the contract.

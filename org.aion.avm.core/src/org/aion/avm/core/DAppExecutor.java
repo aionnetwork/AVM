@@ -183,7 +183,7 @@ public class DAppExecutor {
             if (null != stateToResume) {
                 dapp.revertToCallerState(initialClassWrappers, callerState);
             }
-            result = TransactionResultUtil.abortUsingNoEnergy(result);
+            result = TransactionResultUtil.newAbortedResultWithZeroEnergyUsed();
 
         } catch (UncaughtException e) {
             if (verboseErrors) {

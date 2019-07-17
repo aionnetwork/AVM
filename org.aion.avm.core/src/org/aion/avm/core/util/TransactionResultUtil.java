@@ -119,30 +119,6 @@ public final class TransactionResultUtil {
     }
 
     /**
-     * Returns a transaction result equivalent to {@code result} except that its status will be set
-     * to aborted.
-     *
-     * @param result The result which the new result will be derived from.
-     * @return the new result.
-     */
-    public static AvmWrappedTransactionResult abort(AvmWrappedTransactionResult result) {
-        TransactionResult transactionResult = new TransactionResult(TransactionStatus.nonRevertedFailure(AvmInternalError.ABORTED.error), result.logs(), result.internalTransactions(), result.energyUsed(), result.output());
-        return new AvmWrappedTransactionResult(transactionResult, result.exception, result.externalState, AvmInternalError.ABORTED);
-    }
-
-    /**
-     * Returns a transaction result equivalent to {@code result} except that its status will be set
-     * to aborted and the amount of energy used will be set to zero.
-     *
-     * @param result The result which the new result will be derived from.
-     * @return the new result.
-     */
-    public static AvmWrappedTransactionResult abortUsingNoEnergy(AvmWrappedTransactionResult result) {
-        TransactionResult transactionResult = new TransactionResult(TransactionStatus.nonRevertedFailure(AvmInternalError.ABORTED.error), result.logs(), result.internalTransactions(), 0, result.output());
-        return new AvmWrappedTransactionResult(transactionResult, result.exception, result.externalState, AvmInternalError.ABORTED);
-    }
-
-    /**
      * Returns a transaction result equivalent to {@code result} except that its external state will
      * be set to the specified {@code externalState}.
      *

@@ -179,52 +179,6 @@ public class TransactionResultUtilTest {
     }
 
     @Test
-    public void testAbort() {
-        AvmWrappedTransactionResult result = newResultWithRandomLogsAndInternalTransactions();
-        result = TransactionResultUtil.abort(result);
-
-        // Verify the status.
-        assertEquals(AvmInternalError.ABORTED, result.avmInternalError);
-        assertFalse(result.isSuccess());
-        assertFalse(result.isFailedUnexpected());
-        assertFalse(result.isFailedException());
-        assertTrue(result.isFailed());
-        assertFalse(result.isRevert());
-        assertTrue(result.isAborted());
-        assertFalse(result.isRejected());
-
-        assertEquals(ENERGY_USED, result.energyUsed());
-        assertNull(result.output());
-        assertEquals(NUM_LOGS, result.logs().size());
-        assertEquals(NUM_INTERNAL_TRANSACTIONS, result.internalTransactions().size());
-        assertNull(result.exception);
-        assertNull(result.externalState);
-    }
-
-    @Test
-    public void testAbortUsingNoEnergy() {
-        AvmWrappedTransactionResult result = newResultWithRandomLogsAndInternalTransactions();
-        result = TransactionResultUtil.abortUsingNoEnergy(result);
-
-        // Verify the status.
-        assertEquals(AvmInternalError.ABORTED, result.avmInternalError);
-        assertFalse(result.isSuccess());
-        assertFalse(result.isFailedUnexpected());
-        assertFalse(result.isFailedException());
-        assertTrue(result.isFailed());
-        assertFalse(result.isRevert());
-        assertTrue(result.isAborted());
-        assertFalse(result.isRejected());
-
-        assertEquals(0, result.energyUsed());
-        assertNull(result.output());
-        assertEquals(NUM_LOGS, result.logs().size());
-        assertEquals(NUM_INTERNAL_TRANSACTIONS, result.internalTransactions().size());
-        assertNull(result.exception);
-        assertNull(result.externalState);
-    }
-
-    @Test
     public void testSetExternalState() {
         AvmWrappedTransactionResult result = newResultWithRandomLogsAndInternalTransactions();
         result = TransactionResultUtil.setExternalState(result, new TestingState());

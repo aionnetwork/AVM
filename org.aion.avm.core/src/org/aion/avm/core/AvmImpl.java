@@ -249,8 +249,9 @@ public class AvmImpl implements AvmInternal {
 
         // Task transactional kernel commits are serialized through address resource monitor
         // This should be done for all transaction result cases, including FAILED_ABORT, because one of the addresses might have been acquired
-        if (!this.resourceMonitor.commitKernelForTask(task, result.isRejected())){
-            result = TransactionResultUtil.abort(result);
+        if (!this.resourceMonitor.commitKernelForTask(task, result.isRejected())) {
+            // A transaction task can be aborted even after it has finished.
+            result = TransactionResultUtil.newAbortedResultWithZeroEnergyUsed();
         }
 
         if (!result.isAborted()){
