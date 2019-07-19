@@ -3,6 +3,8 @@ package org.aion.avm.tooling.abi;
 import avm.Address;
 import org.objectweb.asm.Type;
 
+import java.math.BigInteger;
+
 public class ABIUtils {
     public static boolean isAllowedType(Type type) {
         if(isPrimitiveType(type) || isAllowedObject(type)) {
@@ -40,7 +42,8 @@ public class ABIUtils {
 
     public static boolean isAllowedObject(Type type) {
         return type.getClassName().equals(String.class.getName())
-            || type.getClassName().equals(Address.class.getName());
+                || type.getClassName().equals(Address.class.getName())
+                || type.getClassName().equals(BigInteger.class.getName());
     }
 
     public static String shortenClassName(String s) {

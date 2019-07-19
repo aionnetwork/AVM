@@ -46,8 +46,8 @@ public class ExceptionWrappingIntegrationTest {
 
         // Store the exceptions.
         int systemHash = callReturnInt(block, kernel, avm, contractAddr, "storeSystem");
-        // We know that this is currently 67 but that may change in the future
-        Assert.assertEquals(67, systemHash);
+        // We know that this is currently 73 but that may change in the future
+        Assert.assertEquals(73, systemHash);
         byte[] user = callReturnByteArray(block, kernel, avm, contractAddr, "storeUser");
         Assert.assertEquals("MESSAGE", new String(user));
         byte[] second = callReturnByteArray(block, kernel, avm, contractAddr, "getSecond");

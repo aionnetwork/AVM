@@ -1,5 +1,6 @@
 package org.aion.avm.embed.shadowing.testMath;
 
+import avm.Blockchain;
 import org.aion.avm.tooling.abi.Callable;
 
 import java.math.BigDecimal;
@@ -167,5 +168,62 @@ public class BigIntegerTarget {
         } catch (NullPointerException npe) {
             // Expected
         }
+    }
+
+    @Callable
+    public static BigInteger subtract(BigInteger testValue) {
+        return testValue.subtract(testValue);
+    }
+
+    @Callable
+    public static BigInteger negateBigInteger(BigInteger testValue) {
+        return testValue.negate();
+    }
+
+    @Callable
+    public static BigInteger shiftRight(BigInteger testValue) {
+        return testValue.shiftRight(5);
+    }
+
+    @Callable
+    public static BigInteger flipBit(BigInteger testValue, int num) {
+        return testValue.flipBit(num);
+    }
+
+    @Callable
+    public static int bitCountBigInteger(BigInteger testValue) {
+        return testValue.bitCount();
+    }
+
+    @Callable
+    public static int signum(BigInteger testValue) {
+        return testValue.signum();
+    }
+
+    @Callable
+    public static int getLowestSetBit(BigInteger testValue) {
+        return testValue.getLowestSetBit();
+    }
+
+    @Callable
+    public static BigInteger[] checkArrayLength(BigInteger[] testValues, int length) {
+        Blockchain.require(testValues.length == length);
+        return testValues;
+    }
+
+    @Callable
+    public static void compareTo(BigInteger[] testValues) {
+        for (int i = 0; i < testValues.length - 1; i++) {
+            Blockchain.require(testValues[i].compareTo(testValues[i + 1]) < 0);
+        }
+    }
+
+    @Callable
+    public static BigInteger[] negateArray(BigInteger[] testValues) {
+        BigInteger[] negated = new BigInteger[testValues.length];
+        for (int i = 0; i < testValues.length; i++) {
+            negated[i] = testValues[i].negate();
+        }
+        return negated;
     }
 }

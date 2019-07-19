@@ -40,9 +40,9 @@ public class ConstantLoadingIntegrationTest {
         AionAddress contractAddr = deploy();
         
         // Test just the creation modes.
-        int bareHash = 59;
+        int bareHash = 65;
         int bareLength = 6;
-        int populateHash = 62;
+        int populateHash = 68;
         int populateLength = 3;
         byte[] bare = callStatic(contractAddr, 0);
         byte[] populated = callStatic(contractAddr, 1);
@@ -61,9 +61,9 @@ public class ConstantLoadingIntegrationTest {
         callStatic(contractAddr, 0);
         callStatic(contractAddr, 1);
         
-        int bareHash = 59;
+        int bareHash = 65;
         int bareLength = 6;
-        int populateHash = 62;
+        int populateHash = 68;
         int populateLength = 3;
         byte[] bare = callStatic(contractAddr, 2);
         byte[] populated = callStatic(contractAddr, 3);

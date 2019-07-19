@@ -165,7 +165,7 @@ public class KeyValueStoreTest {
         assertTrue(txResult.transactionStatus.isSuccess());
         assertArrayEquals(new byte[0], txResult.copyOfTransactionOutput().orElseThrow());
         long deleteZeroCost = txResult.energyUsed;
-        assertEquals(51680L + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage, deleteZeroCost);
+        assertEquals(53660L + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage, deleteZeroCost);
         kernel.generateBlock();
 
         // zero -> nonzero
@@ -175,7 +175,7 @@ public class KeyValueStoreTest {
         assertTrue(txResult.transactionStatus.isSuccess());
         assertArrayEquals(new byte[0], txResult.copyOfTransactionOutput().orElseThrow());
         long setStorageCost = txResult.energyUsed;
-        assertEquals(55007L + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_setStorage + StorageFees.WRITE_PRICE_PER_BYTE * value.length, setStorageCost);
+        assertEquals(56987L + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_setStorage + StorageFees.WRITE_PRICE_PER_BYTE * value.length, setStorageCost);
         kernel.generateBlock();
 
         // nonzero -> nonzero
@@ -185,7 +185,7 @@ public class KeyValueStoreTest {
         assertTrue(txResult.transactionStatus.isSuccess());
         assertArrayEquals(new byte[0], txResult.copyOfTransactionOutput().orElseThrow());
         long modifyStorageCost = txResult.energyUsed;
-        assertEquals(55007L + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage + StorageFees.WRITE_PRICE_PER_BYTE * value.length, modifyStorageCost);
+        assertEquals(56987L + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage + StorageFees.WRITE_PRICE_PER_BYTE * value.length, modifyStorageCost);
         // set storage cost 20000 + linear factor cost, modify storage cost 5000
         assertEquals(15000L, setStorageCost - modifyStorageCost);
         kernel.generateBlock();
@@ -196,7 +196,7 @@ public class KeyValueStoreTest {
         txResult = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertTrue(txResult.transactionStatus.isSuccess());
         long getStorageCost = txResult.energyUsed;
-        assertEquals(49283L + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_getStorage + StorageFees.READ_PRICE_PER_BYTE * value.length, getStorageCost);
+        assertEquals(51263L + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_getStorage + StorageFees.READ_PRICE_PER_BYTE * value.length, getStorageCost);
         kernel.generateBlock();
 
         // nonzero -> zero
@@ -206,7 +206,7 @@ public class KeyValueStoreTest {
         assertTrue(txResult.transactionStatus.isSuccess());
         assertArrayEquals(new byte[0], txResult.copyOfTransactionOutput().orElseThrow());
         long deleteStorageCost = txResult.energyUsed;
-        assertEquals(51680 + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage - RuntimeMethodFeeSchedule.BlockchainRuntime_avm_deleteStorage_refund, deleteStorageCost);
+        assertEquals(53660L + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage - RuntimeMethodFeeSchedule.BlockchainRuntime_avm_deleteStorage_refund, deleteStorageCost);
         // both deletion cost 5000, but deleting a non-zero value gets 20000 refund
         assertEquals(15000L, deleteZeroCost - deleteStorageCost);
         kernel.generateBlock();
@@ -218,7 +218,7 @@ public class KeyValueStoreTest {
         assertTrue(txResult.transactionStatus.isSuccess());
         assertFalse(txResult.copyOfTransactionOutput().isPresent());
         long getZeroCost = txResult.energyUsed;
-        assertEquals(49283 + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_getStorage, getZeroCost);
+        assertEquals(51263L + RuntimeMethodFeeSchedule.BlockchainRuntime_avm_getStorage, getZeroCost);
         assertEquals(value.length * StorageFees.READ_PRICE_PER_BYTE, getStorageCost - getZeroCost);
     }
 

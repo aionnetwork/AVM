@@ -1,5 +1,6 @@
 package org.aion.avm.tooling.abi;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -268,6 +269,8 @@ public class ABICompilerClassVisitor extends ClassVisitor {
                     methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneString", "(Ljava/lang/String;)[B", false);
                 } else if (isAddress(returnType)) {
                     methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneAddress", "(Lavm/Address;)[B", false);
+                } else if (isBigInteger(returnType)) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneBigInteger", "(Ljava/math/BigInteger;)[B", false);
                 } else if (isArrayOfTypeAndDimensions(returnType, Type.BYTE_TYPE, 2)) {
                     methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOne2DByteArray", "([[B)[B", false);
                 } else if (isArrayOfTypeAndDimensions(returnType, Type.BOOLEAN_TYPE, 2)) {
@@ -288,6 +291,8 @@ public class ABICompilerClassVisitor extends ClassVisitor {
                     methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneStringArray", "([Ljava/lang/String;)[B", false);
                 } else if (returnType.getSort() == Type.ARRAY && returnType.getDimensions() == 1 && isAddress(returnType.getElementType())) {
                     methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneAddressArray", "([Lavm/Address;)[B", false);
+                } else if (returnType.getSort() == Type.ARRAY && returnType.getDimensions() == 1 && isBigInteger(returnType.getElementType())) {
+                    methodVisitor.visitMethodInsn(INVOKESTATIC, "org/aion/avm/userlib/abi/ABIEncoder", "encodeOneBigIntegerArray", "([Ljava/math/BigInteger;)[B", false);
                 }
             } else {
                 methodVisitor.visitInsn(ICONST_0);
@@ -355,6 +360,8 @@ public class ABICompilerClassVisitor extends ClassVisitor {
             methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneString", "()Ljava/lang/String;", false);
         } else if (isAddress(type)) {
             methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneAddress", "()Lavm/Address;", false);
+        } else if(isBigInteger(type)) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneBigInteger", "()Ljava/math/BigInteger;", false);
         } else if (isArrayOfTypeAndDimensions(type, Type.BYTE_TYPE, 2)) {
             methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOne2DByteArray", "()[[B", false);
         } else if (isArrayOfTypeAndDimensions(type, Type.BOOLEAN_TYPE, 2)) {
@@ -375,6 +382,8 @@ public class ABICompilerClassVisitor extends ClassVisitor {
             methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneStringArray", "()[Ljava/lang/String;", false);
         } else if (type.getSort() == Type.ARRAY && type.getDimensions() == 1 && isAddress(type.getElementType())) {
             methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneAddressArray", "()[Lavm/Address;", false);
+        } else if(type.getSort() == Type.ARRAY && type.getDimensions() == 1 && isBigInteger(type.getElementType())) {
+            methodVisitor.visitMethodInsn(INVOKEVIRTUAL, "org/aion/avm/userlib/abi/ABIDecoder", "decodeOneBigIntegerArray", "()[Ljava/math/BigInteger;", false);
         } else {
             throw new ABICompilerException("Need to decode an unsupported ABI type");
         }
@@ -399,6 +408,14 @@ public class ABICompilerClassVisitor extends ClassVisitor {
 
     private boolean isAddress(Type t) {
         return t.getClassName().equals(Address.class.getName());
+    }
+
+    private boolean isBigInteger(Type t) {
+        boolean isBigIntegerType = t.getClassName().equals(BigInteger.class.getName());
+        if (isBigIntegerType && !ABIConfig.getInstance().isBigIntegerEnabled(compileVersion)) {
+            throw new ABICompilerException("BigInteger is supported as an ABI type after version 1.");
+        }
+        return isBigIntegerType;
     }
 
     public boolean addedMainMethod() {

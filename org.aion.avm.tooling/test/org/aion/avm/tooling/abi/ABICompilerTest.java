@@ -158,6 +158,36 @@ public class ABICompilerTest {
         ABICompiler.compileJarBytes(jar);
     }
 
+    @Test(expected = ABICompilerException.class)
+    public void testBigIntegerVersion(){
+        byte[] jar = TestUtil.serializeClassesAsJar(DAppBigIntegerABIType.class);
+        ABICompiler.compileJarBytes(jar, 0);
+    }
+
+    @Test
+    public void testBigInteger() throws IOException {
+        String version = "1";
+
+        byte[] jar = TestUtil.serializeClassesAsJar(DAppBigIntegerABIType.class);
+        Path tempDir = Files.createTempDirectory("tempResources");
+        DataOutputStream dout =
+                new DataOutputStream(new FileOutputStream(tempDir.toString() + "/dapp.jar"));
+        dout.write(jar);
+        dout.close();
+
+        ABICompiler.main(new String[]{tempDir.toString() + "/dapp.jar", version});
+        Assert.assertEquals(
+                version
+                        + "\n" + DAppBigIntegerABIType.class.getName()
+                        + "\nClinit: ()"
+                        + "\npublic static BigInteger returnBigInteger()"
+                        + "\n",
+                outContent.toString());
+        File outputJar = new File(System.getProperty("user.dir") + "/outputJar.jar");
+        boolean didDelete = outputJar.delete();
+        Assert.assertTrue(didDelete);
+    }
+
     private void checkArrays(Class[] expectedArray, Class[] actualArray) {
         List<Class> expectedList = Arrays.asList(expectedArray);
         List<Class> actualList = Arrays.asList(actualArray);

@@ -26,7 +26,7 @@ public class ShadowSerializationTest {
     private static final long ENERGY_PRICE = 1L;
 
     // Note that these numbers change pretty frequently, based on constants in the test, etc.
-    private static final int HASH_JAVA_LANG = -1260057337;
+    private static final int HASH_JAVA_LANG = -1260057289;
     private static final int HASH_JAVA_MATH = -602587633;
     private static final int HASH_API = 496;
 

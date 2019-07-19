@@ -3,6 +3,9 @@ package org.aion.avm.userlib.abi;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.math.BigInteger;
+import java.util.Arrays;
+
 public class ABIDecoderTest {
 
     @Test
@@ -490,5 +493,72 @@ public class ABIDecoderTest {
             caught = e;
         }
         Assert.assertNotNull(caught);
+    }
+
+    @Test
+    public void testBigIntegerDecoding() {
+        BigInteger value = BigInteger.TEN;
+        byte[] encoded = new byte[]{ABIToken.BIGINT, 1, 10};
+        ABIDecoder decoder = new ABIDecoder(encoded);
+        Assert.assertEquals(value, decoder.decodeOneBigInteger());
+
+        value = new BigInteger("10456787634565768768761787000");
+        encoded = new byte[]{ABIToken.BIGINT, 12, 33, -55, -90, -23, -121, -31, -67, -110, 98, -106, 114, 120};
+        decoder = new ABIDecoder(encoded);
+        Assert.assertEquals(value, decoder.decodeOneBigInteger());
+
+        byte[] bytes = new byte[32];
+        Arrays.fill(bytes, (byte) 1);
+        value = new BigInteger(bytes);
+        encoded = new byte[]{ABIToken.BIGINT, 32, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+        decoder = new ABIDecoder(encoded);
+        Assert.assertEquals(value, decoder.decodeOneBigInteger());
+
+        Arrays.fill(bytes, Byte.MIN_VALUE);
+        value = new BigInteger(bytes);
+        encoded = new byte[]{ABIToken.BIGINT, 32, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128, -128};
+        decoder = new ABIDecoder(encoded);
+        Assert.assertEquals(value, decoder.decodeOneBigInteger());
+
+        value = new BigInteger("-10456787634565768768761787000");
+        encoded = new byte[]{ABIToken.BIGINT, 12, -34, 54, 89, 22, 120, 30, 66, 109, -99, 105, -115, -120};
+        decoder = new ABIDecoder(encoded);
+        Assert.assertEquals(value, decoder.decodeOneBigInteger());
+
+        value = null;
+        encoded = new byte[]{ABIToken.NULL, ABIToken.BIGINT};
+        decoder = new ABIDecoder(encoded);
+        Assert.assertEquals(value, decoder.decodeOneBigInteger());
+    }
+
+    @Test
+    public void bigIntegerArrayDecoding() {
+        BigInteger[] bigIntegers = new BigInteger[3];
+        bigIntegers[0] = new BigInteger(0, new byte[]{0});
+        bigIntegers[1] = new BigInteger(1, new byte[]{127, 126, 5});
+        bigIntegers[2] = new BigInteger(-1, new byte[]{10, 11});
+
+        byte[] encoded = new byte[]{ABIToken.ARRAY, ABIToken.BIGINT, 0, 3, ABIToken.BIGINT, 1, 0, ABIToken.BIGINT, 3, 127, 126, 5, ABIToken.BIGINT, 2, -11, -11};
+        ABIDecoder decoder = new ABIDecoder(encoded);
+        Assert.assertArrayEquals(bigIntegers, decoder.decodeOneBigIntegerArray());
+
+        bigIntegers[0] = new BigInteger(0, new byte[]{0});
+        bigIntegers[1] = null;
+        bigIntegers[2] = new BigInteger(-1, new byte[]{10, 11});
+        encoded = new byte[]{ABIToken.ARRAY, ABIToken.BIGINT, 0, 3, ABIToken.BIGINT, 1, 0, ABIToken.NULL, ABIToken.BIGINT, ABIToken.BIGINT, 2, -11, -11};
+        decoder = new ABIDecoder(encoded);
+        Assert.assertArrayEquals(bigIntegers, decoder.decodeOneBigIntegerArray());
+
+        bigIntegers[0] = null;
+        bigIntegers[1] = null;
+        bigIntegers[2] = null;
+        encoded = new byte[]{ABIToken.ARRAY, ABIToken.BIGINT, 0, 3, ABIToken.NULL, ABIToken.BIGINT, ABIToken.NULL, ABIToken.BIGINT, ABIToken.NULL, ABIToken.BIGINT};
+        decoder = new ABIDecoder(encoded);
+        Assert.assertArrayEquals(bigIntegers, decoder.decodeOneBigIntegerArray());
+
+        bigIntegers = null;
+        encoded = new byte[]{ABIToken.NULL, ABIToken.ARRAY, ABIToken.BIGINT};
+        decoder = new ABIDecoder(encoded);
+        Assert.assertArrayEquals(bigIntegers, decoder.decodeOneBigIntegerArray());
     }
 }

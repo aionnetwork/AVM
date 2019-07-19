@@ -3,9 +3,11 @@ package org.aion.avm.userlib.abi;
 import avm.Address;
 import org.aion.avm.userlib.AionBuffer;
 
+import java.math.BigInteger;
+
 /**
  * Utility class for AVM ABI encoding.
- * 
+ *
  * <p>Instances of this class are stateful, allowing several pieces of data to be serialized into the same buffer.
  */
 public final class ABIStreamingEncoder {
@@ -469,6 +471,30 @@ public final class ABIStreamingEncoder {
     }
 
     /**
+     * Encode one BigInteger.
+     *
+     * @param data one BigInteger
+     * @return the encoder with this element written into its buffer
+     * Null is encoded as the two identifiers: NULL, followed by BIGINT
+     */
+    public ABIStreamingEncoder encodeOneBigInteger(BigInteger data) {
+        if (null == data) {
+            buffer.putByte(ABIToken.NULL);
+            buffer.putByte(ABIToken.BIGINT);
+        } else {
+            byte[] bigIntegerBytes = data.toByteArray();
+            // maximum size of a BigInteger value accepted by AVM is 32 bytes
+            if (bigIntegerBytes.length > 32) {
+                throw new ABIException("BigInteger value exceeds the limit of 32 bytes");
+            }
+            buffer.putByte(ABIToken.BIGINT);
+            buffer.putByte((byte) bigIntegerBytes.length);
+            buffer.put(bigIntegerBytes);
+        }
+        return this;
+    }
+
+    /**
      * Returns the length of the ABI encoding of this Address.
      * @param data one Address
      * @return the length of the ABI encoding of this Address.
@@ -879,6 +905,31 @@ public final class ABIStreamingEncoder {
 
             for (Address addr : data) {
                 encodeOneAddress(addr);
+            }
+        }
+        return this;
+    }
+
+    /**
+     * Encode one BigInteger array.
+     *
+     * @param data one BigInteger array
+     * @return the encoder with this element written into its buffer
+     * Null is encoded as the three identifiers: NULL, followed by ARRAY, followed by BIGINT
+     */
+    public ABIStreamingEncoder encodeOneBigIntegerArray(BigInteger[] data) {
+        if (null == data) {
+            buffer.putByte(ABIToken.NULL);
+            buffer.putByte(ABIToken.ARRAY);
+            buffer.putByte(ABIToken.BIGINT);
+        } else {
+            checkLengthIsAShort(data.length);
+            buffer.putByte(ABIToken.ARRAY);
+            buffer.putByte(ABIToken.BIGINT);
+            buffer.putShort((short) data.length);
+
+            for (BigInteger bigInt : data) {
+                encodeOneBigInteger(bigInt);
             }
         }
         return this;

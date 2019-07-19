@@ -55,7 +55,7 @@ public class HashCodeIntegrationTest {
         // Store an object.
         int systemHash = callStatic(contractAddr, "persistNewObject");
         // We know that this is the current value, but that may change in the future.
-        Assert.assertEquals(62, systemHash);
+        Assert.assertEquals(68, systemHash);
         // Fetch it and verify the hashCode is loaded.
         int loadSystemHash = callStatic(contractAddr, "readPersistentHashCode");
         Assert.assertEquals(systemHash, loadSystemHash);

@@ -25,11 +25,12 @@ public class BigIntegerTest {
     private static Address contract;
     private static BigInteger testValue16Bytes;
     private static BigInteger testValue32Bytes;
-
+    private static BigInteger[] bigIntegerArray;
 
     @BeforeClass
     public static void setup() {
-        byte[] data = avmRule.getDappBytes(BigIntegerTarget.class, null);
+        int abiBigIntegerSupportedVersion = 1;
+        byte[] data = avmRule.getDappBytes(BigIntegerTarget.class, null, abiBigIntegerSupportedVersion);
         AvmRule.ResultWrapper deployResult = avmRule.deploy(sender, value, data);
         assertTrue(deployResult.getTransactionResult().transactionStatus.isSuccess());
         contract = deployResult.getDappAddress();
@@ -39,6 +40,11 @@ public class BigIntegerTest {
         testValue32Bytes = new BigInteger(arr2);
 
         testValue16Bytes = new BigDecimal(Math.sqrt(testValue32Bytes.doubleValue())).toBigInteger();
+
+        bigIntegerArray = new BigInteger[10];
+        for(int i =0; i< bigIntegerArray.length; i++){
+            bigIntegerArray[i] = BigInteger.TEN.pow(i);
+        }
     }
 
     @Test
@@ -124,6 +130,93 @@ public class BigIntegerTest {
         Assert.assertArrayEquals(testValue32Bytes.and(testValue32Bytes).toByteArray(),
                 (byte[]) callStatic("and", testValue32Bytes.toByteArray()).getDecodedReturnData());
     }
+
+    @Test
+    public void subtract() {
+        Assert.assertEquals(testValue32Bytes.subtract(testValue32Bytes), callStatic("subtract", testValue32Bytes).getDecodedReturnData());
+
+        BigInteger testValue = new BigInteger("13468");
+        Assert.assertEquals(testValue.subtract(testValue), callStatic("subtract", testValue).getDecodedReturnData());
+
+        testValue = new BigInteger("-87813468");
+        Assert.assertEquals(testValue.subtract(testValue), callStatic("subtract", testValue).getDecodedReturnData());
+    }
+
+    @Test
+    public void negateBigInteger() {
+        byte[] arr = new byte[12];
+        Arrays.fill(arr, Byte.MIN_VALUE);
+        BigInteger testBytesMinValue = new BigInteger(arr);
+
+        Assert.assertEquals(testValue32Bytes.negate(), callStatic("negateBigInteger", testValue32Bytes).getDecodedReturnData());
+        Assert.assertEquals(testValue16Bytes.negate(), callStatic("negateBigInteger", testValue16Bytes).getDecodedReturnData());
+        Assert.assertEquals(testBytesMinValue.negate(), callStatic("negateBigInteger", testBytesMinValue).getDecodedReturnData());
+    }
+
+    @Test
+    public void shiftRight() {
+        Assert.assertEquals(testValue32Bytes.shiftRight(5), callStatic("shiftRight", testValue32Bytes).getDecodedReturnData());
+        Assert.assertEquals(testValue16Bytes.shiftRight(5), callStatic("shiftRight", testValue16Bytes).getDecodedReturnData());
+    }
+
+    @Test
+    public void flipBit() {
+        Assert.assertEquals(testValue32Bytes.flipBit(10), callStatic("flipBit", testValue32Bytes, 10).getDecodedReturnData());
+        Assert.assertEquals(testValue16Bytes.flipBit(32), callStatic("flipBit", testValue16Bytes, 32).getDecodedReturnData());
+    }
+
+    @Test
+    public void bitCountBigInteger() {
+        Assert.assertEquals(testValue32Bytes.bitCount(), callStatic("bitCountBigInteger", testValue32Bytes).getDecodedReturnData());
+        Assert.assertEquals(testValue16Bytes.bitCount(), callStatic("bitCountBigInteger", testValue16Bytes).getDecodedReturnData());
+    }
+
+    @Test
+    public void signum() {
+        Assert.assertEquals(testValue32Bytes.signum(), callStatic("signum", testValue32Bytes).getDecodedReturnData());
+        Assert.assertEquals(testValue16Bytes.signum(), callStatic("signum", testValue16Bytes).getDecodedReturnData());
+
+        byte[] arr = new byte[12];
+        Arrays.fill(arr, Byte.MAX_VALUE);
+        BigInteger testValue = new BigInteger(-1, arr);
+        Assert.assertEquals(testValue.signum(), callStatic("signum", testValue).getDecodedReturnData());
+
+        testValue = new BigInteger(1, arr);
+        Assert.assertEquals(testValue.signum(), callStatic("signum", testValue).getDecodedReturnData());
+
+        testValue = new BigInteger(0, new byte[]{0});
+        Assert.assertEquals(testValue.signum(), callStatic("signum", testValue).getDecodedReturnData());
+    }
+
+    @Test
+    public void getLowestSetBit() {
+        Assert.assertEquals(testValue32Bytes.getLowestSetBit(), callStatic("getLowestSetBit", testValue32Bytes).getDecodedReturnData());
+        Assert.assertEquals(testValue16Bytes.getLowestSetBit(), callStatic("getLowestSetBit", testValue16Bytes).getDecodedReturnData());
+        byte[] arr = new byte[12];
+        Arrays.fill(arr, Byte.MAX_VALUE);
+        BigInteger testValue = new BigInteger(-1, arr);
+        Assert.assertEquals(testValue.getLowestSetBit(), callStatic("getLowestSetBit", testValue).getDecodedReturnData());
+    }
+
+    @Test
+    public void checkArrayLength() {
+        Assert.assertArrayEquals(bigIntegerArray, (BigInteger[]) callStatic("checkArrayLength", bigIntegerArray, bigIntegerArray.length).getDecodedReturnData());
+    }
+
+    @Test
+    public void compareTo() {
+        Assert.assertTrue(callStatic("compareTo", (Object) bigIntegerArray).getTransactionResult().transactionStatus.isSuccess());
+    }
+
+    @Test
+    public void negateArray() {
+        BigInteger[] negated = new BigInteger[bigIntegerArray.length];
+        for (int i = 0; i < bigIntegerArray.length; i++) {
+            negated[i] = bigIntegerArray[i].negate();
+        }
+        Assert.assertArrayEquals(negated, (BigInteger[]) callStatic("negateArray", (Object) bigIntegerArray).getDecodedReturnData());
+    }
+
     //Exception cases
 
     @Test
