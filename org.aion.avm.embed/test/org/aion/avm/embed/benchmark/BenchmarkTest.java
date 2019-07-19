@@ -284,7 +284,7 @@ public class BenchmarkTest {
         Helpers.writeBytesToFile(optimized, jarPath);
         System.out.println("Wrote: " + jarPath);
         try (FileOutputStream output = new FileOutputStream(abiPath)) {
-            ABICompiler.compileJarBytes(JarBuilder.buildJarForMainAndClasses(clazz)).writeAbi(output);
+            ABICompiler.compileJarBytes(JarBuilder.buildJarForMainAndClasses(clazz)).writeAbi(output, ABICompiler.getDefaultVersionNumber());
         }
         System.out.println("Wrote: " + abiPath);
     }

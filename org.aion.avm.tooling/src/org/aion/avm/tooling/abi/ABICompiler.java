@@ -17,9 +17,7 @@ import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
-import org.aion.avm.userlib.abi.ABIException;
-import org.aion.avm.userlib.abi.ABIStreamingEncoder;
-import org.aion.avm.userlib.abi.ABIToken;
+import org.aion.avm.userlib.abi.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -32,14 +30,12 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
-import org.aion.avm.userlib.abi.ABIEncoder;
-import org.aion.avm.userlib.abi.ABIDecoder;
 import org.objectweb.asm.Type;
 
 public class ABICompiler {
 
     private static final int MAX_CLASS_BYTES = 1024 * 1024;
-    private static final float VERSION_NUMBER = 0.0F;
+    private static final int DEFAULT_VERSION_NUMBER = 0;
     private static Class[] requiredUserlibClasses = new Class[] {ABIDecoder.class, ABIEncoder.class,
         ABIStreamingEncoder.class, ABIException.class, ABIToken.class, AionBuffer.class, AionList.class, AionMap.class, AionSet.class};
 
@@ -51,13 +47,20 @@ public class ABICompiler {
     private Map<String, byte[]> classMap = new HashMap<>();
 
     public static void main(String[] args) {
-        if (args.length != 1) {
+        if (args.length < 1 || args.length > 2) {
             System.out.println("Invalid parameters!");
             usage();
             System.exit(1);
         }
 
         String jarPath = args[0];
+        int version;
+        if (args.length > 1) {
+            version = Integer.valueOf(args[1]);
+        } else {
+            version = DEFAULT_VERSION_NUMBER;
+        }
+
         ABICompiler compiler = new ABICompiler();
         FileInputStream fileInputStream = null;
         try {
@@ -67,9 +70,9 @@ public class ABICompiler {
             System.exit(1);
         }
 
-        compiler.compile(fileInputStream);
+        compiler.compile(fileInputStream, version);
 
-        compiler.writeAbi(System.out);
+        compiler.writeAbi(System.out, version);
 
         try {
             DataOutputStream dout =
@@ -82,18 +85,29 @@ public class ABICompiler {
     }
 
     private static void usage() {
-        System.out.println("Usage: ABICompiler <DApp jar path>");
+        System.out.println("Usage: ABICompiler <DApp jar path> <abi version number>");
     }
 
+
     public static ABICompiler compileJar(InputStream byteReader) {
-        ABICompiler compiler = new ABICompiler();
-        compiler.compile(byteReader);
-        return compiler;
+        return initCompilerAndCompile(byteReader, DEFAULT_VERSION_NUMBER);
+    }
+
+    public static ABICompiler compileJar(InputStream byteReader, int version) {
+        return initCompilerAndCompile(byteReader, version);
     }
 
     public static ABICompiler compileJarBytes(byte[] rawBytes) {
+        return initCompilerAndCompile(new ByteArrayInputStream(rawBytes), DEFAULT_VERSION_NUMBER);
+    }
+
+    public static ABICompiler compileJarBytes(byte[] rawBytes, int version) {
+        return initCompilerAndCompile(new ByteArrayInputStream(rawBytes), version);
+    }
+
+    private static ABICompiler initCompilerAndCompile(InputStream byteReader, int version) {
         ABICompiler compiler = new ABICompiler();
-        compiler.compile(new ByteArrayInputStream(rawBytes));
+        compiler.compile(byteReader, version);
         return compiler;
     }
 
@@ -104,7 +118,7 @@ public class ABICompiler {
     private ABICompiler() {
     }
 
-    private void compile(InputStream byteReader) {
+    private void compile(InputStream byteReader, int version) {
         try {
             safeLoadFromBytes(byteReader);
         } catch (Exception e) {
@@ -113,7 +127,7 @@ public class ABICompiler {
 
         ClassReader reader = new ClassReader(mainClassBytes);
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-        ABICompilerClassVisitor classVisitor = new ABICompilerClassVisitor(classWriter) {};
+        ABICompilerClassVisitor classVisitor = new ABICompilerClassVisitor(classWriter, version) {};
         reader.accept(classVisitor, 0);
 
         callables = classVisitor.getCallableSignatures();
@@ -125,10 +139,11 @@ public class ABICompiler {
         outputJarFile = JarBuilder.buildJarForExplicitClassNamesAndBytecode(mainClassName, mainClassBytes, this.classMap, missingUserlib); 
     }
 
-    public void writeAbi(OutputStream rawStream) {
+    public void writeAbi(OutputStream rawStream, int version) {
         // We want this to know about new lines so use a PrintStream.
         PrintStream abiStream = new PrintStream(rawStream);
-        abiStream.println(VERSION_NUMBER);
+        // This is to stay compatible with previous abi generated files that used a float to represent the version number
+        abiStream.println(getVersionNumberForABIFilePrint(version));
         abiStream.println(this.mainClassName);
 
         abiStream.print("Clinit: (");
@@ -235,8 +250,12 @@ public class ABICompiler {
         return classMap;
     }
 
-    public static float getVersionNumber() {
-        return VERSION_NUMBER;
+    public static int getDefaultVersionNumber() {
+        return DEFAULT_VERSION_NUMBER;
+    }
+
+    public static String getVersionNumberForABIFilePrint(int version) {
+        return (version == 0) ? "0.0" : String.valueOf(version);
     }
 
     public byte[] getJarFileBytes() {

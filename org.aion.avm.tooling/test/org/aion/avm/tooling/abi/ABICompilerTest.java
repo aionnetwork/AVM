@@ -13,11 +13,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.aion.avm.tooling.abi.ABICompiler;
-import org.aion.avm.tooling.abi.ABICompilerException;
 import org.aion.avm.tooling.deploy.eliminator.TestUtil;
 import org.aion.avm.tooling.util.JarBuilder;
 import org.aion.avm.tooling.util.Utilities;
@@ -25,11 +21,7 @@ import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
-import org.aion.avm.userlib.abi.ABIDecoder;
-import org.aion.avm.userlib.abi.ABIEncoder;
-import org.aion.avm.userlib.abi.ABIException;
-import org.aion.avm.userlib.abi.ABIStreamingEncoder;
-import org.aion.avm.userlib.abi.ABIToken;
+import org.aion.avm.userlib.abi.*;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,7 +29,7 @@ import org.junit.Test;
 
 
 public class ABICompilerTest {
-    private static final String CHATTY_CALCULATOR_ABI = ABICompiler.getVersionNumber()
+    private static final String CHATTY_CALCULATOR_ABI = ABICompiler.getVersionNumberForABIFilePrint(ABICompiler.getDefaultVersionNumber())
         + "\n" + ChattyCalculatorTarget.class.getName()
         + "\nClinit: ()"
         + "\npublic static String amIGreater(int, int)\n";
@@ -67,7 +59,7 @@ public class ABICompilerTest {
 
         ABICompiler.main(new String[]{tempDir.toString() + "/dapp.jar"});
         Assert.assertEquals(
-            ABICompiler.getVersionNumber()
+                ABICompiler.getVersionNumberForABIFilePrint(ABICompiler.getDefaultVersionNumber())
                 + "\n" + TestDAppTarget.class.getName()
                 + "\nClinit: ()"
                 + "\npublic static String returnHelloWorld()"
@@ -113,7 +105,7 @@ public class ABICompilerTest {
         ABICompiler embeddedCompiler = ABICompiler.compileJarBytes(jar);
         // Write the ABI to a stream we can explore.
         ByteArrayOutputStream abiStream = new ByteArrayOutputStream();
-        embeddedCompiler.writeAbi(abiStream);
+        embeddedCompiler.writeAbi(abiStream, ABICompiler.getDefaultVersionNumber());
         String abiString = new String(abiStream.toByteArray(), StandardCharsets.UTF_8);
         Assert.assertEquals(CHATTY_CALCULATOR_ABI, abiString);
     }
@@ -130,7 +122,7 @@ public class ABICompilerTest {
 
         ABICompiler.main(new String[]{tempDir.toString() + "/dapp.jar"});
         Assert.assertEquals(
-            ABICompiler.getVersionNumber()
+                ABICompiler.getVersionNumberForABIFilePrint(ABICompiler.getDefaultVersionNumber())
                 + "\n" + StaticInitializersTarget.class.getName()
                 + "\nClinit: (int, String)"
                 + "\npublic static int getInt()"

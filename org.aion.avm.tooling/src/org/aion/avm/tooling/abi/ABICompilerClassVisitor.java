@@ -27,9 +27,11 @@ public class ABICompilerClassVisitor extends ClassVisitor {
     private MethodNode clinitNode;
     private List<ABICompilerFieldVisitor> initializableFieldVisitors = new ArrayList<>();
     private List<String> callableSignatures = new ArrayList<>();
+    private int compileVersion;
 
-    public ABICompilerClassVisitor(ClassWriter cw) {
+    public ABICompilerClassVisitor(ClassWriter cw, int version) {
         super(Opcodes.ASM6, cw);
+        this.compileVersion = version;
     }
 
     public List<String> getCallableSignatures() {

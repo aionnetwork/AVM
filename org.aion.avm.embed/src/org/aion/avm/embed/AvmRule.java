@@ -2,6 +2,7 @@ package org.aion.avm.embed;
 
 import avm.Address;
 import org.aion.avm.core.*;
+import org.aion.avm.tooling.abi.ABIConfig;
 import org.aion.avm.tooling.deploy.renamer.Renamer;
 import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
@@ -33,6 +34,8 @@ public final class AvmRule implements TestRule {
     private boolean automaticBlockGenerationEnabled;
     public TestingState kernel;
     public AvmImpl avm;
+    // Note that the base version is used for the ABICompiler temporarily, mainly to allow external tools to update to the latest version
+    private int compilerDefaultVersion = ABICompiler.getDefaultVersionNumber();
 
     /**
      * @param debugMode enable/disable the debugging features
@@ -66,35 +69,31 @@ public final class AvmRule implements TestRule {
 
     /**
      * Retrieves bytes corresponding to the in-memory representation of Dapp jar.
+     * This uses the base ABI compiler version.
      * @param mainClass Main class of the Dapp to include and list in manifest (can be null).
      * @param arguments Constructor arguments
      * @param otherClasses Other classes to include (main is already included).
      * @return Byte array corresponding to the optimized deployable Dapp jar and arguments, where unreachable classes and methods are removed from the jar
      */
     public byte[] getDappBytes(Class<?> mainClass, byte[] arguments, Class<?>... otherClasses) {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(mainClass, otherClasses);
-        ABICompiler compiler = ABICompiler.compileJarBytes(jar);
-        byte[] optimizedDappBytes = jarOptimizer.optimize(compiler.getJarFileBytes());
-        try {
-            optimizedDappBytes = UnreachableMethodRemover.optimize(optimizedDappBytes);
-        } catch (Exception exception) {
-            System.err.println("UnreachableMethodRemover crashed, packaging code without this optimization");
-        }
-
-        // renaming is disabled in debug mode.
-        // This is because only field and method renaming can work correctly in debug mode, but the new names in those cases can cause confusion.
-        if(!debugMode) {
-            try {
-                optimizedDappBytes = Renamer.rename(optimizedDappBytes);
-            } catch (Exception exception) {
-                System.err.println("Renaming crashed, packaging code without this optimization");
-            }
-        }
-        return new CodeAndArguments(optimizedDappBytes, arguments).encodeToBytes();
+        return compileAndOptimizeDapp(mainClass, arguments, compilerDefaultVersion, otherClasses);
     }
 
     /**
      * Retrieves bytes corresponding to the in-memory representation of Dapp jar.
+     * @param mainClass Main class of the Dapp to include and list in manifest (can be null).
+     * @param arguments Constructor arguments
+     * @param abiVersion Version of ABI compiler to use
+     * @param otherClasses Other classes to include (main is already included).
+     * @return Byte array corresponding to the optimized deployable Dapp jar and arguments, where unreachable classes and methods are removed from the jar
+     */
+    public byte[] getDappBytes(Class<?> mainClass, byte[] arguments, int abiVersion, Class<?>... otherClasses) {
+        return compileAndOptimizeDapp(mainClass, arguments, abiVersion, otherClasses);
+    }
+
+    /**
+     * Retrieves bytes corresponding to the in-memory representation of Dapp jar.
+     * This is always using the latest ABI version.
      * @param mainClass Main class of the Dapp to include and list in manifest (can be null).
      * @param arguments Constructor arguments
      * @param otherClasses Other classes to include (main is already included).
@@ -102,7 +101,7 @@ public final class AvmRule implements TestRule {
      */
     public byte[] getDappBytesWithoutOptimization(Class<?> mainClass, byte[] arguments, Class<?>... otherClasses) {
         byte[] jar = JarBuilder.buildJarForMainAndClasses(mainClass, otherClasses);
-        ABICompiler compiler = ABICompiler.compileJarBytes(jar);
+        ABICompiler compiler = ABICompiler.compileJarBytes(jar, ABIConfig.LATEST_VERSION);
         return new CodeAndArguments(compiler.getJarFileBytes(), arguments).encodeToBytes();
     }
 
@@ -167,6 +166,7 @@ public final class AvmRule implements TestRule {
      * @param from Address of sender
      * @param to Address of the receiver
      * @param value Transfer amount
+     * @param energyLimit Maximum energy to be used for the call
      * @param energyPrice Energy price to be used for the transfer
      * @return Result of the operation
      */
@@ -253,5 +253,27 @@ public final class AvmRule implements TestRule {
         public TransactionStatus getReceiptStatus() {
             return result.transactionStatus;
         }
+    }
+
+    private byte[] compileAndOptimizeDapp(Class<?> mainClass, byte[] arguments, int abiVersion, Class<?>[] otherClasses){
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(mainClass, otherClasses);
+        ABICompiler compiler = ABICompiler.compileJarBytes(jar, abiVersion);
+        byte[] optimizedDappBytes = jarOptimizer.optimize(compiler.getJarFileBytes());
+        try {
+            optimizedDappBytes = UnreachableMethodRemover.optimize(optimizedDappBytes);
+        } catch (Exception exception) {
+            System.err.println("Method or constant remover crashed, packaging code without this optimization");
+        }
+
+        // renaming is disabled in debug mode.
+        // This is because only field and method renaming can work correctly in debug mode, but the new names in those cases can cause confusion.
+        if(!debugMode) {
+            try {
+                optimizedDappBytes = Renamer.rename(optimizedDappBytes);
+            } catch (Exception exception) {
+                System.err.println("Renaming crashed, packaging code without this optimization");
+            }
+        }
+        return new CodeAndArguments(optimizedDappBytes, arguments).encodeToBytes();
     }
 }
