@@ -25,16 +25,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.jar.Attributes;
-import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
-import java.util.jar.Manifest;
 
 import org.objectweb.asm.Type;
 
 public class ABICompiler {
 
-    private static final int MAX_CLASS_BYTES = 1024 * 1024;
     private static final int DEFAULT_VERSION_NUMBER = 0;
     private static Class[] requiredUserlibClasses = new Class[] {ABIDecoder.class, ABIEncoder.class,
         ABIStreamingEncoder.class, ABIException.class, ABIToken.class, AionBuffer.class, AionList.class, AionMap.class, AionSet.class};
@@ -165,54 +161,11 @@ public class ABICompiler {
     }
 
     private void safeLoadFromBytes(InputStream byteReader) throws Exception {
-        classMap = new HashMap<>();
-        mainClassName = null;
-
-        try (JarInputStream jarReader = new JarInputStream(byteReader, true)) {
-
-            Manifest manifest = jarReader.getManifest();
-            if (null != manifest) {
-                Attributes mainAttributes = manifest.getMainAttributes();
-                if (null != mainAttributes) {
-                    mainClassName = mainAttributes.getValue(Attributes.Name.MAIN_CLASS);
-                }
-            }
-
-            JarEntry entry;
-            byte[] tempReadingBuffer = new byte[MAX_CLASS_BYTES];
-            while (null != (entry = jarReader.getNextJarEntry())) {
-                String name = entry.getName();
-                // We already ready the manifest so now we only want to work on classes and not any
-                // of the
-                // special modularity ones.
-                if (name.endsWith(".class")
-                        && !name.equals("package-info.class")
-                        && !name.equals("module-info.class")) {
-                    // replaceAll gives us the regex so we use "$".
-                    String internalClassName = name.replaceAll(".class$", "");
-                    String qualifiedClassName =
-                            internalNameToFulllyQualifiedName(internalClassName);
-                    int readSize =
-                            jarReader.readNBytes(tempReadingBuffer, 0, tempReadingBuffer.length);
-                    // Now, copy this part of the array as a correctly-sized classBytes.
-                    byte[] classBytes = new byte[readSize];
-                    if (0 != jarReader.available()) {
-                        // This entry is too big.
-                        throw new Exception("Class file too big: " + name);
-                    }
-                    System.arraycopy(tempReadingBuffer, 0, classBytes, 0, readSize);
-                    if (qualifiedClassName.equals(mainClassName)) {
-                        mainClassBytes = classBytes;
-                    } else {
-                        classMap.put(qualifiedClassName, classBytes);
-                    }
-                }
-            }
-        }
-    }
-
-    private static String internalNameToFulllyQualifiedName(String internalName) {
-        return internalName.replaceAll("/", ".");
+        JarInputStream jarReader = new JarInputStream(byteReader, true);
+        classMap = Utilities.extractClasses(jarReader, Utilities.NameStyle.DOT_NAME);
+        mainClassName = Utilities.extractMainClassName(jarReader, Utilities.NameStyle.DOT_NAME);
+        mainClassBytes = classMap.get(mainClassName);
+        classMap.remove(mainClassName);
     }
 
     // This is public only because some tests use it to verify behaviour.

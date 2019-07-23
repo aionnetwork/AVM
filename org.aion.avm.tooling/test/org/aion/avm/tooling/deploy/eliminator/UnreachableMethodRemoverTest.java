@@ -4,16 +4,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
-import org.aion.avm.tooling.deploy.eliminator.ClassInfo;
-import org.aion.avm.tooling.deploy.eliminator.MethodInfo;
-import org.aion.avm.tooling.deploy.eliminator.MethodReachabilityDetector;
-import org.aion.avm.tooling.deploy.eliminator.UnreachableMethodRemover;
 import org.aion.avm.tooling.deploy.eliminator.resources.ClassD;
 import org.aion.avm.tooling.deploy.eliminator.resources.ClassE;
 import org.aion.avm.tooling.deploy.eliminator.resources.ClassF;
@@ -41,14 +35,15 @@ public class UnreachableMethodRemoverTest {
         byte[] optimizedJar = UnreachableMethodRemover.optimize(jar);
         assertNotNull(optimizedJar);
 
-        Map<String, byte[]> classMap = extractClasses(optimizedJar);
+        JarInputStream jarReader = new JarInputStream(new ByteArrayInputStream(optimizedJar), true);
+        Map<String, byte[]> classMap = Utilities.extractClasses(jarReader, Utilities.NameStyle.SLASH_NAME);
 
         assertNotNull(optimizedJar);
         assertEquals(7, classMap.size());
 
 
 
-        Map<String, ClassInfo> classInfoMap = MethodReachabilityDetector.getClassInfoMap(ClassGname, turnDotsToSlashes(classMap));
+        Map<String, ClassInfo> classInfoMap = MethodReachabilityDetector.getClassInfoMap(ClassGname, classMap);
         assertEquals(25, classInfoMap.size());
         ClassInfo classInfoA = classInfoMap.get(InterfaceAname);
         ClassInfo classInfoB = classInfoMap.get(InterfaceBname);
@@ -80,46 +75,6 @@ public class UnreachableMethodRemoverTest {
         assertEquals(1, methodInfoMapE.size());
         assertEquals(8, methodInfoMapF.size());
         assertEquals(8, methodInfoMapG.size());
-    }
-
-
-    private static Map<String, byte[]> extractClasses(byte[] jarBytes) throws IOException {
-        Map<String, byte[]> classMap = new HashMap<>();
-
-        try (JarInputStream jarReader = new JarInputStream(new ByteArrayInputStream(jarBytes), true)) {
-            byte[] tempReadingBuffer = new byte[1024 * 1024];
-            JarEntry entry;
-            while (null != (entry = jarReader.getNextJarEntry())) {
-                String name = entry.getName();
-
-                if (name.endsWith(".class")
-                    && !name.equals("package-info.class")
-                    && !name.equals("module-info.class")) {
-
-                    String internalClassName = name.replaceAll(".class$", "");
-                    String qualifiedClassName = Utilities.internalNameToFulllyQualifiedName(internalClassName);
-                    int readSize = jarReader.readNBytes(tempReadingBuffer, 0, tempReadingBuffer.length);
-
-                    if (0 != jarReader.available()) {
-                        throw new RuntimeException("Class file too big: " + name);
-                    }
-
-                    byte[] classBytes = new byte[readSize];
-                    System.arraycopy(tempReadingBuffer, 0, classBytes, 0, readSize);
-                    classMap.put(qualifiedClassName, classBytes);
-                }
-            }
-        }
-
-        return classMap;
-    }
-
-    private static Map<String, byte[]> turnDotsToSlashes(Map<String, byte[]> inputClassMap) {
-        Map<String, byte[]> outputClassMap = new HashMap<>();
-        for (Map.Entry<String, byte[]> entry : inputClassMap.entrySet()) {
-            outputClassMap.put(Utilities.fulllyQualifiedNameToInternalName(entry.getKey()), entry.getValue());
-        }
-        return outputClassMap;
     }
 
     private static String getInternalNameForClass(Class<?> clazz) {

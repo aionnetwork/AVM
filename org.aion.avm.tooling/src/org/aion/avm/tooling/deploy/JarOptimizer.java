@@ -8,19 +8,12 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.signature.SignatureVisitor;
 
 import java.io.*;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.jar.Attributes;
-import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
-import java.util.jar.Manifest;
-
 
 public class JarOptimizer {
-
-    private static final int MAX_CLASS_BYTES = 1024 * 1024;
 
     private static boolean loggingEnabled = false;
 
@@ -58,8 +51,8 @@ public class JarOptimizer {
 
         try {
             JarInputStream jarReader = new JarInputStream(new ByteArrayInputStream(jarBytes), true);
-            String mainClassName = extractMainClassName(jarReader);
-            classMap = extractClasses(jarReader);
+            String mainClassName = Utilities.extractMainClassName(jarReader, Utilities.NameStyle.DOT_NAME);
+            classMap = Utilities.extractClasses(jarReader, Utilities.NameStyle.DOT_NAME);
 
             traverse(mainClassName, visitedClasses, classMap);
 
@@ -70,46 +63,6 @@ public class JarOptimizer {
         }
 
     }
-
-    private String extractMainClassName(JarInputStream jarReader) {
-
-        Manifest manifest = jarReader.getManifest();
-        if (null != manifest && manifest.getMainAttributes() != null) {
-            return manifest.getMainAttributes().getValue(Attributes.Name.MAIN_CLASS);
-        } else {
-            throw new RuntimeException("Manifest file required");
-        }
-    }
-
-    private Map<String, byte[]> extractClasses(JarInputStream jarReader) throws IOException {
-
-        Map<String, byte[]> classMap = new HashMap<>();
-        byte[] tempReadingBuffer = new byte[MAX_CLASS_BYTES];
-
-        JarEntry entry;
-        while (null != (entry = jarReader.getNextJarEntry())) {
-            String name = entry.getName();
-
-            if (name.endsWith(".class")
-                    && !name.equals("package-info.class")
-                    && !name.equals("module-info.class")) {
-
-                String internalClassName = name.replaceAll(".class$", "");
-                String qualifiedClassName = Utilities.internalNameToFulllyQualifiedName(internalClassName);
-                int readSize = jarReader.readNBytes(tempReadingBuffer, 0, tempReadingBuffer.length);
-
-                if (0 != jarReader.available()) {
-                    throw new RuntimeException("Class file too big: " + name);
-                }
-
-                byte[] classBytes = new byte[readSize];
-                System.arraycopy(tempReadingBuffer, 0, classBytes, 0, readSize);
-                classMap.put(qualifiedClassName, classBytes);
-            }
-        }
-        return classMap;
-    }
-
 
     private void traverse(String className, Set<String> visitedClasses, Map<String, byte[]> classMap) {
         visitedClasses.add(className);

@@ -15,15 +15,10 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.jar.Attributes;
-import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
-import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
 public class Renamer {
-
-    private static final int MAX_CLASS_BYTES = 1024 * 1024;
 
     public static void main(String[] args) {
         if (args.length != 1) {
@@ -44,7 +39,7 @@ public class Renamer {
 
     public static byte[] rename(byte[] jarBytes) throws Exception {
         JarInputStream jarReader = new JarInputStream(new ByteArrayInputStream(jarBytes), true);
-        String mainClassName = extractMainClassName(jarReader);
+        String mainClassName = Utilities.extractMainClassName(jarReader, Utilities.NameStyle.SLASH_NAME);
         Map<String, ClassNode> sortedClassMap = sortBasedOnInnerClassLevel(extractClasses(jarReader));
 
         Map<String, ClassNode> renamedNodes = renameClassNodes(sortedClassMap, mainClassName);
@@ -94,42 +89,14 @@ public class Renamer {
         return newClassMap;
     }
 
-    private static String extractMainClassName(JarInputStream jarReader) {
-
-        Manifest manifest = jarReader.getManifest();
-        if (null != manifest && manifest.getMainAttributes() != null) {
-            return Utilities.fulllyQualifiedNameToInternalName(manifest.getMainAttributes().getValue(Attributes.Name.MAIN_CLASS));
-        } else {
-            throw new RuntimeException("Manifest file required");
-        }
-    }
-
     public static Map<String, ClassNode> extractClasses(JarInputStream jarReader) throws IOException {
         Map<String, ClassNode> classMap = new HashMap<>();
-        byte[] tempReadingBuffer = new byte[MAX_CLASS_BYTES];
-
-        JarEntry entry;
-        while (null != (entry = jarReader.getNextJarEntry())) {
-            String name = entry.getName();
-
-            if (name.endsWith(".class")
-                    && !name.equals("package-info.class")
-                    && !name.equals("module-info.class")) {
-
-                String internalClassName = name.replaceAll(".class$", "");
-                int readSize = jarReader.readNBytes(tempReadingBuffer, 0, tempReadingBuffer.length);
-
-                if (0 != jarReader.available()) {
-                    throw new RuntimeException("Class file too big: " + name);
-                }
-
-                byte[] classBytes = new byte[readSize];
-                System.arraycopy(tempReadingBuffer, 0, classBytes, 0, readSize);
-                ClassNode c = new ClassNode();
-                new ClassReader(classBytes).accept(c, 0);
-                classMap.put(internalClassName, c);
-            }
-        }
+        Map<String, byte[]> classByteMap = Utilities.extractClasses(jarReader, Utilities.NameStyle.SLASH_NAME);
+        classByteMap.forEach((key, value) -> {
+            ClassNode c = new ClassNode();
+            new ClassReader(value).accept(c, 0);
+            classMap.put(key, c);
+        });
         return classMap;
     }
 
