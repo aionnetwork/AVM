@@ -26,9 +26,6 @@ public class TestUtil {
         Map<String, byte[]> loadedClasses = Arrays.stream(others)
             .map(c -> c.getName())
             .collect(Collectors.toMap(c -> c, c -> Utilities.loadRequiredResourceAsBytes(Utilities.fulllyQualifiedNameToInternalName(c) + ".class")));
-        String qualifiedClassName = mainClass.getName();
-        String internalName = Utilities.fulllyQualifiedNameToInternalName(qualifiedClassName);
-        byte[] mainClassBytes = Utilities.loadRequiredResourceAsBytes(internalName + ".class");
-        return JarBuilder.buildJarForExplicitClassNamesAndBytecode(qualifiedClassName, mainClassBytes, loadedClasses);
+        return JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(mainClass, loadedClasses);
     }
 }

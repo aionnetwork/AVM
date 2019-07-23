@@ -30,9 +30,25 @@ public class JarBuilder {
      * @return The bytes representing this JAR.
      */
     public static byte[] buildJarForExplicitClassNamesAndBytecode(String mainClassName, byte[] mainClassBytes, Map<String, byte[]> classMap, Class<?> ...otherClasses) {
-        JarBuilder builder = new JarBuilder(mainClassName);
+        JarBuilder builder = new JarBuilder(null, mainClassName);
         try {
             builder.saveClassToStream(mainClassName, mainClassBytes);
+            for (Map.Entry<String, byte[]> entry : classMap.entrySet()) {
+                builder.saveClassToStream(entry.getKey(), entry.getValue());
+            }
+            for (Class<?> clazz : otherClasses) {
+                builder.addClassAndInners(clazz);
+            }
+        } catch (IOException e) {
+            // Can't happen - in-memory.
+            throw new AssertionError(e);
+        }
+        return builder.toBytes();
+    }
+
+    public static byte[] buildJarForMainClassAndExplicitClassNamesAndBytecode(Class<?> mainClass, Map<String, byte[]> classMap, Class<?> ...otherClasses) {
+        JarBuilder builder = new JarBuilder(mainClass, null);
+        try {
             for (Map.Entry<String, byte[]> entry : classMap.entrySet()) {
                 builder.saveClassToStream(entry.getKey(), entry.getValue());
             }
@@ -50,15 +66,19 @@ public class JarBuilder {
     private final JarOutputStream jarStream;
     private final Set<String> entriesInJar;
 
-    private JarBuilder(String mainClassName) {
+    private JarBuilder(Class<?> mainClass, String mainClassName) {
         // Build the manifest.
         Manifest manifest = new Manifest();
         Attributes mainAttributes = manifest.getMainAttributes();
         // Note that the manifest version seems to be required.  If it isn't specified, we don't see the main class.
         mainAttributes.put(Attributes.Name.MANIFEST_VERSION, "1.0");
         // The main class is technically optional (we mostly use a null main for testing cases).
-        mainAttributes.put(Attributes.Name.MAIN_CLASS, mainClassName);
-        
+        if (null != mainClass) {
+            mainAttributes.put(Attributes.Name.MAIN_CLASS, mainClass.getName());
+        } else if (null != mainClassName) {
+            mainAttributes.put(Attributes.Name.MAIN_CLASS, mainClassName);
+        }
+
         // Create the underlying byte stream (hold onto this for serialization).
         this.byteStream = new ByteArrayOutputStream();
         JarOutputStream stream = null;
@@ -77,6 +97,11 @@ public class JarBuilder {
         }
         this.jarStream = stream;
         this.entriesInJar = new HashSet<>();
+
+        // Finally, add this class.
+        if (null != mainClass) {
+            addClassAndInners(mainClass);
+        }
     }
 
     /**

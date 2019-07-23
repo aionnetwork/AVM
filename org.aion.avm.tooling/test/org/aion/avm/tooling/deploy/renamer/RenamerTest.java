@@ -18,7 +18,7 @@ import java.util.jar.JarInputStream;
 
 import static org.aion.avm.tooling.deploy.renamer.Renamer.extractClasses;
 
-public class RenamerTests {
+public class RenamerTest {
 
     @Test
     public void testRenameInnerClasses() throws IOException {
@@ -31,10 +31,10 @@ public class RenamerTests {
         Map<String, String> newClasses = ClassRenamer.renameClasses(classMap, mainClassName);
 
         Assert.assertEquals(NameGenerator.getNewMainClassName(), newClasses.get(mainClassName));
-        Assert.assertEquals(NameGenerator.getNewMainClassName() + "$J", newClasses.get(mainClassName + "$ClassB"));
-        Assert.assertEquals(NameGenerator.getNewMainClassName() + "$J$K", newClasses.get(mainClassName + "$ClassB$ClassC"));
-        Assert.assertEquals(NameGenerator.getNewMainClassName() + "$J$K$L", newClasses.get(mainClassName + "$ClassB$ClassC$ClassD"));
-        Assert.assertEquals(NameGenerator.getNewMainClassName() + "$J$K$L$M", newClasses.get(mainClassName + "$ClassB$ClassC$ClassD$ClassE"));
+        Assert.assertEquals(NameGenerator.getNewMainClassName() + "$H", newClasses.get(mainClassName + "$ClassB"));
+        Assert.assertEquals(NameGenerator.getNewMainClassName() + "$H$I", newClasses.get(mainClassName + "$ClassB$ClassC"));
+        Assert.assertEquals(NameGenerator.getNewMainClassName() + "$H$I$J", newClasses.get(mainClassName + "$ClassB$ClassC$ClassD"));
+        Assert.assertEquals(NameGenerator.getNewMainClassName() + "$H$I$J$K", newClasses.get(mainClassName + "$ClassB$ClassC$ClassD$ClassE"));
     }
 
     @Test
