@@ -2,6 +2,7 @@ package org.aion.avm.embed;
 
 import avm.Address;
 import org.aion.avm.core.*;
+import org.aion.avm.tooling.deploy.eliminator.ConstantRemover;
 import org.aion.avm.tooling.abi.ABIConfig;
 import org.aion.avm.tooling.deploy.renamer.Renamer;
 import org.aion.kernel.TestingState;
@@ -260,6 +261,7 @@ public final class AvmRule implements TestRule {
         ABICompiler compiler = ABICompiler.compileJarBytes(jar, abiVersion);
         byte[] optimizedDappBytes = jarOptimizer.optimize(compiler.getJarFileBytes());
         try {
+            optimizedDappBytes = ConstantRemover.removeABIExceptionMessages(optimizedDappBytes);
             optimizedDappBytes = UnreachableMethodRemover.optimize(optimizedDappBytes);
         } catch (Exception exception) {
             System.err.println("Method or constant remover crashed, packaging code without this optimization");

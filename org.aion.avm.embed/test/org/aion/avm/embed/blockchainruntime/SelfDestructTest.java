@@ -34,7 +34,7 @@ public class SelfDestructTest {
     @Test
     public void selfDestruct() {
         long energyUsed = call("selfDestruct", beneficiary);
-        Assert.assertEquals(45009 - refundPerContract, energyUsed);
+        Assert.assertEquals(37649 - 37649/2, energyUsed);
         Assert.assertEquals(BigInteger.ZERO, avmRule.kernel.getBalance(new AionAddress(dappAddr.toByteArray())));
         Assert.assertEquals(initialBalance, avmRule.kernel.getBalance(new AionAddress(beneficiary.toByteArray())));
     }
@@ -42,7 +42,7 @@ public class SelfDestructTest {
     @Test
     public void selfDestructMulti() {
         long energyUsed = call("selfDestructMulti", beneficiary);
-        Assert.assertEquals(63539 - refundPerContract, energyUsed);
+        Assert.assertEquals(59171 - refundPerContract, energyUsed);
         Assert.assertEquals(BigInteger.ZERO, avmRule.kernel.getBalance(new AionAddress(dappAddr.toByteArray())));
         Assert.assertEquals(initialBalance, avmRule.kernel.getBalance(new AionAddress(beneficiary.toByteArray())));
     }
@@ -53,7 +53,7 @@ public class SelfDestructTest {
         byte[] txData = encoder.encodeOneString("selfDestruct").encodeOneAddress(beneficiary).toBytes();
         long energyUsed = call("reentrantSelfDestruct", txData);
 
-        Assert.assertEquals(64182 - refundPerContract, energyUsed);
+        Assert.assertEquals(55446 - refundPerContract, energyUsed);
         Assert.assertEquals(BigInteger.ZERO, avmRule.kernel.getBalance(new AionAddress(dappAddr.toByteArray())));
         Assert.assertEquals(initialBalance, avmRule.kernel.getBalance(new AionAddress(beneficiary.toByteArray())));
     }
@@ -69,7 +69,7 @@ public class SelfDestructTest {
 
         long energyUsed = call("killOtherContracts", contracts, txData);
         // capped off at half of the total energy used
-        Assert.assertEquals(242406 - (242406 / 2), energyUsed);
+        Assert.assertEquals(207462 - (207462 / 2), energyUsed);
 
         Assert.assertEquals(initialBalance.multiply(BigInteger.valueOf(contracts.length)).add(BigInteger.valueOf(contracts.length)),
                 avmRule.kernel.getBalance(new AionAddress(beneficiary.toByteArray())));
@@ -78,7 +78,7 @@ public class SelfDestructTest {
     @Test
     public void selfDestructAndTransferToSelf() {
         long energyUsed = call("selfDestruct", dappAddr);
-        Assert.assertEquals(45099 - refundPerContract, energyUsed);
+        Assert.assertEquals(37829 - 37829/2, energyUsed);
         //burns the balance
         Assert.assertEquals(BigInteger.ZERO, avmRule.kernel.getBalance(new AionAddress(dappAddr.toByteArray())));
     }
@@ -91,7 +91,7 @@ public class SelfDestructTest {
                 new Address(Helpers.hexStringToBytes("a025f4fd54064e869f158c1b4eb0ed34820f67e60ee80a53b469f72000000002"))};
         long energyUsed = call("selfDestructDifferentAddress", (Object) addresses);
 
-        Assert.assertEquals(68169 - refundPerContract, energyUsed);
+        Assert.assertEquals(63801 - refundPerContract, energyUsed);
 
         Assert.assertEquals(BigInteger.ZERO, avmRule.kernel.getBalance(new AionAddress(dappAddr.toByteArray())));
 
