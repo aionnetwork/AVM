@@ -2,9 +2,7 @@ package org.aion.avm.embed;
 
 import avm.Address;
 import org.aion.avm.core.*;
-import org.aion.avm.tooling.deploy.eliminator.ConstantRemover;
-import org.aion.avm.tooling.abi.ABIConfig;
-import org.aion.avm.tooling.deploy.renamer.Renamer;
+import org.aion.avm.tooling.deploy.OptimizedJarBuilder;
 import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
@@ -12,8 +10,7 @@ import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.abi.ABICompiler;
-import org.aion.avm.tooling.deploy.JarOptimizer;
-import org.aion.avm.tooling.deploy.eliminator.UnreachableMethodRemover;
+import org.aion.avm.tooling.abi.ABIConfig;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.types.TransactionResult;
 import org.aion.types.TransactionStatus;
@@ -31,7 +28,6 @@ import java.math.BigInteger;
 public final class AvmRule implements TestRule {
 
     private boolean debugMode;
-    private final JarOptimizer jarOptimizer;
     private boolean automaticBlockGenerationEnabled;
     public TestingState kernel;
     public AvmImpl avm;
@@ -44,7 +40,6 @@ public final class AvmRule implements TestRule {
     public AvmRule(boolean debugMode) {
         this.debugMode = debugMode;
         this.kernel = new TestingState();
-        jarOptimizer = new JarOptimizer(debugMode);
         automaticBlockGenerationEnabled = true;
     }
 
@@ -258,24 +253,12 @@ public final class AvmRule implements TestRule {
 
     private byte[] compileAndOptimizeDapp(Class<?> mainClass, byte[] arguments, int abiVersion, Class<?>[] otherClasses){
         byte[] jar = JarBuilder.buildJarForMainAndClasses(mainClass, otherClasses);
-        ABICompiler compiler = ABICompiler.compileJarBytes(jar, abiVersion);
-        byte[] optimizedDappBytes = jarOptimizer.optimize(compiler.getJarFileBytes());
-        try {
-            optimizedDappBytes = ConstantRemover.removeABIExceptionMessages(optimizedDappBytes);
-            optimizedDappBytes = UnreachableMethodRemover.optimize(optimizedDappBytes);
-        } catch (Exception exception) {
-            System.err.println("Method or constant remover crashed, packaging code without this optimization");
-        }
+        byte[] optimizedJar = new OptimizedJarBuilder(debugMode, jar, abiVersion)
+                .withUnreachableMethodRemover()
+                .withRenamer()
+                .withConstantRemover()
+                .getOptimizedBytes();
+        return new CodeAndArguments(optimizedJar, arguments).encodeToBytes();
 
-        // renaming is disabled in debug mode.
-        // This is because only field and method renaming can work correctly in debug mode, but the new names in those cases can cause confusion.
-        if(!debugMode) {
-            try {
-                optimizedDappBytes = Renamer.rename(optimizedDappBytes);
-            } catch (Exception exception) {
-                System.err.println("Renaming crashed, packaging code without this optimization");
-            }
-        }
-        return new CodeAndArguments(optimizedDappBytes, arguments).encodeToBytes();
     }
 }
