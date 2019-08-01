@@ -27,7 +27,7 @@ public class ABICompilerFieldVisitor extends FieldVisitor {
     public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
         if(Type.getType(descriptor).getClassName().equals(Initializable.class.getName())) {
             if ((this.access & Opcodes.ACC_STATIC) == 0) {
-                throw new ABICompilerException("@Initializable methods must be public", fieldName);
+                throw new ABICompilerException("@Initializable fields must be static", fieldName);
             }
             if(!ABIUtils.isAllowedType(Type.getType(fieldDescriptor))) {
                 throw new ABICompilerException(
