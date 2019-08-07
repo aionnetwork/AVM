@@ -317,8 +317,14 @@ public class AvmImpl implements AvmInternal {
         AionAddress sender = tx.senderAddress;
         long energyPrice = tx.energyPrice;
         BigInteger value = tx.value;
-        BigInteger transactionCost = BigInteger.valueOf(tx.energyLimit).multiply(BigInteger.valueOf(energyPrice)).add(value);
-        if (!parentKernel.accountBalanceIsAtLeast(sender, transactionCost)) {
+
+        long basicTransactionCost = BillingRules.getBasicTransactionCost(tx.copyOfTransactionData());
+        BigInteger balanceRequired = BigInteger.valueOf(tx.energyLimit).multiply(BigInteger.valueOf(energyPrice)).add(value);
+
+        if (basicTransactionCost > tx.energyLimit) {
+            error = AvmInternalError.REJECTED_INVALID_ENERGY_LIMIT;
+        }
+        else if (!parentKernel.accountBalanceIsAtLeast(sender, balanceRequired)) {
             error = AvmInternalError.REJECTED_INSUFFICIENT_BALANCE;
         }
 
@@ -335,7 +341,7 @@ public class AvmImpl implements AvmInternal {
         parentKernel.adjustBalance(sender, BigInteger.valueOf(tx.energyLimit).multiply(BigInteger.valueOf(energyPrice).negate()));
 
         // Run the common logic with the parent kernel as the top-level one.
-        AvmWrappedTransactionResult result = commonInvoke(parentKernel, task, tx, BillingRules.getBasicTransactionCost(tx.copyOfTransactionData()));
+        AvmWrappedTransactionResult result = commonInvoke(parentKernel, task, tx, basicTransactionCost);
 
         // Refund energy for transaction
         BigInteger refund = BigInteger.valueOf(tx.energyLimit - result.energyUsed()).multiply(BigInteger.valueOf(energyPrice));

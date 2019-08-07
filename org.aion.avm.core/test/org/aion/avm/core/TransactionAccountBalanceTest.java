@@ -1,9 +1,12 @@
 package org.aion.avm.core;
 
+import static org.aion.avm.core.BillingRules.getBasicTransactionCost;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
+import java.util.Random;
+import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
@@ -15,6 +18,7 @@ import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 import org.aion.kernel.TestingBlock;
 import org.aion.types.TransactionResult;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -23,19 +27,25 @@ import org.junit.Test;
  * after a transaction has been sent.
  */
 public class TransactionAccountBalanceTest {
-    private static AionAddress from = TestingState.PREMINED_ADDRESS;
-    private static long energyLimit = 10_000_000L;
+    private static AionAddress from;
+    private static final long energyLimit = 10_000_000L;
 
-    private static long energyLimitForValueTransfer = 21_000L;
-    private static long energyPrice = 5;
-    private static TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+    private static final long energyLimitForValueTransfer = 21_000L;
+    private static final long energyPrice = 5;
+    private static TestingBlock block;
 
     private static TestingState kernel;
     private static AvmImpl avm;
 
+    @Before
+    public void resetTestingState() {
+        block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
+        kernel = new TestingState(block);
+        from = TestingState.PREMINED_ADDRESS;
+    }
+
     @BeforeClass
     public static void setup() {
-        kernel = new TestingState(block);
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
     }
 
@@ -111,6 +121,149 @@ public class TransactionAccountBalanceTest {
 
         BigInteger transactionCost = BigInteger.valueOf(energyUsed * energyPrice);
         assertEquals(senderBalance.subtract(transactionCost).subtract(value), kernel.getBalance(from));
+    }
+
+    @Test
+    public void testInsufficientBalance() {
+        BigInteger senderBalanceBefore = kernel.getBalance(from);
+        BigInteger balanceTransferCost = BigInteger.valueOf(BillingRules.BASIC_TRANSACTION_COST * energyPrice);
+        BigInteger value = senderBalanceBefore.subtract(balanceTransferCost).add(BigInteger.ONE);
+        AionAddress recipient = createNewAccountWithBalance(BigInteger.ZERO);
+
+        TransactionResult result = transferValueWithData(recipient, value, new byte[0]);
+
+        assertEquals(AvmInternalError.REJECTED_INSUFFICIENT_BALANCE.error, result.transactionStatus.causeOfError);
+
+        long energyUsed = result.energyUsed;
+        assertEquals(energyLimitForValueTransfer, energyUsed);
+
+        assertEquals(senderBalanceBefore, kernel.getBalance(from));
+        assertEquals(BigInteger.ZERO, kernel.getBalance(recipient));
+    }
+
+    @Test
+    public void testTransferEntireBalance() {
+        BigInteger senderBalanceBefore = kernel.getBalance(from);
+        BigInteger balanceTransferCost = BigInteger.valueOf(BillingRules.BASIC_TRANSACTION_COST * energyPrice);
+        BigInteger value = senderBalanceBefore.subtract(balanceTransferCost);
+        AionAddress recipient = createNewAccountWithBalance(BigInteger.ZERO);
+
+        TransactionResult result = transferValueWithData(recipient, value, new byte[0]);
+
+        assertTrue(result.transactionStatus.isSuccess());
+
+        long energyUsed = result.energyUsed;
+        assertEquals(energyLimitForValueTransfer, energyUsed);
+
+        assertEquals(BigInteger.ZERO, kernel.getBalance(from));
+        assertEquals(value, kernel.getBalance(recipient));
+    }
+
+    @Test
+    public void testTransferEntireBalanceWithData() {
+        BigInteger senderBalanceBefore = kernel.getBalance(from);
+        byte[] data = new byte[1];
+        long energyRequired = getBasicTransactionCost(data);
+        BigInteger balanceTransferCost = BigInteger.valueOf(energyRequired * energyPrice);
+        BigInteger value = senderBalanceBefore.subtract(balanceTransferCost);
+        AionAddress recipient = createNewAccountWithBalance(BigInteger.ZERO);
+
+        TransactionResult result = transferValueWithDataAndEnergyLimit(recipient, value, data, energyRequired);
+
+        assertTrue(result.transactionStatus.isSuccess());
+
+        long energyUsed = result.energyUsed;
+        assertEquals(energyRequired, energyUsed);
+
+        assertEquals(BigInteger.ZERO, kernel.getBalance(from));
+        assertEquals(value, kernel.getBalance(recipient));
+    }
+
+
+
+    @Test
+    public void testTransferEntireBalanceWithRandomData() {
+        BigInteger senderBalanceBefore = kernel.getBalance(from);
+        Random r = new Random();
+        byte[] data = new byte[1000];
+        r.nextBytes(data);
+        long energyRequired = getBasicTransactionCost(data);
+        BigInteger balanceTransferCost = BigInteger.valueOf(energyRequired * energyPrice);
+        BigInteger value = senderBalanceBefore.subtract(balanceTransferCost);
+        AionAddress recipient = createNewAccountWithBalance(BigInteger.ZERO);
+
+        TransactionResult result = transferValueWithDataAndEnergyLimit(recipient, value, data, energyRequired);
+
+        assertTrue(result.transactionStatus.isSuccess());
+
+        long energyUsed = result.energyUsed;
+        assertEquals(energyRequired, energyUsed);
+
+        assertEquals(BigInteger.ZERO, kernel.getBalance(from));
+        assertEquals(value, kernel.getBalance(recipient));
+    }
+
+    @Test
+    public void testInvalidEnergyAndInsufficientFunds() {
+        BigInteger senderBalanceBefore = kernel.getBalance(from);
+        BigInteger balanceTransferCost = BigInteger.valueOf(BillingRules.BASIC_TRANSACTION_COST * energyPrice);
+        BigInteger value = senderBalanceBefore.subtract(balanceTransferCost);
+        AionAddress recipient = createNewAccountWithBalance(BigInteger.ZERO);
+
+        TransactionResult result = transferValueWithData(recipient, value, new byte[1]);
+
+        assertEquals(AvmInternalError.REJECTED_INVALID_ENERGY_LIMIT.error, result.transactionStatus.causeOfError);
+    }
+
+    @Test
+    public void testBalanceTransferWithDataLowEnergyLimit() {
+        BigInteger senderBalanceBefore = kernel.getBalance(from);
+        BigInteger value = BigInteger.ONE;
+        AionAddress recipient = createNewAccountWithBalance(BigInteger.ZERO);
+
+        TransactionResult result = transferValueWithData(recipient, value, new byte[1]);
+
+        assertEquals(AvmInternalError.REJECTED_INVALID_ENERGY_LIMIT.error, result.transactionStatus.causeOfError);
+
+        long energyUsed = result.energyUsed;
+        assertEquals(energyLimitForValueTransfer, energyUsed);
+
+        assertEquals(senderBalanceBefore, kernel.getBalance(from));
+        assertEquals(BigInteger.ZERO, kernel.getBalance(recipient));
+    }
+
+    @Test
+    public void testBalanceTransferWithLotsOfDataLowEnergyLimit() {
+        BigInteger senderBalanceBefore = kernel.getBalance(from);
+        BigInteger value = BigInteger.ONE;
+        AionAddress recipient = createNewAccountWithBalance(BigInteger.ZERO);
+
+        TransactionResult result = transferValueWithData(recipient, value, new byte[1000000]);
+
+        assertEquals(AvmInternalError.REJECTED_INVALID_ENERGY_LIMIT.error, result.transactionStatus.causeOfError);
+
+        long energyUsed = result.energyUsed;
+        assertEquals(energyLimitForValueTransfer, energyUsed);
+
+        assertEquals(senderBalanceBefore, kernel.getBalance(from));
+        assertEquals(BigInteger.ZERO, kernel.getBalance(recipient));
+    }
+
+    @Test
+    public void testValueZeroWithDataLowEnergyLimit() {
+        BigInteger senderBalanceBefore = kernel.getBalance(from);
+        BigInteger value = BigInteger.ZERO;
+        AionAddress recipient = createNewAccountWithBalance(BigInteger.ZERO);
+
+        TransactionResult result = transferValueWithData(recipient, value, new byte[1]);
+
+        assertEquals(AvmInternalError.REJECTED_INVALID_ENERGY_LIMIT.error, result.transactionStatus.causeOfError);
+
+        long energyUsed = result.energyUsed;
+        assertEquals(energyLimitForValueTransfer, energyUsed);
+
+        assertEquals(senderBalanceBefore, kernel.getBalance(from));
+        assertEquals(BigInteger.ZERO, kernel.getBalance(recipient));
     }
 
     @Test
@@ -238,8 +391,18 @@ public class TransactionAccountBalanceTest {
     }
 
     private TransactionResult transferValue(AionAddress recipient, BigInteger value) {
+        return transferValueWithData(recipient, value, new byte[0]);
+    }
+
+    private TransactionResult transferValueWithData(AionAddress recipient, BigInteger value, byte[] data) {
         kernel.generateBlock();
-        Transaction transaction = AvmTransactionUtil.call(from, recipient, kernel.getNonce(from), value, new byte[0], BillingRules.BASIC_TRANSACTION_COST, energyPrice);
+        Transaction transaction = AvmTransactionUtil.call(from, recipient, kernel.getNonce(from), value, data, BillingRules.BASIC_TRANSACTION_COST, energyPrice);
+        return avm.run(TransactionAccountBalanceTest.kernel, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
+    }
+
+    private TransactionResult transferValueWithDataAndEnergyLimit(AionAddress recipient, BigInteger value, byte[] data, long energyLimit) {
+        kernel.generateBlock();
+        Transaction transaction = AvmTransactionUtil.call(from, recipient, kernel.getNonce(from), value, data, energyLimit , energyPrice);
         return avm.run(TransactionAccountBalanceTest.kernel, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
     }
 
