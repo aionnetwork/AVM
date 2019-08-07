@@ -212,7 +212,7 @@ public class ShadowCoverageTarget {
         }
         
         public void populate() {
-            aBigDecimal = new BigDecimal("1234567890.0987654321");
+            aBigDecimal = new BigDecimal("1234567890");
             aBigInteger = new BigInteger("123456789000987654321");
             aMathContext = new MathContext(1);
             aRoundingMode = RoundingMode.UP;

@@ -27,7 +27,7 @@ public class ShadowSerializationTest {
 
     // Note that these numbers change pretty frequently, based on constants in the test, etc.
     private static final int HASH_JAVA_LANG = -1260057337;
-    private static final int HASH_JAVA_MATH = -602587633;
+    private static final int HASH_JAVA_MATH = -337086088;
     private static final int HASH_API = 496;
 
     Address deployer = avmRule.getPreminedAccount();
