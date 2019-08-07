@@ -188,55 +188,55 @@ public class BenchmarkTest {
         byte[] args = new ABIStreamingEncoder().encodeOneString("getMyInt").toBytes();
         ResultWrapper result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
-        Assert.assertEquals(31786L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(31442L, result.getTransactionResult().energyUsed);
         Assert.assertEquals(703, ((Integer) result.getDecodedReturnData()).intValue());
         
         args = new ABIStreamingEncoder().encodeOneString("getMyString").toBytes();
         result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
-        Assert.assertEquals(35066L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(34722L, result.getTransactionResult().energyUsed);
         Assert.assertEquals("Benchmark Testing", (String) result.getDecodedReturnData());
         
         args = new ABIStreamingEncoder().encodeOneString("getMyInt1DArray").toBytes();
         result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
-        Assert.assertEquals(35415L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(35071L, result.getTransactionResult().energyUsed);
         Assert.assertArrayEquals(new int[] {0,1,2,3,4,5}, (int[]) result.getDecodedReturnData());
         
         // Basic graph map interactions.
         args = new ABIStreamingEncoder().encodeOneString("getMap").encodeOneInteger(1).toBytes();
         result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
-        Assert.assertEquals(39834L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(38212L, result.getTransactionResult().energyUsed);
         Assert.assertEquals("one", (String) result.getDecodedReturnData());
         
         args = new ABIStreamingEncoder().encodeOneString("putMap").encodeOneInteger(1).encodeOneString("Testing").toBytes();
         result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
-        Assert.assertEquals(40881L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(39098L, result.getTransactionResult().energyUsed);
         
         args = new ABIStreamingEncoder().encodeOneString("getMap").encodeOneInteger(1).toBytes();
         result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
-        Assert.assertEquals(39998L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(38376L, result.getTransactionResult().energyUsed);
         Assert.assertEquals("Testing", (String) result.getDecodedReturnData());
         
         // Basic key-value store interactions.
         args = new ABIStreamingEncoder().encodeOneString("getStorage").encodeOneString("key").toBytes();
         result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
-        Assert.assertEquals(37707L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(37363L, result.getTransactionResult().energyUsed);
         Assert.assertEquals(null, (String) result.getDecodedReturnData());
         
         args = new ABIStreamingEncoder().encodeOneString("putStorage").encodeOneString("key").encodeOneString("value").toBytes();
         result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
-        Assert.assertEquals(60937L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(60593L, result.getTransactionResult().energyUsed);
         
         args = new ABIStreamingEncoder().encodeOneString("getStorage").encodeOneString("key").toBytes();
         result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
-        Assert.assertEquals(40715L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(40371L, result.getTransactionResult().energyUsed);
         Assert.assertEquals("value", (String) result.getDecodedReturnData());
     }
 

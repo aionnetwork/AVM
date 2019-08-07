@@ -207,4 +207,24 @@ public class AionSetTest {
         AionSet<TestElement> mapDifferent = createAionSet(size, hashCount);
         Assert.assertNotEquals(set.hashCode(), mapDifferent.hashCode());
     }
+
+    @Test
+    public void testBSet(){
+        AionSet<Integer> s = new AionSet<>();
+        Integer res;
+
+        for (int i = 0; i < 10000; i++){
+            s.add(Integer.valueOf(i));
+        }
+
+        for (int i = 0; i < 10000; i++){
+            boolean b = s.contains(Integer.valueOf(i));
+            Assert.assertTrue(b);
+        }
+
+        for (int i = 0; i < 10000; i++){
+            boolean b = s.remove(Integer.valueOf(i));
+            Assert.assertTrue(b);
+        }
+    }
 }
