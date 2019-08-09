@@ -8,8 +8,6 @@ module org.aion.avm.embed {
     requires org.aion.avm.tooling;
 
     // external modules
-    requires slf4j.api;
-    requires slf4j.simple;
     requires spongycastle;
     requires ed25519;
     requires org.objectweb.asm;

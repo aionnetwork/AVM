@@ -12,8 +12,6 @@ module org.aion.avm.core {
     requires org.aion.avm.api;
 
     // external modules
-    requires slf4j.api;
-    requires slf4j.simple;
     requires org.objectweb.asm;
     requires org.objectweb.asm.commons;
     requires org.objectweb.asm.tree;

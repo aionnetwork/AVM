@@ -12,14 +12,9 @@ import org.aion.avm.core.persistence.ReentrantGraph;
 import org.aion.avm.core.util.Helpers;
 import i.*;
 import org.aion.parallel.TransactionTask;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 public class DAppExecutor {
-
-    private static final Logger logger = LoggerFactory.getLogger(DAppExecutor.class);
-
     public static AvmWrappedTransactionResult call(IExternalCapabilities capabilities, IExternalState externalState, AvmInternal avm, LoadedDApp dapp,
                             ReentrantDAppStack.ReentrantState stateToResume, TransactionTask task,
                             Transaction tx, AvmWrappedTransactionResult internalResult, boolean verboseErrors, boolean readFromCache) {
@@ -194,7 +189,6 @@ public class DAppExecutor {
                 dapp.revertToCallerState(initialClassWrappers, callerState);
             }
             result = TransactionResultUtil.setFailedException(result, e.getCause(), tx.energyLimit);
-            logger.debug("Uncaught exception", e.getCause());
         } catch (AvmException e) {
             // We handle the generic AvmException as some failure within the contract.
             if (verboseErrors) {

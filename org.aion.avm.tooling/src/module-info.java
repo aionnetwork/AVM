@@ -9,8 +9,6 @@ module org.aion.avm.tooling {
     requires org.aion.avm.api;
 
     // external modules
-    requires slf4j.api;
-    requires slf4j.simple;
     requires org.objectweb.asm;
     requires org.objectweb.asm.tree;
     requires org.objectweb.asm.commons;

@@ -25,13 +25,9 @@ import i.JvmError;
 import i.RuntimeAssertionError;
 import org.aion.parallel.AddressResourceMonitor;
 import org.aion.parallel.TransactionTask;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 public class AvmImpl implements AvmInternal {
-
-    private static final Logger logger = LoggerFactory.getLogger(AvmImpl.class);
     private InternalLogger internalLogger;
 
     private final IInstrumentationFactory instrumentationFactory;
@@ -356,14 +352,6 @@ public class AvmImpl implements AvmInternal {
     }
 
     private AvmWrappedTransactionResult commonInvoke(IExternalState parentKernel, TransactionTask task, Transaction tx, long transactionBaseCost) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Transaction: address = {}, caller = {}, value = {}, data = {}, energyLimit = {}",
-                tx.destinationAddress,
-                tx.senderAddress,
-                Helpers.bytesToHexString(tx.value.toByteArray()),
-                Helpers.bytesToHexString(tx.copyOfTransactionData()),
-                tx.energyLimit);
-        }
         // Invoke calls must build their transaction on top of an existing "parent" kernel.
         TransactionalState thisTransactionKernel = new TransactionalState(parentKernel);
 
@@ -495,7 +483,6 @@ public class AvmImpl implements AvmInternal {
             internalLogger.logFatal(result.exception);
         }
 
-        logger.debug("Result: {}", result);
         return result;
     }
 
