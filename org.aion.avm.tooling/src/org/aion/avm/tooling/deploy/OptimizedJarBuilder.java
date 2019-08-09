@@ -69,6 +69,9 @@ public class OptimizedJarBuilder {
         if (unreachableMethodRemoverEnabled) {
             try {
                 optimizedDappBytes = UnreachableMethodRemover.optimize(optimizedDappBytes);
+
+		//Run class removal optimization again to ensure classes without any referenced methods are removed
+        	optimizedDappBytes = jarOptimizer.optimize(optimizedDappBytes);
             } catch (Exception exception) {
                 System.err.println("UnreachableMethodRemover crashed, packaging code without this optimization");
             }

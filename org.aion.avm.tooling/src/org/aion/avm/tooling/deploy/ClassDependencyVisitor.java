@@ -4,6 +4,7 @@ import org.objectweb.asm.*;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.signature.SignatureVisitor;
 
+// Note that inner classes are added as dependencies only if they are referenced
 public class ClassDependencyVisitor extends ClassVisitor {
 
     private final DependencyCollector dependencyCollector;
@@ -31,13 +32,6 @@ public class ClassDependencyVisitor extends ClassVisitor {
         }
 
         super.visit(version, access, name, signature, superName, interfaces);
-    }
-
-    @Override
-    public void visitInnerClass(String name, String outerName, String innerName, int access) {
-        //all inner classes are added as dependency
-        dependencyCollector.addType(name);
-        super.visitInnerClass(name, outerName, innerName, access);
     }
 
     @Override

@@ -5,6 +5,7 @@ import org.aion.avm.tooling.util.Utilities;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.signature.SignatureVisitor;
 
 import java.io.*;
@@ -108,6 +109,24 @@ public class JarOptimizer {
         }
 
         classMap.entrySet().removeIf(e -> !visitedClasses.contains(e.getKey()));
+
+        // update outer class bytes of removed inner classes
+        for (String className : visitedClasses) {
+            ClassReader reader = new ClassReader(classMap.get(className));
+            ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+
+            ClassVisitor classVisitor = new ClassVisitor(Opcodes.ASM6, writer) {
+                @Override
+                public void visitInnerClass(String name, String outerName, String innerName, int access) {
+                    if (visitedClasses.contains(name)) {
+                        super.visitInnerClass(name, outerName, innerName, access);
+                    }
+                }
+            };
+            reader.accept(classVisitor, 0);
+            classMap.replace(className, writer.toByteArray());
+        }
+
         assertTrue(classMap.entrySet().size() == visitedClasses.size());
 
         byte[] mainClassBytes = classMap.get(mainClassName);
