@@ -22,7 +22,9 @@ import java.math.BigInteger;
 
 /**
  * TestRule to handle the boilerplate operations of testing with an embedded avm.
+ * <p>
  * If declared with @Rule annotation, the kernel and avm are instantiated for each for each test.
+ * <p>
  * Otherwise, when declared with @ClassRule annotation, the kernel and avm are instantiated once for the test class.
  */
 public final class AvmRule implements TestRule {
@@ -211,6 +213,11 @@ public final class AvmRule implements TestRule {
         return new ResultWrapper(avm.run(this.kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult());
     }
 
+    /**
+     * An abstract container of the result of running a transaction or call on {@link AvmRule}.
+     * <p>
+     * This provides high-level accessors for interpreting the consequences of the transaction or call.
+     */
     public static class ResultWrapper {
         TransactionResult result;
 

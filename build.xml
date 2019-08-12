@@ -87,7 +87,7 @@
         <copy file="scripts/compile.sh" todir="${dir.global.workspace}/dist"></copy>
         <chmod perm="755" file="${dir.global.workspace}/dist/compile.sh"></chmod>
 
-        <javadoc packagenames="org.aion.avm.api.*"
+        <javadoc
                  defaultexcludes="yes"
                  destdir="${dir.global.workspace}/dist/javadoc"
                  author="true"
@@ -95,6 +95,10 @@
                  use="true"
                  overview="org.aion.avm.api/src/overview.html"
                  windowtitle="AVM Blockchain API">
+            <classpath>
+                <pathelement path="${dir.global.workspace}/lib/*"/>
+                <pathelement path="${dir.global.workspace}/build/main/*"/>
+            </classpath>
             <arg value = "-html5"/>
             <fileset dir="org.aion.avm.api/src">
                 <include name="**/*.java"/>
@@ -103,6 +107,10 @@
             <fileset dir="org.aion.avm.userlib/src">
                 <include name="**/*.java"/>
                 <exclude name="**/module-info.java"/>
+            </fileset>
+            <fileset dir="org.aion.avm.embed/src">
+                <include name="**/org/aion/avm/embed/AvmRule.java"/>
+                <include name="**/org/aion/avm/embed/package-info.java"/>
             </fileset>
         </javadoc>
 
