@@ -14,10 +14,7 @@ import java.util.zip.ZipEntry;
 
 import org.aion.avm.core.util.Helpers;
 import i.RuntimeAssertionError;
-import org.aion.avm.userlib.AionBuffer;
-import org.aion.avm.userlib.AionList;
-import org.aion.avm.userlib.AionMap;
-import org.aion.avm.userlib.AionSet;
+import org.aion.avm.userlib.*;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.userlib.abi.ABIException;
@@ -37,7 +34,7 @@ public class JarBuilder {
     private static long FIXED_TIMESTAMP = 1_000_000_000_000L;
 
     private static Class<?>[] userlibClasses = new Class[] {ABIDecoder.class, ABIEncoder.class,
-        ABIStreamingEncoder.class, ABIException.class, ABIToken.class, AionBuffer.class, AionList.class, AionMap.class, AionSet.class};
+        ABIStreamingEncoder.class, ABIException.class, ABIToken.class, AionBuffer.class, AionList.class, AionMap.class, AionSet.class, AionUtilities.class};
 
     /**
      * Creates the in-memory representation of a JAR with the given main class, other classes, and all classes in the Userlib.

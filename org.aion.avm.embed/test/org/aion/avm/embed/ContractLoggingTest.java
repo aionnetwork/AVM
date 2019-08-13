@@ -7,6 +7,7 @@ import static org.junit.Assert.fail;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.aion.avm.core.*;
 import org.aion.kernel.TestingState;
@@ -98,6 +99,21 @@ public class ContractLoggingTest {
         assertEquals(5, result.internalTransactions.size());
 
         verifyLogs(result.logs, 5);
+    }
+
+    @Test
+    public void padTruncateLogs() {
+        Transaction transaction = generateTxForMethodCall("padTruncateLogs");
+        TransactionResult result = runTransaction(transaction);
+        assertTrue(result.transactionStatus.isSuccess());
+
+        assertEquals(1, result.logs.size());
+        Log log = result.logs.get(0);
+        assertEquals(32, log.copyOfTopics().get(0).length);
+        assertEquals(BigInteger.valueOf(256), new BigInteger(log.copyOfTopics().get(0)));
+        byte[] topic2 = new byte[32];
+        Arrays.fill(topic2, Byte.MAX_VALUE);
+        assertArrayEquals(topic2, log.copyOfTopics().get(1));
     }
 
     /**

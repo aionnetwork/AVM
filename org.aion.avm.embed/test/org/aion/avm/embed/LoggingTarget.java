@@ -2,6 +2,7 @@ package org.aion.avm.embed;
 
 import java.math.BigInteger;
 
+import org.aion.avm.userlib.AionUtilities;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import avm.Blockchain;
 import org.aion.avm.userlib.abi.ABIEncoder;
@@ -37,6 +38,9 @@ public class LoggingTarget {
                 return new byte[0];
             } else if (methodName.equals("hitLogs")) {
                 hitLogs();
+                return new byte[0];
+            } else if (methodName.equals("padTruncateLogs")) {
+                padTruncateLogs();
                 return new byte[0];
             } else {
                 return new byte[0];
@@ -92,6 +96,16 @@ public class LoggingTarget {
         hitLog3();
         hitLog4();
         hitLog5();
+
+    }
+
+    public static void padTruncateLogs() {
+        byte[] topic1 = new BigInteger("256").toByteArray();
+        byte[] topic2 = new byte[33];
+        for (int i = 0; i < topic2.length; i++) {
+            topic2[i] = Byte.MAX_VALUE;
+        }
+        Blockchain.log(AionUtilities.padLeft(topic1), topic2, new byte[0]);
     }
 
     private static void hitLog1() {

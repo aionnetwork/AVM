@@ -13,10 +13,7 @@ import java.util.Arrays;
 
 import org.aion.avm.tooling.util.JarBuilder;
 import org.aion.avm.tooling.util.Utilities;
-import org.aion.avm.userlib.AionBuffer;
-import org.aion.avm.userlib.AionList;
-import org.aion.avm.userlib.AionMap;
-import org.aion.avm.userlib.AionSet;
+import org.aion.avm.userlib.*;
 import org.aion.avm.userlib.abi.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -33,7 +30,7 @@ public class ABICompiler {
 
     private static final int DEFAULT_VERSION_NUMBER = 0;
     private static Class[] requiredUserlibClasses = new Class[] {ABIDecoder.class, ABIEncoder.class,
-        ABIStreamingEncoder.class, ABIException.class, ABIToken.class, AionBuffer.class, AionList.class, AionMap.class, AionSet.class};
+        ABIStreamingEncoder.class, ABIException.class, ABIToken.class, AionBuffer.class, AionList.class, AionMap.class, AionSet.class, AionUtilities.class};
 
     private String mainClassName;
     private byte[] mainClassBytes;

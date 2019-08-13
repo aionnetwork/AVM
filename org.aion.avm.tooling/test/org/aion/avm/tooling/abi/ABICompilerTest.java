@@ -17,10 +17,7 @@ import java.util.Map;
 import org.aion.avm.tooling.deploy.eliminator.TestUtil;
 import org.aion.avm.tooling.util.JarBuilder;
 import org.aion.avm.tooling.util.Utilities;
-import org.aion.avm.userlib.AionBuffer;
-import org.aion.avm.userlib.AionList;
-import org.aion.avm.userlib.AionMap;
-import org.aion.avm.userlib.AionSet;
+import org.aion.avm.userlib.*;
 import org.aion.avm.userlib.abi.*;
 import org.junit.After;
 import org.junit.Assert;
@@ -139,7 +136,7 @@ public class ABICompilerTest {
         byte[] jar = TestUtil.serializeClassesAsJar(ChattyCalculatorTarget.class, SilentCalculatorTarget.class, AionList.class, AionBuffer.class);
 
         Class[] expectedMissingClasses = new Class[] {ABIDecoder.class, ABIEncoder.class,
-            ABIStreamingEncoder.class, ABIException.class, ABIToken.class, AionMap.class, AionSet.class};
+            ABIStreamingEncoder.class, ABIException.class, ABIToken.class, AionMap.class, AionSet.class, AionUtilities.class};
 
         ABICompiler compiler = ABICompiler.compileJarBytes(jar);
         Class[] actualMissingClasses = ABICompiler.getMissingUserlibClasses(compiler.getClassMap());
