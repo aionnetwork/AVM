@@ -1,7 +1,5 @@
 package org.aion.parallel;
 
-import static org.junit.Assert.assertTrue;
-
 import java.math.BigInteger;
 
 import avm.Address;
@@ -327,6 +325,65 @@ public class AvmParallelTest {
         }
         Transaction[] batch = new Transaction[]{tx[1], tx[2]};
         results = avm.run(kernel, batch, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1);
+        for (FutureResult f : results) {
+            Assert.assertEquals(1, new ABIDecoder(f.getResult().copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
+        }
+
+        avm.shutdown();
+    }
+
+    @Test
+    public void internalTransactionAbortDuringTransformation() {
+
+        byte[] code = JarBuilder.buildJarForMainAndClassesAndUserlib(TestContract.class);
+
+        TestingState kernel = new TestingState(block);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
+
+        int length = 4;
+        AionAddress[] user = new AionAddress[length];
+        Transaction[] ctx = new Transaction[length];
+        for (int i = 0; i < length; i++) {
+            user[i] = Helpers.randomAddress();
+            kernel.adjustBalance(user[i], BigInteger.TEN.pow(20));
+            ctx[i] = AvmTransactionUtil.create(user[i], BigInteger.ZERO, BigInteger.ZERO, new CodeAndArguments(code, null).encodeToBytes(), 5_000_000L, 1);
+        }
+
+        FutureResult[] results = avm.run(kernel, ctx, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1);
+        AionAddress[] contractAddresses = new AionAddress[results.length];
+        for (int i = 0; i < results.length; i++) {
+            contractAddresses[i] = new AionAddress(results[i].getResult().copyOfTransactionOutput().orElseThrow());
+            kernel.setTransformedCode(contractAddresses[i], null);
+        }
+
+        Transaction[] tx = new Transaction[results.length - 1];
+        // u1->A->B, u2->B->C, u3->C->D
+        for (int i = 0; i < results.length - 1; i++) {
+            byte[] callData = new ABIStreamingEncoder()
+                    .encodeOneString("doCallOther")
+                    .encodeOneAddress(new Address(contractAddresses[i + 1].toByteArray()))
+                    .encodeOneByteArray(new ABIStreamingEncoder().encodeOneString("addValue").toBytes())
+                    .toBytes();
+
+            tx[i] = AvmTransactionUtil.call(user[i], contractAddresses[i], kernel.getNonce(user[i]), BigInteger.ZERO, callData, 5_000_000, 1);
+        }
+
+        for (AionAddress contractAddress: contractAddresses) {
+            kernel.setTransformedCode(contractAddress, null);
+        }
+
+        results = avm.run(kernel, tx, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1);
+        for (FutureResult f : results) {
+            f.getResult();
+        }
+
+        // validate the state of contracts
+        for (int i = 0; i < length - 1; i++) {
+            byte[] getCallCount = new ABIStreamingEncoder().encodeOneString("getCallCount").toBytes();
+            tx[i] = AvmTransactionUtil.call(user[i], contractAddresses[i], kernel.getNonce(user[i]), BigInteger.ZERO, getCallCount, 5_000_000, 1);
+        }
+
+        results = avm.run(kernel, tx, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1);
         for (FutureResult f : results) {
             Assert.assertEquals(1, new ABIDecoder(f.getResult().copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
         }

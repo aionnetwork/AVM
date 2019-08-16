@@ -59,7 +59,7 @@ public class ImmortalDappModule {
     /**
      * Create the in-memory JAR containing all the classes in this module.
      */
-    public byte[] createJar(AionAddress address, long blockTimeStamp) throws IOException {
+    public byte[] createJar(long blockTimeStamp) throws IOException {
         // set jar file timestamp to block timestamp so the whole network is in agreement over this.
         FileTime timestamp = FileTime.fromMillis(blockTimeStamp);
 

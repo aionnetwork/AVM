@@ -233,23 +233,14 @@ public class DAppCreator {
             threadInstrumentation.chargeEnergy(BillingRules.getDeploymentFee(rawDapp.numberOfClasses, rawDapp.bytecodeSize));
 
             // Create the immortal version of the transformed DApp code by stripping the <clinit>.
-            Map<String, byte[]> immortalClasses = new HashMap<>();
-            for (Map.Entry<String, byte[]> elt : transformedClasses.entrySet()) {
-                String className = elt.getKey();
-                byte[] transformedClass = elt.getValue();
-                byte[] immortalClass = new ClassToolchain.Builder(transformedClass, 0)
-                        .addNextVisitor(new ClinitStrippingVisitor())
-                        .addWriter(new ClassWriter(0))
-                        .build()
-                        .runAndGetBytecode();
-                immortalClasses.put(className, immortalClass);
-            }
+            Map<String, byte[]> immortalClasses = stripClinitFromClasses(transformedClasses);
+
             ImmortalDappModule immortalDapp = ImmortalDappModule.fromImmortalClasses(immortalClasses, transformedDapp.mainClass);
 
             // store deployed code
             externalState.putCode(dappAddress, codeAndArguments.code);
             // store transformed dapp
-            byte[] immortalDappJar = immortalDapp.createJar(dappAddress, externalState.getBlockTimestamp());
+            byte[] immortalDappJar = immortalDapp.createJar(externalState.getBlockTimestamp());
             externalState.setTransformedCode(dappAddress, immortalDappJar);
 
             // Force the classes in the dapp to initialize so that the <clinit> is run (since we already saved the version without).
@@ -360,6 +351,21 @@ public class DAppCreator {
             }
         }
         return result;
+    }
+
+    public static Map<String, byte[]> stripClinitFromClasses(Map<String, byte[]> transformedClasses){
+        Map<String, byte[]> immortalClasses = new HashMap<>();
+        for (Map.Entry<String, byte[]> elt : transformedClasses.entrySet()) {
+            String className = elt.getKey();
+            byte[] transformedClass = elt.getValue();
+            byte[] immortalClass = new ClassToolchain.Builder(transformedClass, 0)
+                    .addNextVisitor(new ClinitStrippingVisitor())
+                    .addWriter(new ClassWriter(0))
+                    .build()
+                    .runAndGetBytecode();
+            immortalClasses.put(className, immortalClass);
+        }
+        return immortalClasses;
     }
 
     private static Map<String, byte[]> rejectionAndRenameInputClasses(Map<String, byte[]> inputClasses, ClassHierarchy classHierarchy, ClassRenamer classRenamer, boolean preserveDebuggability) {

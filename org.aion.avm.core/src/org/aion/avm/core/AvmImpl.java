@@ -4,7 +4,6 @@ import org.aion.avm.core.util.TransactionResultUtil;
 import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
-import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
 
 import java.io.IOException;
@@ -441,8 +440,21 @@ public class AvmImpl implements AvmInternal {
                     updateDataCache = false;
                 }
 
-                //'parentKernel.getTransformedCode(recipient) != null' means this recipient's DApp is not self-destructed.
-                if (transformedCode != null) {
+                // lazily re-transform the code
+                if (transformedCode == null) {
+                    byte[] code = parentKernel.getCode(recipient);
+                    //'parentKernel.getCode(recipient) != null' means this recipient's DApp is not self-destructed.
+                    if (code != null) {
+                        transformedCode = CodeReTransformer.transformCode(code, parentKernel.getBlockTimestamp(), this.preserveDebuggability, this.enableVerboseContractErrors);
+                        if (transformedCode == null) {
+                            // re-transformation of the code failed
+                            result = TransactionResultUtil.setNonRevertedFailureAndEnergyUsed(result, AvmInternalError.FAILED_RETRANSFORMATION, tx.energyLimit);
+                        } else {
+                            parentKernel.setTransformedCode(recipient, transformedCode);
+                        }
+                    }
+                } else {
+                // do not use the cache if the code has not been transformed for the latest version
                     dapp = dappInHotCache;
                 }
                 if (null == dapp) {
