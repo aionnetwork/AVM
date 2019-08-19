@@ -7,16 +7,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.Map;
 
-import org.aion.avm.tooling.deploy.eliminator.ClassInfo;
-import org.aion.avm.tooling.deploy.eliminator.JarDependencyCollector;
-import org.aion.avm.tooling.deploy.eliminator.MethodInfo;
-import org.aion.avm.tooling.deploy.eliminator.resources.ClassD;
-import org.aion.avm.tooling.deploy.eliminator.resources.ClassE;
-import org.aion.avm.tooling.deploy.eliminator.resources.ClassF;
-import org.aion.avm.tooling.deploy.eliminator.resources.ClassG;
-import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceA;
-import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceB;
-import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceC;
+import org.aion.avm.tooling.deploy.eliminator.resources.*;
 import org.aion.avm.tooling.util.Utilities;
 import org.junit.Test;
 
@@ -128,6 +119,33 @@ public class JarDependencyCollectorTest {
         assertTrue(classInfoG.getParents().contains(classInfoC));
         assertTrue(classInfoG.getParents().contains(classInfoD));
         assertTrue(classInfoG.getParents().contains(classInfoE));
+    }
+
+    @Test
+    public void testInvokeStaticRelationships(){
+        String ClassInvokeStaticEntryName = getInternalNameForClass(InvokeStaticEntry.class);
+        String ClassIName = getInternalNameForClass(ClassI.class);
+        String ClassHName = getInternalNameForClass(ClassH.class);
+
+        Map<String, byte[]> classMap = TestUtil.makeClassMap(InvokeStaticEntry.class, ClassH.class, ClassI.class);
+
+        Map<String, ClassInfo> classInfoMap = JarDependencyCollector.getClassInfoMap(classMap);
+        assertEquals(21, classInfoMap.size());
+
+        ClassInfo classInfoEntry = classInfoMap.get(ClassInvokeStaticEntryName);
+        ClassInfo classInfoI = classInfoMap.get(ClassIName);
+        ClassInfo classInfoH = classInfoMap.get(ClassHName);
+
+        assertNotNull(classInfoEntry);
+        assertNotNull(classInfoI);
+        assertNotNull(classInfoH);
+
+        assertEquals(2, classInfoH.getParents().size());
+        assertEquals(0, classInfoH.getChildren().size());
+        assertEquals(1, classInfoI.getParents().size());
+        assertEquals(1, classInfoI.getChildren().size());
+        assertTrue(classInfoH.getParents().contains(classInfoI));
+
     }
 
     @Test

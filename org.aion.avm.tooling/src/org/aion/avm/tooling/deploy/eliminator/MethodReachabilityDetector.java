@@ -61,13 +61,14 @@ public class MethodReachabilityDetector {
                         .get(invocation.methodIdentifier);
                     switch (invocation.invocationOpcode) {
                         case Opcodes.INVOKESPECIAL:
-                        case Opcodes.INVOKESTATIC:
                             // this is the easy case: we just mark the methodInfo as reachable and enqueue it
                             enqueue(calledMethod);
                             break;
                         case Opcodes.INVOKEVIRTUAL:
                         case Opcodes.INVOKEDYNAMIC:
                         case Opcodes.INVOKEINTERFACE:
+                            // INVOKESTATIC can be inherited even though it's not in the class bytecode
+                        case Opcodes.INVOKESTATIC:
                             enqueueSelfAndChildren(ownerClass, invocation.methodIdentifier);
                             break;
                         default:
@@ -78,7 +79,7 @@ public class MethodReachabilityDetector {
         }
     }
 
-    // should only be called on non-static methods that aren't constructors
+    // should only be called on methods that aren't constructors
     private void enqueueSelfAndChildren(ClassInfo classInfo, String methodId) {
 
         // Enqueue the declaration of this method

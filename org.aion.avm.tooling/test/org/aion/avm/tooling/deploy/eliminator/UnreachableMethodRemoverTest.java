@@ -4,17 +4,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.ByteArrayInputStream;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.JarInputStream;
 
-import org.aion.avm.tooling.deploy.eliminator.resources.ClassD;
-import org.aion.avm.tooling.deploy.eliminator.resources.ClassE;
-import org.aion.avm.tooling.deploy.eliminator.resources.ClassF;
-import org.aion.avm.tooling.deploy.eliminator.resources.ClassG;
-import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceA;
-import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceB;
-import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceC;
+import org.aion.avm.tooling.deploy.eliminator.resources.*;
 import org.aion.avm.tooling.util.Utilities;
 import org.junit.Test;
 
@@ -75,6 +68,32 @@ public class UnreachableMethodRemoverTest {
         assertEquals(1, methodInfoMapE.size());
         assertEquals(8, methodInfoMapF.size());
         assertEquals(8, methodInfoMapG.size());
+    }
+
+    @Test
+    public void testInvokeStaticMethodRemoval() throws Exception {
+        String ClassInvokeStaticEntryName = getInternalNameForClass(InvokeStaticEntry.class);
+
+        byte[] jar = TestUtil.serializeClassesAsJar(InvokeStaticEntry.class, ClassH.class, ClassI.class);
+        byte[] optimizedJar = UnreachableMethodRemover.optimize(jar);
+        assertNotNull(optimizedJar);
+
+        JarInputStream jarReader = new JarInputStream(new ByteArrayInputStream(optimizedJar), true);
+        Map<String, byte[]> classMap = Utilities.extractClasses(jarReader, Utilities.NameStyle.SLASH_NAME);
+
+        assertNotNull(optimizedJar);
+        assertEquals(3, classMap.size());
+
+        Map<String, ClassInfo> classInfoMap = MethodReachabilityDetector.getClassInfoMap(ClassInvokeStaticEntryName, classMap);
+        assertEquals(21, classInfoMap.size());
+        ClassInfo classInfoH = classInfoMap.get(getInternalNameForClass(ClassH.class));
+        ClassInfo classInfoI = classInfoMap.get(getInternalNameForClass(ClassI.class));
+
+        assertNotNull(classInfoI);
+        assertNotNull(classInfoH);
+
+        assertEquals(1, classInfoI.getMethodMap().size());
+        assertEquals(0, classInfoH.getMethodMap().size());
     }
 
     private static String getInternalNameForClass(Class<?> clazz) {

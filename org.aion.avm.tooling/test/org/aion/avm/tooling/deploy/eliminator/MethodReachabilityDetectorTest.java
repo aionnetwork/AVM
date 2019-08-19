@@ -1,27 +1,12 @@
 package org.aion.avm.tooling.deploy.eliminator;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import org.aion.avm.tooling.deploy.eliminator.resources.*;
+import org.aion.avm.tooling.util.Utilities;
+import org.junit.Test;
 
 import java.util.Map;
 
-import org.aion.avm.tooling.deploy.eliminator.ClassInfo;
-import org.aion.avm.tooling.deploy.eliminator.MethodInfo;
-import org.aion.avm.tooling.deploy.eliminator.MethodReachabilityDetector;
-import org.aion.avm.tooling.deploy.eliminator.resources.ClassD;
-import org.aion.avm.tooling.deploy.eliminator.resources.ClassE;
-import org.aion.avm.tooling.deploy.eliminator.resources.ClassF;
-import org.aion.avm.tooling.deploy.eliminator.resources.ClassG;
-import org.aion.avm.tooling.deploy.eliminator.resources.FakeMap;
-import org.aion.avm.tooling.deploy.eliminator.resources.FakeMapUser;
-import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceA;
-import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceB;
-import org.aion.avm.tooling.deploy.eliminator.resources.InterfaceC;
-import org.aion.avm.tooling.util.Utilities;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.*;
 
 public class MethodReachabilityDetectorTest {
 
@@ -107,6 +92,22 @@ public class MethodReachabilityDetectorTest {
         assertTrue(methodInfo.isReachable);
 
         methodInfo = classInfoF.getMethodMap().get("classD()C");
+        assertNotNull(methodInfo);
+        assertTrue(methodInfo.isReachable);
+    }
+
+    @Test
+    public void testInvokeStaticMethodReachability() throws Exception {
+        String ClassInvokeStaticEntryName = getInternalNameForClass(InvokeStaticEntry.class);
+        String ClassIName = getInternalNameForClass(ClassI.class);
+
+        Map<String, byte[]> classMap = TestUtil.makeClassMap(InvokeStaticEntry.class, ClassH.class, ClassI.class);
+        Map<String, ClassInfo> classInfoMap = MethodReachabilityDetector.getClassInfoMap(ClassInvokeStaticEntryName, classMap);
+        ClassInfo classInfoI = classInfoMap.get(ClassIName);
+
+        assertNotNull(classInfoI);
+
+        MethodInfo methodInfo = classInfoI.getMethodMap().get("methodI()V");
         assertNotNull(methodInfo);
         assertTrue(methodInfo.isReachable);
     }
