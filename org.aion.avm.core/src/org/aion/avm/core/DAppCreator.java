@@ -162,8 +162,9 @@ public class DAppCreator {
 
         for (String preRenameUserClassOrInterface : preRenameUserClassesAndInterfaces) {
             // We set ArrayType to null because we never expect to see arrays here!
-            if (classHierarchy.postRenameTypeIsInterface(classRenamer.toPostRename(preRenameUserClassOrInterface, ArrayType.NOT_ARRAY))) {
-                userInterfaceSlashNames.add(PackageConstants.kUserSlashPrefix + Helpers.fulllyQualifiedNameToInternalName(preRenameUserClassOrInterface));
+            String classNamePostRename = classRenamer.toPostRename(preRenameUserClassOrInterface, ArrayType.NOT_ARRAY);
+            if (classHierarchy.postRenameTypeIsInterface(classNamePostRename)) {
+                userInterfaceSlashNames.add(Helpers.fulllyQualifiedNameToInternalName(classNamePostRename));
             }
         }
 
