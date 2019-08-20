@@ -4,21 +4,19 @@ import avm.Address;
 import org.aion.avm.core.*;
 import org.aion.avm.tooling.deploy.OptimizedJarBuilder;
 import org.aion.kernel.TestingState;
-import org.aion.types.AionAddress;
-import org.aion.types.Transaction;
+import org.aion.types.*;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.abi.ABICompiler;
 import org.aion.avm.tooling.abi.ABIConfig;
 import org.aion.avm.userlib.CodeAndArguments;
-import org.aion.types.TransactionResult;
-import org.aion.types.TransactionStatus;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import java.math.BigInteger;
+import java.util.List;
 
 /**
  * TestRule to handle the boilerplate operations of testing with an embedded avm.
@@ -255,6 +253,13 @@ public final class AvmRule implements TestRule {
          */
         public TransactionStatus getReceiptStatus() {
             return result.transactionStatus;
+        }
+
+        /**
+         * @return List of execution log objects
+         */
+        public List<Log> getLogs() {
+            return result.logs;
         }
     }
 

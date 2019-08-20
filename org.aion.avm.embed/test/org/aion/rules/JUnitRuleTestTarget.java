@@ -49,5 +49,16 @@ public class JUnitRuleTestTarget {
         Blockchain.log(DATA1);
         Blockchain.log(TOPIC1, DATA1);
     }
+
+    @Callable
+    public static void error(int type){
+        if(type == 1){
+            Blockchain.require(false);
+        } else if (type == 2) {
+            Blockchain.revert();
+        } else if (type == 3){
+            Blockchain.invalid();
+        }
+    }
 }
 

@@ -10,6 +10,8 @@ import org.aion.types.TransactionResult;
 import org.aion.types.TransactionStatus;
 import org.junit.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.math.BigInteger;
 
 import static org.junit.Assert.*;
@@ -72,10 +74,10 @@ public class JUnitRuleTest {
         AvmRule.ResultWrapper result = avmRule.call(preminedAccount, dappAddr, BigInteger.ZERO, txData);
 
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
-        Assert.assertEquals(2, result.getTransactionResult().logs.size());
-        assertEquals(dappAddr, new Address(result.getTransactionResult().logs.get(0).copyOfAddress()));
-        assertArrayEquals(new byte[]{ 0x1 }, result.getTransactionResult().logs.get(0).copyOfData());
-        assertArrayEquals(LogSizeUtils.truncatePadTopic(new byte[]{ 0xf, 0xe, 0xd, 0xc, 0xb, 0xa }), result.getTransactionResult().logs.get(1).copyOfTopics().get(0));
+        Assert.assertEquals(2, result.getLogs().size());
+        assertEquals(dappAddr, new Address(result.getLogs().get(0).copyOfAddress()));
+        assertArrayEquals(new byte[]{ 0x1 }, result.getLogs().get(0).copyOfData());
+        assertArrayEquals(LogSizeUtils.truncatePadTopic(new byte[]{ 0xf, 0xe, 0xd, 0xc, 0xb, 0xa }), result.getLogs().get(1).copyOfTopics().get(0));
     }
 
     @Test
@@ -93,5 +95,28 @@ public class JUnitRuleTest {
         assertTrue(result.transactionStatus.isSuccess());
         assertEquals(BigInteger.valueOf(100L), avmRule.kernel.getBalance(new AionAddress(dappAddr.toByteArray())));
 
+    }
+
+    @Test
+    public void testTransactionResult() {
+        PrintStream originalErr = System.err;
+        System.setErr(new PrintStream(new ByteArrayOutputStream()));
+
+        byte[] txData = ABIUtil.encodeMethodArguments("error", 1);
+        AvmRule.ResultWrapper result = avmRule.call(preminedAccount, dappAddr, BigInteger.ZERO, txData);
+        Assert.assertTrue(result.getReceiptStatus().isReverted());
+
+        txData = ABIUtil.encodeMethodArguments("error", 2);
+        result = avmRule.call(preminedAccount, dappAddr, BigInteger.ZERO, txData);
+        Assert.assertTrue(result.getReceiptStatus().isReverted());
+
+        txData = ABIUtil.encodeMethodArguments("error", 3);
+        result = avmRule.call(preminedAccount, dappAddr, BigInteger.ZERO, txData);
+        Assert.assertTrue(result.getReceiptStatus().isFailed());
+
+        txData = ABIUtil.encodeMethodArguments("error", 4);
+        result = avmRule.call(preminedAccount, dappAddr, BigInteger.ZERO, txData);
+        Assert.assertTrue(result.getReceiptStatus().isSuccess());
+        System.setErr(originalErr);
     }
 }
