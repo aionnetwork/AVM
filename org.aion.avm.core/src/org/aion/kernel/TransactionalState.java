@@ -29,7 +29,7 @@ public class TransactionalState implements IExternalState {
     private final Set<Pair<AionAddress, ByteArrayWrapper>> deletedStorageKeys;
 
 
-    private long blockDifficulty;
+    private BigInteger blockDifficulty;
     private long blockNumber;
     private long blockTimestamp;
     private long blockNrgLimit;
@@ -324,7 +324,7 @@ public class TransactionalState implements IExternalState {
     }
 
     @Override
-    public long getBlockDifficulty() {
+    public BigInteger getBlockDifficulty() {
         return blockDifficulty;
     }
 

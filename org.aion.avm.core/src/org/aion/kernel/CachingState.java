@@ -185,7 +185,7 @@ public class CachingState implements IExternalState {
     }
 
     @Override
-    public long getBlockDifficulty() {
+    public BigInteger getBlockDifficulty() {
         throw RuntimeAssertionError.unreachable("This class does not implement this method.");
     }
 

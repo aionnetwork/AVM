@@ -147,7 +147,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     @Override
     public s.java.math.BigInteger avm_getBlockDifficulty() {
         if (null == this.blockDifficultyCache) {
-            this.blockDifficultyCache = s.java.math.BigInteger.avm_valueOf(externalState.getBlockDifficulty());
+            this.blockDifficultyCache = new s.java.math.BigInteger(externalState.getBlockDifficulty());
         }
 
         return this.blockDifficultyCache;

@@ -97,7 +97,7 @@ public class BlockchainTest {
         buffer.putLong(avmRule.kernel.getBlockNumber());
         buffer.putLong(avmRule.kernel.getBlockEnergyLimit());
         buffer.put(avmRule.kernel.getMinerAddress().toByteArray());
-        buffer.put(BigInteger.valueOf(avmRule.kernel.getBlockDifficulty()).toByteArray());
+        buffer.put(avmRule.kernel.getBlockDifficulty().toByteArray());
         buffer.put("value".getBytes());
         buffer.putLong(avmRule.kernel.getBalance(new AionAddress(new byte[32])).longValue());
         buffer.putLong(avmRule.kernel.getCode(dappAddressApi).length);

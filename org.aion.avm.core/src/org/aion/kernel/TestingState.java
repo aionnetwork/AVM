@@ -254,8 +254,8 @@ public class TestingState implements IExternalState {
     }
 
     @Override
-    public long getBlockDifficulty() {
-        return blockDifficulty.longValue();
+    public BigInteger getBlockDifficulty() {
+        return blockDifficulty;
     }
 
     @Override

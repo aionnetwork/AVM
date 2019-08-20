@@ -207,7 +207,7 @@ public class BlockchainGetDataTest {
         ResultWrapper result = call("getBlockDifficulty");
 
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
-        Assert.assertEquals(BigInteger.valueOf(avmRule.kernel.getBlockDifficulty()),
+        Assert.assertEquals(avmRule.kernel.getBlockDifficulty(),
                 new BigInteger((byte[])result.getDecodedReturnData()));
     }
 

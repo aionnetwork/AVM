@@ -283,7 +283,7 @@ public interface IExternalState {
      *
      * @return the current best block's difficulty.
      */
-    public long getBlockDifficulty();
+    public BigInteger getBlockDifficulty();
 
     /**
      * Returns the address of the miner.
