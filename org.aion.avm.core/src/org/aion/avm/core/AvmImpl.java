@@ -40,6 +40,9 @@ public class AvmImpl implements AvmInternal {
     // Short-lived state which is reset for each batch of transaction request.
     private AddressResourceMonitor resourceMonitor;
 
+    // Shared references to the stats structure - created when threads are started (since their stats are also held here).
+    private AvmCoreStats stats;
+
     // Used in the case of a fatal JvmError in the background threads.  A shutdown() is the only option from this point.
     private AvmFailedException backgroundFatalError;
 
@@ -63,6 +66,7 @@ public class AvmImpl implements AvmInternal {
     }
 
     private class AvmExecutorThread extends Thread{
+        public final AvmThreadStats stats = new AvmThreadStats();
 
         AvmExecutorThread(String name){
             super(name);
@@ -75,7 +79,13 @@ public class AvmImpl implements AvmInternal {
             try {
                 // Run as long as we have something to do (null means shutdown).
                 AvmWrappedTransactionResult outgoingResult = null;
+                long nanosRunningStop = System.nanoTime();
+                long nanosSleepingStart = nanosRunningStop;
                 TransactionTask incomingTask = AvmImpl.this.handoff.blockingPollForTransaction(null, null);
+                long nanosRunningStart = System.nanoTime();
+                long nanosSleepingStop = nanosRunningStart;
+                this.stats.nanosSleeping += (nanosSleepingStop - nanosSleepingStart);
+
                 while (null != incomingTask) {
                     int abortCounter = 0;
 
@@ -108,7 +118,14 @@ public class AvmImpl implements AvmInternal {
                         System.out.println(this.getName() + " finish " + incomingTask.getIndex() + " " + outgoingResult);
                     }
 
+                    this.stats.transactionsProcessed += 1;
+                    nanosRunningStop = System.nanoTime();
+                    nanosSleepingStart = nanosRunningStop;
+                    this.stats.nanosRunning += (nanosRunningStop - nanosRunningStart);
                     incomingTask = AvmImpl.this.handoff.blockingPollForTransaction(outgoingResult, incomingTask);
+                    nanosRunningStart = System.nanoTime();
+                    nanosSleepingStop = nanosRunningStart;
+                    this.stats.nanosSleeping += (nanosSleepingStop - nanosSleepingStart);
                 }
             } catch (JvmError e) {
                 // This is a fatal error the AVM cannot generally happen so request an asynchronous shutdown.
@@ -130,6 +147,10 @@ public class AvmImpl implements AvmInternal {
     }
 
     public void start() {
+        // An AVM instance can only be started once so we shouldn't yet have stats.
+        RuntimeAssertionError.assertTrue(null == this.stats);
+        
+        // There are currently no consumers which have more than 1 AVM instance running concurrently so we enforce this in order to flag static errors.
         RuntimeAssertionError.assertTrue(null == AvmImpl.currentAvm);
         AvmImpl.currentAvm = this;
         
@@ -139,10 +160,14 @@ public class AvmImpl implements AvmInternal {
         RuntimeAssertionError.assertTrue(null == this.resourceMonitor);
         this.resourceMonitor = new AddressResourceMonitor();
 
+        AvmThreadStats[] threadStats = new AvmThreadStats[this.threadCount];
         Set<Thread> executorThreads = new HashSet<>();
         for (int i = 0; i < this.threadCount; i++){
-            executorThreads.add(new AvmExecutorThread("AVM Executor Thread " + i));
+            AvmExecutorThread thread = new AvmExecutorThread("AVM Executor Thread " + i);
+            executorThreads.add(thread);
+            threadStats[i] = thread.stats;
         }
+        this.stats = new AvmCoreStats(threadStats);
 
         RuntimeAssertionError.assertTrue(null == this.handoff);
         this.handoff = new HandoffMonitor(executorThreads);
@@ -187,7 +212,13 @@ public class AvmImpl implements AvmInternal {
             tasks[i] = new TransactionTask(kernel, transactions[i], i, transactions[i].senderAddress, executionType, commonMainchainBlockNumber);
         }
 
+        this.stats.batchesConsumed += 1;
+        this.stats.transactionsConsumed += transactions.length;
         return this.handoff.sendTransactionsAsynchronously(tasks);
+    }
+
+    public AvmCoreStats getStats() {
+        return this.stats;
     }
 
     private AvmWrappedTransactionResult backgroundProcessTransaction(TransactionTask task) {
