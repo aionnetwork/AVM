@@ -1,8 +1,6 @@
 package org.aion.avm.core.benchmarking;
 
 import java.io.File;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Random;
 
 /**
@@ -41,11 +39,4 @@ class ReflectionBenchmarkConstants {
 
     static Number staticMethodArg1 = 1;
     static Random staticMethodArg2 = new Random();
-
-    static void printTime(String title, String measureName, long measure, long invokes) {
-        BigDecimal measure1BD = BigDecimal.valueOf(measure).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal scaledMeasure1 = measure1BD.divide(BigDecimal.valueOf(invokes), RoundingMode.HALF_UP);
-        System.out.println(title + " " + "\n\t" + measureName + ": " + scaledMeasure1.toPlainString() + "ns\n");
-    }
-
 }

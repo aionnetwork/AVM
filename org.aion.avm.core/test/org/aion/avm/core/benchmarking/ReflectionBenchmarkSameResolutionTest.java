@@ -2,6 +2,8 @@ package org.aion.avm.core.benchmarking;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Random;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -42,70 +44,70 @@ public class ReflectionBenchmarkSameResolutionTest {
     public void ReflectionConstructorResolutionTest() throws Exception {
         warmup();
         long sample = sameInstanceReflectionConstructorResolution(spins);
-        ReflectionBenchmarkConstants.printTime("Resolve constructor", "Reflection", sample, spins);
+        printTime("Resolve constructor", "Reflection", sample, spins);
     }
 
     @Test
     public void MethodHandleConstructorResolutionTest() throws Exception {
         warmup();
         long sample = sameInstanceMethodHandleConstructorResolution(spins);
-        ReflectionBenchmarkConstants.printTime("Resolve constructor", "MethodHandle", sample, spins);
+        printTime("Resolve constructor", "MethodHandle", sample, spins);
     }
 
     @Test
     public void ReflectionInstanceMethodResolutionTest() throws Exception {
         warmup();
         long sample = sameInstanceReflectionInstanceMethodResolution(spins);
-        ReflectionBenchmarkConstants.printTime("Resolve instance method", "Reflection", sample, spins);
+        printTime("Resolve instance method", "Reflection", sample, spins);
     }
 
     @Test
     public void MethodHandleInstanceMethodResolutionTest() throws Exception {
         warmup();
         long sample = sameInstanceMethodHandleInstanceMethodResolution(spins);
-        ReflectionBenchmarkConstants.printTime("Resolve instance method", "MethodHandle", sample, spins);
+        printTime("Resolve instance method", "MethodHandle", sample, spins);
     }
 
     @Test
     public void ReflectionStaticMethodResolutionTest() throws Exception {
         warmup();
         long sample = sameInstanceReflectionStaticMethodResolution(spins);
-        ReflectionBenchmarkConstants.printTime("Resolve static method", "Reflection", sample, spins);
+        printTime("Resolve static method", "Reflection", sample, spins);
     }
 
     @Test
     public void MethodHandleStaticMethodResolutionTest() throws Exception {
         warmup();
         long sample = sameInstanceMethodHandleStaticMethodResolution(spins);
-        ReflectionBenchmarkConstants.printTime("Resolve static method", "MethodHandle", sample, spins);
+        printTime("Resolve static method", "MethodHandle", sample, spins);
     }
 
     @Test
     public void ReflectionInstanceFieldResolutionTest() throws Exception {
         warmup();
         long sample = sameInstanceReflectionInstanceFieldResolution(spins);
-        ReflectionBenchmarkConstants.printTime("Resolve instance field", "Reflection", sample, spins);
+        printTime("Resolve instance field", "Reflection", sample, spins);
     }
 
     @Test
     public void MethodHandleInstanceFieldResolutionTest() throws Exception {
         warmup();
         long sample = sameInstanceMethodHandleInstanceFieldResolution(spins);
-        ReflectionBenchmarkConstants.printTime("Resolve instance field", "MethodHandle", sample, spins);
+        printTime("Resolve instance field", "MethodHandle", sample, spins);
     }
 
     @Test
     public void ReflectionStaticFieldResolutionTest() throws Exception {
         warmup();
         long sample = sameInstanceReflectionStaticFieldResolution(spins);
-        ReflectionBenchmarkConstants.printTime("Resolve static field", "Reflection", sample, spins);
+        printTime("Resolve static field", "Reflection", sample, spins);
     }
 
     @Test
     public void MethodHandleStaticFieldResolutionTest() throws Exception {
         warmup();
         long sample = sameInstanceMethodHandleStaticFieldResolution(spins);
-        ReflectionBenchmarkConstants.printTime("Resolve static field", "MethodHandle", sample, spins);
+        printTime("Resolve static field", "MethodHandle", sample, spins);
     }
 
     // <-----------------------------------------the logic----------------------------------------->
@@ -215,4 +217,9 @@ public class ReflectionBenchmarkSameResolutionTest {
         return end - start;
     }
 
+    private static void printTime(String title, String measureName, long measure, long invokes) {
+        BigDecimal measure1BD = BigDecimal.valueOf(measure).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal scaledMeasure1 = measure1BD.divide(BigDecimal.valueOf(invokes), RoundingMode.HALF_UP);
+        System.out.println(title + " " + "\n\t" + measureName + ": " + scaledMeasure1.toPlainString() + "ns\n");
+    }
 }

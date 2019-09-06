@@ -24,8 +24,6 @@ import org.aion.kernel.TestingBlock;
 
 import java.math.BigInteger;
 import java.text.NumberFormat;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.aion.types.TransactionResult;
 import org.junit.After;
@@ -73,19 +71,6 @@ public class DeploymentCostTest {
         BLAKE2B,
         POC_WALLET,
         ;
-
-        private static Map<Contract, String> contractsAsStrings = new HashMap<>();
-
-        static {
-            contractsAsStrings.put(BLAKE2B, "Blake2b");
-            contractsAsStrings.put(POC_WALLET, "PocWallet");
-        }
-
-        @Override
-        public String toString() {
-            return contractsAsStrings.get(this);
-        }
-
     }
 
     /**

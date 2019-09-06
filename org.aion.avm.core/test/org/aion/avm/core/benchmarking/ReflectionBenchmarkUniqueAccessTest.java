@@ -7,6 +7,8 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Random;
@@ -49,253 +51,253 @@ public class ReflectionBenchmarkUniqueAccessTest {
     @Test
     public void ReflectionStaticFieldWriteTest() throws Throwable {
         long sample = uniqueInstanceReflectionStaticFieldWriteAccess(spins);
-        ReflectionBenchmarkConstants.printTime("Static field resolve & write", "Reflection", sample, spins);
+        printTime("Static field resolve & write", "Reflection", sample, spins);
     }
 
     @Test
     public void MethodHandleStaticFieldWriteTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleStaticFieldWriteAccess(spins);
-        ReflectionBenchmarkConstants.printTime("Static field resolve & write", "MethodHandle", sample, spins);
+        printTime("Static field resolve & write", "MethodHandle", sample, spins);
     }
 
     @Test
     public void MethodHandleStaticFieldWriteExactTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleStaticFieldWriteAccessExact(spins);
-        ReflectionBenchmarkConstants.printTime("Static field resolve & write (invokeExact)", "MethodHandle", sample, spins);
+        printTime("Static field resolve & write (invokeExact)", "MethodHandle", sample, spins);
     }
 
     @Test
     public void ReflectionStaticFieldWriteOnlyTest() throws Throwable {
         long sample = uniqueInstanceReflectionStaticFieldWriteAccessInvokeOnly(spins);
-        ReflectionBenchmarkConstants.printTime("Static field write only", "Reflection", sample, spins);
+        printTime("Static field write only", "Reflection", sample, spins);
     }
 
     @Test
     public void MethodHandleStaticFieldWriteOnlyTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleStaticFieldWriteAccessInvokeOnly(spins);
-        ReflectionBenchmarkConstants.printTime("Static field write only", "MethodHandle", sample, spins);
+        printTime("Static field write only", "MethodHandle", sample, spins);
     }
 
     @Test
     public void MethodHandleStaticFieldWriteExactOnlyTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleStaticFieldWriteAccessInvokeExactOnly(spins);
-        ReflectionBenchmarkConstants.printTime("Static field write only (invokeExact)", "MethodHandle", sample, spins);
+        printTime("Static field write only (invokeExact)", "MethodHandle", sample, spins);
     }
 
     @Test
     public void ReflectionStaticFieldReadTest() throws Throwable {
         long sample = uniqueInstanceReflectionStaticFieldReadAccess(spins);
-        ReflectionBenchmarkConstants.printTime("Static field resolve & read", "Reflection", sample, spins);
+        printTime("Static field resolve & read", "Reflection", sample, spins);
     }
 
     @Test
     public void MethodHandleStaticFieldReadTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleStaticFieldReadAccess(spins);
-        ReflectionBenchmarkConstants.printTime("Static field resolve & read", "MethodHandle", sample, spins);
+        printTime("Static field resolve & read", "MethodHandle", sample, spins);
     }
 
     @Test
     public void MethodHandleStaticFieldReadExactTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleStaticFieldReadAccessExact(spins);
-        ReflectionBenchmarkConstants.printTime("Static field resolve & read (invokeExact)", "MethodHandle", sample, spins);
+        printTime("Static field resolve & read (invokeExact)", "MethodHandle", sample, spins);
     }
 
     @Test
     public void ReflectionStaticFieldReadOnlyTest() throws Throwable {
         long sample = uniqueInstanceReflectionStaticFieldReadAccessInvokeOnly(spins);
-        ReflectionBenchmarkConstants.printTime("Static field read", "Reflection", sample, spins);
+        printTime("Static field read", "Reflection", sample, spins);
     }
 
     @Test
     public void MethodHandleStaticFieldReadOnlyTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleStaticFieldReadAccessInvokeOnly(spins);
-        ReflectionBenchmarkConstants.printTime("Static field read", "MethodHandle", sample, spins);
+        printTime("Static field read", "MethodHandle", sample, spins);
     }
 
     @Test
     public void MethodHandleStaticFieldReadExactOnlyTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleStaticFieldReadAccessInvokeExactOnly(spins);
-        ReflectionBenchmarkConstants.printTime("Static field read (invokeExact)", "MethodHandle", sample, spins);
+        printTime("Static field read (invokeExact)", "MethodHandle", sample, spins);
     }
 
     @Test
     public void ReflectionInstanceFieldWriteTest() throws Throwable {
         long sample = uniqueInstanceReflectionInstanceFieldWriteAccess(spins);
-        ReflectionBenchmarkConstants.printTime("Instance field resolve & write", "Reflection", sample, spins);
+        printTime("Instance field resolve & write", "Reflection", sample, spins);
     }
 
     @Test
     public void MethodHandleInstanceFieldWriteTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleInstanceFieldWriteAccess(spins);
-        ReflectionBenchmarkConstants.printTime("Instance field resolve & write", "MethodHandle", sample, spins);
+        printTime("Instance field resolve & write", "MethodHandle", sample, spins);
     }
 
     @Test
     public void MethodHandleInstanceFieldWriteExactTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleInstanceFieldWriteAccessExact(spins);
-        ReflectionBenchmarkConstants.printTime("Instance field resolve & write (invokeExact)", "MethodHandle", sample, spins);
+        printTime("Instance field resolve & write (invokeExact)", "MethodHandle", sample, spins);
     }
 
     @Test
     public void ReflectionInstanceFieldWriteOnlyTest() throws Throwable {
         long sample = uniqueInstanceReflectionInstanceFieldWriteAccessInvokeOnly(spins);
-        ReflectionBenchmarkConstants.printTime("Instance field write", "Reflection", sample, spins);
+        printTime("Instance field write", "Reflection", sample, spins);
     }
 
     @Test
     public void MethodHandleInstanceFieldWriteOnlyTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleInstanceFieldWriteAccessInvokeOnly(spins);
-        ReflectionBenchmarkConstants.printTime("Instance field write", "MethodHandle", sample, spins);
+        printTime("Instance field write", "MethodHandle", sample, spins);
     }
 
     @Test
     public void MethodHandleInstanceFieldWriteExactOnlyTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleInstanceFieldWriteAccessInvokeExactOnly(spins);
-        ReflectionBenchmarkConstants.printTime("Instance field write (invokeExact)", "MethodHandle", sample, spins);
+        printTime("Instance field write (invokeExact)", "MethodHandle", sample, spins);
     }
 
     @Test
     public void ReflectionInstanceFieldReadTest() throws Throwable {
         long sample = uniqueInstanceReflectionInstanceFieldReadAccess(spins);
-        ReflectionBenchmarkConstants.printTime("Instance field resolve & read", "Reflection", sample, spins);
+        printTime("Instance field resolve & read", "Reflection", sample, spins);
     }
 
     @Test
     public void MethodHandleInstanceFieldReadTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleInstanceFieldReadAccess(spins);
-        ReflectionBenchmarkConstants.printTime("Instance field resolve & read", "MethodHandle", sample, spins);
+        printTime("Instance field resolve & read", "MethodHandle", sample, spins);
     }
 
     @Test
     public void MethodHandleInstanceFieldReadExactTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleInstanceFieldReadAccessExact(spins);
-        ReflectionBenchmarkConstants.printTime("Instance field resolve & read (invokeExact)", "MethodHandle", sample, spins);
+        printTime("Instance field resolve & read (invokeExact)", "MethodHandle", sample, spins);
     }
 
     @Test
     public void ReflectionInstanceFieldReadOnlyTest() throws Throwable {
         long sample = uniqueInstanceReflectionInstanceFieldReadAccessInvokeOnly(spins);
-        ReflectionBenchmarkConstants.printTime("Instance field read", "Reflection", sample, spins);
+        printTime("Instance field read", "Reflection", sample, spins);
     }
 
     @Test
     public void MethodHandleInstanceFieldReadOnlyTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleInstanceFieldReadAccessInvokeOnly(spins);
-        ReflectionBenchmarkConstants.printTime("Instance field read", "MethodHandle", sample, spins);
+        printTime("Instance field read", "MethodHandle", sample, spins);
     }
 
     @Test
     public void MethodHandleInstanceFieldReadExactOnlyTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleInstanceFieldReadAccessInvokeExactOnly(spins);
-        ReflectionBenchmarkConstants.printTime("Instance field read (invokeExact)", "MethodHandle", sample, spins);
+        printTime("Instance field read (invokeExact)", "MethodHandle", sample, spins);
     }
 
     @Test
     public void ReflectionStaticMethodAccessTest() throws Throwable {
         long sample = uniqueInstanceReflectionStaticMethodAccess(spins);
-        ReflectionBenchmarkConstants.printTime("Static method resolve & call", "Reflection", sample, spins);
+        printTime("Static method resolve & call", "Reflection", sample, spins);
     }
 
     @Test
     public void MethodHandleStaticMethodAccessTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleStaticMethodAccess(spins);
-        ReflectionBenchmarkConstants.printTime("Static method resolve & invoke", "MethodHandle", sample, spins);
+        printTime("Static method resolve & invoke", "MethodHandle", sample, spins);
     }
 
     @Test
     public void MethodHandleStaticMethodAccessExactTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleStaticMethodAccessExact(spins);
-        ReflectionBenchmarkConstants.printTime("Static method resolve & invokeExact", "MethodHandle", sample, spins);
+        printTime("Static method resolve & invokeExact", "MethodHandle", sample, spins);
     }
 
     @Test
     public void ReflectionStaticMethodAccessOnlyTest() throws Throwable {
         long sample = uniqueInstanceReflectionStaticMethodAccessInvokeOnly(spins);
-        ReflectionBenchmarkConstants.printTime("Static method invoke", "Reflection", sample, spins);
+        printTime("Static method invoke", "Reflection", sample, spins);
     }
 
     @Test
     public void MethodHandleStaticMethodAccessOnlyTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleStaticMethodAccessInvokeOnly(spins);
-        ReflectionBenchmarkConstants.printTime("Static method invoke", "MethodHandle", sample, spins);
+        printTime("Static method invoke", "MethodHandle", sample, spins);
     }
 
     @Test
     public void MethodHandleStaticMethodAccessExactOnlyTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleStaticMethodAccessInvokeExactOnly(spins);
-        ReflectionBenchmarkConstants.printTime("Static method invokeExact", "MethodHandle", sample, spins);
+        printTime("Static method invokeExact", "MethodHandle", sample, spins);
     }
 
     @Test
     public void ReflectionInstanceMethodAccessTest() throws Throwable {
         long sample = uniqueInstanceReflectionInstanceMethodAccess(spins);
-        ReflectionBenchmarkConstants.printTime("Instance method resolve & call", "Reflection", sample, spins);
+        printTime("Instance method resolve & call", "Reflection", sample, spins);
     }
 
     @Test
     public void MethodHandleInstanceMethodAccessTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleInstanceMethodAccess(spins);
-        ReflectionBenchmarkConstants.printTime("Instance method resolve & invoke", "MethodHandle", sample, spins);
+        printTime("Instance method resolve & invoke", "MethodHandle", sample, spins);
     }
 
     @Test
     public void MethodHandleInstanceMethodAccessExactTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleInstanceMethodAccessExact(spins);
-        ReflectionBenchmarkConstants.printTime("Instance method resolve & invokeExact", "MethodHandle", sample, spins);
+        printTime("Instance method resolve & invokeExact", "MethodHandle", sample, spins);
     }
 
     @Test
     public void ReflectionInstanceMethodAccessOnlyTest() throws Throwable {
         long sample = uniqueInstanceReflectionInstanceMethodAccessInvokeOnly(spins);
-        ReflectionBenchmarkConstants.printTime("Instance method call", "Reflection", sample, spins);
+        printTime("Instance method call", "Reflection", sample, spins);
     }
 
     @Test
     public void MethodHandleInstanceMethodAccessOnlyTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleInstanceMethodAccessInvokeOnly(spins);
-        ReflectionBenchmarkConstants.printTime("Instance method invoke", "MethodHandle", sample, spins);
+        printTime("Instance method invoke", "MethodHandle", sample, spins);
     }
 
     @Test
     public void MethodHandleInstanceMethodAccessExactOnlyTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleInstanceMethodAccessInvokeExactOnly(spins);
-        ReflectionBenchmarkConstants.printTime("Instance method invokeExact", "MethodHandle", sample, spins);
+        printTime("Instance method invokeExact", "MethodHandle", sample, spins);
     }
 
     @Test
     public void ReflectionConstructorAccessTest() throws Throwable {
         long sample = uniqueInstanceReflectionConstructorAccess(spins);
-        ReflectionBenchmarkConstants.printTime("Constructor resolve & call", "Reflection", sample, spins);
+        printTime("Constructor resolve & call", "Reflection", sample, spins);
     }
 
     @Test
     public void MethodHandleConstructorAccessTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleConstructorAccess(spins);
-        ReflectionBenchmarkConstants.printTime("Constructor resolve & invoke", "MethodHandle", sample, spins);
+        printTime("Constructor resolve & invoke", "MethodHandle", sample, spins);
     }
 
     @Test
     public void MethodHandleConstructorAccessExactTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleConstructorAccessExact(spins);
-        ReflectionBenchmarkConstants.printTime("Constructor resolve & invokeExact", "MethodHandle", sample, spins);
+        printTime("Constructor resolve & invokeExact", "MethodHandle", sample, spins);
     }
 
     @Test
     public void ReflectionConstructorAccessOnlyTest() throws Throwable {
         long sample = uniqueInstanceReflectionConstructorAccessInvokeOnly(spins);
-        ReflectionBenchmarkConstants.printTime("Constructor call", "Reflection", sample, spins);
+        printTime("Constructor call", "Reflection", sample, spins);
     }
 
     @Test
     public void MethodHandleConstructorAccessOnlyTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleConstructorAccessInvokeOnly(spins);
-        ReflectionBenchmarkConstants.printTime("Constructor invoke", "MethodHandle", sample, spins);
+        printTime("Constructor invoke", "MethodHandle", sample, spins);
     }
 
     @Test
     public void MethodHandleConstructorAccessExactOnlyTest() throws Throwable {
         long sample = uniqueInstanceMethodHandleConstructorAccessInvokeExactOnly(spins);
-        ReflectionBenchmarkConstants.printTime("Constructor invokeExact", "MethodHandle", sample, spins);
+        printTime("Constructor invokeExact", "MethodHandle", sample, spins);
     }
 
     // <-----------------------------------------the logic----------------------------------------->
@@ -1204,4 +1206,9 @@ public class ReflectionBenchmarkUniqueAccessTest {
         return end - start;
     }
 
+    private static void printTime(String title, String measureName, long measure, long invokes) {
+        BigDecimal measure1BD = BigDecimal.valueOf(measure).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal scaledMeasure1 = measure1BD.divide(BigDecimal.valueOf(invokes), RoundingMode.HALF_UP);
+        System.out.println(title + " " + "\n\t" + measureName + ": " + scaledMeasure1.toPlainString() + "ns\n");
+    }
 }

@@ -17,8 +17,7 @@ import org.junit.Test;
 
 import java.math.BigInteger;
 import java.text.NumberFormat;
-import java.util.HashMap;
-import java.util.Map;
+
 
 /**
  * This suite is really just for viewing the deployment costs of some of our various Dapp examples.
@@ -51,23 +50,6 @@ public class DeploymentCostTest {
         BASIC_APP,
         TRS,
         ;
-
-        private static Map<Contract, String> contractsAsStrings = new HashMap<>();
-
-        static {
-            contractsAsStrings.put(AION_BUFFER_PERF, "AionBufferPerfContract");
-            contractsAsStrings.put(BASIC_PERF, "BasicPerfContract");
-            contractsAsStrings.put(POC_EXCHANGE, "PocExchange");
-            contractsAsStrings.put(ERC20, "ERC20");
-            contractsAsStrings.put(BASIC_APP, "BasicAppTestTarget");
-            contractsAsStrings.put(TRS, "TRS");
-        }
-
-        @Override
-        public String toString() {
-            return contractsAsStrings.get(this);
-        }
-
     }
 
     /**
