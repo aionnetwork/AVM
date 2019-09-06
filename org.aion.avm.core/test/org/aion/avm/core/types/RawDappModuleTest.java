@@ -16,7 +16,7 @@ public class RawDappModuleTest {
         Assert.assertNull(jar.mainClassName);
         
         // But NOT a valid Dapp.
-        RawDappModule dapp = RawDappModule.readFromJar(jarBytes, false);
+        RawDappModule dapp = RawDappModule.readFromJar(jarBytes, false, true);
         Assert.assertNull(dapp);
     }
 
@@ -29,7 +29,7 @@ public class RawDappModuleTest {
         Assert.assertTrue(jar.classBytesByQualifiedNames.isEmpty());
         
         // But NOT a valid Dapp.
-        RawDappModule dapp = RawDappModule.readFromJar(jarBytes, false);
+        RawDappModule dapp = RawDappModule.readFromJar(jarBytes, false, true);
         Assert.assertNull(dapp);
     }
 }

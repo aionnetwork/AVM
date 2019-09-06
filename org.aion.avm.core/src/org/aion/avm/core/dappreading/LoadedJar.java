@@ -41,8 +41,7 @@ public class LoadedJar {
             // This might happen if the JAR has a signature but it is invalid, so return null.
             result = null;
         } catch (SizeException e) {
-            // This is an internal error we might want to handle differently.
-            e.printStackTrace();
+            // This can happen if the JAR contains a single class which is larger than MAX_CLASS_BYTES so we just return null.
             result = null;
         } catch (IOException e) {
             // This shouldn't happen from our in-memory representation.

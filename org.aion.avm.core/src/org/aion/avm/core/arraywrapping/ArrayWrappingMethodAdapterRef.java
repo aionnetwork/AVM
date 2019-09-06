@@ -67,8 +67,7 @@ class ArrayWrappingMethodAdapterRef extends MethodNode implements Opcodes {
                 // If we fail to run the analyzer, that is a serious internal error. It might be an actual bug
                 // in the AVM, or it might be the result of corrupt input.
                 // Since we're not sure, we "blame" the contract, and throw a Rejection Error.
-                System.err.println("Something went wrong when trying to analyze a wrapped array: " + e.getMessage());
-                throw new RejectedClassException(e.getMessage());
+                throw new RejectedClassException("Something went wrong when trying to analyze a wrapped array: " + e.getMessage());
             }
         }
 

@@ -24,9 +24,11 @@ public class RawDappModule {
      * Note that a Dapp module is expected to specify a main class and contain at least one class.
      * 
      * @param jar The JAR bytes.
+     * @param preserveDebuggability True if debug data within the JAR should be preserved.
+     * @param verboseErrors True if the underlying reason for the deployment failure should be logged (typically for corrupt data).
      * @return The module, or null if the contents of the JAR were insufficient for a Dapp.
      */
-    public static RawDappModule readFromJar(byte[] jar, boolean preserveDebuggability) {
+    public static RawDappModule readFromJar(byte[] jar, boolean preserveDebuggability, boolean verboseErrors) {
         // Note that ASM can fail with all kinds of exceptions so we will handle any exception as an error.
         try {
             LoadedJar loadedJar = LoadedJar.fromBytes(jar);
@@ -59,8 +61,10 @@ public class RawDappModule {
         } catch (Throwable t) {
             // Since this can fail for myriad of reasons, we do not re-throw exceptions here.
             // null will be interpreted as a malformed dapp jar by DappCreator and an FAILED_INVALID_DATA exception will be thrown.
-            System.err.println("Reading dapp jar bytes failed.");
-            t.printStackTrace(System.err);
+            if (verboseErrors) {
+                System.err.println("Reading dapp jar bytes failed.");
+                t.printStackTrace();
+            }
             return null;
         }
     }

@@ -18,7 +18,7 @@ public class CodeReTransformer {
     public static byte[] transformCode(byte[] code, long blockTimeStamp, boolean preserveDebuggability, boolean verboseErrors) {
         byte[] transformedCode = null;
         try {
-            RawDappModule rawDapp = RawDappModule.readFromJar(code, preserveDebuggability);
+            RawDappModule rawDapp = RawDappModule.readFromJar(code, preserveDebuggability, verboseErrors);
             Map<String, byte[]> transformedClasses = DAppCreator.transformClasses(rawDapp.classes, rawDapp.classHierarchyForest, rawDapp.classHierarchy, rawDapp.classRenamer, preserveDebuggability);
             Map<String, byte[]> immortalClasses = DAppCreator.stripClinitFromClasses(transformedClasses);
             ImmortalDappModule immortalDapp = ImmortalDappModule.fromImmortalClasses(immortalClasses, rawDapp.mainClass);

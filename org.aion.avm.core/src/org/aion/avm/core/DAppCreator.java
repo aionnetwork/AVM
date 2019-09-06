@@ -197,7 +197,7 @@ public class DAppCreator {
                 return TransactionResultUtil.newResultWithNonRevertedFailureAndEnergyUsed(AvmInternalError.FAILED_INVALID_DATA, tx.energyLimit);
             }
 
-            RawDappModule rawDapp = RawDappModule.readFromJar(codeAndArguments.code, preserveDebuggability);
+            RawDappModule rawDapp = RawDappModule.readFromJar(codeAndArguments.code, preserveDebuggability, verboseErrors);
             if (rawDapp == null) {
                 if (verboseErrors) {
                     System.err.println("DApp deployment failed due to corrupt JAR data");
