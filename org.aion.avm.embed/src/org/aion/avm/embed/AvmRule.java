@@ -29,6 +29,7 @@ public final class AvmRule implements TestRule {
 
     private boolean debugMode;
     private boolean automaticBlockGenerationEnabled;
+    private boolean enableBlockchainPrintln;
     public TestingState kernel;
     public AvmImpl avm;
     // Note that the base version is used for the ABICompiler temporarily, mainly to allow external tools to update to the latest version
@@ -41,6 +42,8 @@ public final class AvmRule implements TestRule {
         this.debugMode = debugMode;
         this.kernel = new TestingState();
         automaticBlockGenerationEnabled = true;
+        // By default, we assume that the user wants to see this output.
+        this.enableBlockchainPrintln = true;
     }
 
     @Override
@@ -53,11 +56,13 @@ public final class AvmRule implements TestRule {
                     config.preserveDebuggability = true;
                     config.enableVerboseContractErrors = true;
                 }
+                config.enableBlockchainPrintln = AvmRule.this.enableBlockchainPrintln;
                 avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), config);
                 try {
                     statement.evaluate();
                 } finally {
                     avm.shutdown();
+                    avm = null;
                 }
             }
         };
@@ -195,6 +200,21 @@ public final class AvmRule implements TestRule {
      */
     public void disableAutomaticBlockGeneration(){
         automaticBlockGenerationEnabled = false;
+    }
+
+    /**
+     * Used to set whether or not the Blockchain.println statements of any AVM instances created by the rule should be enabled.
+     * When enabled, these write to stdout but, when disabled, safely have no effect.
+     * 
+     * @param enableBlockchainPrintln True if the Blockchain.println statements should write to stdout (default is true).
+     * @return The receiver, for chaining.
+     */
+    public AvmRule setBlockchainPrintlnEnabled(boolean enableBlockchainPrintln) {
+        if (null != this.avm) {
+            throw new IllegalStateException("AVM already created");
+        }
+        this.enableBlockchainPrintln = enableBlockchainPrintln;
+        return this;
     }
 
     private ResultWrapper callDapp(Address from, Address dappAddress, BigInteger value, byte[] transactionData, long energyLimit, long energyPrice) {

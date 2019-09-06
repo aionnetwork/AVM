@@ -182,7 +182,7 @@ public class DAppCreator {
         return processedClasses;
     }
 
-    public static AvmWrappedTransactionResult create(IExternalCapabilities capabilities, IExternalState externalState, AvmInternal avm, TransactionTask task, Transaction tx, AvmWrappedTransactionResult internalResult, boolean preserveDebuggability, boolean verboseErrors) {
+    public static AvmWrappedTransactionResult create(IExternalCapabilities capabilities, IExternalState externalState, AvmInternal avm, TransactionTask task, Transaction tx, AvmWrappedTransactionResult internalResult, boolean preserveDebuggability, boolean verboseErrors, boolean enableBlockchainPrintln) {
         // Expose the DApp outside the try so we can detach from it, when we exit.
         LoadedDApp dapp = null;
         AvmWrappedTransactionResult result = internalResult;
@@ -225,7 +225,7 @@ public class DAppCreator {
             int nextHashCode = 1;
             InstrumentationHelpers.pushNewStackFrame(dapp.runtimeSetup, dapp.loader, tx.energyLimit - result.energyUsed(), nextHashCode, new InternedClasses());
             // (we pass a null reentrant state since we haven't finished initializing yet - nobody can call into us).
-            IBlockchainRuntime previousRuntime = dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(capabilities, externalState, avm, null, task, tx, codeAndArguments.arguments, dapp.runtimeSetup));
+            IBlockchainRuntime previousRuntime = dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(capabilities, externalState, avm, null, task, tx, codeAndArguments.arguments, dapp.runtimeSetup, enableBlockchainPrintln));
 
             // We have just created this dApp, there should be no previous runtime associated with it.
             RuntimeAssertionError.assertTrue(previousRuntime == null);

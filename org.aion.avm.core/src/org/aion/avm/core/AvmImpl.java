@@ -50,6 +50,7 @@ public class AvmImpl implements AvmInternal {
     private final boolean preserveDebuggability;
     private final boolean enableVerboseContractErrors;
     private final boolean enableVerboseConcurrentExecutor;
+    private final boolean enableBlockchainPrintln;
 
     public AvmImpl(IInstrumentationFactory instrumentationFactory, IExternalCapabilities capabilities, AvmConfiguration configuration) {
         this.instrumentationFactory = instrumentationFactory;
@@ -62,6 +63,7 @@ public class AvmImpl implements AvmInternal {
         this.preserveDebuggability = configuration.preserveDebuggability;
         this.enableVerboseContractErrors = configuration.enableVerboseContractErrors;
         this.enableVerboseConcurrentExecutor = configuration.enableVerboseConcurrentExecutor;
+        this.enableBlockchainPrintln = configuration.enableBlockchainPrintln;
         this.internalLogger = new InternalLogger(System.err);
     }
 
@@ -401,7 +403,7 @@ public class AvmImpl implements AvmInternal {
 
         // do nothing for balance transfers of which the recipient is not a DApp address.
         if (tx.isCreate) {
-            result = DAppCreator.create(this.capabilities, thisTransactionKernel, this, task, tx, result, this.preserveDebuggability, this.enableVerboseContractErrors);
+            result = DAppCreator.create(this.capabilities, thisTransactionKernel, this, task, tx, result, this.preserveDebuggability, this.enableVerboseContractErrors, this.enableBlockchainPrintln);
         } else { // call
             // See if this call is trying to reenter one already on this call-stack.  If so, we will need to partially resume its state.
             ReentrantDAppStack.ReentrantState stateToResume = task.getReentrantDAppStack().tryShareState(recipient);
@@ -413,7 +415,7 @@ public class AvmImpl implements AvmInternal {
             if ((null != stateToResume) && (null != transformedCode)) {
                 dapp = stateToResume.dApp;
                 // Call directly and don't interact with DApp cache (we are reentering the state, not the origin of it).
-                result = DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, tx, result, this.enableVerboseContractErrors, true);
+                result = DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, tx, result, this.enableVerboseContractErrors, true, this.enableBlockchainPrintln);
             } else {
                 long currentBlockNumber = parentKernel.getBlockNumber();
 
@@ -504,7 +506,7 @@ public class AvmImpl implements AvmInternal {
                 }
 
                 if (null != dapp) {
-                    result = DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, tx, result, this.enableVerboseContractErrors, readFromDataCacheEnabled);
+                    result = DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, tx, result, this.enableVerboseContractErrors, readFromDataCacheEnabled, this.enableBlockchainPrintln);
 
                     if (writeToCacheEnabled) {
                         if (result.isSuccess() && updateDataCache) {

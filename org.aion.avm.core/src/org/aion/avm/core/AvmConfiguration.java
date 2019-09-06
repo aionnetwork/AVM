@@ -30,6 +30,11 @@ public class AvmConfiguration {
      * Enabling this is only really useful when actively modifying the concurrent executor.
      */
     public boolean enableVerboseConcurrentExecutor;
+    /**
+     * If set to true, will pass calls to Blockchain.println to the underlying stdout console.
+     * If false, this call is still legal but will have no effect.
+     */
+    public boolean enableBlockchainPrintln;
 
     public AvmConfiguration() {
         // 4 threads is generally a safe, yet useful, number.
@@ -39,5 +44,7 @@ public class AvmConfiguration {
         // By default, none of our verbose options are enabled.
         this.enableVerboseContractErrors = false;
         this.enableVerboseConcurrentExecutor = false;
+        // While the system is still relatively new, we enable the Blockchain.println output, by default.
+        this.enableBlockchainPrintln = true;
     }
 }

@@ -17,7 +17,7 @@ import org.aion.parallel.TransactionTask;
 public class DAppExecutor {
     public static AvmWrappedTransactionResult call(IExternalCapabilities capabilities, IExternalState externalState, AvmInternal avm, LoadedDApp dapp,
                             ReentrantDAppStack.ReentrantState stateToResume, TransactionTask task,
-                            Transaction tx, AvmWrappedTransactionResult internalResult, boolean verboseErrors, boolean readFromCache) {
+                            Transaction tx, AvmWrappedTransactionResult internalResult, boolean verboseErrors, boolean readFromCache, boolean enableBlockchainPrintln) {
         AvmWrappedTransactionResult result = internalResult;
         AionAddress dappAddress = tx.destinationAddress;
         
@@ -69,7 +69,7 @@ public class DAppExecutor {
         task.getReentrantDAppStack().pushState(thisState);
 
         InstrumentationHelpers.pushNewStackFrame(dapp.runtimeSetup, dapp.loader, tx.energyLimit - result.energyUsed(), nextHashCode, initialClassWrappers);
-        IBlockchainRuntime previousRuntime = dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(capabilities, externalState, avm, thisState, task, tx, tx.copyOfTransactionData(), dapp.runtimeSetup));
+        IBlockchainRuntime previousRuntime = dapp.attachBlockchainRuntime(new BlockchainRuntimeImpl(capabilities, externalState, avm, thisState, task, tx, tx.copyOfTransactionData(), dapp.runtimeSetup, enableBlockchainPrintln));
 
         try {
             // It is now safe for us to bill for the cost of loading the graph (the cost is the same, whether this came from the caller or the disk).

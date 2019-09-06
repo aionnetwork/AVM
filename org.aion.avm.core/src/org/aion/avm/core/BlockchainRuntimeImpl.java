@@ -31,6 +31,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     private final byte[] dAppData;
     private TransactionTask task;
     private final IRuntimeSetup thisDAppSetup;
+    private final boolean enablePrintln;
 
     private ByteArray dAppDataCache;
     private Address addressCache;
@@ -41,7 +42,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     private BigInteger blockDifficultyCache;
 
 
-    public BlockchainRuntimeImpl(IExternalCapabilities capabilities, IExternalState externalState, AvmInternal avm, ReentrantDAppStack.ReentrantState reentrantState, TransactionTask task, Transaction tx, byte[] dAppData, IRuntimeSetup thisDAppSetup) {
+    public BlockchainRuntimeImpl(IExternalCapabilities capabilities, IExternalState externalState, AvmInternal avm, ReentrantDAppStack.ReentrantState reentrantState, TransactionTask task, Transaction tx, byte[] dAppData, IRuntimeSetup thisDAppSetup, boolean enablePrintln) {
         this.capabilities = capabilities;
         this.externalState = externalState;
         this.avm = avm;
@@ -51,6 +52,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         this.dAppData = dAppData;
         this.task = task;
         this.thisDAppSetup = thisDAppSetup;
+        this.enablePrintln = enablePrintln;
 
         this.dAppDataCache = null;
         this.addressCache = null;
@@ -410,12 +412,16 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public void avm_print(s.java.lang.String message) {
-        task.outputPrint(message.toString());
+        if (this.enablePrintln) {
+            task.outputPrint(message.toString());
+        }
     }
 
     @Override
     public void avm_println(s.java.lang.String message) {
-        task.outputPrintln(message.toString());
+        if (this.enablePrintln) {
+            task.outputPrintln(message.toString());
+        }
     }
 
     @Override
