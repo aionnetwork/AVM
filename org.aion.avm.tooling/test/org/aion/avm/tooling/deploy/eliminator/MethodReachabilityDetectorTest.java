@@ -40,10 +40,10 @@ public class MethodReachabilityDetectorTest {
         assertNotNull(classInfoE);
         assertNotNull(classInfoF);
         assertNotNull(classInfoG);
-        // interfaceA() is not reachable
+        // interfaceA() is reachable
         MethodInfo methodInfo = classInfoA.getMethodMap().get("interfaceA()C");
         assertNotNull(methodInfo);
-        assertTrue(!methodInfo.isReachable);
+        assertTrue(methodInfo.isReachable);
 
         // Static method is reachable
 

@@ -174,7 +174,8 @@ public class JarDependencyCollectorTest {
         // - ClassG::invokeFlambda()V
         // - ClassF::interfaceC()V
         // - ClassF::classFStaticMethod()I
-        assertEquals(9, mainMethodInfo.methodInvocations.size());
+        // - ClassD::interfaceA()
+        assertEquals(10, mainMethodInfo.methodInvocations.size());
     }
 
 

@@ -61,13 +61,13 @@ public class UnreachableMethodRemoverTest {
         Map<String, MethodInfo> methodInfoMapF = classInfoF.getMethodMap();
         Map<String, MethodInfo> methodInfoMapG = classInfoG.getMethodMap();
 
-        assertEquals(0, methodInfoMapA.size());
+        assertEquals(1, methodInfoMapA.size());
         assertEquals(1, methodInfoMapB.size());
         assertEquals(1, methodInfoMapC.size());
         assertEquals(3, methodInfoMapD.size());
         assertEquals(1, methodInfoMapE.size());
-        assertEquals(8, methodInfoMapF.size());
-        assertEquals(8, methodInfoMapG.size());
+        assertEquals(9, methodInfoMapF.size());
+        assertEquals(9, methodInfoMapG.size());
     }
 
     @Test

@@ -15,6 +15,7 @@ public class ClassG extends ClassE {
         InterfaceB b = new ClassF();
         b.interfaceB();
         ClassD d = new ClassG();
+        d.interfaceA();
         d.classD();
         ClassF f = new ClassF();
         ClassE e = new ClassF();
