@@ -35,9 +35,7 @@ public class BlockchainRuntimeBillingTest {
     public void fillArray() {
         AvmRule.ResultWrapper result = callStatic("fillArray");
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
-        if (debugMode) {
-            System.out.println("Energy Cost: " + (result.getTransactionResult().energyUsed));
-        }
+        debugLog("Energy Cost: " + (result.getTransactionResult().energyUsed));
     }
 
     @Test
@@ -50,9 +48,7 @@ public class BlockchainRuntimeBillingTest {
             Assert.assertTrue(result.getReceiptStatus().isSuccess());
             int expectedEnergyConsumption = (int)(Math.ceil((double)size /10) * base * 6) + blakeBaseCost;
             Assert.assertEquals(expectedEnergyConsumption, (long) result.getDecodedReturnData() - extraCost);
-            if (debugMode) {
-                System.out.println("blake2b energy cost for size " + size + ": " + expectedEnergyConsumption);
-            }
+            debugLog("blake2b energy cost for size " + size + ": " + expectedEnergyConsumption);
         }
     }
 
@@ -67,9 +63,7 @@ public class BlockchainRuntimeBillingTest {
             int expectedEnergyConsumption = (int) Math.ceil((double)size /10) * base + shaBaseCost;
 
             Assert.assertEquals(expectedEnergyConsumption, (long) result.getDecodedReturnData() - extraCost);
-            if (debugMode) {
-                System.out.println("sha256 energy cost for size " + size + ": " + expectedEnergyConsumption);
-            }
+            debugLog("sha256 energy cost for size " + size + ": " + expectedEnergyConsumption);
         }
     }
 
@@ -84,9 +78,7 @@ public class BlockchainRuntimeBillingTest {
             int expectedEnergyConsumption = (int) Math.ceil((double)size/10) * 12 * base + keccakBaseCost;
 
             Assert.assertEquals(expectedEnergyConsumption, (long) result.getDecodedReturnData() - extraCost);
-            if (debugMode) {
-                System.out.println("keccak energy cost for size " + size + ": " + expectedEnergyConsumption);
-            }
+            debugLog("keccak energy cost for size " + size + ": " + expectedEnergyConsumption);
         }
     }
 
@@ -96,15 +88,15 @@ public class BlockchainRuntimeBillingTest {
 
         AvmRule.ResultWrapper result = callStatic("blake2bForInput", message);
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
-        System.out.println("blake2b energy cost (32639 byte): " + (result.getTransactionResult().energyUsed));
+        debugLog("blake2b energy cost (32639 byte): " + (result.getTransactionResult().energyUsed));
 
         result = callStatic("sha256ForInput", message);
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
-        System.out.println("sha256 energy cost (32639 byte): " + (result.getTransactionResult().energyUsed));
+        debugLog("sha256 energy cost (32639 byte): " + (result.getTransactionResult().energyUsed));
 
         result = callStatic("keccakForInput", message);
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
-        System.out.println("keccak energy cost (32639 byte): " + (result.getTransactionResult().energyUsed));
+        debugLog("keccak energy cost (32639 byte): " + (result.getTransactionResult().energyUsed));
     }
 
     @Test
@@ -113,21 +105,28 @@ public class BlockchainRuntimeBillingTest {
         Arrays.fill(message, Byte.MAX_VALUE);
         AvmRule.ResultWrapper result = callStatic("blake2bForInput", message);
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
-        System.out.println("blake2b energy cost (28000 byte): " + (result.getTransactionResult().energyUsed));
+        debugLog("blake2b energy cost (28000 byte): " + (result.getTransactionResult().energyUsed));
 
         result = callStatic("sha256ForInput", message);
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
-        System.out.println("sha256 energy cost (28000 byte): " + (result.getTransactionResult().energyUsed));
+        debugLog("sha256 energy cost (28000 byte): " + (result.getTransactionResult().energyUsed));
 
         message = new byte[27500];
         Arrays.fill(message, Byte.MAX_VALUE);
         result = callStatic("keccakForInput", message);
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
-        System.out.println("keccak energy cost (27500 byte): " + (result.getTransactionResult().energyUsed));
+        debugLog("keccak energy cost (27500 byte): " + (result.getTransactionResult().energyUsed));
     }
 
     private AvmRule.ResultWrapper callStatic(String methodName, Object... args) {
         byte[] data = ABIUtil.encodeMethodArguments(methodName, args);
         return avmRule.call(sender, contract, value, data, 2_000_000, 1);
+    }
+
+
+    private void debugLog(String string) {
+        if (debugMode) {
+            System.out.println(string);
+        }
     }
 }

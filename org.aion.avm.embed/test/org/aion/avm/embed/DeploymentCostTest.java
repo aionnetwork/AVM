@@ -12,11 +12,11 @@ import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.types.TransactionResult;
+import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.math.BigInteger;
-import java.text.NumberFormat;
 
 
 /**
@@ -53,16 +53,27 @@ public class DeploymentCostTest {
     }
 
     /**
-     * Displays the size of the dApp as well as the cost to deploy it.
+     * Verifies the DApp deployment costs don't change unexpectedly.
      */
     @Test
     public void testCostToDeployDapps() {
-        for (Contract contract : Contract.values()) {
-            System.out.println("-------------------------------------------------------");
-            System.out.println("Results for deploying dApp: " + contract);
-            TransactionResult result = deployContract(contract);
-            System.out.println("\tCost to deploy dApp = " + NumberFormat.getNumberInstance().format(result.energyUsed));
-        }
+        TransactionResult result = deployContract(Contract.AION_BUFFER_PERF);
+        Assert.assertEquals(100_000_000_000L, result.energyUsed);
+        
+        result = deployContract(Contract.BASIC_PERF);
+        Assert.assertEquals(2_032_096L, result.energyUsed);
+        
+        result = deployContract(Contract.POC_EXCHANGE);
+        Assert.assertEquals(100_000_000_000L, result.energyUsed);
+        
+        result = deployContract(Contract.ERC20);
+        Assert.assertEquals(100_000_000_000L, result.energyUsed);
+        
+        result = deployContract(Contract.BASIC_APP);
+        Assert.assertEquals(100_000_000_000L, result.energyUsed);
+        
+        result = deployContract(Contract.TRS);
+        Assert.assertEquals(100_000_000_000L, result.energyUsed);
     }
 
     //<-----------------------------------------helpers-------------------------------------------->
@@ -80,6 +91,8 @@ public class DeploymentCostTest {
                 jarBytes = classesToJarBytes(
                     AionBufferPerfContract.class,
                     AionBuffer.class);
+                // Verify that this size doesn't unexpectedly change.
+                Assert.assertEquals(7_764L, jarBytes.length);
                 break;
             case BASIC_PERF:
                 jarBytes = classesToJarBytes(
@@ -87,6 +100,8 @@ public class DeploymentCostTest {
                     AionList.class,
                     AionMap.class,
                     AionSet.class);
+                // Verify that this size doesn't unexpectedly change.
+                Assert.assertEquals(28_281L, jarBytes.length);
                 break;
             case POC_EXCHANGE:
                 jarBytes = classesToJarBytes(
@@ -98,6 +113,8 @@ public class DeploymentCostTest {
                     AionList.class,
                     AionSet.class,
                     AionMap.class);
+                // Verify that this size doesn't unexpectedly change.
+                Assert.assertEquals(32_122L, jarBytes.length);
                 break;
             case ERC20:
                 byte[] clinitArgs = ABIUtil.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
@@ -108,6 +125,8 @@ public class DeploymentCostTest {
                     AionList.class,
                     AionSet.class,
                     AionMap.class);
+                // Verify that this size doesn't unexpectedly change.
+                Assert.assertEquals(27_561L, jarBytes.length);
                 break;
             case BASIC_APP:
                 jarBytes = classesToJarBytes(
@@ -115,16 +134,19 @@ public class DeploymentCostTest {
                     AionMap.class,
                     AionSet.class,
                     AionList.class);
+                // Verify that this size doesn't unexpectedly change.
+                Assert.assertEquals(25_655L, jarBytes.length);
                 break;
             case TRS:
                 jarBytes = classesToJarBytes(
                     TRS.class,
                     AionMap.class);
+                // Verify that this size doesn't unexpectedly change.
+                Assert.assertEquals(16_090L, jarBytes.length);
                 break;
             default: throw new AssertionError("This should never be reached.");
         }
 
-        System.out.println("\tSize of dApp = " + NumberFormat.getNumberInstance().format(jarBytes.length) + " bytes");
         return jarBytes;
     }
 

@@ -1,7 +1,9 @@
 package org.aion.cli;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 
 import avm.Address;
 import org.aion.kernel.TestingState;
@@ -9,15 +11,31 @@ import org.aion.types.AionAddress;
 import org.aion.avm.core.dappreading.JarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.TestingBlock;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 
 public class AvmCLIIntegrationTest {
+    // Note that we want to replace the stdout stream for the duration of the test since it otherwise logs things we don't want to see in standard test runs.
+    private static PrintStream originalStdOut;
+
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
+
+    @BeforeClass
+    public static void setupClass() {
+        originalStdOut = System.out;
+        System.setOut(new PrintStream(new ByteArrayOutputStream()));
+    }
+
+    @AfterClass
+    public static void tearDown() {
+        System.setOut(originalStdOut);
+    }
 
     @Test
     public void usage() {
@@ -213,7 +231,6 @@ public class AvmCLIIntegrationTest {
 
         // check that contract has been deployed and balance has been transferred
         contractBalance = kernelInterface.getBalance(new AionAddress(Helpers.hexStringToBytes(dappAddress)));
-        System.out.println("new balance after deploy with transfer: " + contractBalance);
         Assert.assertEquals(deployBalance, contractBalance.intValue());
 
         // now lets try to make some calls
@@ -223,10 +240,7 @@ public class AvmCLIIntegrationTest {
 
         // check that the call was successful and more balance has been added to the contract
         contractBalance = kernelInterface.getBalance(new AionAddress(Helpers.hexStringToBytes(dappAddress)));
-        System.out.println("new balance after call with transfer: " + contractBalance);
         Assert.assertEquals(deployBalance + transferBalance, contractBalance.intValue());
-
-        System.out.println("Contract balance: " + contractBalance);
     }
 
     @Test
@@ -248,7 +262,6 @@ public class AvmCLIIntegrationTest {
 
         // check for balance of 0
         java.math.BigInteger contractBalance = kernelInterface.getBalance(new AionAddress(Helpers.hexStringToBytes(dappAddress)));
-        System.out.println("Contract balance: " + contractBalance);
         Assert.assertEquals(0,contractBalance.intValue());
 
         // now lets try to make some calls
@@ -258,10 +271,7 @@ public class AvmCLIIntegrationTest {
 
         // check that the call was successful and more balance has been added to the contract
         contractBalance = kernelInterface.getBalance(new AionAddress(Helpers.hexStringToBytes(dappAddress)));
-        System.out.println("new balance after call with transfer: " + contractBalance);
         Assert.assertEquals(0, contractBalance.intValue());
-
-        System.out.println("Contract balance: " + contractBalance);
     }
 
     @Test
@@ -283,7 +293,6 @@ public class AvmCLIIntegrationTest {
 
         // check for balance of deployBalance
         java.math.BigInteger contractBalance = kernelInterface.getBalance(new AionAddress(Helpers.hexStringToBytes(dappAddress)));
-        System.out.println("Contract balance: " + contractBalance);
         Assert.assertEquals(deployBalance,contractBalance.intValue());
     }
 
@@ -321,7 +330,6 @@ public class AvmCLIIntegrationTest {
 
         // check for balance of 0
         java.math.BigInteger contractBalance = kernelInterface.getBalance(new AionAddress(Helpers.hexStringToBytes(dappAddress)));
-        System.out.println("Contract balance: " + contractBalance);
         Assert.assertEquals(0,contractBalance.intValue());
 
         // do transfer only
@@ -331,7 +339,6 @@ public class AvmCLIIntegrationTest {
 
         // check for balance of transferBalance
         contractBalance = kernelInterface.getBalance(new AionAddress(Helpers.hexStringToBytes(dappAddress)));
-        System.out.println("Contract balance: " + contractBalance);
         Assert.assertEquals(transferBalance,contractBalance.intValue());
     }
 
@@ -353,7 +360,6 @@ public class AvmCLIIntegrationTest {
 
         // check for balance of transferBalance
         java.math.BigInteger contractBalance = kernelInterface.getBalance(new AionAddress(Helpers.hexStringToBytes(address.toString())));
-        System.out.println("Contract balance: " + contractBalance);
         Assert.assertEquals(transferBalance,contractBalance.intValue());
     }
 }

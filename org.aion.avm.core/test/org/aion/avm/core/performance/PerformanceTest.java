@@ -19,6 +19,9 @@ import org.junit.Test;
 import java.math.BigInteger;
 
 public class PerformanceTest {
+    // NOTE:  Output is ONLY produced if REPORT is set to true.
+    private static final boolean REPORT = false;
+
     private TestingState kernel;
     private AvmImpl avm;
 
@@ -71,7 +74,9 @@ public class PerformanceTest {
 
         long endTime = System.currentTimeMillis();
         long timeElapsed = endTime - startTime;
-        System.out.printf("deploy: %d ms\n", timeElapsed);
+        if (REPORT) {
+            System.out.printf("deploy: %d ms\n", timeElapsed);
+        }
     }
 
     @After
@@ -108,7 +113,9 @@ public class PerformanceTest {
 
         long endTime = System.currentTimeMillis();
         long timeElapsed = endTime - startTime;
-        System.out.printf("%s: %d ms\n", testName, timeElapsed);
+        if (REPORT) {
+            System.out.printf("%s: %d ms\n", testName, timeElapsed);
+        }
     }
 
     private void callSingle(AionAddress sender, AionAddress contractAddr, String methodName) {
@@ -148,7 +155,9 @@ public class PerformanceTest {
 
         long endTime = System.currentTimeMillis();
         long timeElapsed = endTime - startTime;
-        System.out.printf("%s: %d ms\n", testName, timeElapsed);
+        if (REPORT) {
+            System.out.printf("%s: %d ms\n", testName, timeElapsed);
+        }
     }
 
     public void callBatch(String methodName, boolean Nto1){

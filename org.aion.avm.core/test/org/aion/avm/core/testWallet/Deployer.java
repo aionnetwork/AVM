@@ -63,18 +63,11 @@ public class Deployer {
     private static boolean preserveDebuggability = false;
 
     public static void main(String[] args) throws Throwable {
-        // This is eventually just a test harness to invoke the decode() but, for now, it will actually invoke the calls, directly.
-        // In order to instantiate Address objects, we need to install the IInstrumentation.
-        System.out.println("--- DIRECT ---");
+        // We run this test 2 ways:
+        // (1) Invoke the logic directly, as though this were a normal Java program.
+        // (2) Transform the code and call it, as though it were run inside the AVM.
         callableInvokeDirect();
-        System.out.println("--- DONE (DIRECT) ---");
-
-        System.out.println("----- ***** -----");
-
-        // Now, try the transformed version.
-        System.out.println("--- TRANSFORMED ---");
         callableInvokeTransformed();
-        System.out.println("--- DONE (TRANSFORMED) ---");
     }
 
     /**

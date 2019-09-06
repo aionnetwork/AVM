@@ -10,6 +10,9 @@ import org.objectweb.asm.tree.analysis.Frame;
 
 
 public class ConstructorThisInterpreterTest {
+    // NOTE:  Output is ONLY produced if REPORT is set to true.
+    private static final boolean REPORT = false;
+
     @Test
     public void examineTestConstructor() throws Exception {
         MethodNode node = buildTestConstructor();
@@ -25,15 +28,15 @@ public class ConstructorThisInterpreterTest {
         // To make this clear (since this is not obvious), we write the frame stacks.
         for (Frame<ConstructorThisInterpreter.ThisValue> frame : frames) {
             int size = frame.getStackSize();
-            System.out.print(size + ": ");
+            report(size + ": ");
             for (int i = size; i > 0; --i) {
                 ConstructorThisInterpreter.ThisValue val = frame.getStack(i-1);
                 String value = (null != val)
                         ? (val.isThis ? "T" : "F")
                         : "_";
-                System.out.print(value);
+                report(value);
             }
-            System.out.println();
+            reportLine();
         }
         
         // Now, verify the top of the stack at each bytecode.
@@ -98,15 +101,15 @@ public class ConstructorThisInterpreterTest {
         // To make this clear (since this is not obvious), we write the frame stacks.
         for (Frame<ConstructorThisInterpreter.ThisValue> frame : frames) {
             int size = frame.getStackSize();
-            System.out.print(size + ": ");
+            report(size + ": ");
             for (int i = size; i > 0; --i) {
                 ConstructorThisInterpreter.ThisValue val = frame.getStack(i-1);
                 String value = (null != val)
                         ? (val.isThis ? "T" : "F")
                         : "_";
-                System.out.print(value);
+                report(value);
             }
-            System.out.println();
+            reportLine();
         }
         
         // Now, verify the top of the stack at each bytecode.
@@ -177,5 +180,17 @@ public class ConstructorThisInterpreterTest {
         methodVisitor.visitMaxs(2, 2);
         methodVisitor.visitEnd();
         return methodVisitor;
+    }
+
+    private static void report(String output) {
+        if (REPORT) {
+            System.out.print(output);
+        }
+    }
+
+    private static void reportLine() {
+        if (REPORT) {
+            System.out.println();
+        }
     }
 }

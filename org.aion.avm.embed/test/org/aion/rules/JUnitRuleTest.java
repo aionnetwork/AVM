@@ -20,7 +20,7 @@ public class JUnitRuleTest {
 
     // ClassRule annotation instantiates them only once for the whole test class.
     @ClassRule
-    public static AvmRule avmRule = new AvmRule(true);
+    public static AvmRule avmRule = new AvmRule(false);
 
     private static Address dappAddr;
     private static Address preminedAccount = avmRule.getPreminedAccount();

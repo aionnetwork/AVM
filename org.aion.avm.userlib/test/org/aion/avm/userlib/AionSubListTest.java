@@ -312,14 +312,10 @@ public class AionSubListTest {
         arraySubList.add(newValue);
         aionSubList.add(newValue);
 
-        printList(arrayList); printList(arraySubList); printList(aionList); printList(aionSubList); System.out.println(); // copy this line to see list values
-
         // remove a value and check
         int removeIndex = 3;
         arraySubList.remove(removeIndex);
         aionSubList.remove(removeIndex);
-
-        printList(arrayList); printList(arraySubList); printList(aionList); printList(aionSubList); System.out.println(); // copy this line to see list values
 
         // retain values and check
         List<Integer> retainList = new ArrayList<>();
@@ -342,19 +338,6 @@ public class AionSubListTest {
         Assert.assertEquals(list1.size(), list2.size());
         for (int i = 0; i < list1.size(); i++) {
             Assert.assertEquals(list1.get(i), list2.get(i));
-        }
-    }
-
-    private void printList(List<?> list) {
-        for (int i = 0; i < list.size(); i++) {
-            if (i == 0) {
-                System.out.print("[");
-            }
-            if (i == list.size() -1) {
-                System.out.println(list.get(i) + "]");
-                break;
-            }
-            System.out.print(list.get(i) + ", ");
         }
     }
 

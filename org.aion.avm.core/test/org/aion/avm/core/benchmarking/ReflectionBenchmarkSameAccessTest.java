@@ -29,6 +29,8 @@ import org.junit.Test;
  *   2. The lookup/resolution as well as the access.
  */
 public class ReflectionBenchmarkSameAccessTest {
+    // NOTE:  Output is ONLY produced if REPORT is set to true.
+    private static final boolean REPORT = false;
     private static int spins = ReflectionBenchmarkConstants.sameSpins;
     private static String targetClassName = ReflectionBenchmarkConstants.targetClassName;
 
@@ -80,7 +82,9 @@ public class ReflectionBenchmarkSameAccessTest {
 
     @BeforeClass
     public static void setup() {
-        System.out.println("Running each benchmark " + spins + " times each.");
+        if (REPORT) {
+            System.out.println("Running each benchmark " + spins + " times each.");
+        }
     }
 
     // <----------------------------------------benchmarks----------------------------------------->
@@ -1199,6 +1203,8 @@ public class ReflectionBenchmarkSameAccessTest {
     private static void printTime(String title, String measureName, long measure, long invokes) {
         BigDecimal measure1BD = BigDecimal.valueOf(measure).setScale(2, RoundingMode.HALF_UP);
         BigDecimal scaledMeasure1 = measure1BD.divide(BigDecimal.valueOf(invokes), RoundingMode.HALF_UP);
-        System.out.println(title + " " + "\n\t" + measureName + ": " + scaledMeasure1.toPlainString() + "ns\n");
+        if (REPORT) {
+            System.out.println(title + " " + "\n\t" + measureName + ": " + scaledMeasure1.toPlainString() + "ns\n");
+        }
     }
 }

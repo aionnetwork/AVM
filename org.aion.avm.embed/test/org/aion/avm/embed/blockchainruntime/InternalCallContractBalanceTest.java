@@ -20,6 +20,9 @@ import static org.junit.Assert.assertTrue;
  * some specified depth in a chain of internal contract calls.
  */
 public class InternalCallContractBalanceTest {
+    // NOTE:  Output is ONLY produced if REPORT is set to true.
+    private static final boolean REPORT = false;
+
     @ClassRule
     public static AvmRule avmRule = new AvmRule(false);
     private static final int MAX_CALL_DEPTH = 10;
@@ -73,7 +76,9 @@ public class InternalCallContractBalanceTest {
     }
 
     private void verifyBalanceOfContractAtSpecificDepthInCallStack(int numInternalContracts, int depthOfContractToQuery) {
-        System.out.println("verifyBalanceOfContractAtSpecificDepthInCallStack on " + numInternalContracts + " internal calls and targeting depth " + depthOfContractToQuery);
+        if (REPORT) {
+            System.out.println("verifyBalanceOfContractAtSpecificDepthInCallStack on " + numInternalContracts + " internal calls and targeting depth " + depthOfContractToQuery);
+        }
 
         // Produce some arbitrary balances that the contracts will have.
         BigInteger topContractBalance = BigInteger.ZERO;
@@ -92,8 +97,10 @@ public class InternalCallContractBalanceTest {
     }
 
     private void verifyBalanceOfContractAtSpecificDepthInCallStackAfterTransferringMoreValue(int numInternalContracts, int depthOfContractToQuery) {
-        System.out.println("verifyBalanceOfContractAtSpecificDepthInCallStackAfterTransferringMoreValue on " + numInternalContracts
-            + " internal calls and targeting depth " + depthOfContractToQuery);
+        if (REPORT) {
+            System.out.println("verifyBalanceOfContractAtSpecificDepthInCallStackAfterTransferringMoreValue on " + numInternalContracts
+                    + " internal calls and targeting depth " + depthOfContractToQuery);
+        }
 
         // Produce some arbitrary balances that the contracts will have.
         BigInteger topContractBalance = BigInteger.ZERO;

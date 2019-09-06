@@ -18,8 +18,11 @@ import static org.junit.Assert.assertTrue;
  * invoked multiple times.
  */
 public class BootstrappingEnergyChargeConsistencyTest {
+    // NOTE:  Output is ONLY produced if REPORT is set to true.
+    private static final boolean REPORT = false;
+
     @ClassRule
-    public static AvmRule avmRule = new AvmRule(false);
+    public static AvmRule avmRule = new AvmRule(false).setBlockchainPrintlnEnabled(REPORT);
 
     private long energyLimit = 6_000_000;
     private Address deployer = avmRule.getPreminedAccount();

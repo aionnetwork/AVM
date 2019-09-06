@@ -61,7 +61,6 @@ public class AvmFailureTest {
         Transaction tx = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, data, energyLimit, energyPrice);
         TransactionResult txResult = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
 
-        System.out.println("||| " + txResult + " ||| " + txResult.transactionStatus.isReverted());
         assertTrue(txResult.transactionStatus.isReverted());
         assertEquals(5, txResult.internalTransactions.size());
         assertEquals(0, txResult.logs.size());

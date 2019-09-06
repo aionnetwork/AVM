@@ -24,6 +24,8 @@ import org.junit.Test;
  *       instance field resolution/lookup
  */
 public class ReflectionBenchmarkUniqueResolutionTest {
+    // NOTE:  Output is ONLY produced if REPORT is set to true.
+    private static final boolean REPORT = false;
     private static int spins = ReflectionBenchmarkConstants.uniqueSpins;
     private static String targetClassName = ReflectionBenchmarkConstants.targetClassName;
     private static File classpathDirectory = ReflectionBenchmarkConstants.classpathDirectory;
@@ -35,7 +37,9 @@ public class ReflectionBenchmarkUniqueResolutionTest {
 
     @BeforeClass
     public static void setup() {
-        System.out.println("Running each benchmark " + spins + " times each.");
+        if (REPORT) {
+            System.out.println("Running each benchmark " + spins + " times each.");
+        }
     }
 
     // <----------------------------------------benchmarks----------------------------------------->
@@ -273,6 +277,8 @@ public class ReflectionBenchmarkUniqueResolutionTest {
     private static void printTime(String title, String measureName, long measure, long invokes) {
         BigDecimal measure1BD = BigDecimal.valueOf(measure).setScale(2, RoundingMode.HALF_UP);
         BigDecimal scaledMeasure1 = measure1BD.divide(BigDecimal.valueOf(invokes), RoundingMode.HALF_UP);
-        System.out.println(title + " " + "\n\t" + measureName + ": " + scaledMeasure1.toPlainString() + "ns\n");
+        if (REPORT) {
+            System.out.println(title + " " + "\n\t" + measureName + ": " + scaledMeasure1.toPlainString() + "ns\n");
+        }
     }
 }

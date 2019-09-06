@@ -35,7 +35,6 @@ public class Blake2bPersonalizationTest {
         byte[] nonce = Helpers.hexStringToBytes("0100000000000000000000000000000000000000000000000000000000000000");
 
         boolean result = isValidSolution(solution, blockHeader, nonce);
-        System.out.println("result is: " + result);
         Assert.assertTrue(result);
     }
 

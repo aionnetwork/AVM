@@ -27,7 +27,7 @@ import org.objectweb.asm.MethodVisitor;
 
 public class CircularDependenciesTest {
     @ClassRule
-    public static AvmRule avmRule = new AvmRule(true);
+    public static AvmRule avmRule = new AvmRule(false);
 
     private static AionAddress DEPLOYER;
     private static Address DEPLOYER_API;

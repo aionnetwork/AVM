@@ -26,6 +26,8 @@ import org.junit.Test;
  * demonstrates how our persistence model fits with this.
  */
 public class BasicPerfTest {
+    // NOTE:  Output is ONLY produced if REPORT is set to true.
+    private final static boolean REPORT = false;
     private final static int COUNT = 1000;
     private final static int THREAD_COUNT = 1;
 
@@ -54,8 +56,10 @@ public class BasicPerfTest {
             threads[i].waitForSafeTermination();
         }
         long end = System.nanoTime();
-        // Report - note that this doesn't take the thread count into account.
-        System.out.println("NANOS PER RUN: " + ((end - start) / COUNT));
+        if (REPORT) {
+            // Report - note that this doesn't take the thread count into account.
+            System.out.println("NANOS PER RUN: " + ((end - start) / COUNT));
+        }
     }
 
 

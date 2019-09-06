@@ -21,9 +21,11 @@ import static org.junit.Assert.assertTrue;
 
 
 public class BlockchainTest {
+    // NOTE:  Output is ONLY produced if REPORT is set to true.
+    private static final boolean REPORT = false;
 
     @ClassRule
-    public static AvmRule avmRule = new AvmRule(true);
+    public static AvmRule avmRule = new AvmRule(false).setBlockchainPrintlnEnabled(REPORT);
 
     private Address premined = avmRule.getPreminedAccount();
 

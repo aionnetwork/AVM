@@ -14,7 +14,6 @@ public class CheckTypesTest {
         try {
             ABICompiler.compileJarBytes(jar);
         } catch(ABICompilerException e) {
-            System.out.println(e.getMessage());
             assertTrue(e.getMessage().contains("badParams"));
             throw e;
         }

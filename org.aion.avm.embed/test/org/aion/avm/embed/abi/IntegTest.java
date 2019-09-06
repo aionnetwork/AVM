@@ -18,7 +18,7 @@ import org.junit.Test;
 public class IntegTest {
 
     @ClassRule
-    public static AvmRule avmRule = new AvmRule(true);
+    public static AvmRule avmRule = new AvmRule(false);
 
     private static final long ENERGY_LIMIT = 3_500_000L;
     private static final long ENERGY_PRICE = 1L;

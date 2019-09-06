@@ -5,6 +5,8 @@ import org.aion.avm.core.util.Helpers;
 import org.junit.Test;
 
 public class AddressResourceMonitorTest {
+    // NOTE:  Output is ONLY produced if REPORT is set to true.
+    private static final boolean REPORT = false;
     
     byte[] addr1 = Helpers.hexStringToBytes("1111111111111111111111111111111111111111111111111111111111111111");
     byte[] addr2 = Helpers.hexStringToBytes("2222222222222222222222222222222222222222222222222222222222222222");
@@ -45,7 +47,9 @@ public class AddressResourceMonitorTest {
             while(false == task.inAbortState()){
             }
 
-            System.out.println("Thread 2 Abort");
+            if (REPORT) {
+                System.out.println("Thread 2 Abort");
+            }
             monitor.testReleaseResourcesForTask(task);
         }
     }
@@ -63,7 +67,9 @@ public class AddressResourceMonitorTest {
 
             }
 
-            System.out.println("Thread 3 Abort");
+            if (REPORT) {
+                System.out.println("Thread 3 Abort");
+            }
             monitor.testReleaseResourcesForTask(task);
         }
     }
@@ -116,7 +122,9 @@ public class AddressResourceMonitorTest {
             while(false == task.inAbortState()){
             }
 
-            System.out.println("Thread 5 Abort");
+            if (REPORT) {
+                System.out.println("Thread 5 Abort");
+            }
             monitor.testReleaseResourcesForTask(task);
         }
     }
@@ -133,7 +141,9 @@ public class AddressResourceMonitorTest {
             while(false == task.inAbortState()){
             }
 
-            System.out.println("Thread 6 Abort");
+            if (REPORT) {
+                System.out.println("Thread 6 Abort");
+            }
             monitor.testReleaseResourcesForTask(task);
         }
     }
@@ -189,7 +199,9 @@ public class AddressResourceMonitorTest {
             while(false == task.inAbortState()){
             }
 
-            System.out.println("Thread 8 Abort");
+            if (REPORT) {
+                System.out.println("Thread 8 Abort");
+            }
             monitor.testReleaseResourcesForTask(task);
         }
     }

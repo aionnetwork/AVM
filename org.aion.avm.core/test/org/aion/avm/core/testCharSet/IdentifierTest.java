@@ -18,6 +18,8 @@ import org.aion.types.TransactionResult;
 import org.junit.*;
 
 public class IdentifierTest {
+    // NOTE:  Output is ONLY produced if REPORT is set to true.
+    private static final boolean REPORT = false;
 
     private static long energyPrice = 1L;
 
@@ -31,8 +33,10 @@ public class IdentifierTest {
     public static void setup() {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         kernel = new TestingState(block);
-        avm = CommonAvmFactory
-            .buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
+        AvmConfiguration config = new AvmConfiguration();
+        // This test uses Blockchain.println so determine whether or not we want to see the output.
+        config.enableBlockchainPrintln = REPORT;
+        avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), config);
     }
 
     @AfterClass

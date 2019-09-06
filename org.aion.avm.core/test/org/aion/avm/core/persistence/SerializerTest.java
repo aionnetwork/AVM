@@ -15,6 +15,9 @@ import java.nio.ByteBuffer;
 
 
 public class SerializerTest {
+    // NOTE:  Output is ONLY produced if REPORT is set to true.
+    private static final boolean REPORT = false;
+
     private static TargetLeaf TEST_CONSTANT;
     private SortedFieldCache cache;
 
@@ -50,7 +53,6 @@ public class SerializerTest {
         Class<?>[] sortedRoots = new Class<?>[] {TargetRoot.class, TargetLeaf.class};
         byte[] finalBytes = serializeDeserializeAsNew(nextHashCode, sortedRoots);
         Serializer.serializeEntireGraph(buffer, null, null, resolver, this.cache, classNameMapper, nextHashCode, sortedRoots, EmptyConstantClass.class);
-        System.out.println(Helpers.bytesToHexString(finalBytes));
         Assert.assertArrayEquals(Helpers.hexStringToBytes("00000001030000000000000000000000000a546172676574526f6f740000000103000000010a5461726765744c656166000000020003000000000300000001"), finalBytes);
         
         Assert.assertEquals(1, TargetRoot.root.counter);
@@ -73,7 +75,6 @@ public class SerializerTest {
         int nextHashCode = 1;
         Class<?>[] sortedRoots = new Class<?>[] {TargetRoot.class, TargetLeaf.class};
         byte[] finalBytes = serializeDeserializeAsNew(nextHashCode, sortedRoots);
-        System.out.println(Helpers.bytesToHexString(finalBytes));
         Assert.assertArrayEquals(Helpers.hexStringToBytes("00000001030000000000000000000000000a546172676574526f6f740000000103000000010a5461726765744c6561660000000200000300000001"), finalBytes);
         
         Assert.assertEquals(1, TargetRoot.root.counter);
@@ -103,7 +104,6 @@ public class SerializerTest {
         int nextHashCode = 1;
         Class<?>[] sortedRoots = new Class<?>[] {TargetRoot.class, TargetLeaf.class, TargetArray.class};
         byte[] finalBytes = serializeDeserializeAsNew(nextHashCode, sortedRoots);
-        System.out.println(Helpers.bytesToHexString(finalBytes));
         Assert.assertArrayEquals(Helpers.hexStringToBytes("00000001030000000000000000000000000b54617267657441727261790000000100000000060300000001030000000203000000030300000004030000000503000000060a5461726765744c6561660000000400030000000703000000080a5461726765744c6561660000000500030000000703000000080a5461726765744c6561660000000600030000000703000000080a5461726765744c6561660000000700030000000703000000080a5461726765744c6561660000000800030000000703000000080a5461726765744c6561660000000900030000000703000000080a546172676574526f6f7400000002000a546172676574526f6f740000000300"), finalBytes);
         
         Assert.assertEquals(1, TargetRoot.root.counter);
@@ -127,7 +127,6 @@ public class SerializerTest {
         int nextHashCode = 1;
         Class<?>[] sortedRoots = new Class<?>[] {TargetRoot.class, TargetLeaf.class, TargetArray.class};
         byte[] finalBytes = serializeDeserializeAsNew(nextHashCode, sortedRoots);
-        System.out.println(Helpers.bytesToHexString(finalBytes));
         Assert.assertArrayEquals(Helpers.hexStringToBytes("00000001030000000000000000000000000a546172676574526f6f740000000103000000010a5461726765744c656166000000020002000000010300000001"), finalBytes);
         
         Assert.assertEquals(1, TargetRoot.root.counter);
@@ -147,7 +146,6 @@ public class SerializerTest {
         int nextHashCode = 1;
         Class<?>[] sortedRoots = new Class<?>[] {TargetRoot.class, TargetLeaf.class, TargetArray.class};
         byte[] finalBytes = serializeDeserializeAsNew(nextHashCode, sortedRoots);
-        System.out.println(Helpers.bytesToHexString(finalBytes));
         Assert.assertArrayEquals(Helpers.hexStringToBytes("00000001030000000000000000000000000b5461726765744172726179000000010000000001010b5461726765744172726179"), finalBytes);
         
         TargetArray checkArray = (TargetArray) TargetRoot.root;
@@ -188,7 +186,6 @@ public class SerializerTest {
         TargetRoot.root = newRoot;
         TargetLeaf.D = 5.0;
         ReentrantGraph calleeState = ReentrantGraph.captureCalleeState(resolver, this.cache, classNameMapper, 1000, nextHashCode, sortedRoots, EmptyConstantClass.class);
-        System.out.println(Helpers.bytesToHexString(calleeState.rawState));
         
         TargetRoot.root = null;
         TargetLeaf.D = 0.0;
@@ -271,7 +268,7 @@ public class SerializerTest {
         int nextHashCode = 1;
         Class<?>[] sortedRoots = new Class<?>[] {TargetRoot.class, TargetLeaf.class, TargetArray.class};
         byte[] finalBytes = serializeDeserializeAsNew(nextHashCode, sortedRoots);
-        System.out.println("IntArrays perf serialized size: " + finalBytes.length);
+        report("IntArrays perf serialized size: " + finalBytes.length);
         
         TestGlobalResolver resolver = new TestGlobalResolver();
         TestNameMapper classNameMapper = new TestNameMapper();
@@ -285,7 +282,7 @@ public class SerializerTest {
         }
         long end = System.nanoTime();
         long deltaNanosPer = (end - start) / samples;
-        System.out.println("Serialized in " + deltaNanosPer + " ns");
+        report("Serialized in " + deltaNanosPer + " ns");
         
         // Do the deserialization.
         ByteBuffer deserializationBuffer = ByteBuffer.wrap(finalBytes);
@@ -296,7 +293,7 @@ public class SerializerTest {
         }
         end = System.nanoTime();
         deltaNanosPer = (end - start) / samples;
-        System.out.println("Deserialized in " + deltaNanosPer + " ns");
+        report("Deserialized in " + deltaNanosPer + " ns");
     }
 
     @Test
@@ -318,7 +315,7 @@ public class SerializerTest {
         int nextHashCode = 1;
         Class<?>[] sortedRoots = new Class<?>[] {TargetRoot.class, TargetLeaf.class, TargetArray.class};
         byte[] finalBytes = serializeDeserializeAsNew(nextHashCode, sortedRoots);
-        System.out.println("ObjectArrays perf serialized size: " + finalBytes.length);
+        report("ObjectArrays perf serialized size: " + finalBytes.length);
         
         TestGlobalResolver resolver = new TestGlobalResolver();
         TestNameMapper classNameMapper = new TestNameMapper();
@@ -332,7 +329,7 @@ public class SerializerTest {
         }
         long end = System.nanoTime();
         long deltaNanosPer = (end - start) / samples;
-        System.out.println("Serialized in " + deltaNanosPer + " ns");
+        report("Serialized in " + deltaNanosPer + " ns");
         
         // Do the deserialization.
         ByteBuffer deserializationBuffer = ByteBuffer.wrap(finalBytes);
@@ -343,7 +340,7 @@ public class SerializerTest {
         }
         end = System.nanoTime();
         deltaNanosPer = (end - start) / samples;
-        System.out.println("Deserialized in " + deltaNanosPer + " ns");
+        report("Deserialized in " + deltaNanosPer + " ns");
     }
 
     @Test
@@ -426,5 +423,11 @@ public class SerializerTest {
     }
 
     private static final class EmptyConstantClass {
+    }
+
+    private static void report(String output) {
+        if (REPORT) {
+            System.out.println(output);
+        }
     }
 }

@@ -22,6 +22,9 @@ import java.math.BigInteger;
 import static org.junit.Assert.assertTrue;
 
 public class HotObjectTest {
+    // NOTE:  Output is ONLY produced if REPORT is set to true.
+    private static final boolean REPORT = false;
+
     private static AionAddress deployer = TestingState.PREMINED_ADDRESS;
     private static TestingBlock block;
     private static AvmImpl avm;
@@ -296,7 +299,9 @@ public class HotObjectTest {
         long cacheResult = measureMethodExecutionTime(kernel, dappAddress, "getValue", true, 5);
         long DBResult = measureMethodExecutionTime(kernel, dappAddress, "getValue", false, 5);
 
-        System.out.println("Avg execution time (307168 serialized bytes) using code cache: " + DBResult + ", data cache: " + cacheResult + "(ns). code/data cache ratio: " + (double) DBResult / cacheResult);
+        if (REPORT) {
+            System.out.println("Avg execution time (307168 serialized bytes) using code cache: " + DBResult + ", data cache: " + cacheResult + "(ns). code/data cache ratio: " + (double) DBResult / cacheResult);
+        }
 
 
         // 8308 bytes
@@ -310,7 +315,9 @@ public class HotObjectTest {
         cacheResult = measureMethodExecutionTime(kernel, dappAddress, "getValue", true, 5);
         DBResult = measureMethodExecutionTime(kernel, dappAddress, "getValue", false, 5);
 
-        System.out.println("Avg execution time (8308 serialized bytes) using code cache: " + DBResult + ", data cache: " + cacheResult + "(ns). code/data cache ratio: " + (double) DBResult / cacheResult);
+        if (REPORT) {
+            System.out.println("Avg execution time (8308 serialized bytes) using code cache: " + DBResult + ", data cache: " + cacheResult + "(ns). code/data cache ratio: " + (double) DBResult / cacheResult);
+        }
     }
 
     /**

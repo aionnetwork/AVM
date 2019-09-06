@@ -10,6 +10,8 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 public class ByteBufferWriteTest {
+    // NOTE:  Output is ONLY produced if REPORT is set to true.
+    private static final boolean REPORT = false;
 
     private static int samples = 1;
 
@@ -33,7 +35,7 @@ public class ByteBufferWriteTest {
         long end = System.nanoTime();
 
         long deltaNanosPer = (end - start) / samples;
-        System.out.println("Serialized IntArray (for-loop) in " + deltaNanosPer + " ns");
+        report("Serialized IntArray (for-loop) in " + deltaNanosPer + " ns");
         start = System.nanoTime();
         for (int s = 0; s < samples; ++s) {
             serializationBuffer.clear();
@@ -42,7 +44,7 @@ public class ByteBufferWriteTest {
 
         end = System.nanoTime();
         deltaNanosPer = (end - start) / samples;
-        System.out.println("Serialized IntArray (intbuffer) in " + deltaNanosPer + " ns");
+        report("Serialized IntArray (intbuffer) in " + deltaNanosPer + " ns");
 
         //deserialize
         serializationBuffer.rewind();
@@ -72,7 +74,7 @@ public class ByteBufferWriteTest {
         long end = System.nanoTime();
 
         long deltaNanosPer = (end - start) / samples;
-        System.out.println("Serialized LongArray (for-loop) in " + deltaNanosPer + " ns");
+        report("Serialized LongArray (for-loop) in " + deltaNanosPer + " ns");
 
         start = System.nanoTime();
         for (int s = 0; s < samples; ++s) {
@@ -82,7 +84,7 @@ public class ByteBufferWriteTest {
 
         end = System.nanoTime();
         deltaNanosPer = (end - start) / samples;
-        System.out.println("Serialized LongArray (longbuffer) in " + deltaNanosPer + " ns");
+        report("Serialized LongArray (longbuffer) in " + deltaNanosPer + " ns");
 
         serializationBuffer.rewind();
         long[] result = new long[longCount];
@@ -110,7 +112,7 @@ public class ByteBufferWriteTest {
         long end = System.nanoTime();
 
         long deltaNanosPer = (end - start) / samples;
-        System.out.println("Serialized CharArray (for-loop) in " + deltaNanosPer + " ns");
+        report("Serialized CharArray (for-loop) in " + deltaNanosPer + " ns");
 
         start = System.nanoTime();
         for (int s = 0; s < samples; ++s) {
@@ -120,7 +122,7 @@ public class ByteBufferWriteTest {
 
         end = System.nanoTime();
         deltaNanosPer = (end - start) / samples;
-        System.out.println("Serialized CharArray (charbuffer) in " + deltaNanosPer + " ns");
+        report("Serialized CharArray (charbuffer) in " + deltaNanosPer + " ns");
 
         serializationBuffer.rewind();
         char[] result = new char[charCount];
@@ -148,7 +150,7 @@ public class ByteBufferWriteTest {
         long end = System.nanoTime();
 
         long deltaNanosPer = (end - start) / samples;
-        System.out.println("Serialized ByteArray (for-loop) in " + deltaNanosPer + " ns");
+        report("Serialized ByteArray (for-loop) in " + deltaNanosPer + " ns");
 
         start = System.nanoTime();
         for (int s = 0; s < samples; ++s) {
@@ -158,7 +160,7 @@ public class ByteBufferWriteTest {
 
         end = System.nanoTime();
         deltaNanosPer = (end - start) / samples;
-        System.out.println("Serialized ByteArray (bytebuffer) in " + deltaNanosPer + " ns");
+        report("Serialized ByteArray (bytebuffer) in " + deltaNanosPer + " ns");
 
         serializationBuffer.rewind();
 
@@ -189,7 +191,7 @@ public class ByteBufferWriteTest {
         long end = System.nanoTime();
 
         long deltaNanosPer = (end - start) / samples;
-        System.out.println("Serialized BooleanArray (for-loop) in " + deltaNanosPer + " ns");
+        report("Serialized BooleanArray (for-loop) in " + deltaNanosPer + " ns");
 
         start = System.nanoTime();
         for (int s = 0; s < samples; ++s) {
@@ -202,7 +204,7 @@ public class ByteBufferWriteTest {
 
         end = System.nanoTime();
         deltaNanosPer = (end - start) / samples;
-        System.out.println("Serialized BooleanArray (bytebuffer) in " + deltaNanosPer + " ns");
+        report("Serialized BooleanArray (bytebuffer) in " + deltaNanosPer + " ns");
 
     }
 
@@ -226,7 +228,7 @@ public class ByteBufferWriteTest {
         long end = System.nanoTime();
 
         long deltaNanosPer = (end - start) / samples;
-        System.out.println("Serialized ShortArray (for-loop) in " + deltaNanosPer + " ns");
+        report("Serialized ShortArray (for-loop) in " + deltaNanosPer + " ns");
 
         start = System.nanoTime();
         for (int s = 0; s < samples; ++s) {
@@ -236,7 +238,7 @@ public class ByteBufferWriteTest {
 
         end = System.nanoTime();
         deltaNanosPer = (end - start) / samples;
-        System.out.println("Serialized ShortArray (shortbuffer) in " + deltaNanosPer + " ns");
+        report("Serialized ShortArray (shortbuffer) in " + deltaNanosPer + " ns");
 
         serializationBuffer.rewind();
         short[] result = new short[shortCount];
@@ -269,7 +271,7 @@ public class ByteBufferWriteTest {
         long end = System.nanoTime();
 
         long deltaNanosPer = (end - start) / samples;
-        System.out.println("Serialized (for-loop ) in " + deltaNanosPer + " ns");
+        report("Serialized (for-loop ) in " + deltaNanosPer + " ns");
 
         start = System.nanoTime();
         for (int s = 0; s < samples; ++s) {
@@ -279,7 +281,14 @@ public class ByteBufferWriteTest {
         end = System.nanoTime();
 
         deltaNanosPer = (end - start) / samples;
-        System.out.println("Serialized (for-loop lower level) in " + deltaNanosPer + " ns");
+        report("Serialized (for-loop lower level) in " + deltaNanosPer + " ns");
 
+    }
+
+
+    private static void report(String output) {
+        if (REPORT) {
+            System.out.println(output);
+        }
     }
 }

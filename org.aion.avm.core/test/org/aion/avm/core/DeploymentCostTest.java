@@ -23,7 +23,6 @@ import i.RuntimeAssertionError;
 import org.aion.kernel.TestingBlock;
 
 import java.math.BigInteger;
-import java.text.NumberFormat;
 
 import org.aion.types.TransactionResult;
 import org.junit.After;
@@ -74,16 +73,15 @@ public class DeploymentCostTest {
     }
 
     /**
-     * Displays the size of the dApp as well as the cost to deploy it.
+     * Verifies the DApp deployment costs don't change unexpectedly.
      */
     @Test
     public void testCostToDeployDapps() {
-        for (Contract contract : Contract.values()) {
-            System.out.println("-------------------------------------------------------");
-            System.out.println("Results for deploying dApp: " + contract);
-            TransactionResult result = deployContract(contract);
-            System.out.println("\tCost to deploy dApp = " + NumberFormat.getNumberInstance().format(result.energyUsed));
-        }
+        TransactionResult blake2bResult = deployContract(Contract.BLAKE2B);
+        Assert.assertEquals(4_591_258L, blake2bResult.energyUsed);
+        
+        TransactionResult walletResult = deployContract(Contract.POC_WALLET);
+        Assert.assertEquals(3_955_373L, walletResult.energyUsed);
     }
 
     //<-----------------------------------------helpers-------------------------------------------->
@@ -101,6 +99,8 @@ public class DeploymentCostTest {
                 jarBytes = classesToJarBytes(
                     Main.class,
                     Blake2b.class);
+                // Verify that this size doesn't unexpectedly change.
+                Assert.assertEquals(67_969L, jarBytes.length);
                 break;
             case POC_WALLET:
                 jarBytes = classesToJarBytes(
@@ -113,11 +113,12 @@ public class DeploymentCostTest {
                     RequireFailedException.class,
                     Daylimit.class,
                     EventLogger.class);
+                // Verify that this size doesn't unexpectedly change.
+                Assert.assertEquals(58_241L, jarBytes.length);
                 break;
             default: RuntimeAssertionError.unreachable("This should never be reached.");
         }
 
-        System.out.println("\tSize of dApp = " + NumberFormat.getNumberInstance().format(jarBytes.length) + " bytes");
         return jarBytes;
     }
 

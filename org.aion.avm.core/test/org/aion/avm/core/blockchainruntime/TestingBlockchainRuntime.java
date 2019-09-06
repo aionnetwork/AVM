@@ -206,7 +206,6 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     @Override
     public void avm_log(ByteArray index0, ByteArray data) {
         java.lang.String reconstituted = new java.lang.String(index0.getUnderlying(), StandardCharsets.UTF_8);
-        System.out.println(reconstituted);
         Integer oldCount = this.eventCounter.get(reconstituted);
         int newCount = ((null != oldCount) ? oldCount : 0) + 1;
         this.eventCounter.put(reconstituted, newCount);

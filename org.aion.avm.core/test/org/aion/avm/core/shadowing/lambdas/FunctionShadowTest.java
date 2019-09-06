@@ -28,7 +28,6 @@ public class FunctionShadowTest {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         kernel = new TestingState(block);
         AvmConfiguration config = new AvmConfiguration();
-        config.enableVerboseContractErrors = true;
         config.preserveDebuggability = true;
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), config);
     }

@@ -18,6 +18,8 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
 public class Ed25519KeyTest {
+    // NOTE:  Output is ONLY produced if REPORT is set to true.
+    private static final boolean REPORT = false;
 
     private static Ed25519Key key1, key2;
     private static final byte[] KEY2_PRI_KEY_BYTES = Utils.hexToBytes("14eb6689c5fea41cbbd28bab9fc354725aca39855c58d868973263f8650939ce");
@@ -133,7 +135,9 @@ public class Ed25519KeyTest {
                 key.sign(input);
             }
             timeEnd = System.nanoTime();
-            System.out.println("ed25519     sign: " + (timeEnd - timStart) / BENCHMARK_TEST_AMOUNT_UNIT + " ns / call");
+            if (REPORT) {
+                System.out.println("ed25519     sign: " + (timeEnd - timStart) / BENCHMARK_TEST_AMOUNT_UNIT + " ns / call");
+            }
 
             // we don't want the signature assignment statement from above to added into signing time
             for (int i = 0; i < BENCHMARK_TEST_AMOUNT_UNIT; i++) {
@@ -146,7 +150,9 @@ public class Ed25519KeyTest {
                 Ed25519Key.verify(input, sig[i], pk);
             }
             timeEnd = System.nanoTime();
-            System.out.println("ed25519   verify: " + (timeEnd - timStart) / BENCHMARK_TEST_AMOUNT_UNIT + " ns / call");
+            if (REPORT) {
+                System.out.println("ed25519   verify: " + (timeEnd - timStart) / BENCHMARK_TEST_AMOUNT_UNIT + " ns / call");
+            }
         }
     }
 

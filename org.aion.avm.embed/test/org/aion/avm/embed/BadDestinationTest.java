@@ -22,8 +22,11 @@ import static org.junit.Assert.assertTrue;
  * virtual machine).
  */
 public class BadDestinationTest {
+    // NOTE:  Output is ONLY produced if REPORT is set to true.
+    private static final boolean REPORT = false;
+
     @ClassRule
-    public static AvmRule avmRule = new AvmRule(false);
+    public static AvmRule avmRule = new AvmRule(false).setBlockchainPrintlnEnabled(REPORT);
     private static Address from = avmRule.getPreminedAccount();
     private static long energyLimit = 5_000_000L;
     private static long energyPrice = 1;

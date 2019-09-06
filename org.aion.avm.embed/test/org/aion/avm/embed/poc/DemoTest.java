@@ -22,6 +22,9 @@ import static org.junit.Assert.assertTrue;
 
 
 public class DemoTest {
+    // NOTE:  Output is ONLY produced if REPORT is set to true.
+    private static final boolean REPORT = false;
+
     private long energyLimit = 5_000_0000;
     private long energyPrice = 1;
 
@@ -44,7 +47,7 @@ public class DemoTest {
         // DEPLOY
         //================
 
-        System.out.println(">> Deploy \"PEPE\" ERC20 token Dapp...");
+        report(">> Deploy \"PEPE\" ERC20 token Dapp...");
         byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(CoinController.class, ERC20Token.class);
         byte[] arguments = ABIUtil.encodeDeploymentArguments("Pepe", "PEPE", 8);
         //CoinContract pepe = new CoinContract(null, pepeMinter, testERC20Jar, arguments);
@@ -52,9 +55,9 @@ public class DemoTest {
         TransactionResult txResult = avm.run(kernel, new Transaction[] {createTransaction}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertTrue(txResult.transactionStatus.isSuccess());
         Address tokenDapp = new Address(txResult.copyOfTransactionOutput().orElseThrow());
-        System.out.println(">> \"PEPE\" ERC20 token Dapp is deployed. (Address " + Helpers.bytesToHexString(txResult.copyOfTransactionOutput().orElseThrow()) + ")");
+        report(">> \"PEPE\" ERC20 token Dapp is deployed. (Address " + Helpers.bytesToHexString(txResult.copyOfTransactionOutput().orElseThrow()) + ")");
 
-        System.out.println("\n>> Deploy the Multi-sig Wallet Dapp...");
+        report("\n>> Deploy the Multi-sig Wallet Dapp...");
         jar = JarBuilder.buildJarForMainAndClassesAndUserlib(Main.class, Wallet.class, Bytes32.class);
         int confirmationsRequired = 2;
         arguments = ABIUtil.encodeDeploymentArguments(new Address(owner1.toByteArray()), new Address(owner2.toByteArray()), confirmationsRequired);
@@ -62,12 +65,12 @@ public class DemoTest {
         txResult = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertTrue(txResult.transactionStatus.isSuccess());
         Address walletDapp = new Address(txResult.copyOfTransactionOutput().orElseThrow());
-        System.out.println(">> Wallet Dapp is deployed. (Address " + Helpers.bytesToHexString(txResult.copyOfTransactionOutput().orElseThrow()) + ")");
-        System.out.println(">> Owners List:");
-        System.out.println(">>   Deployer - (Address " + deployer + ")");
-        System.out.println(">>   Owner 1  - (Address " + owner1 + ")");
-        System.out.println(">>   Owner 2  - (Address " + owner2 + ")");
-        System.out.println(">> Minimum number of owners to approve a transaction: " + confirmationsRequired);
+        report(">> Wallet Dapp is deployed. (Address " + Helpers.bytesToHexString(txResult.copyOfTransactionOutput().orElseThrow()) + ")");
+        report(">> Owners List:");
+        report(">>   Deployer - (Address " + deployer + ")");
+        report(">>   Owner 1  - (Address " + owner1 + ")");
+        report(">>   Owner 2  - (Address " + owner2 + ")");
+        report(">> Minimum number of owners to approve a transaction: " + confirmationsRequired);
 
         //================
         // FUNDING and CHECK BALANCE
@@ -76,19 +79,19 @@ public class DemoTest {
         tx = AvmTransactionUtil.call(pepeMinter, new AionAddress(tokenDapp.toByteArray()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txResult = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertTrue(txResult.transactionStatus.isSuccess());
-        System.out.println("\n>> PEPE Mint to deliver 5000 tokens to the wallet: " + new ABIDecoder(txResult.copyOfTransactionOutput().orElseThrow()).decodeOneBoolean());
+        report("\n>> PEPE Mint to deliver 5000 tokens to the wallet: " + new ABIDecoder(txResult.copyOfTransactionOutput().orElseThrow()).decodeOneBoolean());
 
         arguments = ABIUtil.encodeMethodArguments("balanceOf", walletDapp);
         tx = AvmTransactionUtil.call(pepeMinter, new AionAddress(tokenDapp.toByteArray()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txResult = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertTrue(txResult.transactionStatus.isSuccess());
-        System.out.println(">> balance of wallet: " + new ABIDecoder(txResult.copyOfTransactionOutput().orElseThrow()).decodeOneLong());
+        report(">> balance of wallet: " + new ABIDecoder(txResult.copyOfTransactionOutput().orElseThrow()).decodeOneLong());
 
         arguments = ABIUtil.encodeMethodArguments("balanceOf", new Address(receiver.toByteArray()));
         tx = AvmTransactionUtil.call(pepeMinter, new AionAddress(tokenDapp.toByteArray()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txResult = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertTrue(txResult.transactionStatus.isSuccess());
-        System.out.println(">> balance of receiver: " + new ABIDecoder(txResult.copyOfTransactionOutput().orElseThrow()).decodeOneLong());
+        report(">> balance of receiver: " + new ABIDecoder(txResult.copyOfTransactionOutput().orElseThrow()).decodeOneLong());
 
         //================
         // PROPOSE
@@ -99,7 +102,7 @@ public class DemoTest {
         txResult = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertTrue(txResult.transactionStatus.isSuccess());
         byte[] pendingTx = new ABIDecoder(txResult.copyOfTransactionOutput().orElseThrow()).decodeOneByteArray();
-        System.out.println("\n>> Deployer to propose a transaction of 3000 PEPE tokens to Receiver. (Tx ID " + Helpers.bytesToHexString(pendingTx) + ")");
+        report("\n>> Deployer to propose a transaction of 3000 PEPE tokens to Receiver. (Tx ID " + Helpers.bytesToHexString(pendingTx) + ")");
 
         //================
         // CONFIRM #1
@@ -108,7 +111,7 @@ public class DemoTest {
         tx = AvmTransactionUtil.call(owner1, new AionAddress(walletDapp.toByteArray()), kernel.getNonce(owner1), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txResult = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertTrue(txResult.transactionStatus.isSuccess());
-        System.out.println(">> Transaction confirmed by Owner 1: " + new ABIDecoder(txResult.copyOfTransactionOutput().orElseThrow()).decodeOneBoolean());
+        report(">> Transaction confirmed by Owner 1: " + new ABIDecoder(txResult.copyOfTransactionOutput().orElseThrow()).decodeOneBoolean());
 
         //================
         // CONFIRM #2
@@ -117,9 +120,9 @@ public class DemoTest {
         tx = AvmTransactionUtil.call(owner2, new AionAddress(walletDapp.toByteArray()), kernel.getNonce(owner2), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txResult = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertTrue(txResult.transactionStatus.isSuccess());
-        System.out.println(">> Transaction confirmed by Owner 2: " + new ABIDecoder(txResult.copyOfTransactionOutput().orElseThrow()).decodeOneBoolean());
+        report(">> Transaction confirmed by Owner 2: " + new ABIDecoder(txResult.copyOfTransactionOutput().orElseThrow()).decodeOneBoolean());
 
-        System.out.println("\n>> Number of confirmations reach to " + confirmationsRequired + ". Transaction is processed.");
+        report("\n>> Number of confirmations reach to " + confirmationsRequired + ". Transaction is processed.");
 
         //================
         // CHECK BALANCE
@@ -128,13 +131,19 @@ public class DemoTest {
         tx = AvmTransactionUtil.call(pepeMinter, new AionAddress(tokenDapp.toByteArray()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txResult = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertTrue(txResult.transactionStatus.isSuccess());
-        System.out.println("\n>> balance of wallet: " + new ABIDecoder(txResult.copyOfTransactionOutput().orElseThrow()).decodeOneLong());
+        report("\n>> balance of wallet: " + new ABIDecoder(txResult.copyOfTransactionOutput().orElseThrow()).decodeOneLong());
 
         arguments = ABIUtil.encodeMethodArguments("balanceOf", new Address(receiver.toByteArray()));
         tx = AvmTransactionUtil.call(pepeMinter, new AionAddress(tokenDapp.toByteArray()), kernel.getNonce(pepeMinter), BigInteger.ZERO, arguments, energyLimit, energyPrice);
         txResult = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertTrue(txResult.transactionStatus.isSuccess());
-        System.out.println(">> balance of receiver: " + new ABIDecoder(txResult.copyOfTransactionOutput().orElseThrow()).decodeOneLong());
+        report(">> balance of receiver: " + new ABIDecoder(txResult.copyOfTransactionOutput().orElseThrow()).decodeOneLong());
         avm.shutdown();
+    }
+
+    private static void report(String report) {
+        if (REPORT) {
+            System.out.println(report);
+        }
     }
 }

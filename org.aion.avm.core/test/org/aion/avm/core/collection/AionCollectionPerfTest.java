@@ -16,6 +16,8 @@ import org.junit.Test;
 
 
 public class AionCollectionPerfTest {
+    // NOTE:  Output is ONLY produced if REPORT is set to true.
+    private static final boolean REPORT = false;
 
     private AionAddress from = TestingState.PREMINED_ADDRESS;
     private TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
@@ -56,8 +58,8 @@ public class AionCollectionPerfTest {
 
     @Test
     public void testList() {
-        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        System.out.println(">> Energy measurement for AionList");
+        report(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        report(">> Energy measurement for AionList");
         byte[] args;
         IExternalState externalState = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
@@ -70,30 +72,30 @@ public class AionCollectionPerfTest {
         Assert.assertTrue(initResult.transactionStatus.isSuccess());
         args = encodeNoArgsMethodCall("callAppend");
         TransactionResult appendResult = call(externalState, avm, contract, from, args);
-        System.out.println(">> Append        : " + appendResult.energyUsed / AionListPerfContract.SIZE);
+        report(">> Append        : " + appendResult.energyUsed / AionListPerfContract.SIZE);
 
         args = encodeNoArgsMethodCall("callInit");
         call(externalState, avm, contract, from, args);
         args = encodeNoArgsMethodCall("callInsertHead");
         TransactionResult insertHeadResult = call(externalState, avm, contract, from, args);
-        System.out.println(">> Insert Head   : " + insertHeadResult.energyUsed / AionListPerfContract.SIZE);
+        report(">> Insert Head   : " + insertHeadResult.energyUsed / AionListPerfContract.SIZE);
 
         args = encodeNoArgsMethodCall("callInit");
         call(externalState, avm, contract, from, args);
 
         args = encodeNoArgsMethodCall("callInsertMiddle");
         TransactionResult insertMiddleResult = call(externalState, avm, contract, from, args);
-        System.out.println(">> Insert Middle : " + insertMiddleResult.energyUsed / AionListPerfContract.SIZE);
+        report(">> Insert Middle : " + insertMiddleResult.energyUsed / AionListPerfContract.SIZE);
 
-        System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        report("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 
         avm.shutdown();
     }
 
     @Test
     public void testSet() {
-        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        System.out.println(">> Energy measurement for AionSet");
+        report(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        report(">> Energy measurement for AionSet");
         byte[] args;
         IExternalState externalState = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
@@ -107,45 +109,45 @@ public class AionCollectionPerfTest {
 
         args = encodeNoArgsMethodCall("callAdd");
         TransactionResult addResult = call(externalState, avm, contract, from, args);
-        System.out.println(">> Add           : " + addResult.energyUsed / AionSetPerfContract.SIZE);
+        report(">> Add           : " + addResult.energyUsed / AionSetPerfContract.SIZE);
 
         args = encodeNoArgsMethodCall("callContains");
         TransactionResult containsResult = call(externalState, avm, contract, from, args);
-        System.out.println(">> Contains      : " + containsResult.energyUsed / AionSetPerfContract.SIZE);
+        report(">> Contains      : " + containsResult.energyUsed / AionSetPerfContract.SIZE);
 
         args = encodeNoArgsMethodCall("callRemove");
         TransactionResult removeReult = call(externalState, avm, contract, from, args);
-        System.out.println(">> Remove        : " + removeReult.energyUsed / AionSetPerfContract.SIZE);
+        report(">> Remove        : " + removeReult.energyUsed / AionSetPerfContract.SIZE);
 
-        System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        report("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 
-        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        System.out.println(">> Energy measurement for AionPlainSet");
+        report(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        report(">> Energy measurement for AionPlainSet");
 
         args = encodeNoArgsMethodCall("callInitB");
         initResult = call(externalState, avm, contract, from, args);
 
         args = encodeNoArgsMethodCall("callAddB");
         addResult = call(externalState, avm, contract, from, args);
-        System.out.println(">> Add           : " + addResult.energyUsed / AionSetPerfContract.SIZE);
+        report(">> Add           : " + addResult.energyUsed / AionSetPerfContract.SIZE);
 
         args = encodeNoArgsMethodCall("callContainsB");
         containsResult = call(externalState, avm, contract, from, args);
-        System.out.println(">> Contains      : " + containsResult.energyUsed / AionSetPerfContract.SIZE);
+        report(">> Contains      : " + containsResult.energyUsed / AionSetPerfContract.SIZE);
 
         args = encodeNoArgsMethodCall("callRemoveB");
         removeReult = call(externalState, avm, contract, from, args);
-        System.out.println(">> Remove        : " + removeReult.energyUsed / AionSetPerfContract.SIZE);
+        report(">> Remove        : " + removeReult.energyUsed / AionSetPerfContract.SIZE);
 
-        System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        report("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
         avm.shutdown();
     }
 
     @Test
     public void testMap() {
 
-        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        System.out.println(">> Energy measurement for AionMap");
+        report(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        report(">> Energy measurement for AionMap");
         byte[] args;
         IExternalState externalState = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
@@ -159,37 +161,37 @@ public class AionCollectionPerfTest {
 
         args = encodeNoArgsMethodCall("callPut");
         TransactionResult putResult = call(externalState, avm, contract, from, args);
-        System.out.println(">> Put           : " + putResult.energyUsed / AionMapPerfContract.SIZE);
+        report(">> Put           : " + putResult.energyUsed / AionMapPerfContract.SIZE);
 
         args = encodeNoArgsMethodCall("callGet");
         TransactionResult getResult = call(externalState, avm, contract, from, args);
-        System.out.println(">> Get           : " + getResult.energyUsed / AionMapPerfContract.SIZE);
+        report(">> Get           : " + getResult.energyUsed / AionMapPerfContract.SIZE);
 
         args = encodeNoArgsMethodCall("callRemove");
         TransactionResult removeResult = call(externalState, avm, contract, from, args);
-        System.out.println(">> Remove        : " + removeResult.energyUsed / AionMapPerfContract.SIZE);
+        report(">> Remove        : " + removeResult.energyUsed / AionMapPerfContract.SIZE);
 
-        System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        report("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 
-        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        System.out.println(">> Energy measurement for AionPlainMap");
+        report(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        report(">> Energy measurement for AionPlainMap");
 
         args = encodeNoArgsMethodCall("callInitB");
         initResult = call(externalState, avm, contract, from, args);
 
         args = encodeNoArgsMethodCall("callPutB");
         putResult = call(externalState, avm, contract, from, args);
-        System.out.println(">> Put           : " + putResult.energyUsed / AionMapPerfContract.SIZE);
+        report(">> Put           : " + putResult.energyUsed / AionMapPerfContract.SIZE);
 
         args = encodeNoArgsMethodCall("callGetB");
         getResult = call(externalState, avm, contract, from, args);
-        System.out.println(">> Get           : " + getResult.energyUsed / AionMapPerfContract.SIZE);
+        report(">> Get           : " + getResult.energyUsed / AionMapPerfContract.SIZE);
 
         args = encodeNoArgsMethodCall("callRemoveB");
         removeResult = call(externalState, avm, contract, from, args);
-        System.out.println(">> Remove        : " + removeResult.energyUsed / AionMapPerfContract.SIZE);
+        report(">> Remove        : " + removeResult.energyUsed / AionMapPerfContract.SIZE);
 
-        System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        report("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
         avm.shutdown();
     }
 
@@ -198,5 +200,11 @@ public class AionCollectionPerfTest {
         return new ABIStreamingEncoder()
                 .encodeOneString(methodName)
                 .toBytes();
+    }
+
+    private static void report(String output) {
+        if (REPORT) {
+            System.out.println(output);
+        }
     }
 }

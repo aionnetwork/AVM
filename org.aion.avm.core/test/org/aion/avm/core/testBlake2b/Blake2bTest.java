@@ -12,6 +12,7 @@ import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.*;
 import org.aion.types.TransactionResult;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,7 +40,7 @@ public class Blake2bTest {
         byte[] arguments = null;
         Transaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
-        System.out.println(txResult);
+        Assert.assertTrue(txResult.transactionStatus.isSuccess());
 
         dappAddress = new AionAddress(txResult.copyOfTransactionOutput().orElseThrow());
         assertNotNull(dappAddress);
@@ -57,7 +58,7 @@ public class Blake2bTest {
 
         Transaction tx = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
         TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
-        System.out.println(txResult);
+        Assert.assertTrue(txResult.transactionStatus.isSuccess());
 
         assertArrayEquals(hash, txResult.copyOfTransactionOutput().orElseThrow());
     }

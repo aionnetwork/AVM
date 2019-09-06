@@ -18,6 +18,9 @@ import org.junit.Test;
 
 
 public class AionBufferPerfTest {
+    // NOTE:  Output is ONLY produced if REPORT is set to true.
+    private static final boolean REPORT = false;
+
     private AionAddress from = TestingState.PREMINED_ADDRESS;
     private long energyLimit = 100_000_000L;
     private long energyPrice = 1;
@@ -44,8 +47,8 @@ public class AionBufferPerfTest {
 
     @Test
     public void testBuffer() {
-        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        System.out.println(">> Energy measurements for AionBuffer\n>>");
+        report(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        report(">> Energy measurements for AionBuffer\n>>");
         byte[] args;
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         IExternalState kernel = new TestingState(block);
@@ -56,94 +59,100 @@ public class AionBufferPerfTest {
 
         args = ABIUtil.encodeMethodArguments("callPutByte");
         TransactionResult putByteResult = call(kernel, avm, contract, from, args);
-        System.out.println(">> putByte()           : " + putByteResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
+        report(">> putByte()           : " + putByteResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
 
         args = ABIUtil.encodeMethodArguments("callGetByte");
         TransactionResult getByteResult = call(kernel, avm, contract, from, args);
-        System.out.println(">> getByte()           : " + getByteResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
+        report(">> getByte()           : " + getByteResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
 
         args = ABIUtil.encodeMethodArguments("callPutChar");
         TransactionResult putCharResult = call(kernel, avm, contract, from, args);
-        System.out.println(">> putChar()           : " + putCharResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
+        report(">> putChar()           : " + putCharResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
 
         args = ABIUtil.encodeMethodArguments("callGetChar");
         TransactionResult getCharResult = call(kernel, avm, contract, from, args);
-        System.out.println(">> getChar()           : " + getCharResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
+        report(">> getChar()           : " + getCharResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
 
         args = ABIUtil.encodeMethodArguments("callPutShort");
         TransactionResult putShortResult = call(kernel, avm, contract, from, args);
-        System.out.println(">> putShort()          : " + putShortResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
+        report(">> putShort()          : " + putShortResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
 
         args = ABIUtil.encodeMethodArguments("callGetShort");
         TransactionResult getShortResult = call(kernel, avm, contract, from, args);
-        System.out.println(">> getShort()          : " + getShortResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
+        report(">> getShort()          : " + getShortResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
 
         args = ABIUtil.encodeMethodArguments("callPutInt");
         TransactionResult putIntResult = call(kernel, avm, contract, from, args);
-        System.out.println(">> putInt()            : " + putIntResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
+        report(">> putInt()            : " + putIntResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
 
         args = ABIUtil.encodeMethodArguments("callGetInt");
         TransactionResult getIntResult = call(kernel, avm, contract, from, args);
-        System.out.println(">> getInt()            : " + getIntResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
+        report(">> getInt()            : " + getIntResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
 
         args = ABIUtil.encodeMethodArguments("callPutFloat");
         TransactionResult putFloatResult = call(kernel, avm, contract, from, args);
-        System.out.println(">> putFloat()          : " + putFloatResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
+        report(">> putFloat()          : " + putFloatResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
 
         args = ABIUtil.encodeMethodArguments("callGetFloat");
         TransactionResult getFloatResult = call(kernel, avm, contract, from, args);
-        System.out.println(">> getFloat()          : " + getFloatResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
+        report(">> getFloat()          : " + getFloatResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
 
         args = ABIUtil.encodeMethodArguments("callPutLong");
         TransactionResult putLongResult = call(kernel, avm, contract, from, args);
-        System.out.println(">> putLong()           : " + putLongResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
+        report(">> putLong()           : " + putLongResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
 
         args = ABIUtil.encodeMethodArguments("callGetLong");
         TransactionResult getLongResult = call(kernel, avm, contract, from, args);
-        System.out.println(">> getLong()           : " + getLongResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
+        report(">> getLong()           : " + getLongResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
 
         args = ABIUtil.encodeMethodArguments("callPutDouble");
         TransactionResult putDoubleResult = call(kernel, avm, contract, from, args);
-        System.out.println(">> putDouble()         : " + putDoubleResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
+        report(">> putDouble()         : " + putDoubleResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
 
         args = ABIUtil.encodeMethodArguments("callGetDouble");
         TransactionResult getDoubleResult = call(kernel, avm, contract, from, args);
-        System.out.println(">> getDouble()         : " + getDoubleResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
+        report(">> getDouble()         : " + getDoubleResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
 
         args = ABIUtil.encodeMethodArguments("callPutAddress");
         TransactionResult putAddressResult = call(kernel, avm, contract, from, args);
-        System.out.println(">> putAddress()         : " + putAddressResult.energyUsed / AionBufferPerfContract.BIG_ELT_COUNT);
+        report(">> putAddress()         : " + putAddressResult.energyUsed / AionBufferPerfContract.BIG_ELT_COUNT);
 
         args = ABIUtil.encodeMethodArguments("callGetAddress");
         TransactionResult getAddressResult = call(kernel, avm, contract, from, args);
-        System.out.println(">> getAddress()         : " + getAddressResult.energyUsed / AionBufferPerfContract.BIG_ELT_COUNT);
+        report(">> getAddress()         : " + getAddressResult.energyUsed / AionBufferPerfContract.BIG_ELT_COUNT);
 
         args = ABIUtil.encodeMethodArguments("callPutBigInt");
         TransactionResult putBigIntResult = call(kernel, avm, contract, from, args);
-        System.out.println(">> putBigInt()         : " + putBigIntResult.energyUsed / AionBufferPerfContract.BIG_ELT_COUNT);
+        report(">> putBigInt()         : " + putBigIntResult.energyUsed / AionBufferPerfContract.BIG_ELT_COUNT);
 
         args = ABIUtil.encodeMethodArguments("callGetBigInt");
         TransactionResult getBigIntResult = call(kernel, avm, contract, from, args);
-        System.out.println(">> getBigInt()         : " + getBigIntResult.energyUsed / AionBufferPerfContract.BIG_ELT_COUNT);
+        report(">> getBigInt()         : " + getBigIntResult.energyUsed / AionBufferPerfContract.BIG_ELT_COUNT);
 
         args = ABIUtil.encodeMethodArguments("callTransferBytesToBuffer");
         TransactionResult putResult = call(kernel, avm, contract, from, args);
-        System.out.println(">> put()               : "
+        report(">> put()               : "
             + putResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS
             + "     (for transfers of " + AionBufferPerfContract.TRANSFER_SIZE + " bytes)");
 
         args = ABIUtil.encodeMethodArguments("callTransferBytesFromBuffer");
         TransactionResult getResult = call(kernel, avm, contract, from, args);
-        System.out.println(">> get()               : "
+        report(">> get()               : "
             + getResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS
             + "     (for transfers of " + AionBufferPerfContract.TRANSFER_SIZE + " bytes)");
 
         args = ABIUtil.encodeMethodArguments("callEquals");
         TransactionResult equalsResult = call(kernel, avm, contract, from, args);
-        System.out.println(">> equals()            : " + equalsResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
+        report(">> equals()            : " + equalsResult.energyUsed / AionBufferPerfContract.NUM_ELEMENTS);
         avm.shutdown();
 
-        System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        report("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     }
 
+
+    private static void report(String output) {
+        if (REPORT) {
+            System.out.println(output);
+        }
+    }
 }

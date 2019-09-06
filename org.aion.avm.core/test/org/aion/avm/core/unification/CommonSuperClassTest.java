@@ -33,6 +33,9 @@ import org.junit.*;
  * as possible.
  */
 public class CommonSuperClassTest {
+    // NOTE:  Output is ONLY produced if REPORT is set to true.
+    private static final boolean REPORT = false;
+
     private static long ENERGY_LIMIT = 10_000_000L;
     private static long ENERGY_PRICE = 1L;
     private static AionAddress DEPLOYER = TestingState.PREMINED_ADDRESS;
@@ -46,6 +49,7 @@ public class CommonSuperClassTest {
         AvmConfiguration config = new AvmConfiguration();
         config.enableVerboseContractErrors = true;
         config.preserveDebuggability = false;
+        config.enableBlockchainPrintln = REPORT;
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), config);
     }
 

@@ -20,10 +20,13 @@ import java.math.BigInteger;
  * Various tests to prove that our examples we build into our packages basically work.
  */
 public class ExamplesIntegrationTest {
+    // NOTE:  Output is ONLY produced if REPORT is set to true.
+    private static final boolean REPORT = false;
+
     private boolean preserveDebugInfo = false;
 
     @Rule
-    public AvmRule avmRule = new AvmRule(preserveDebugInfo);
+    public AvmRule avmRule = new AvmRule(preserveDebugInfo).setBlockchainPrintlnEnabled(REPORT);
 
     private Address deployer = avmRule.getPreminedAccount();
 

@@ -14,7 +14,6 @@ public class OverloadedCallablesTest {
         try {
             ABICompiler.compileJarBytes(jar);
         } catch(ABICompilerException e) {
-            System.out.println(e.getMessage());
             assertTrue(e.getMessage().contains("test1"));
             throw e;
         }

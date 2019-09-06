@@ -18,8 +18,11 @@ import java.util.HashMap;
 
 
 public class VisitModuleTest {
+    // NOTE:  Output is ONLY produced if REPORT is set to true.
+    private static final boolean REPORT = false;
+
     @ClassRule
-    public static AvmRule avmRule = new AvmRule(true);
+    public static AvmRule avmRule = new AvmRule(true).setBlockchainPrintlnEnabled(REPORT);
 
     private static Address from = avmRule.getPreminedAccount();
     private static long energyLimit = 5_000_000L;
