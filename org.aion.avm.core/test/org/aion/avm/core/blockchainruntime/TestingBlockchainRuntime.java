@@ -28,6 +28,7 @@ import java.util.Objects;
  */
 public class TestingBlockchainRuntime implements IBlockchainRuntime {
     private final IExternalCapabilities capabilities;
+    private byte[] transactionHash = Helpers.randomBytes(32);
     private AionAddress address = Helpers.address(1);
     private AionAddress caller = Helpers.address(2);
     private AionAddress origin = Helpers.address(2);
@@ -79,6 +80,16 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     public TestingBlockchainRuntime withKernel(IExternalState kernel) {
         this.kernel = kernel;
         return this;
+    }
+
+    public TestingBlockchainRuntime withTransactionHash(byte[] hash) {
+        this.transactionHash = hash.clone();
+        return this;
+    }
+
+    @Override
+    public ByteArray avm_getTransactionHash() {
+        return new ByteArray(this.transactionHash.clone());
     }
 
     @Override

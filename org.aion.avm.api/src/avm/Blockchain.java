@@ -19,6 +19,18 @@ public final class Blockchain {
     //===================
 
     /**
+     * Returns the hash of the transaction. In the case that this method is invoked during an
+     * internal transaction, the hash of the "origin" or external transaction will be provided. In
+     * other words, the external transaction and any of the internal transactions it spawns will
+     * all return the same hash.
+     *
+     * @return the transaction hash.
+     */
+    public static byte[] getTransactionHash() {
+        return null;
+    }
+
+    /**
      * Returns the owner's address, whose state is being accessed.
      * That is, the address of the currently-running DApp.
      *

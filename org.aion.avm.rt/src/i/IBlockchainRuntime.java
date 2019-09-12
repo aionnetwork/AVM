@@ -16,6 +16,11 @@ public interface IBlockchainRuntime {
     //================
 
     /**
+     * Returns the transaction hash of the origin transaction.
+     */
+    ByteArray avm_getTransactionHash();
+
+    /**
      * Returns the owner's address, whose state is being accessed.
      */
     Address avm_getAddress();

@@ -64,6 +64,11 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     }
 
     @Override
+    public ByteArray avm_getTransactionHash() {
+        return new ByteArray(this.tx.copyOfTransactionHash());
+    }
+
+    @Override
     public Address avm_getAddress() {
         if (null == this.addressCache) {
             this.addressCache = new Address(this.transactionDestination.toByteArray());
@@ -251,7 +256,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
                 tx.energyPrice);
         
         // Call the common run helper.
-        return runInternalCall(internalTx);
+        return runInternalCall(internalTx, this.tx.copyOfTransactionHash());
     }
 
     @Override
@@ -279,7 +284,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
                 tx.energyPrice);
         
         // Call the common run helper.
-        return runInternalCall(internalTx);
+        return runInternalCall(internalTx, this.tx.copyOfTransactionHash());
     }
 
     private void require(boolean condition, String message) {
@@ -439,7 +444,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         return Math.min(maxAllowed, energyLimit);
     }
 
-    private Result runInternalCall(InternalTransaction internalTx) {
+    private Result runInternalCall(InternalTransaction internalTx, byte[] originTransactionHash) {
         // add the internal transaction to result
         task.peekSideEffects().addInternalTransaction(internalTx);
 
@@ -456,7 +461,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         InstrumentationHelpers.temporarilyExitFrame(this.thisDAppSetup);
 
         // Create the Transaction.
-        Transaction transaction = AvmTransactionUtil.fromInternalTransaction(internalTx);
+        Transaction transaction = AvmTransactionUtil.fromInternalTransaction(internalTx, originTransactionHash);
 
         // Acquire the target of the internal transaction
         AionAddress destination = (transaction.isCreate) ? this.capabilities.generateContractAddress(transaction) : transaction.destinationAddress;
