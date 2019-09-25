@@ -2,6 +2,7 @@ package avm;
 
 /**
  * Represents an address of account in the Aion Network.
+ * NOTE:  This is just the API class.  Runtime instance will be of type p.avm.Address if using the org.aion.avm.core implementation.
  */
 public class Address {
 

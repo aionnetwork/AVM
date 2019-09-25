@@ -2,6 +2,7 @@ package avm;
 
 /**
  * Represents an cross-call invocation result.
+ * NOTE:  This is just the API class.  Runtime instance will be of type p.avm.Result if using the org.aion.avm.core implementation.
  */
 public class Result {
 
@@ -40,7 +41,10 @@ public class Result {
 
     @Override
     public String toString() {
-        return "success:" + this.success + ", returnData:" + toHexString(this.returnData);
+        String returnDataString = (null != this.returnData)
+                ? toHexString(this.returnData)
+                : null;
+        return "success:" + this.success + ", returnData:" + returnDataString;
     }
 
     private static String toHexString(byte[] bytes) {
