@@ -234,6 +234,8 @@ public class TransactionalState implements IExternalState {
     @Override
     public BigInteger getNonce(AionAddress address) {
         BigInteger result = BigInteger.ZERO;
+        // Note that nonce matters for deleted accounts since it is possible for a contract to self-destruct and continue running.
+        // The number doesn't need to be preserved, though, as we only need to handle it consistently, here.
         if (!this.deletedAccountProjection.contains(new ByteArrayWrapper(address.toByteArray()))) {
             result = this.writeCache.getNonce(address);
             if (result.equals(BigInteger.ZERO)) {
@@ -245,6 +247,19 @@ public class TransactionalState implements IExternalState {
 
     @Override
     public void incrementNonce(AionAddress address) {
+        // Note that nonce matters for deleted accounts since it is possible for a contract to self-destruct and continue running.
+        // The number doesn't need to be preserved, though, as we only need to handle it consistently, here.
+        if (!this.deletedAccountProjection.contains(new ByteArrayWrapper(address.toByteArray()))) {
+            // Note that we need to make sure that the nonce was initialized, before we increment it.
+            // TODO(AKI-383): This special-case can be avoided if the IExternalState methods are changed to be idempotent.
+            BigInteger peek = this.writeCache.getNonce(address);
+            if (peek.equals(BigInteger.ZERO)) {
+                peek = this.parent.getNonce(address);
+                this.writeCache.setNonce(address, peek);
+            }
+        }
+        
+        // Now proceed with normal operation.
         Consumer<IExternalState> write = (externalState) -> {
             externalState.incrementNonce(address);
         };

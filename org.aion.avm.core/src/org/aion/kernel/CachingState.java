@@ -142,6 +142,20 @@ public class CachingState implements IExternalState {
         account.setNonce(start + 1);
     }
 
+    /**
+     * Called by the TransactionalState to initialize the underlying nonce before incrementing it.
+     * TODO(AKI-383): This special-case can be avoided if the IExternalState methods are changed to be idempotent.
+     * 
+     * @param address The address of the nonce.
+     * @param initialNonce The nonce to initialize.
+     */
+    public void setNonce(AionAddress address, BigInteger initialNonce) {
+        IAccountStore account = lazyCreateAccount(address.toByteArray());
+        // We can only call this if we never set the nonce before and it is still zero.
+        RuntimeAssertionError.assertTrue(0 == account.getNonce());
+        account.setNonce(initialNonce.longValue());
+    }
+
     @Override
     public boolean accountNonceEquals(AionAddress address, BigInteger nonce) {
         return nonce.compareTo(this.getNonce(address)) == 0;
