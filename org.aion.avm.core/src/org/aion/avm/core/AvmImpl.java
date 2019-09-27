@@ -251,6 +251,7 @@ public class AvmImpl implements AvmInternal {
         }
 
         // Acquire both sender and target resources
+        // Note that we calculate the target, in the case of a create, only to acquire the resource lock and then discard it (will be logically recreated later when required).
         AionAddress sender = tx.senderAddress;
         AionAddress target = (tx.isCreate) ? capabilities.generateContractAddress(tx.senderAddress, tx.nonce) : tx.destinationAddress;
 
@@ -267,7 +268,7 @@ public class AvmImpl implements AvmInternal {
 
             if (AvmInternalError.NONE == error) {
                 // The CREATE/CALL case is handled via the common external invoke path.
-                result = runExternalInvoke(task.getThisTransactionalKernel(), task, tx);
+                result = runExternalInvoke(task.getThisTransactionalKernel(), task, tx.senderAddress, tx.isCreate, (tx.isCreate ? null : tx.destinationAddress), tx.copyOfTransactionData(), tx.copyOfTransactionHash(), tx.energyLimit, tx.energyPrice, tx.value, tx.nonce);
             } else {
                 result = TransactionResultUtil.newRejectedResultWithEnergyUsed(error, tx.energyLimit);
             }
@@ -321,13 +322,25 @@ public class AvmImpl implements AvmInternal {
     }
 
     @Override
-    public AvmWrappedTransactionResult runInternalTransaction(IExternalState parentKernel, TransactionTask task, Transaction tx) {
+    public AvmWrappedTransactionResult runInternalTransaction(IExternalState parentKernel
+            , TransactionTask task
+            , AionAddress senderAddress
+            , boolean isCreate
+            , AionAddress normalCallTarget  // Null if this is a create.
+            , AionAddress effectiveTransactionOrigin
+            , byte[] transactionData
+            , byte[] transactionHash
+            , long energyLimit
+            , long energyPrice
+            , BigInteger transactionValue
+            , BigInteger nonce
+    ) {
         if (null != this.backgroundFatalError) {
             throw this.backgroundFatalError;
         }
         RuntimeAssertionError.assertTrue(!task.isSideEffectsStackEmpty());
         task.pushSideEffects(new SideEffects());
-        AvmWrappedTransactionResult result = commonInvoke(parentKernel, task, tx, 0);
+        AvmWrappedTransactionResult result = commonInvoke(parentKernel, task, senderAddress, isCreate, normalCallTarget, effectiveTransactionOrigin, transactionData, transactionHash, energyLimit, energyPrice, transactionValue, nonce, 0);
         SideEffects txSideEffects = task.popSideEffects();
         if (!result.isSuccess()) {
             txSideEffects.getExecutionLogs().clear();
@@ -338,29 +351,36 @@ public class AvmImpl implements AvmInternal {
         return result;
     }
 
-    private AvmWrappedTransactionResult runExternalInvoke(IExternalState parentKernel, TransactionTask task, Transaction tx) {
+    private AvmWrappedTransactionResult runExternalInvoke(IExternalState parentKernel
+            , TransactionTask task
+            , AionAddress senderAddress
+            , boolean isCreate
+            , AionAddress normalCallTarget  // Null if this is a create.
+            , byte[] transactionData
+            , byte[] transactionHash
+            , long energyLimit
+            , long energyPrice
+            , BigInteger transactionValue
+            , BigInteger nonce
+    ) {
         // to capture any error during validation
         AvmInternalError error = AvmInternalError.NONE;
 
         // Sanity checks around energy pricing and nonce are done in the caller.
         // balance check
-        AionAddress sender = tx.senderAddress;
-        long energyPrice = tx.energyPrice;
-        BigInteger value = tx.value;
+        long basicTransactionCost = BillingRules.getBasicTransactionCost(transactionData);
+        BigInteger balanceRequired = BigInteger.valueOf(energyLimit).multiply(BigInteger.valueOf(energyPrice)).add(transactionValue);
 
-        long basicTransactionCost = BillingRules.getBasicTransactionCost(tx.copyOfTransactionData());
-        BigInteger balanceRequired = BigInteger.valueOf(tx.energyLimit).multiply(BigInteger.valueOf(energyPrice)).add(value);
-
-        if (basicTransactionCost > tx.energyLimit) {
+        if (basicTransactionCost > energyLimit) {
             error = AvmInternalError.REJECTED_INVALID_ENERGY_LIMIT;
         }
-        else if (!parentKernel.accountBalanceIsAtLeast(sender, balanceRequired)) {
+        else if (!parentKernel.accountBalanceIsAtLeast(senderAddress, balanceRequired)) {
             error = AvmInternalError.REJECTED_INSUFFICIENT_BALANCE;
         }
 
         // exit if validation check fails
         if (error != AvmInternalError.NONE) {
-            return TransactionResultUtil.newRejectedResultWithEnergyUsed(error, tx.energyLimit);
+            return TransactionResultUtil.newRejectedResultWithEnergyUsed(error, energyLimit);
         }
 
         /*
@@ -368,14 +388,15 @@ public class AvmImpl implements AvmInternal {
          */
 
         // Deduct the total energy cost
-        parentKernel.adjustBalance(sender, BigInteger.valueOf(tx.energyLimit).multiply(BigInteger.valueOf(energyPrice).negate()));
+        parentKernel.adjustBalance(senderAddress, BigInteger.valueOf(energyLimit).multiply(BigInteger.valueOf(energyPrice).negate()));
 
         // Run the common logic with the parent kernel as the top-level one.
-        AvmWrappedTransactionResult result = commonInvoke(parentKernel, task, tx, basicTransactionCost);
+        // (externally-originating transactions use sender as origin)
+        AvmWrappedTransactionResult result = commonInvoke(parentKernel, task, senderAddress, isCreate, normalCallTarget, senderAddress, transactionData, transactionHash, energyLimit, energyPrice, transactionValue, nonce, basicTransactionCost);
 
         // Refund energy for transaction
-        BigInteger refund = BigInteger.valueOf(tx.energyLimit - result.energyUsed()).multiply(BigInteger.valueOf(energyPrice));
-        parentKernel.refundAccount(sender, refund);
+        BigInteger refund = BigInteger.valueOf(energyLimit - result.energyUsed()).multiply(BigInteger.valueOf(energyPrice));
+        parentKernel.refundAccount(senderAddress, refund);
 
         // Transfer fees to miner
         parentKernel.adjustBalance(parentKernel.getMinerAddress(), BigInteger.valueOf(result.energyUsed()).multiply(BigInteger.valueOf(energyPrice)));
@@ -389,27 +410,42 @@ public class AvmImpl implements AvmInternal {
         return result;
     }
 
-    private AvmWrappedTransactionResult commonInvoke(IExternalState parentKernel, TransactionTask task, Transaction tx, long transactionBaseCost) {
+    private AvmWrappedTransactionResult commonInvoke(IExternalState parentKernel
+            , TransactionTask task
+            , AionAddress senderAddress
+            , boolean isCreate
+            , AionAddress normalCallTarget  // Null if this is a create.
+            , AionAddress effectiveTransactionOrigin
+            , byte[] transactionData
+            , byte[] transactionHash
+            , long energyLimit
+            , long energyPrice
+            , BigInteger transactionValue
+            , BigInteger nonce
+            , long transactionBaseCost
+    ) {
+        // A create MUST provide a null target and non-creates must NOT have null targets.
+        RuntimeAssertionError.assertTrue(isCreate == (null == normalCallTarget));
+        
         // Invoke calls must build their transaction on top of an existing "parent" kernel.
         TransactionalState thisTransactionKernel = new TransactionalState(parentKernel);
 
         AvmWrappedTransactionResult result = TransactionResultUtil.newSuccessfulResultWithEnergyUsed(transactionBaseCost);
 
         // grab the recipient address as either the new contract address or the given account address.
-        AionAddress recipient = (tx.isCreate) ? capabilities.generateContractAddress(tx.senderAddress, tx.nonce) : tx.destinationAddress;
+        AionAddress recipient = isCreate ? capabilities.generateContractAddress(senderAddress, nonce) : normalCallTarget;
 
         // conduct value transfer
-        BigInteger value = tx.value;
-        thisTransactionKernel.adjustBalance(tx.senderAddress, value.negate());
-        thisTransactionKernel.adjustBalance(recipient, value);
+        thisTransactionKernel.adjustBalance(senderAddress, transactionValue.negate());
+        thisTransactionKernel.adjustBalance(recipient, transactionValue);
 
         // At this stage, transaction can no longer be rejected.
         // The nonce increment will be done regardless of the transaction result.
-        task.getThisTransactionalKernel().incrementNonce(tx.senderAddress);
+        task.getThisTransactionalKernel().incrementNonce(senderAddress);
 
         // do nothing for balance transfers of which the recipient is not a DApp address.
-        if (tx.isCreate) {
-            result = DAppCreator.create(this.capabilities, thisTransactionKernel, this, task, tx, result, this.preserveDebuggability, this.enableVerboseContractErrors, this.enableBlockchainPrintln);
+        if (isCreate) {
+            result = DAppCreator.create(this.capabilities, thisTransactionKernel, this, task, senderAddress, recipient, effectiveTransactionOrigin, transactionData, transactionHash, energyLimit, energyPrice, transactionValue, result, this.preserveDebuggability, this.enableVerboseContractErrors, this.enableBlockchainPrintln);
         } else { // call
             // See if this call is trying to reenter one already on this call-stack.  If so, we will need to partially resume its state.
             ReentrantDAppStack.ReentrantState stateToResume = task.getReentrantDAppStack().tryShareState(recipient);
@@ -421,7 +457,7 @@ public class AvmImpl implements AvmInternal {
             if ((null != stateToResume) && (null != transformedCode)) {
                 dapp = stateToResume.dApp;
                 // Call directly and don't interact with DApp cache (we are reentering the state, not the origin of it).
-                result = DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, tx, result, this.enableVerboseContractErrors, true, this.enableBlockchainPrintln);
+                result = DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, senderAddress, recipient, effectiveTransactionOrigin, transactionData, transactionHash, energyLimit, energyPrice, transactionValue, result, this.enableVerboseContractErrors, true, this.enableBlockchainPrintln);
             } else {
                 long currentBlockNumber = parentKernel.getBlockNumber();
 
@@ -487,7 +523,7 @@ public class AvmImpl implements AvmInternal {
                         transformedCode = CodeReTransformer.transformCode(code, parentKernel.getBlockTimestamp(), this.preserveDebuggability, this.enableVerboseContractErrors);
                         if (transformedCode == null) {
                             // re-transformation of the code failed
-                            result = TransactionResultUtil.setNonRevertedFailureAndEnergyUsed(result, AvmInternalError.FAILED_RETRANSFORMATION, tx.energyLimit);
+                            result = TransactionResultUtil.setNonRevertedFailureAndEnergyUsed(result, AvmInternalError.FAILED_RETRANSFORMATION, energyLimit);
                         } else {
                             parentKernel.setTransformedCode(recipient, transformedCode);
                         }
@@ -512,7 +548,7 @@ public class AvmImpl implements AvmInternal {
                 }
 
                 if (null != dapp) {
-                    result = DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, tx, result, this.enableVerboseContractErrors, readFromDataCacheEnabled, this.enableBlockchainPrintln);
+                    result = DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, senderAddress, recipient, effectiveTransactionOrigin, transactionData, transactionHash, energyLimit, energyPrice, transactionValue, result, this.enableVerboseContractErrors, readFromDataCacheEnabled, this.enableBlockchainPrintln);
 
                     if (writeToCacheEnabled) {
                         if (result.isSuccess() && updateDataCache) {

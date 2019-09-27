@@ -1,10 +1,9 @@
 package org.aion.avm.core;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 import org.aion.avm.core.util.TransactionResultUtil;
 import org.aion.types.AionAddress;
-import org.aion.types.Transaction;
-import s.java.math.BigInteger;
 import p.avm.Address;
 import p.avm.Result;
 import i.*;
@@ -26,10 +25,15 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     private final AvmInternal avm;
     private final ReentrantDAppStack.ReentrantState reentrantState;
 
-    private Transaction tx;
+    private final TransactionTask task;
+    private final AionAddress transactionSender;
     private final AionAddress transactionDestination;
+    private final AionAddress effectiveTransactionOrigin;
     private final byte[] dAppData;
-    private TransactionTask task;
+    private final byte[] effectiveTransactionHash;
+    private final long energyLimit;
+    private final long energyPrice;
+    private final BigInteger transactionValue;
     private final IRuntimeSetup thisDAppSetup;
     private final boolean enablePrintln;
 
@@ -37,20 +41,42 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     private Address addressCache;
     private Address callerCache;
     private Address originCache;
-    private BigInteger valueCache;
+    private s.java.math.BigInteger valueCache;
     private Address blockCoinBaseCache;
-    private BigInteger blockDifficultyCache;
+    private s.java.math.BigInteger blockDifficultyCache;
 
 
-    public BlockchainRuntimeImpl(IExternalCapabilities capabilities, IExternalState externalState, AvmInternal avm, ReentrantDAppStack.ReentrantState reentrantState, TransactionTask task, Transaction tx, byte[] dAppData, IRuntimeSetup thisDAppSetup, boolean enablePrintln) {
+    public BlockchainRuntimeImpl(IExternalCapabilities capabilities
+            , IExternalState externalState
+            , AvmInternal avm
+            , ReentrantDAppStack.ReentrantState reentrantState
+            , TransactionTask task
+            , AionAddress transactionSender
+            , AionAddress transactionDestination
+            , AionAddress effectiveTransactionOrigin
+            , byte[] dAppData
+            , byte[] effectiveTransactionHash
+            , long energyLimit
+            , long energyPrice
+            , BigInteger transactionValue
+            , IRuntimeSetup thisDAppSetup
+            , boolean enablePrintln
+    ) {
         this.capabilities = capabilities;
         this.externalState = externalState;
         this.avm = avm;
         this.reentrantState = reentrantState;
-        this.tx = tx;
-        this.transactionDestination = (tx.isCreate) ? capabilities.generateContractAddress(tx.senderAddress, tx.nonce) : tx.destinationAddress;
-        this.dAppData = dAppData;
         this.task = task;
+        this.transactionSender = transactionSender;
+        // Note that transactionDestination will be the address of the deployed contract, if this is a create.
+        this.transactionDestination = transactionDestination;
+        // (the "effective" origin is so named since it might be the origin address of an external transaction or the sender of an invokable)
+        this.effectiveTransactionOrigin = effectiveTransactionOrigin;
+        this.dAppData = dAppData;
+        this.effectiveTransactionHash = effectiveTransactionHash;
+        this.energyLimit = energyLimit;
+        this.energyPrice = energyPrice;
+        this.transactionValue = transactionValue;
         this.thisDAppSetup = thisDAppSetup;
         this.enablePrintln = enablePrintln;
 
@@ -65,7 +91,8 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public ByteArray avm_getTransactionHash() {
-        return new ByteArray(this.tx.copyOfTransactionHash());
+        // TODO:  This should probably be a lazily cached instance, much like getData().
+        return new ByteArray(this.effectiveTransactionHash.clone());
     }
 
     @Override
@@ -80,7 +107,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     @Override
     public Address avm_getCaller() {
         if (null == this.callerCache) {
-            this.callerCache = new Address(tx.senderAddress.toByteArray());
+            this.callerCache = new Address(this.transactionSender.toByteArray());
         }
 
         return this.callerCache;
@@ -89,7 +116,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     @Override
     public Address avm_getOrigin() {
         if (null == this.originCache) {
-            this.originCache = new Address(task.getOriginAddress().toByteArray());
+            this.originCache = new Address(this.effectiveTransactionOrigin.toByteArray());
         }
 
         return this.originCache;
@@ -97,19 +124,18 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public long avm_getEnergyLimit() {
-        return tx.energyLimit;
+        return this.energyLimit;
     }
 
     @Override
     public long avm_getEnergyPrice() {
-        return tx.energyPrice;
+        return this.energyPrice;
     }
 
     @Override
     public s.java.math.BigInteger avm_getValue() {
         if (null == this.valueCache) {
-            java.math.BigInteger value = tx.value;
-            this.valueCache = new s.java.math.BigInteger(value);
+            this.valueCache = new s.java.math.BigInteger(this.transactionValue);
         }
 
         return this.valueCache;
@@ -245,18 +271,20 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         }
 
         // construct the internal transaction
+        BigInteger senderNonce = this.externalState.getNonce(this.transactionDestination);
+        long restrictedLimit = restrictEnergyLimit(energyLimit);
         InternalTransaction internalTx = InternalTransaction.contractCallTransaction(
                 InternalTransaction.RejectedStatus.NOT_REJECTED,
                 this.transactionDestination,
                 target,
-                this.externalState.getNonce(this.transactionDestination),
+                senderNonce,
                 underlyingValue,
                 data.getUnderlying(),
-                restrictEnergyLimit(energyLimit),
-                tx.energyPrice);
+                restrictedLimit,
+                this.energyPrice);
         
         // Call the common run helper.
-        return runInternalCall(internalTx, this.tx.copyOfTransactionHash());
+        return runInternalCall(internalTx, this.transactionDestination, false, target, this.effectiveTransactionOrigin, data.getUnderlying(), this.effectiveTransactionHash, restrictedLimit, this.energyPrice, underlyingValue, senderNonce);
     }
 
     @Override
@@ -274,17 +302,19 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         }
 
         // construct the internal transaction
+        BigInteger senderNonce = this.externalState.getNonce(this.transactionDestination);
+        long restrictedLimit = restrictEnergyLimit(energyLimit);
         InternalTransaction internalTx = InternalTransaction.contractCreateTransaction(
                 InternalTransaction.RejectedStatus.NOT_REJECTED,
                 this.transactionDestination,
-                this.externalState.getNonce(this.transactionDestination),
+                senderNonce,
                 underlyingValue,
                 data.getUnderlying(),
-                restrictEnergyLimit(energyLimit),
-                tx.energyPrice);
+                restrictedLimit,
+                this.energyPrice);
         
         // Call the common run helper.
-        return runInternalCall(internalTx, this.tx.copyOfTransactionHash());
+        return runInternalCall(internalTx, this.transactionDestination, true, null, this.effectiveTransactionOrigin, data.getUnderlying(), this.effectiveTransactionHash, restrictedLimit, this.energyPrice, underlyingValue, senderNonce);
     }
 
     private void require(boolean condition, String message) {
@@ -440,11 +470,24 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     private long restrictEnergyLimit(long energyLimit) {
         long remainingEnergy = IInstrumentation.attachedThreadInstrumentation.get().energyLeft();
-        long maxAllowed = remainingEnergy - (remainingEnergy >> 6);
+        // An internal transaction cannot take all the energy - 1/64th of remaining is reserved to get out of the parent transaction.
+        long reservedForExisting = (remainingEnergy >> 6);
+        long maxAllowed = remainingEnergy - reservedForExisting;
         return Math.min(maxAllowed, energyLimit);
     }
 
-    private Result runInternalCall(InternalTransaction internalTx, byte[] originTransactionHash) {
+    private Result runInternalCall(InternalTransaction internalTx
+            , AionAddress senderAddress
+            , boolean isCreate
+            , AionAddress normalCallTarget  // Null if this is a create.
+            , AionAddress effectiveTransactionOrigin
+            , byte[] transactionData
+            , byte[] transactionHash
+            , long energyLimit
+            , long energyPrice
+            , BigInteger transactionValue
+            , BigInteger nonce
+    ) {
         // add the internal transaction to result
         task.peekSideEffects().addInternalTransaction(internalTx);
 
@@ -460,18 +503,16 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         // Temporarily detach from the DApp we were in.
         InstrumentationHelpers.temporarilyExitFrame(this.thisDAppSetup);
 
-        // Create the Transaction.
-        Transaction transaction = AvmTransactionUtil.fromInternalTransaction(internalTx, originTransactionHash);
-
         // Acquire the target of the internal transaction
-        AionAddress destination = (transaction.isCreate) ? this.capabilities.generateContractAddress(transaction.senderAddress, transaction.nonce) : transaction.destinationAddress;
+        // Note that we calculate the target, in the case of a create, only to acquire the resource lock and then discard it (will be logically recreated later when required).
+        AionAddress destination = (isCreate) ? this.capabilities.generateContractAddress(senderAddress, nonce) : normalCallTarget;
         boolean isAcquired = avm.getResourceMonitor().acquire(destination.toByteArray(), task);
 
         // execute the internal transaction
         AvmWrappedTransactionResult newResult = null;
         try {
             if(isAcquired) {
-                newResult = this.avm.runInternalTransaction(this.externalState, this.task, transaction);
+                newResult = this.avm.runInternalTransaction(this.externalState, this.task, senderAddress, isCreate, normalCallTarget, effectiveTransactionOrigin, transactionData, transactionHash, energyLimit, energyPrice, transactionValue, nonce);
             } else {
                 // Unsuccessful acquire means transaction task has been aborted.
                 // In abort case, internal transaction will not be executed.
