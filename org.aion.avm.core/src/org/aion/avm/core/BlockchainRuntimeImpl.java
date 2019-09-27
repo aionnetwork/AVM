@@ -48,7 +48,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         this.avm = avm;
         this.reentrantState = reentrantState;
         this.tx = tx;
-        this.transactionDestination = (tx.isCreate) ? capabilities.generateContractAddress(tx) : tx.destinationAddress;
+        this.transactionDestination = (tx.isCreate) ? capabilities.generateContractAddress(tx.senderAddress, tx.nonce) : tx.destinationAddress;
         this.dAppData = dAppData;
         this.task = task;
         this.thisDAppSetup = thisDAppSetup;
@@ -464,7 +464,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         Transaction transaction = AvmTransactionUtil.fromInternalTransaction(internalTx, originTransactionHash);
 
         // Acquire the target of the internal transaction
-        AionAddress destination = (transaction.isCreate) ? this.capabilities.generateContractAddress(transaction) : transaction.destinationAddress;
+        AionAddress destination = (transaction.isCreate) ? this.capabilities.generateContractAddress(transaction.senderAddress, transaction.nonce) : transaction.destinationAddress;
         boolean isAcquired = avm.getResourceMonitor().acquire(destination.toByteArray(), task);
 
         // execute the internal transaction

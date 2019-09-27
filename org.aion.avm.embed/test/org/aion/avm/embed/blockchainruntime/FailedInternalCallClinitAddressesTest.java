@@ -137,7 +137,7 @@ public class FailedInternalCallClinitAddressesTest {
             Transaction fakeTransaction = (0 == i)
                     ? AvmTransactionUtil.create(new AionAddress(contract.toByteArray()), BigInteger.valueOf(nonce + i), BigInteger.ZERO, new byte[0], energyLimit, energyPrice)
                     : AvmTransactionUtil.create(new AionAddress(contracts[i - 1].toByteArray()), BigInteger.ZERO, BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
-            contracts[i] = new Address(AddressUtil.generateContractAddress(fakeTransaction).toByteArray());
+            contracts[i] = new Address(AddressUtil.generateContractAddress(fakeTransaction.senderAddress, fakeTransaction.nonce).toByteArray());
         }
         return contracts;
     }

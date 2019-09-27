@@ -252,7 +252,7 @@ public class AvmImpl implements AvmInternal {
 
         // Acquire both sender and target resources
         AionAddress sender = tx.senderAddress;
-        AionAddress target = (tx.isCreate) ? capabilities.generateContractAddress(tx) : tx.destinationAddress;
+        AionAddress target = (tx.isCreate) ? capabilities.generateContractAddress(tx.senderAddress, tx.nonce) : tx.destinationAddress;
 
         AvmWrappedTransactionResult result = null;
 
@@ -396,7 +396,7 @@ public class AvmImpl implements AvmInternal {
         AvmWrappedTransactionResult result = TransactionResultUtil.newSuccessfulResultWithEnergyUsed(transactionBaseCost);
 
         // grab the recipient address as either the new contract address or the given account address.
-        AionAddress recipient = (tx.isCreate) ? capabilities.generateContractAddress(tx) : tx.destinationAddress;
+        AionAddress recipient = (tx.isCreate) ? capabilities.generateContractAddress(tx.senderAddress, tx.nonce) : tx.destinationAddress;
 
         // conduct value transfer
         BigInteger value = tx.value;

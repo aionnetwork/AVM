@@ -1,7 +1,8 @@
 package org.aion.avm.core;
 
+import java.math.BigInteger;
+
 import org.aion.types.AionAddress;
-import org.aion.types.Transaction;
 
 
 /**
@@ -45,11 +46,12 @@ public interface IExternalCapabilities {
     boolean verifyEdDSA(byte[] data, byte[] signature, byte[] publicKey);
 
     /**
-     * Determines the new contract address of the given transaction.
+     * Determines the new contract address of a deployment issued by deployerAddress with the given nonce.
      * Note that this call must have NO SIDE-EFFECTS as it may be called multiple times on the same transaction.
      *
-     * @param tx The transaction performing the creation.
+     * @param deployerAddress The address issuing the contract deployment.
+     * @param nonce The nonce of the deployerAddress in the transaction where they are issuing the deployment.
      * @return The address of the new contract this transaction would create.
      */
-    AionAddress generateContractAddress(Transaction tx);
+    AionAddress generateContractAddress(AionAddress deployerAddress, BigInteger nonce);
 }

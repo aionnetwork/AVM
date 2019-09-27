@@ -188,7 +188,7 @@ public class DAppCreator {
         AvmWrappedTransactionResult result = internalResult;
         try {
             // read dapp module
-            AionAddress dappAddress = (tx.isCreate) ? capabilities.generateContractAddress(tx) : tx.destinationAddress;
+            AionAddress dappAddress = (tx.isCreate) ? capabilities.generateContractAddress(tx.senderAddress, tx.nonce) : tx.destinationAddress;
             CodeAndArguments codeAndArguments = CodeAndArguments.decodeFromBytes(tx.copyOfTransactionData());
             if (codeAndArguments == null) {
                 if (verboseErrors) {

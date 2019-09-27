@@ -1,7 +1,9 @@
 package org.aion.avm.embed;
 
 import org.aion.types.AionAddress;
-import org.aion.types.Transaction;
+
+import java.math.BigInteger;
+
 import org.aion.avm.core.IExternalCapabilities;
 import org.aion.avm.embed.crypto.CryptoUtil;
 import org.aion.avm.embed.hash.HashUtils;
@@ -32,7 +34,7 @@ public class StandardCapabilities implements IExternalCapabilities {
     }
 
     @Override
-    public AionAddress generateContractAddress(Transaction tx) {
-        return AddressUtil.generateContractAddress(tx);
+    public AionAddress generateContractAddress(AionAddress deployerAddress, BigInteger nonce) {
+        return AddressUtil.generateContractAddress(deployerAddress, nonce);
     }
 }

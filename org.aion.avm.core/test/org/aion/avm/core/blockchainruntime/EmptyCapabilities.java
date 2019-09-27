@@ -2,7 +2,9 @@ package org.aion.avm.core.blockchainruntime;
 
 import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
-import org.aion.types.Transaction;
+
+import java.math.BigInteger;
+
 import org.aion.avm.core.IExternalCapabilities;
 import i.RuntimeAssertionError;
 
@@ -35,14 +37,14 @@ public class EmptyCapabilities implements IExternalCapabilities {
     }
 
     @Override
-    public AionAddress generateContractAddress(Transaction tx) {
+    public AionAddress generateContractAddress(AionAddress deployerAddress, BigInteger nonce) {
         // NOTE:  This address generation isn't anything particular.  It is just meant to be deterministic and derived from the tx.
         // It is NOT meant to be equivalent/similar to the implementation used by an actual kernel.
-        byte[] senderAddressBytes = tx.senderAddress.toByteArray();
+        byte[] senderAddressBytes = deployerAddress.toByteArray();
         byte[] raw = new byte[AionAddress.LENGTH];
         for (int i = 0; i < AionAddress.LENGTH - 1; ++i) {
             byte one = (i < senderAddressBytes.length) ? senderAddressBytes[i] : (byte)i;
-            byte two = (i < tx.nonce.toByteArray().length) ? tx.nonce.toByteArray()[i] : (byte)i;
+            byte two = (i < nonce.toByteArray().length) ? nonce.toByteArray()[i] : (byte)i;
             // We write into the (i+1)th byte because the 0th byte is for the prefix.
             // This means we will have a collision if an address reaches nonces that agree on the first 31 bytes,
             // but that number is huge, so it's fine for testing purposes.
