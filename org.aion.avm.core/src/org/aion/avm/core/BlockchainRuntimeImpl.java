@@ -38,6 +38,7 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
     private final boolean enablePrintln;
 
     private ByteArray dAppDataCache;
+    private ByteArray transactionHashCache;
     private Address addressCache;
     private Address callerCache;
     private Address originCache;
@@ -91,8 +92,10 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
 
     @Override
     public ByteArray avm_getTransactionHash() {
-        // TODO:  This should probably be a lazily cached instance, much like getData().
-        return new ByteArray(this.effectiveTransactionHash.clone());
+        if (null == this.transactionHashCache) {
+            this.transactionHashCache = new ByteArray(this.effectiveTransactionHash.clone());
+        }
+        return this.transactionHashCache;
     }
 
     @Override

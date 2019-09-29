@@ -66,16 +66,20 @@ public class TransactionHashTarget {
     }
 
     public static void modifyHashInExternalCall() {
+        // We expect the transaction hash to be lazily cached by AVM so we should get back the same instance on each call.
+        // Consequently, any modifications we make to the hash will be treated like any other write to a byte[].
         // Save the actual hash in a copy.
         byte[] hash = Blockchain.getTransactionHash();
-        byte[] originalHash = new byte[hash.length];
-        System.arraycopy(hash, 0, originalHash, 0, hash.length);
+        byte[] expectedHash = new byte[hash.length];
+        System.arraycopy(hash, 0, expectedHash, 0, hash.length);
+        expectedHash[0] = (byte) ~expectedHash[0];
 
         modifyHash();
 
-        // Verify the returned hash equals the original.
+        // Verify that the instance is the same and the modification is reflected.
         byte[] hash2 = Blockchain.getTransactionHash();
-        Blockchain.require(Arrays.equals(originalHash, hash2));
+        Blockchain.require(hash == hash2);
+        Blockchain.require(Arrays.equals(expectedHash, hash2));
     }
 
     public static void modifyHash() {
