@@ -163,6 +163,8 @@ public interface IBlockchainRuntime {
 
     Result avm_create(BigInteger value, ByteArray data, long energyLimit) throws IllegalArgumentException;
 
+    Result avm_invokeTransaction(ByteArray transactionPayload, long energyLimit) throws IllegalArgumentException;
+
     /**
      * Destructs this Dapp and refund all balance to the beneficiary.
      *

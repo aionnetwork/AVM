@@ -317,6 +317,45 @@ public class BlockchainRuntimeImpl implements IBlockchainRuntime {
         return runInternalCall(internalTx, this.transactionDestination, true, null, this.effectiveTransactionOrigin, data.getUnderlying(), this.effectiveTransactionHash, restrictedLimit, this.energyPrice, underlyingValue, senderNonce);
     }
 
+    @Override
+    public Result avm_invokeTransaction(ByteArray transactionPayload, long energyLimit) throws IllegalArgumentException {
+        // Static checks.
+        require(transactionPayload != null, "Payload can't be NULL");
+        require(energyLimit >= 0, "Energy limit can't be negative");
+
+        if (task.getTransactionStackDepth() == 9) {
+            // since we increase depth in the upcoming call to runInternalCall(),
+            // a current depth of 9 means we're about to go up to 10, so we fail
+            throw new CallDepthLimitExceededException("Internal call depth cannot be more than 10");
+        }
+        
+        // Get the information we need.
+        byte[] underlyingTransactionPayload = transactionPayload.getUnderlying();
+        long effectiveEnergyLimit = restrictEnergyLimit(energyLimit);
+        AionAddress currentContract = this.transactionDestination;
+        
+        // Ask the kernel to decode this transaction - returns null on failure.
+        InternalTransaction deserializedTransaction = this.capabilities.decodeSerializedTransaction(underlyingTransactionPayload, currentContract, this.energyPrice, effectiveEnergyLimit);
+        require(null != deserializedTransaction, "Transaction static requirements violated");
+        
+        if (!deserializedTransaction.isCreate) {
+            require(this.externalState.destinationAddressIsSafeForThisVM(deserializedTransaction.destination), "Attempt to execute code using a foreign virtual machine");
+        }
+        
+        // At this point, we know the transaction was well-formed and no static requirements were validated.
+        // This means we can verify the context-dependent rules:
+        // -value
+        // -nonce
+        // This is effectively an application of the rules we normally apply in the avm_call and avm_create helpers, just applied
+        // to the deserialized transaction.  Nonce is the only new check here, since it is normally applied on the external call.
+        require(deserializedTransaction.value.compareTo(java.math.BigInteger.ZERO) >= 0 , "Value can't be negative");
+        require(deserializedTransaction.value.compareTo(externalState.getBalance(deserializedTransaction.sender)) <= 0, "Insufficient balance");
+        require(deserializedTransaction.senderNonce.equals(this.externalState.getNonce(deserializedTransaction.sender)), "Incorrect nonce");
+        
+        // Call the common run helper, passing in the deserialized transaction.
+        return runInternalCall(deserializedTransaction, deserializedTransaction.sender, deserializedTransaction.isCreate, deserializedTransaction.destination, deserializedTransaction.sender, deserializedTransaction.copyOfData(), deserializedTransaction.copyOfInvokableHash(), deserializedTransaction.energyLimit, deserializedTransaction.energyPrice, deserializedTransaction.value, deserializedTransaction.senderNonce);
+    }
+
     private void require(boolean condition, String message) {
         if (!condition) {
             throw new IllegalArgumentException(message);

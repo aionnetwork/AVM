@@ -253,6 +253,20 @@ public final class Blockchain {
     }
 
     /**
+     * Invokes a transaction which has been pre-serialized and pre-signed by an off-chain entity.  This could be a call, create, or
+     * balance transfer.
+     * Note that the nonce of the sender account will NOT be incremented if a transaction is thrown, but will if not.
+     * 
+     * @param transactionPayload The serialized and signed transaction to run
+     * @param energyLimit The maximum energy the transaction can consume.
+     * @return The result of the transaction being run.
+     * @throws IllegalArgumentException If the transaction was rejected without being attempted (corrupted data, invalid balance or nonce, etc).
+     */
+    public static Result invokeTransaction(byte[] transactionPayload, long energyLimit) throws IllegalArgumentException {
+        return null;
+    }
+
+    /**
      * Destroys this dapp and refund all balance to the beneficiary address.
      *
      * @param beneficiary the beneficiary's address

@@ -211,6 +211,11 @@ public class TestingBlockchainRuntime implements IBlockchainRuntime {
     }
 
     @Override
+    public Result avm_invokeTransaction(ByteArray transactionPayload, long energyLimit) throws IllegalArgumentException {
+        throw RuntimeAssertionError.unimplemented("avm_invokeTransaction");
+    }
+
+    @Override
     public void avm_log(ByteArray data) {
     }
 

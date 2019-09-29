@@ -148,6 +148,11 @@ public final class Blockchain extends Object {
         return blockchainRuntime.avm_create(value, data, energyLimit);
     }
 
+    public static Result avm_invokeTransaction(ByteArray transactionPayload, long energyLimit) throws IllegalArgumentException {
+        IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_invokeTransaction);
+        return blockchainRuntime.avm_invokeTransaction(transactionPayload, energyLimit);
+    }
+
     public static void avm_selfDestruct(Address beneficiary) {
         IInstrumentation.attachedThreadInstrumentation.get().chargeEnergy(RuntimeMethodFeeSchedule.BlockchainRuntime_avm_selfDestruct);
         blockchainRuntime.avm_selfDestruct(beneficiary);

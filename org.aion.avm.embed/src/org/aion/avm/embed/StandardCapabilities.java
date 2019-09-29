@@ -1,6 +1,7 @@
 package org.aion.avm.embed;
 
 import org.aion.types.AionAddress;
+import org.aion.types.InternalTransaction;
 
 import java.math.BigInteger;
 
@@ -36,5 +37,10 @@ public class StandardCapabilities implements IExternalCapabilities {
     @Override
     public AionAddress generateContractAddress(AionAddress deployerAddress, BigInteger nonce) {
         return AddressUtil.generateContractAddress(deployerAddress, nonce);
+    }
+
+    @Override
+    public InternalTransaction decodeSerializedTransaction(byte[] transactionPayload, AionAddress executor, long energyPrice, long energyLimit) {
+        throw new AssertionError("TODO (AKI-359):  Implement decodeSerializedTransaction based on standard network encoding (once it has been finalized)");
     }
 }

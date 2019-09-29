@@ -3,6 +3,7 @@ package org.aion.avm.core;
 import java.math.BigInteger;
 
 import org.aion.types.AionAddress;
+import org.aion.types.InternalTransaction;
 
 
 /**
@@ -54,4 +55,18 @@ public interface IExternalCapabilities {
      * @return The address of the new contract this transaction would create.
      */
     AionAddress generateContractAddress(AionAddress deployerAddress, BigInteger nonce);
+
+    /**
+     * Decodes transactionPayload as a serialized transaction defined by AIP #044.
+     * Returns an InternalTransaction object if the data is well-formed, doesn't clearly violate the static rules of a serialized
+     * transaction (non-negative nonce and value), and the given executor matches.  Otherwise, returns null.
+     * Doesn't attempt to verify these values against any particular version of state, however.
+     * 
+     * @param transactionPayload A transaction serialized as defined by AIP #044.
+     * @param executor The executor which must match the executor field of the serialized transaction.
+     * @param energyPrice The energy price which should be set in the transaction.
+     * @param energyLimit The energy limit which should be set in the transaction.
+     * @return A well-formed internal transaction object or null if any static requirements are violated.
+     */
+    public InternalTransaction decodeSerializedTransaction(byte[] transactionPayload, AionAddress executor, long energyPrice, long energyLimit);
 }

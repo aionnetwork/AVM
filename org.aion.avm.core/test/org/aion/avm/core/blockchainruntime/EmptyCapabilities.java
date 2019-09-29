@@ -1,11 +1,14 @@
 package org.aion.avm.core.blockchainruntime;
 
-import org.aion.kernel.TestingState;
-import org.aion.types.AionAddress;
-
 import java.math.BigInteger;
+import java.util.Arrays;
 
 import org.aion.avm.core.IExternalCapabilities;
+import org.aion.avm.core.TestingMetaEncoder;
+import org.aion.kernel.TestingState;
+import org.aion.types.AionAddress;
+import org.aion.types.InternalTransaction;
+
 import i.RuntimeAssertionError;
 
 
@@ -20,15 +23,12 @@ public class EmptyCapabilities implements IExternalCapabilities {
 
     @Override
     public byte[] blake2b(byte[] data) {
-        throw RuntimeAssertionError.unimplemented("Not called in test");
+        return fakeHash(data);
     }
 
     @Override
     public byte[] keccak256(byte[] data) {
-        byte[] hash = new byte[32];
-        int u = Math.min(32, data.length);
-        System.arraycopy(data, 0, hash, 32 - u, u);
-        return hash;
+        throw RuntimeAssertionError.unimplemented("Not called in test");
     }
 
     @Override
@@ -52,5 +52,48 @@ public class EmptyCapabilities implements IExternalCapabilities {
         }
         raw[0] = TestingState.AVM_CONTRACT_PREFIX;
         return new AionAddress(raw);
+    }
+
+    @Override
+    public InternalTransaction decodeSerializedTransaction(byte[] transactionPayload, AionAddress executor, long energyPrice, long energyLimit) {
+        TestingMetaEncoder.MetaTransaction deserialized = TestingMetaEncoder.decode(transactionPayload);
+        // Verify signature (for tests, we just use a [0x1] as "correctly signed").
+        if (!Arrays.equals(new byte[] {0x1}, deserialized.signature)) {
+            throw new IllegalArgumentException();
+        }
+        // Verify the executor.
+        if (!executor.equals(deserialized.executor)) {
+            throw new IllegalArgumentException();
+        }
+        // Aion transaction hash is defined as blake2b.
+        byte[] hash = blake2b(transactionPayload);
+        return (null != deserialized.targetAddress)
+                ? InternalTransaction.contractCallInvokableTransaction(
+                        InternalTransaction.RejectedStatus.NOT_REJECTED,
+                        deserialized.senderAddress,
+                        deserialized.targetAddress,
+                        deserialized.nonce,
+                        deserialized.value,
+                        deserialized.data,
+                        energyLimit,
+                        energyPrice,
+                        hash)
+                : InternalTransaction.contractCreateInvokableTransaction(
+                        InternalTransaction.RejectedStatus.NOT_REJECTED,
+                        deserialized.senderAddress,
+                        deserialized.nonce,
+                        deserialized.value,
+                        deserialized.data,
+                        energyLimit,
+                        energyPrice,
+                        hash);
+    }
+
+
+    private static byte[] fakeHash(byte[] data) {
+        byte[] hash = new byte[32];
+        int u = Math.min(32, data.length);
+        System.arraycopy(data, 0, hash, 32 - u, u);
+        return hash;
     }
 }
