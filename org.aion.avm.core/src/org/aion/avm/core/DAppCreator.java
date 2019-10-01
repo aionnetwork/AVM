@@ -201,6 +201,7 @@ public class DAppCreator {
     ) {
         // Expose the DApp outside the try so we can detach from it, when we exit.
         LoadedDApp dapp = null;
+        IInstrumentation threadInstrumentation = null;
         AvmWrappedTransactionResult result = internalResult;
         try {
             // read dapp module
@@ -261,7 +262,7 @@ public class DAppCreator {
             // We have just created this dApp, there should be no previous runtime associated with it.
             RuntimeAssertionError.assertTrue(previousRuntime == null);
 
-            IInstrumentation threadInstrumentation = IInstrumentation.attachedThreadInstrumentation.get();
+            threadInstrumentation = IInstrumentation.attachedThreadInstrumentation.get();
             threadInstrumentation.chargeEnergy(BillingRules.getDeploymentFee(rawDapp.numberOfClasses, rawDapp.bytecodeSize));
 
             // Create the immortal version of the transformed DApp code by stripping the <clinit>.
@@ -329,7 +330,9 @@ public class DAppCreator {
                 System.err.println("DApp deployment to REVERT due to uncaught EXCEPTION: \"" + e.getMessage() + "\"");
                 e.printStackTrace(System.err);
             }
-            result = TransactionResultUtil.setRevertedFailureAndEnergyUsed(result, energyLimit);
+            // We can never be a situation where a revert is triggered but the threadInstrumentation is null - if we are here we know we executed code.
+            RuntimeAssertionError.assertTrue(threadInstrumentation != null);
+            result = TransactionResultUtil.setRevertedFailureAndEnergyUsed(result, energyLimit - threadInstrumentation.energyLeft());
 
         } catch (InvalidException e) {
             if (verboseErrors) {

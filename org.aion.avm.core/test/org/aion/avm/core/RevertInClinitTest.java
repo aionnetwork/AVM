@@ -51,7 +51,7 @@ public class RevertInClinitTest {
         TransactionResult result = this.avm.run(this.kernel, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isReverted());
 
-        // TODO: see AKI-216, a revert should not spend all of the user's energy, but as much as was used up to the revert.
-        Assert.assertEquals(this.energyLimit, result.energyUsed);
+        // Verify that we did not use up all of our energy.
+        Assert.assertTrue(result.energyUsed < this.energyLimit);
     }
 }
