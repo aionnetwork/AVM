@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import org.aion.avm.core.miscvisitors.*;
 import org.aion.avm.core.util.TransactionResultUtil;
 import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.types.AionAddress;
@@ -11,14 +12,7 @@ import org.aion.avm.core.arraywrapping.ArraysRequiringAnalysisClassVisitor;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
 import org.aion.avm.core.instrument.ClassMetering;
 import org.aion.avm.core.instrument.HeapMemoryCostCalculator;
-import org.aion.avm.core.miscvisitors.ClinitStrippingVisitor;
-import org.aion.avm.core.miscvisitors.ConstantVisitor;
-import org.aion.avm.core.miscvisitors.InterfaceFieldMappingVisitor;
-import org.aion.avm.core.miscvisitors.LoopingExceptionStrippingVisitor;
-import org.aion.avm.core.miscvisitors.NamespaceMapper;
-import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
-import org.aion.avm.core.miscvisitors.StrictFPVisitor;
-import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
+import org.aion.avm.core.miscvisitors.InterfaceFieldClassGeneratorVisitor;
 import org.aion.avm.core.persistence.AutomaticGraphVisitor;
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.rejection.InstanceVariableCountManager;
@@ -155,23 +149,19 @@ public class DAppCreator {
          * Another pass to deal with static fields in interfaces.
          * Note that all fields in interfaces are defined as static.
          */
-
-        // We grab all of the user-defined interfaces.
-        Set<String> preRenameUserClassesAndInterfaces = classHierarchy.getPreRenameUserDefinedClassesAndInterfaces();
-        Set<String> userInterfaceSlashNames = new HashSet<>();
-
-        for (String preRenameUserClassOrInterface : preRenameUserClassesAndInterfaces) {
-            // We set ArrayType to null because we never expect to see arrays here!
-            String classNamePostRename = classRenamer.toPostRename(preRenameUserClassOrInterface, ArrayType.NOT_ARRAY);
-            if (classHierarchy.postRenameTypeIsInterface(classNamePostRename)) {
-                userInterfaceSlashNames.add(Helpers.fulllyQualifiedNameToInternalName(classNamePostRename));
-            }
-        }
+        // mapping between interface name and generated class name containing all the interface fields
+        Map<String, String> interfaceFieldClassNames = new HashMap<>();
 
         String javaLangObjectSlashName = PackageConstants.kShadowSlashPrefix + "java/lang/Object";
         for (String name : transformedClasses.keySet()) {
+            // This visitor does not modify the byte code of transformedClasses. It only generates a new class containing fields and clinit for each interface.
+            new ClassReader(transformedClasses.get(name))
+                    .accept(new InterfaceFieldClassGeneratorVisitor(generatedClassesSink, interfaceFieldClassNames, javaLangObjectSlashName), parsingOptions);
+        }
+
+        for (String name : transformedClasses.keySet()) {
             byte[] bytecode = new ClassToolchain.Builder(transformedClasses.get(name), parsingOptions)
-                    .addNextVisitor(new InterfaceFieldMappingVisitor(generatedClassesSink, userInterfaceSlashNames, javaLangObjectSlashName))
+                    .addNextVisitor(new InterfaceFieldNameMappingVisitor(interfaceFieldClassNames))
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, classRenamer))
                     .build()
                     .runAndGetBytecode();

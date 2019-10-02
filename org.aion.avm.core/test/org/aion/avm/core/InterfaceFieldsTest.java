@@ -1,7 +1,8 @@
 package org.aion.avm.core;
 
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.miscvisitors.InterfaceFieldMappingVisitor;
+import org.aion.avm.core.miscvisitors.InterfaceFieldClassGeneratorVisitor;
+import org.aion.avm.core.miscvisitors.InterfaceFieldNameMappingVisitor;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.types.GeneratedClassConsumer;
 import org.aion.avm.core.util.Helpers;
@@ -17,7 +18,7 @@ import java.util.Set;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class InterfaceFiledsTest {
+public class InterfaceFieldsTest {
 
     private boolean preserveDebuggability = false;
     @Test
@@ -27,12 +28,13 @@ public class InterfaceFiledsTest {
         GeneratedClassConsumer consumer = (superClassName, className, bytecode) -> {
             classes.put(Helpers.internalNameToFulllyQualifiedName(className), bytecode);
         };
-        Set<String> userInterfaceSlashNames = Set.of(Helpers.fulllyQualifiedNameToInternalName(OuterInteface.class.getName()));
+        Map<String, String> interfaceFieldClassNames = new HashMap<>();
         String javaLangObjectSlashName = "java/lang/Object";
 
         byte[] bytecode = Helpers.loadRequiredResourceAsBytes(OuterInteface.class.getName().replaceAll("\\.", "/") + ".class");
         byte[] transformed = new ClassToolchain.Builder(bytecode, 0)
-                .addNextVisitor(new InterfaceFieldMappingVisitor(consumer, userInterfaceSlashNames, javaLangObjectSlashName))
+                .addNextVisitor(new InterfaceFieldClassGeneratorVisitor(consumer, interfaceFieldClassNames, javaLangObjectSlashName))
+                .addNextVisitor(new InterfaceFieldNameMappingVisitor(interfaceFieldClassNames))
                 .addWriter(new ClassWriter(0))
                 .build()
                 .runAndGetBytecode();
