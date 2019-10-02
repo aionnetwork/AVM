@@ -16,6 +16,17 @@ import java.util.HashSet;
 import java.util.Set;
 
 
+/**
+ * This visitor is responsible for handling exception handler tables, exception handler targets, and exception throwing.
+ * 
+ * Exception handler table entries for shadow exceptions are duplicated, pointing both entries at the same target.
+ * 
+ * Exception handler targets are instrumented with a method "unwrapThrowable", which will convert either the wrapped, or
+ * system, exception into the shadow object the user can touch.  This case also adds a CHECKCAST.
+ * 
+ * ATHROW opcodes are instrumented to first call a method "wrapAsThrowable", which will put this shadow object back into
+ * an exception wrapper.
+ */
 public class ExceptionWrapping extends ClassToolchain.ToolChainClassVisitor {
     private final GeneratedClassConsumer generatedClassesSink;
 
