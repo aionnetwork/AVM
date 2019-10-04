@@ -17,10 +17,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 import static org.junit.Assert.assertTrue;
-import static org.objectweb.asm.Opcodes.ACC_STRICT;
 
 
 public class StrictFPVisitorTest {
@@ -59,16 +60,31 @@ public class StrictFPVisitorTest {
         LoadedJar jar = LoadedJar.fromBytes(kernel.getTransformedCode(dappAddress));
         for (byte[] klass : jar.classBytesByQualifiedNames.values()) {
             ClassReader reader = new ClassReader(klass);
-            ClassNode node = new ClassNode();
-            reader.accept(node, ClassReader.SKIP_FRAMES);
-            assertTrue((node.access & ACC_STRICT) != 0);
+            ClassVisitor classVisitor = new ClassVisitor(Opcodes.ASM6) {
+                @Override
+                public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
+                    boolean isAbstract = (Opcodes.ACC_ABSTRACT == (access & Opcodes.ACC_ABSTRACT));
+                    boolean isStrict = (Opcodes.ACC_STRICT == (access & Opcodes.ACC_STRICT));
+                    
+                    // Must be one or the other but never both.
+                    assertTrue(isAbstract ^ isStrict);
+                    return super.visitMethod(access, name, descriptor, signature, exceptions);
+                }
+            };
+            reader.accept(classVisitor, ClassReader.SKIP_FRAMES);
         }
     }
 
     @Test
-    public void testFp() {
+    public void testStrictFP() {
         Transaction tx = AvmTransactionUtil.call(deployer, dappAddress, kernel.getNonce(deployer), BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
         TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();
         assertTrue(txResult.transactionStatus.isSuccess());
+    }
+
+    @Test
+    public void testDirect() {
+        // Just call the main directly - if this passes, it means that we will be unable to detect if the strictfp has an effect.
+        StrictFPVisitorTestResource.main();
     }
 }
