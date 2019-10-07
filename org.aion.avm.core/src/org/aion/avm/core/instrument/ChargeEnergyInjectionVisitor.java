@@ -125,7 +125,8 @@ public class ChargeEnergyInjectionVisitor extends MethodVisitor {
     }
     @Override
     public void visitMaxs(int maxStack, int maxLocals) {
-        super.visitMaxs(maxStack, maxLocals);
+        // Add one stack slot because we push an int onto stack for the call to chargeEnergy
+        super.visitMaxs(maxStack + 1, maxLocals);
     }
 
     @Override

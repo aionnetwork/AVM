@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.core.miscvisitors.*;
+import org.aion.avm.core.instrument.MethodWrapperVisitor;
 import org.aion.avm.core.util.TransactionResultUtil;
 import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.types.AionAddress;
@@ -22,7 +23,6 @@ import org.aion.avm.core.rejection.RejectedClassException;
 import org.aion.avm.core.rejection.RejectionClassVisitor;
 import org.aion.avm.core.shadowing.ClassShadowing;
 import org.aion.avm.core.shadowing.InvokedynamicShadower;
-import org.aion.avm.core.stacktracking.StackWatcherClassAdapter;
 import org.aion.avm.core.types.ClassHierarchy;
 import org.aion.avm.core.types.ClassInfo;
 import org.aion.avm.core.types.Forest;
@@ -124,7 +124,6 @@ public class DAppCreator {
                     .addNextVisitor(new ConstantVisitor(PackageConstants.kConstantClassName, constantClass.constantToFieldMap))
                     .addNextVisitor(new InvokedynamicShadower(PackageConstants.kShadowSlashPrefix))
                     .addNextVisitor(new ClassShadowing(PackageConstants.kShadowSlashPrefix))
-                    .addNextVisitor(new StackWatcherClassAdapter())
                     .addNextVisitor(new ExceptionWrapping(generatedClassesSink, classHierarchy))
                     .addNextVisitor(new AutomaticGraphVisitor())
                     .addNextVisitor(new StrictFPVisitor())
@@ -134,6 +133,7 @@ public class DAppCreator {
             bytecode = new ClassToolchain.Builder(bytecode, parsingOptions)
                     .addNextVisitor(new ArraysRequiringAnalysisClassVisitor(classHierarchy))
                     .addNextVisitor(new ArraysWithKnownTypesClassVisitor())
+                    .addNextVisitor(new MethodWrapperVisitor())
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, classRenamer))
                     .build()
                     .runAndGetBytecode();
@@ -266,6 +266,7 @@ public class DAppCreator {
             externalState.putCode(dappAddress, codeAndArguments.code);
             // store transformed dapp
             byte[] immortalDappJar = immortalDapp.createJar(externalState.getBlockTimestamp());
+
             externalState.setTransformedCode(dappAddress, immortalDappJar);
 
             // Force the classes in the dapp to initialize so that the <clinit> is run (since we already saved the version without).

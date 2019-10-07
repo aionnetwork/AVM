@@ -20,7 +20,7 @@ import org.objectweb.asm.Type;
  */
 public class NamespaceMapper {
     private static final String FIELD_PREFIX = "avm_";
-    private static final String METHOD_PREFIX = "avm_";
+    public static final String METHOD_PREFIX = "avm_";
 
     private final PreRenameClassAccessRules preRenameClassAccessRules;
     private final String shadowPackageSlash;
@@ -53,6 +53,10 @@ public class NamespaceMapper {
         }
 
         return METHOD_PREFIX + name;
+    }
+
+    public static String stripMethodPrefix(String name) {
+        return name.substring(METHOD_PREFIX.length());
     }
 
     /**
