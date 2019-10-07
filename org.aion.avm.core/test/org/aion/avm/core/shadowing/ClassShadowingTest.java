@@ -263,7 +263,7 @@ public class ClassShadowingTest {
             return this.realImplementation.wrapAsThrowable(input);
         }
         @Override
-        public void chargeEnergy(long cost) throws OutOfEnergyException {
+        public void chargeEnergy(int cost) throws OutOfEnergyException {
             this.realImplementation.chargeEnergy(cost);
         }
         @Override

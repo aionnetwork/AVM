@@ -106,7 +106,7 @@ public class ClassMeteringTest {
      * NOTE:  This class is used for the "testWrittenBlockPrefix()" test.
      */
     public static class TestEnergy {
-        public static long totalCost;
+        public static int totalCost;
         public static int totalCharges;
         public static int totalArrayElements;
         public static int totalArrayInstances;
@@ -114,7 +114,7 @@ public class ClassMeteringTest {
 
     public static class HelperStub {
         public static String CLASS_NAME = Helpers.fulllyQualifiedNameToInternalName(HelperStub.class.getName());
-        public static void chargeEnergy(long cost) {
+        public static void chargeEnergy(int cost) {
             TestEnergy.totalCost += cost;
             TestEnergy.totalCharges += 1;
         }

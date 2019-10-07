@@ -49,7 +49,7 @@ public class MockFailureInstrumentationFactory implements IInstrumentationFactor
                 return underlying.wrapAsThrowable(arg);
             }
             @Override
-            public void chargeEnergy(long cost) throws OutOfEnergyException {
+            public void chargeEnergy(int cost) throws OutOfEnergyException {
                 int thisIndex = MockFailureInstrumentationFactory.this.count.getAndIncrement();
                 if (thisIndex == MockFailureInstrumentationFactory.this.basicBlockIndex) {
                     MockFailureInstrumentationFactory.this.toRun.run();

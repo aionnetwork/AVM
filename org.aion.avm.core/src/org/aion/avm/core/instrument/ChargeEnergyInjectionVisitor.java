@@ -10,7 +10,7 @@ import org.objectweb.asm.Opcodes;
 
 
 /**
- * The visitor responsible for injecting the "Helper.chargeEnergy(long)" calls.
+ * The visitor responsible for injecting the "Helper.chargeEnergy(int)" calls.
  * 
  * This is done per-block, so the in-order list of BasicBlock objects generated during a pre-pass must be provided.
  * 
@@ -135,12 +135,15 @@ public class ChargeEnergyInjectionVisitor extends MethodVisitor {
         if (this.scanningToNewBlockStart) {
             // We were waiting for this so make sure that this block has some associated cost.
             BasicBlock currentBlock = this.blocks.get(this.nextBlockIndexToWrite);
+            long currentEnergyCost = currentBlock.getEnergyCost();
             // We should never encounter a block with a zero/negative cost.
-            RuntimeAssertionError.assertTrue(currentBlock.getEnergyCost() > 0);
+            RuntimeAssertionError.assertTrue(currentEnergyCost > 0L);
+            // We track this as a long but report it as an int so prove that this can't overflow.
+            RuntimeAssertionError.assertTrue(currentEnergyCost <= (long)Integer.MAX_VALUE);
             
             // Inject the bytecodes.
-            super.visitLdcInsn(Long.valueOf(currentBlock.getEnergyCost()));
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, Helper.RUNTIME_HELPER_NAME, "chargeEnergy", "(J)V", false);
+            super.visitLdcInsn(Integer.valueOf((int)currentEnergyCost));
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, Helper.RUNTIME_HELPER_NAME, "chargeEnergy", "(I)V", false);
             
             // Reset the state machine for the next block.
             this.scanningToNewBlockStart = false;

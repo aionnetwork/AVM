@@ -50,7 +50,7 @@ public class TestingHelper implements IInstrumentation {
     }
 
     @Override
-    public void chargeEnergy(long cost) throws OutOfEnergyException {
+    public void chargeEnergy(int cost) throws OutOfEnergyException {
         // Free!
     }
 
