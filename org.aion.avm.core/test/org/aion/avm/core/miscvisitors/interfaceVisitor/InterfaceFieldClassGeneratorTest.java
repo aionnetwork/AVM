@@ -306,7 +306,7 @@ public class InterfaceFieldClassGeneratorTest {
             classes.put(Helpers.internalNameToFulllyQualifiedName(classNames[i]), transformer.apply(bytecode[i]));
         }
 
-        Assert.assertEquals(5, classes.size());
+        Assert.assertEquals(3, classes.size());
     }
 
     @Test

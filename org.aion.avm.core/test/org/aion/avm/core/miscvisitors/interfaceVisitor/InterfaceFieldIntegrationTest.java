@@ -209,7 +209,38 @@ public class InterfaceFieldIntegrationTest {
         TransactionResult result = callDapp(kernel, deployer, dappAddress, "",
                 ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1);
         Assert.assertTrue(result.transactionStatus.isSuccess());
-        Assert.assertArrayEquals(new byte[405],result.copyOfTransactionOutput().orElseThrow());
+        Assert.assertArrayEquals(new byte[405], result.copyOfTransactionOutput().orElseThrow());
+    }
+
+    @Test
+    public void testInterfaceWithNoDeclaredFields() {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(ImplementationNoFields.class, InterfaceNoFields.class, ABIEncoder.class, ABIException.class);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        AionAddress dappAddress = deploy(deployer, kernel, txData);
+
+        // values below are retrieved from the old version of the AVM (with InterfaceFieldMappingVisitor) after deployment
+        byte[] objectGraph = Helpers.hexStringToBytes("00000004030000000003000000010300000002000000ff0000000000000001106a6176612e6c616e672e537472696e6700000001000000204164647265737320776173206f6620756e6578706563746564206c656e677468106a6176612e6c616e672e537472696e6700000002000000204172726179206c656e677468206d7573742066697420696e2032206279746573106a6176612e6c616e672e537472696e67000000030000002e426967496e74656765722076616c7565206578636565647320746865206c696d6974206f66203332206279746573");
+        kernel.putObjectGraph(dappAddress, objectGraph);
+
+        //re-transform the code
+        kernel.setTransformedCode(dappAddress, null);
+
+        TransactionResult result = callDapp(kernel, deployer, dappAddress, "",
+                ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1);
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+        Assert.assertEquals(22022, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
+    }
+
+    @Test
+    public void testInterfaceWithNoDeclaredFieldsAVM2() {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(ImplementationNoFields.class, InterfaceNoFields.class, ABIEncoder.class, ABIException.class);
+        byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        AionAddress dappAddress = deploy(deployer, kernel, txData);
+
+        TransactionResult result = callDapp(kernel, deployer, dappAddress, "",
+                ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1);
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+        Assert.assertEquals(22022, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
     }
 
     private static TransactionResult callDapp(TestingState kernel, AionAddress sender, AionAddress dappAddress,
