@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.core.util.TransactionResultUtil;
+import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
@@ -14,6 +15,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import org.aion.avm.core.analyze.ConstantPoolBuilder;
+import org.aion.avm.core.analyze.DAppSizeAnalyzer;
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.SoftCache;
@@ -318,6 +321,8 @@ public class AvmImpl implements AvmInternal {
         if (null != this.backgroundFatalError) {
             throw this.backgroundFatalError;
         }
+        System.out.println("SHUTDOWN --- STDOUT --- SHUTDOWN");
+        DAppSizeAnalyzer.dumpData();
     }
 
     @Override
@@ -409,6 +414,14 @@ public class AvmImpl implements AvmInternal {
 
         // do nothing for balance transfers of which the recipient is not a DApp address.
         if (tx.isCreate) {
+            // Collect data.
+            CodeAndArguments codeAndArguments = CodeAndArguments.decodeFromBytes(tx.copyOfTransactionData());
+            if (null != codeAndArguments) {
+                boolean success = DAppSizeAnalyzer.analyze(codeAndArguments.code);
+                if (!success) {
+                    System.out.println("FAILRE IN: " + recipient);
+                }
+            }
             result = DAppCreator.create(this.capabilities, thisTransactionKernel, this, task, tx, result, this.preserveDebuggability, this.enableVerboseContractErrors, this.enableBlockchainPrintln);
         } else { // call
             // See if this call is trying to reenter one already on this call-stack.  If so, we will need to partially resume its state.
