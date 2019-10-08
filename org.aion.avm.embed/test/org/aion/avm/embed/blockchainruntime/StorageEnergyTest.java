@@ -105,7 +105,7 @@ public class StorageEnergyTest {
         resultWrapper = avmRule.call(from, dappAddr, BigInteger.ZERO, txDataMethodArguments, energyLimit, energyPrice);
         Assert.assertTrue(resultWrapper.getReceiptStatus().isSuccess());
         // cost before the refund is processed
-        long executionCost = 54630 + 29 * 5 +
+        long executionCost = 54642 + 29 * 5 +
                 5 * RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage;
         Assert.assertEquals(executionCost - executionCost / 2, resultWrapper.getTransactionResult().energyUsed);
     }
@@ -119,7 +119,7 @@ public class StorageEnergyTest {
         byte[] txDataMethodArguments = ABIUtil.encodeMethodArguments("reentrantCallAfterPut", dappAddr, data);
         AvmRule.ResultWrapper resultWrapper = avmRule.call(from, dappAddr, BigInteger.ZERO, txDataMethodArguments, energyLimit, energyPrice);
         Assert.assertTrue(resultWrapper.getReceiptStatus().isSuccess());
-        long costWithoutResettingStorage = 157398;
+        long costWithoutResettingStorage = 157410;
         long executionCost = costWithoutResettingStorage + 29 * 5 +
                 5 * RuntimeMethodFeeSchedule.BlockchainRuntime_avm_resetStorage;
         Assert.assertEquals(executionCost - 5 * RuntimeMethodFeeSchedule.BlockchainRuntime_avm_deleteStorage_refund, resultWrapper.getTransactionResult().energyUsed);
@@ -155,7 +155,7 @@ public class StorageEnergyTest {
         txDataMethodArguments = ABIUtil.encodeMethodArguments("reentrantReset", newContract, data);
         resultWrapper = avmRule.call(from, dappAddr, BigInteger.ZERO, txDataMethodArguments, energyLimit, energyPrice);
         Assert.assertTrue(resultWrapper.getTransactionResult().transactionStatus.isSuccess());
-        Assert.assertEquals(107528 - 107528 / 2, resultWrapper.getTransactionResult().energyUsed);
+        Assert.assertEquals(107540 - 107540 / 2, resultWrapper.getTransactionResult().energyUsed);
     }
 
     @Test

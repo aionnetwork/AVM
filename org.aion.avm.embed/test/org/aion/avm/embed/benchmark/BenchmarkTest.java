@@ -137,7 +137,7 @@ public class BenchmarkTest {
         ResultWrapper result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
         Assert.assertEquals(0, ((Integer) result.getDecodedReturnData()).intValue());
-        Assert.assertEquals(34569L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(34581L, result.getTransactionResult().energyUsed);
         
         // Add 1000 elements, 1 at a time, watching how this grows in cost as the graph grows.
         for (int i = 0; i < 1000; ++i) {
@@ -153,7 +153,7 @@ public class BenchmarkTest {
         result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
         Assert.assertEquals(500500, ((Integer) result.getDecodedReturnData()).intValue());
-        Assert.assertEquals(1970569L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(1970581L, result.getTransactionResult().energyUsed);
     }
 
     @Test
