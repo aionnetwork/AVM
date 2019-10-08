@@ -22,7 +22,6 @@ import java.math.BigInteger;
 
 import static org.junit.Assert.assertTrue;
 
-@Ignore
 public class LazyCodeTransformationTest {
 
     private static AionAddress from = TestingState.PREMINED_ADDRESS;

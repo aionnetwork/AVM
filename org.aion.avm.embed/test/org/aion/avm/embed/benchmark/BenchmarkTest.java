@@ -82,7 +82,7 @@ public class BenchmarkTest {
         byte[] args = new ABIStreamingEncoder().encodeOneString("sqrt").encodeOneInteger(1243).encodeOneDouble(2.0D).toBytes();
         TransactionResult result = RULE.call(FROM, target, BigInteger.ZERO, args).getTransactionResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
-        Assert.assertEquals(1995158L, result.energyUsed);
+        Assert.assertEquals(1995194L, result.energyUsed);
         
         args = new ABIStreamingEncoder().encodeOneString("sqrt").encodeOneInteger(1247).encodeOneDouble(2.0D).toBytes();
         result = RULE.call(FROM, target, BigInteger.ZERO, args).getTransactionResult();
@@ -124,7 +124,7 @@ public class BenchmarkTest {
         args = new ABIStreamingEncoder().encodeOneString("fibonacciBigInteger").encodeOneInteger(368).toBytes();
         TransactionResult failureResult = RULE.call(FROM, target, BigInteger.ZERO, args).getTransactionResult();
         Assert.assertTrue(failureResult.transactionStatus.isReverted());
-        Assert.assertEquals(298866L, failureResult.energyUsed);
+        Assert.assertEquals(298902L, failureResult.energyUsed);
     }
 
     @Test
@@ -137,14 +137,15 @@ public class BenchmarkTest {
         ResultWrapper result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
         Assert.assertEquals(0, ((Integer) result.getDecodedReturnData()).intValue());
-        Assert.assertEquals(34581L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(34617L, result.getTransactionResult().energyUsed);
+
         
         // Add 1000 elements, 1 at a time, watching how this grows in cost as the graph grows.
         for (int i = 0; i < 1000; ++i) {
             args = new ABIStreamingEncoder().encodeOneString("insert").encodeOneInteger(1).toBytes();
             result = RULE.call(FROM, target, BigInteger.ZERO, args);
             Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
-            long cost = 28221L + (i * 280L);
+            long cost = 28317L + (i * 280L);
             Assert.assertEquals(cost, result.getTransactionResult().energyUsed);
         }
         
@@ -153,7 +154,7 @@ public class BenchmarkTest {
         result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
         Assert.assertEquals(500500, ((Integer) result.getDecodedReturnData()).intValue());
-        Assert.assertEquals(1970581L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(1970617L, result.getTransactionResult().energyUsed);
     }
 
     @Test
@@ -165,7 +166,7 @@ public class BenchmarkTest {
         byte[] args = new ABIStreamingEncoder().encodeOneString("myFunction").toBytes();
         ResultWrapper result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
-        Assert.assertEquals(26641L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(26677L, result.getTransactionResult().energyUsed);
     }
 
     @Test
@@ -188,55 +189,55 @@ public class BenchmarkTest {
         byte[] args = new ABIStreamingEncoder().encodeOneString("getMyInt").toBytes();
         ResultWrapper result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
-        Assert.assertEquals(31442L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(31478L, result.getTransactionResult().energyUsed);
         Assert.assertEquals(703, ((Integer) result.getDecodedReturnData()).intValue());
         
         args = new ABIStreamingEncoder().encodeOneString("getMyString").toBytes();
         result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
-        Assert.assertEquals(34722L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(34758L, result.getTransactionResult().energyUsed);
         Assert.assertEquals("Benchmark Testing", (String) result.getDecodedReturnData());
         
         args = new ABIStreamingEncoder().encodeOneString("getMyInt1DArray").toBytes();
         result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
-        Assert.assertEquals(35071L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(35107L, result.getTransactionResult().energyUsed);
         Assert.assertArrayEquals(new int[] {0,1,2,3,4,5}, (int[]) result.getDecodedReturnData());
         
         // Basic graph map interactions.
         args = new ABIStreamingEncoder().encodeOneString("getMap").encodeOneInteger(1).toBytes();
         result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
-        Assert.assertEquals(38212L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(38248L, result.getTransactionResult().energyUsed);
         Assert.assertEquals("one", (String) result.getDecodedReturnData());
         
         args = new ABIStreamingEncoder().encodeOneString("putMap").encodeOneInteger(1).encodeOneString("Testing").toBytes();
         result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
-        Assert.assertEquals(39098L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(39134L, result.getTransactionResult().energyUsed);
         
         args = new ABIStreamingEncoder().encodeOneString("getMap").encodeOneInteger(1).toBytes();
         result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
-        Assert.assertEquals(38376L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(38412L, result.getTransactionResult().energyUsed);
         Assert.assertEquals("Testing", (String) result.getDecodedReturnData());
         
         // Basic key-value store interactions.
         args = new ABIStreamingEncoder().encodeOneString("getStorage").encodeOneString("key").toBytes();
         result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
-        Assert.assertEquals(37363L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(37399L, result.getTransactionResult().energyUsed);
         Assert.assertEquals(null, (String) result.getDecodedReturnData());
         
         args = new ABIStreamingEncoder().encodeOneString("putStorage").encodeOneString("key").encodeOneString("value").toBytes();
         result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
-        Assert.assertEquals(60593L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(60629L, result.getTransactionResult().energyUsed);
         
         args = new ABIStreamingEncoder().encodeOneString("getStorage").encodeOneString("key").toBytes();
         result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
-        Assert.assertEquals(40371L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(40407L, result.getTransactionResult().energyUsed);
         Assert.assertEquals("value", (String) result.getDecodedReturnData());
     }
 
@@ -250,21 +251,21 @@ public class BenchmarkTest {
         byte[] args = new ABIStreamingEncoder().encodeOneString("writeToObjectArray").encodeOneInteger(size).encodeOneInteger(size).toBytes();
         ResultWrapper result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
-        Assert.assertEquals(28921L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(28957L, result.getTransactionResult().energyUsed);
         
         // Something just below the max.
         size = 280;
         args = new ABIStreamingEncoder().encodeOneString("writeToObjectArray").encodeOneInteger(size).encodeOneInteger(size).toBytes();
         result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
-        Assert.assertEquals(1994792L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(1994828L, result.getTransactionResult().energyUsed);
         
         // Clear this.
         size = 0;
         args = new ABIStreamingEncoder().encodeOneString("writeToObjectArray").encodeOneInteger(size).encodeOneInteger(size).toBytes();
         result = RULE.call(FROM, target, BigInteger.ZERO, args);
         Assert.assertTrue(result.getTransactionResult().transactionStatus.isSuccess());
-        Assert.assertEquals(347032L, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(347068L, result.getTransactionResult().energyUsed);
         
         // Just above the max.
         size = 281;

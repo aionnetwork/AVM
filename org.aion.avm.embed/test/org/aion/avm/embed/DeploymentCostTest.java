@@ -61,7 +61,7 @@ public class DeploymentCostTest {
         Assert.assertEquals(100_000_000_000L, result.energyUsed);
         
         result = deployContract(Contract.BASIC_PERF);
-        Assert.assertEquals(2_032_096L, result.energyUsed);
+        Assert.assertEquals(2_032_564L, result.energyUsed);
         
         result = deployContract(Contract.POC_EXCHANGE);
         Assert.assertEquals(100_000_000_000L, result.energyUsed);

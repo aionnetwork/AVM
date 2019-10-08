@@ -137,6 +137,6 @@ public class ExceptionWrappingTest {
 
         TransactionResult result = avm.run(kernel, new Transaction[]{transaction}, ExecutionType.ASSUME_MAINCHAIN, 0)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
-        Assert.assertEquals(1_988_277L, result.energyUsed);
+        Assert.assertEquals(1_988_313L, result.energyUsed);
     }
 }
