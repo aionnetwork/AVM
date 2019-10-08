@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import java.io.PrintStream;
 
 /**
  * A class to describe how to configure an AVM instance, when requesting that it be created.
@@ -35,6 +36,11 @@ public class AvmConfiguration {
      * If false, this call is still legal but will have no effect.
      */
     public boolean enableBlockchainPrintln;
+    /**
+     * If set to non-null, enables the collection of deployment data: various information collected about deployed contracts.
+     * When shutting down the AVM instance, a histgram of this data will be dumped to the given PrintStream.
+     */
+    public PrintStream deploymentDataHistorgramOutput;
 
     public AvmConfiguration() {
         // 4 threads is generally a safe, yet useful, number.
@@ -46,5 +52,7 @@ public class AvmConfiguration {
         this.enableVerboseConcurrentExecutor = false;
         // While the system is still relatively new, we enable the Blockchain.println output, by default.
         this.enableBlockchainPrintln = true;
+        // This is not a cheap bit of instrumentation so we disable it, by default.
+        this.deploymentDataHistorgramOutput = null;
     }
 }

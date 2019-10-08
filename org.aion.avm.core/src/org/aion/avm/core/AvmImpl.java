@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import org.aion.avm.core.util.TransactionResultUtil;
+import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
@@ -52,6 +53,7 @@ public class AvmImpl implements AvmInternal {
     private final boolean enableVerboseContractErrors;
     private final boolean enableVerboseConcurrentExecutor;
     private final boolean enableBlockchainPrintln;
+    private final HistogramDataCollector histogramDataCollector;
 
     public AvmImpl(IInstrumentationFactory instrumentationFactory, IExternalCapabilities capabilities, AvmConfiguration configuration) {
         this.instrumentationFactory = instrumentationFactory;
@@ -66,6 +68,9 @@ public class AvmImpl implements AvmInternal {
         this.enableVerboseConcurrentExecutor = configuration.enableVerboseConcurrentExecutor;
         this.enableBlockchainPrintln = configuration.enableBlockchainPrintln;
         this.internalLogger = new InternalLogger(System.err);
+        this.histogramDataCollector = (null != configuration.deploymentDataHistorgramOutput)
+                ? new HistogramDataCollector(configuration.deploymentDataHistorgramOutput)
+                : null;
     }
 
     private class AvmExecutorThread extends Thread{
@@ -325,6 +330,9 @@ public class AvmImpl implements AvmInternal {
         if (null != this.backgroundFatalError) {
             throw this.backgroundFatalError;
         }
+        if (null != this.histogramDataCollector) {
+            this.histogramDataCollector.dumpData();
+        }
     }
 
     @Override
@@ -451,6 +459,13 @@ public class AvmImpl implements AvmInternal {
 
         // do nothing for balance transfers of which the recipient is not a DApp address.
         if (isCreate) {
+            if (null != this.histogramDataCollector) {
+                CodeAndArguments codeAndArguments = CodeAndArguments.decodeFromBytes(transactionData);
+                // If this data is invalid, we will get null.  We don't bother tracking this.
+                if (null != codeAndArguments) {
+                    this.histogramDataCollector.collectDataFromJarBytes(codeAndArguments.code);
+                }
+            }
             result = DAppCreator.create(this.capabilities, thisTransactionKernel, this, task, senderAddress, recipient, effectiveTransactionOrigin, transactionData, transactionHash, energyLimit, energyPrice, transactionValue, result, this.preserveDebuggability, this.enableVerboseContractErrors, this.enableBlockchainPrintln);
         } else { // call
             // See if this call is trying to reenter one already on this call-stack.  If so, we will need to partially resume its state.

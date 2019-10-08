@@ -9,7 +9,7 @@ public class AnalyzerTest {
     @Test
     public void analyze() {
         byte[] classBytes = Utilities.loadRequiredResourceAsBytes(Utilities.fulllyQualifiedNameToInternalName(ExampleClass.class.getName())+".class");
-        ConstantPoolBuilder.ClassConstantSizeInfo info = ConstantPoolBuilder.getConstantPoolInfo(classBytes);
+        ClassFileInfoBuilder.ClassFileInfo info = ClassFileInfoBuilder.getClassFileInfo(classBytes);
         Assert.assertEquals(info.constantTypeCount.size(), 14);
     }
 
