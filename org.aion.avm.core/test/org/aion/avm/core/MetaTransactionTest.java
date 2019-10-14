@@ -22,6 +22,8 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import avm.Address;
+
 
 public class MetaTransactionTest {
     private static AionAddress DEPLOYER = TestingState.PREMINED_ADDRESS;
@@ -48,8 +50,7 @@ public class MetaTransactionTest {
     @Test
     public void testInlineBalanceTransfer() {
         // Deploy initial contract.
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(MetaTransactionTarget.class);
-        byte[] codeAndArgs = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        byte[] codeAndArgs = codeAndArgsForTargetDeployment(true, null, false);
         AionAddress contractAddress = createDApp(codeAndArgs);
 
         // Create a transaction to make a basic balance transfer.
@@ -62,7 +63,7 @@ public class MetaTransactionTest {
         
         // Send the transaction as an inline meta-transaction.
         byte[] callData = encodeCallByteArray("callInline", serializedTransaction);
-        Transaction tx = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 20_000_000l, 1L);
+        Transaction tx = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 2_000_000l, 1L);
         TransactionResult result = AVM.run(KERNEL, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
         // Balance transfer returns null.
@@ -75,8 +76,7 @@ public class MetaTransactionTest {
     @Test
     public void testInlineContractCall() {
         // Deploy initial contract.
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(MetaTransactionTarget.class);
-        byte[] codeAndArgs = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        byte[] codeAndArgs = codeAndArgsForTargetDeployment(true, null, false);
         AionAddress contractAddress = createDApp(codeAndArgs);
 
         // Create a transaction to call back into the contract, itself, as just the identity invocation (returns what it is given).
@@ -90,7 +90,7 @@ public class MetaTransactionTest {
         
         // Send the transaction as an inline meta-transaction.
         byte[] callData = encodeCallByteArray("callInline", serializedTransaction);
-        Transaction tx = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 20_000_000l, 1L);
+        Transaction tx = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 2_000_000l, 1L);
         TransactionResult result = AVM.run(KERNEL, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
         // Identity returns the data it is given.
@@ -103,8 +103,7 @@ public class MetaTransactionTest {
     @Test
     public void testStoreBalanceTransferDoubleSend() {
         // Deploy initial contract.
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(MetaTransactionTarget.class);
-        byte[] codeAndArgs = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        byte[] codeAndArgs = codeAndArgsForTargetDeployment(true, null, false);
         AionAddress contractAddress = createDApp(codeAndArgs);
 
         // Create a transaction to make a basic balance transfer.
@@ -117,7 +116,7 @@ public class MetaTransactionTest {
         
         // Store this on-chain.
         byte[] callData = encodeCallByteArray("store", serializedTransaction);
-        Transaction tx = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 20_000_000l, 1L);
+        Transaction tx = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 2_000_000l, 1L);
         TransactionResult result = AVM.run(KERNEL, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
         
@@ -126,7 +125,7 @@ public class MetaTransactionTest {
         
         // Invoke the on-chain transaction.
         callData = encodeCall("call");
-        tx = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 20_000_000l, 1L);
+        tx = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 2_000_000l, 1L);
         result = AVM.run(KERNEL, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
         
@@ -135,7 +134,7 @@ public class MetaTransactionTest {
         
         // Invoke the on-chain transaction, again - this should cause a nonce failure which we aren't handline, so it is an exception.
         callData = encodeCall("call");
-        tx = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 20_000_000l, 1L);
+        tx = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 2_000_000l, 1L);
         result = AVM.run(KERNEL, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isFailed());
         
@@ -146,33 +145,33 @@ public class MetaTransactionTest {
     @Test
     public void testInlineContractDeploy() {
         // Deploy initial contract.
-        // (we assemble this manually to keep it small since we don't have the optimizer in this project).
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(MetaTransactionTarget.class, ABIEncoder.class, ABIDecoder.class, ABIException.class);
-        byte[] codeAndArgs = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        byte[] codeAndArgs = codeAndArgsForTargetDeployment(true, null, false);
         AionAddress contractAddress = createDApp(codeAndArgs);
 
         // Create a transaction to call back into the contract, itself, as just the identity invocation (returns what it is given).
         BigInteger valueToSend = BigInteger.valueOf(1_000_000_000L);
-        byte[] serializedTransaction = buildInnerMetaTransactionFromDeployer(null, valueToSend, 1L, contractAddress, codeAndArgs);
+        // We are going to do the create inline, so we expect a lower energy limit (create has 5M and call has 2M).
+        byte[] inlineCodeAndArgs = codeAndArgsForTargetDeployment(false, null, false);
+        byte[] serializedTransaction = buildInnerMetaTransactionFromDeployer(null, valueToSend, 1L, contractAddress, inlineCodeAndArgs);
         
         // Verify initial state.
         Assert.assertEquals(BigInteger.ZERO, KERNEL.getBalance(contractAddress));
         
         // Send the transaction as an inline meta-transaction.
         byte[] callData = encodeCallByteArray("createInline", serializedTransaction);
-        Transaction tx = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 20_000_000l, 1L);
+        Transaction tx = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 2_000_000l, 1L);
         TransactionResult result = AVM.run(KERNEL, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
         
         // The result should be an encoded contract address so check that it is there and has the money.
         AionAddress newContract = new AionAddress(new ABIDecoder(result.copyOfTransactionOutput().get()).decodeOneByteArray());
         Assert.assertEquals(valueToSend, KERNEL.getBalance(newContract));
-        Assert.assertArrayEquals(jar, KERNEL.getCode(newContract));
+        Assert.assertArrayEquals(CodeAndArguments.decodeFromBytes(codeAndArgs).code, KERNEL.getCode(newContract));
         
         // Now, send a simple transaction to make sure we can run this and the returned address was meaningful.
         byte[] inputData = new byte[] {1,2,3,4,5};
         callData = encodeCallByteArray("identity", inputData);
-        tx = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 20_000_000l, 1L);
+        tx = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 2_000_000l, 1L);
         result = AVM.run(KERNEL, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
         Assert.assertArrayEquals(inputData, new ABIDecoder(result.copyOfTransactionOutput().get()).decodeOneByteArray());
@@ -182,8 +181,7 @@ public class MetaTransactionTest {
     public void testInlineContractCallDepth() {
         BigInteger initialNonce = KERNEL.getNonce(DEPLOYER);
         // Deploy initial contract.
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(MetaTransactionTarget.class);
-        byte[] codeAndArgs = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        byte[] codeAndArgs = codeAndArgsForTargetDeployment(true, null, false);
         AionAddress contractAddress = createDApp(codeAndArgs);
         
         // We will try sending a simple transaction, nested 9 times, since that should be the limit.
@@ -202,7 +200,7 @@ public class MetaTransactionTest {
         
         // Send the transaction as an inline meta-transaction.
         byte[] callData = encodeCallByteArray("callInline", serializedTransaction);
-        Transaction tx = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 20_000_000l, 1L);
+        Transaction tx = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 2_000_000l, 1L);
         TransactionResult result = AVM.run(KERNEL, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
         // Identity returns the data it is given.
@@ -224,7 +222,7 @@ public class MetaTransactionTest {
         
         // Send the transaction as an inline meta-transaction.
         callData = encodeCallByteArray("callInline", serializedTransaction);
-        tx = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 20_000_000l, 1L);
+        tx = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 2_000_000l, 1L);
         result = AVM.run(KERNEL, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
         
@@ -243,8 +241,7 @@ public class MetaTransactionTest {
     @Test
     public void testOrigin() {
         // Deploy initial contract.
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(MetaTransactionTarget.class);
-        byte[] codeAndArgs = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        byte[] codeAndArgs = codeAndArgsForTargetDeployment(true, null, false);
         AionAddress contractAddress = createDApp(codeAndArgs);
         
         // Create the new user account which will sign but not pay for the transaction.
@@ -260,7 +257,7 @@ public class MetaTransactionTest {
         
         // Send the transaction as an inline meta-transaction.
         byte[] callData = encodeCallByteArray("callInline", serializedTransaction);
-        Transaction tx = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 20_000_000l, 1L);
+        Transaction tx = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 2_000_000l, 1L);
         TransactionResult result = AVM.run(KERNEL, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
         // Identity returns the data it is given.
@@ -299,9 +296,7 @@ public class MetaTransactionTest {
         
         // Prepare the inner transaction.
         byte[] innerTransaction = buildInnerMetaTransaction(DEPLOYER, targetAddress, valueToSend, innerTransactionNonce, executorAddress, new byte[0]);
-        // Package it with the deployment (we don't need to wrap this in ABI).
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(MetaTransactionTarget.class);
-        byte[] codeAndArgs = new CodeAndArguments(jar, innerTransaction).encodeToBytes();
+        byte[] codeAndArgs = codeAndArgsForTargetDeployment(true, innerTransaction, false);
         
         // Deploy the contract and verify that the address was as expected.
         AionAddress contractAddress = createDApp(codeAndArgs);
@@ -310,6 +305,116 @@ public class MetaTransactionTest {
         // Verify that the balance transfer happened and that the deployer's nonce incremented.
         Assert.assertEquals(valueToSend, KERNEL.getBalance(targetAddress));
         Assert.assertEquals(innerTransactionNonce.add(BigInteger.ONE), KERNEL.getNonce(DEPLOYER));
+    }
+
+    @Test
+    public void testInternalTransactionEnergyCost_Call() {
+        // Deploy initial contract.
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(InternalTransactionEnergyTarget.class);
+        byte[] codeAndArgs = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        AionAddress contractAddress = createDApp(codeAndArgs);
+        byte[] doNothingData = new ABIStreamingEncoder().encodeOneString("doNothing").toBytes();
+        
+        // Get a baseline, for later comparison.
+        Transaction transaction = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, doNothingData, 2_000_000l, 1L);
+        TransactionResult result = AVM.run(KERNEL, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+        // Based on graph activity and executed code, we expect the doNothing() call to cost this much
+        // - this should be EXACTLY the number billed by BlockchainRuntimeImpl when returning from the internal call.
+        long expectedDoNothingCost = 26_012L;
+        // Add the basic transaction cost to this.
+        Assert.assertEquals(expectedDoNothingCost + BillingRules.getBasicTransactionCost(doNothingData), result.energyUsed);
+        
+        // Tell it to call itself.
+        byte[] callData = new ABIStreamingEncoder().encodeOneString("costOfCall").encodeOneAddress(new Address(contractAddress.toByteArray())).encodeOneByteArray(doNothingData).toBytes();
+        transaction = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 2_000_000l, 1L);
+        result = AVM.run(KERNEL, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+        // We expect this to be the baseline cost we measured, plus API cost (call() and getRemainingEnergy() - see RuntimeMethodFeeSchedule) and allocate Result.
+        Assert.assertEquals(expectedDoNothingCost + 5000L + 100L + 100L, new ABIDecoder(result.copyOfTransactionOutput().get()).decodeOneLong());
+    }
+
+    @Test
+    public void testInternalTransactionEnergyCost_Create() {
+        // Deploy initial contract.
+        // (we assemble this manually to keep it small since we don't have the optimizer in this project).
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(InternalTransactionEnergyTarget.class, ABIEncoder.class, ABIDecoder.class, ABIException.class);
+        byte[] codeAndArgs = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        AionAddress contractAddress = createDApp(codeAndArgs);
+        
+        // Based on graph activity and executed code, we expect the creation to cost this much
+        // - this should be EXACTLY the number billed by BlockchainRuntimeImpl when returning from the internal call.
+        long expectedLocalDeploymentCost = 230_029L;
+        
+        // Tell it to deploy itself.
+        byte[] callData = new ABIStreamingEncoder().encodeOneString("costOfCreate").encodeOneByteArray(codeAndArgs).toBytes();
+        Transaction transaction = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 2_000_000l, 1L);
+        TransactionResult result = AVM.run(KERNEL, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+        // We expect this to be the baseline cost we measured, plus API cost (create() and getRemainingEnergy() - see RuntimeMethodFeeSchedule) and allocate Result.
+        Assert.assertEquals(expectedLocalDeploymentCost + 5000L + 100L + 100L, new ABIDecoder(result.copyOfTransactionOutput().get()).decodeOneLong());
+    }
+
+    @Test
+    public void testInternalTransactionEnergyCost_Invoke() {
+        // Deploy initial contract.
+        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(InternalTransactionEnergyTarget.class);
+        byte[] codeAndArgs = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        AionAddress contractAddress = createDApp(codeAndArgs);
+        byte[] doNothingData = new ABIStreamingEncoder().encodeOneString("doNothing").toBytes();
+        
+        // Get a baseline, for later comparison.
+        Transaction transaction = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, doNothingData, 2_000_000l, 1L);
+        TransactionResult result = AVM.run(KERNEL, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+        // Based on graph activity and executed code, we expect the doNothing() call to cost this much
+        // - this should be EXACTLY the number billed by BlockchainRuntimeImpl when returning from the internal call.
+        long expectedDoNothingCost = 26_012L;
+        // Add the basic transaction cost to this.
+        Assert.assertEquals(expectedDoNothingCost + BillingRules.getBasicTransactionCost(doNothingData), result.energyUsed);
+        
+        // Tell it to call itself via an invokable.
+        byte[] innerInvoke = buildInnerMetaTransaction(DEPLOYER, contractAddress, BigInteger.ZERO, KERNEL.getNonce(DEPLOYER).add(BigInteger.ONE), contractAddress, doNothingData);
+        byte[] callData = new ABIStreamingEncoder().encodeOneString("costOfInvoke").encodeOneByteArray(innerInvoke).toBytes();
+        transaction = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 2_000_000l, 1L);
+        result = AVM.run(KERNEL, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+        // We expect this to be the baseline cost we measured, plus API cost (call() and getRemainingEnergy() - see RuntimeMethodFeeSchedule) and allocate Result.
+        Assert.assertEquals(expectedDoNothingCost + 5000L + 100L + 100L, new ABIDecoder(result.copyOfTransactionOutput().get()).decodeOneLong());
+    }
+
+    @Test
+    public void testInvokableEnergyLimitDuringCreate() {
+        // Deploy initial contract.
+        byte[] codeAndArgs = codeAndArgsForTargetDeployment(true, null, false);
+        AionAddress contractAddress = createDApp(codeAndArgs);
+        
+        // Verify the energy limit on a normal call.
+        byte[] call_checkEnergyLimit = new ABIStreamingEncoder().encodeOneString("checkEnergyLimit").toBytes();
+        Transaction transaction = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, call_checkEnergyLimit, 2_000_000l, 1L);
+        TransactionResult result = AVM.run(KERNEL, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+        Assert.assertEquals(2_000_000L, new ABIDecoder(new ABIDecoder(result.copyOfTransactionOutput().get()).decodeOneByteArray()).decodeOneLong());
+        
+        // Verify the energy limit on a call-invoke-call.
+        byte[] innerInvoke = buildInnerMetaTransaction(DEPLOYER, contractAddress, BigInteger.ZERO, KERNEL.getNonce(DEPLOYER).add(BigInteger.ONE), contractAddress, call_checkEnergyLimit);
+        byte[] callData = encodeCallByteArray("callInline", innerInvoke);
+        transaction = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 2_000_000l, 1L);
+        result = AVM.run(KERNEL, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+        // (note that inner-most calls have a diminished limit so we expect this to be something less than 2 million)
+        Assert.assertTrue(new ABIDecoder(new ABIDecoder(result.copyOfTransactionOutput().get()).decodeOneByteArray()).decodeOneLong() < 2_000_000L);
+        
+        // Verify the energy limit on a create-API-create.
+        AionAddress testExecutorAddress = CAPABILITIES.generateContractAddress(DEPLOYER, KERNEL.getNonce(DEPLOYER));
+        byte[] inlineCreateCodeAndArgs = codeAndArgsForTargetDeployment(true, codeAndArgs, true);
+        createDApp(inlineCreateCodeAndArgs);
+        
+        // Verify the energy limit on a create-invoke-create.
+        testExecutorAddress = CAPABILITIES.generateContractAddress(DEPLOYER, KERNEL.getNonce(DEPLOYER));
+        innerInvoke = buildInnerMetaTransaction(DEPLOYER, null, BigInteger.ZERO, KERNEL.getNonce(DEPLOYER).add(BigInteger.ONE), testExecutorAddress, codeAndArgs);
+        inlineCreateCodeAndArgs = codeAndArgsForTargetDeployment(true, innerInvoke, false);
+        createDApp(inlineCreateCodeAndArgs);
     }
 
 
@@ -361,7 +466,7 @@ public class MetaTransactionTest {
     }
 
     private TransactionResult createDAppCanFail(byte[] createData) {
-        long energyLimit = 10_000_000l;
+        long energyLimit = 5_000_000l;
         long energyPrice = 1l;
         Transaction tx1 = AvmTransactionUtil.create(DEPLOYER, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, createData, energyLimit, energyPrice);
         return AVM.run(KERNEL, new Transaction[] {tx1}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
@@ -378,5 +483,15 @@ public class MetaTransactionTest {
                 .encodeOneString(methodName)
                 .encodeOneByteArray(arg)
                 .toBytes();
+    }
+
+    private static byte[] codeAndArgsForTargetDeployment(boolean expectHighEnergyLimit, byte[] invokable, boolean interpretAsApiCreate) {
+        byte[] jar = JarBuilder.buildJarForMainAndClasses(MetaTransactionTarget.class, ABIEncoder.class, ABIDecoder.class, ABIException.class);
+        byte[] args = new ABIStreamingEncoder()
+                .encodeOneBoolean(expectHighEnergyLimit)
+                .encodeOneByteArray(invokable)
+                .encodeOneBoolean(interpretAsApiCreate)
+                .toBytes();
+        return new CodeAndArguments(jar, args).encodeToBytes();
     }
 }

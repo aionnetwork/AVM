@@ -3,6 +3,9 @@ package org.aion.avm.core;
 import avm.Address;
 import avm.Blockchain;
 import avm.Result;
+
+import java.math.BigInteger;
+
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 
@@ -15,10 +18,24 @@ public class MetaTransactionTarget {
 
     static {
         // Note that we optionally send a meta-transaction within the deployment to test invocations within <clinit>.
-        byte[] inputData = Blockchain.getData();
-        if (inputData.length > 0) {
-            Result result = Blockchain.invokeTransaction(inputData, Blockchain.getEnergyLimit());
+        ABIDecoder decoder = new ABIDecoder(Blockchain.getData());
+        boolean expectHighEnergyLimit = decoder.decodeOneBoolean();
+        byte[] invokable = decoder.decodeOneByteArray();
+        boolean interpretAsApiCreate = decoder.decodeOneBoolean();
+        if (null != invokable) {
+            Result result = null;
+            if (interpretAsApiCreate) {
+                result = Blockchain.create(BigInteger.ZERO, invokable, Blockchain.getEnergyLimit());
+            } else {
+                result = Blockchain.invokeTransaction(invokable, Blockchain.getEnergyLimit());
+            }
             Blockchain.require(result.isSuccess());
+        }
+        // Most of the time, we are expecting to see a high limit for the deployment, but a few cases are lower (invoked from within a call).
+        if (expectHighEnergyLimit) {
+            Blockchain.require(Blockchain.getEnergyLimit() > 2_000_000L);
+        } else {
+            Blockchain.require(Blockchain.getEnergyLimit() <= 2_000_000L);
         }
     }
 
@@ -28,6 +45,7 @@ public class MetaTransactionTarget {
         if (methodName == null) {
             return new byte[0];
         } else {
+            // Note that all these methods return a byte array so that recursive calls don't need special knowledge.
             if (methodName.equals("store")) {
                 return ABIEncoder.encodeOneByteArray(store(decoder.decodeOneByteArray()));
             } else if (methodName.equals("call")) {
@@ -40,6 +58,8 @@ public class MetaTransactionTarget {
                 return ABIEncoder.encodeOneByteArray(identity(decoder.decodeOneByteArray()));
             } else if (methodName.equals("checkOrigin")) {
                 return ABIEncoder.encodeOneByteArray(checkOrigin());
+            } else if (methodName.equals("checkEnergyLimit")) {
+                return ABIEncoder.encodeOneByteArray(checkEnergyLimit());
             } else {
                 return new byte[0];
             }
@@ -74,6 +94,11 @@ public class MetaTransactionTarget {
         Address caller = Blockchain.getCaller();
         Blockchain.require(origin.equals(caller));
         return origin.toByteArray();
+    }
+
+    public static byte[] checkEnergyLimit() {
+        // We just cheat this by returning the encoding of the long (so we don't need a new utility to decode it later).
+        return ABIEncoder.encodeOneLong(Blockchain.getEnergyLimit());
     }
 
 
