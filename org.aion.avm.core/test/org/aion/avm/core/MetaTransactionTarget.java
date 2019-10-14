@@ -60,6 +60,8 @@ public class MetaTransactionTarget {
                 return ABIEncoder.encodeOneByteArray(checkOrigin());
             } else if (methodName.equals("checkEnergyLimit")) {
                 return ABIEncoder.encodeOneByteArray(checkEnergyLimit());
+            } else if (methodName.equals("invokeAndFail")) {
+                return ABIEncoder.encodeOneByteArray(invokeAndFail(decoder.decodeOneByteArray()));
             } else {
                 return new byte[0];
             }
@@ -99,6 +101,14 @@ public class MetaTransactionTarget {
     public static byte[] checkEnergyLimit() {
         // We just cheat this by returning the encoding of the long (so we don't need a new utility to decode it later).
         return ABIEncoder.encodeOneLong(Blockchain.getEnergyLimit());
+    }
+
+    public static byte[] invokeAndFail(byte[] invokable) {
+        Result result = Blockchain.invokeTransaction(invokable, Blockchain.getEnergyLimit());
+        // We will assume that any sub-calls here are successful, but the difference relative to revert can only be detected for external calls.
+        Blockchain.require(result.isSuccess());
+        Blockchain.revert();
+        return null;
     }
 
 

@@ -417,6 +417,80 @@ public class MetaTransactionTest {
         createDApp(inlineCreateCodeAndArgs);
     }
 
+    @Test
+    public void testInvokableNonceOnDeepFailure() {
+        // Deploy initial contract.
+        byte[] codeAndArgs = codeAndArgsForTargetDeployment(true, null, false);
+        AionAddress contractAddress = createDApp(codeAndArgs);
+        
+        // Create the invokable signers.
+        AionAddress signerAddress1 = Helpers.randomAddress();
+        AionAddress signerAddress2 = Helpers.randomAddress();
+        Assert.assertEquals(BigInteger.ZERO, KERNEL.getNonce(signerAddress1));
+        Assert.assertEquals(BigInteger.ZERO, KERNEL.getNonce(signerAddress2));
+        
+        // Create the leaf invokable (this will be re-run until it passes).
+        byte[] call_checkEnergyLimit = new ABIStreamingEncoder().encodeOneString("checkEnergyLimit").toBytes();
+        byte[] leafInvoke = buildInnerMetaTransaction(signerAddress2, contractAddress, BigInteger.ZERO, KERNEL.getNonce(signerAddress2), contractAddress, call_checkEnergyLimit);
+        
+        // Create the intermediate one (the first will fail so we will need another).
+        byte[] middleInvoke = buildInnerMetaTransaction(signerAddress1, contractAddress, BigInteger.ZERO, KERNEL.getNonce(signerAddress1), contractAddress, encodeCallByteArray("invokeAndFail", leafInvoke));
+        
+        // Now, send this such that it fails.
+        byte[] callData = encodeCallByteArray("callInline", middleInvoke);
+        BigInteger deployerNonce = KERNEL.getNonce(DEPLOYER);
+        Transaction transaction = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 2_000_000l, 1L);
+        TransactionResult result = AVM.run(KERNEL, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+        
+        // Verify the change in the nonces is as expected.
+        Assert.assertEquals(BigInteger.ONE, KERNEL.getNonce(signerAddress1));
+        Assert.assertEquals(BigInteger.ZERO, KERNEL.getNonce(signerAddress2));
+        Assert.assertEquals(deployerNonce.add(BigInteger.ONE), KERNEL.getNonce(DEPLOYER));
+        
+        // Now, send the leaf invoke again, such that it succeeds.
+        middleInvoke = buildInnerMetaTransaction(signerAddress1, contractAddress, BigInteger.ZERO, KERNEL.getNonce(signerAddress1), contractAddress, encodeCallByteArray("callInline", leafInvoke));
+        callData = encodeCallByteArray("callInline", middleInvoke);
+        deployerNonce = KERNEL.getNonce(DEPLOYER);
+        transaction = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 2_000_000l, 1L);
+        result = AVM.run(KERNEL, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+        
+        // Verify the change in the nonces is as expected.
+        Assert.assertEquals(BigInteger.TWO, KERNEL.getNonce(signerAddress1));
+        Assert.assertEquals(BigInteger.ONE, KERNEL.getNonce(signerAddress2));
+        Assert.assertEquals(deployerNonce.add(BigInteger.ONE), KERNEL.getNonce(DEPLOYER));
+    }
+
+    @Test
+    public void testInvokableNonceOnFailure() {
+        // Deploy initial contract.
+        byte[] codeAndArgs = codeAndArgsForTargetDeployment(true, null, false);
+        AionAddress contractAddress = createDApp(codeAndArgs);
+        
+        // Create the invokable signer.
+        AionAddress signerAddress = Helpers.randomAddress();
+        Assert.assertEquals(BigInteger.ZERO, KERNEL.getNonce(signerAddress));
+        
+        // Send an invokable which will fail externally.
+        byte[] call_checkEnergyLimit = new ABIStreamingEncoder().encodeOneString("checkEnergyLimit").toBytes();
+        byte[] innerInvoke = buildInnerMetaTransaction(signerAddress, contractAddress, BigInteger.ZERO, KERNEL.getNonce(signerAddress), contractAddress, call_checkEnergyLimit);
+        byte[] callData = encodeCallByteArray("invokeAndFail", innerInvoke);
+        Transaction transaction = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 2_000_000l, 1L);
+        TransactionResult result = AVM.run(KERNEL, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
+        Assert.assertTrue(result.transactionStatus.isReverted());
+        
+        // Verify that the nonce didn't change.
+        Assert.assertEquals(BigInteger.ZERO, KERNEL.getNonce(signerAddress));
+        
+        // Send the same transaction such that it will succeed.
+        callData = encodeCallByteArray("callInline", innerInvoke);
+        transaction = AvmTransactionUtil.call(DEPLOYER, contractAddress, KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, callData, 2_000_000l, 1L);
+        result = AVM.run(KERNEL, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+        Assert.assertEquals(BigInteger.ONE, KERNEL.getNonce(signerAddress));
+    }
+
 
     private byte[] recursiveEncode(AionAddress targetAddress, BigInteger valueToSend, long baseNonce, long iterations, long currentIteration, AionAddress executor, byte[] data) {
         byte[] result = null;

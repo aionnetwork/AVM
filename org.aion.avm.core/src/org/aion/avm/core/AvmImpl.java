@@ -440,8 +440,8 @@ public class AvmImpl implements AvmInternal {
         thisTransactionKernel.adjustBalance(recipient, transactionValue);
 
         // At this stage, transaction can no longer be rejected.
-        // The nonce increment will be done regardless of the transaction result.
-        task.getThisTransactionalKernel().incrementNonce(senderAddress);
+        // The nonce increment will be done regardless of the transaction result so increment it in the parent kernel.
+        parentKernel.incrementNonce(senderAddress);
 
         // do nothing for balance transfers of which the recipient is not a DApp address.
         if (isCreate) {
@@ -459,7 +459,7 @@ public class AvmImpl implements AvmInternal {
                 // Call directly and don't interact with DApp cache (we are reentering the state, not the origin of it).
                 result = DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, senderAddress, recipient, effectiveTransactionOrigin, transactionData, transactionHash, energyLimit, energyPrice, transactionValue, result, this.enableVerboseContractErrors, true, this.enableBlockchainPrintln);
             } else {
-                long currentBlockNumber = parentKernel.getBlockNumber();
+                long currentBlockNumber = thisTransactionKernel.getBlockNumber();
 
                 // If we didn't find it there (that is only for reentrant calls so it is rarely found in the stack), try the hot DApp cache.
                 ByteArrayWrapper addressWrapper = new ByteArrayWrapper(recipient.toByteArray());
@@ -517,15 +517,15 @@ public class AvmImpl implements AvmInternal {
 
                 // lazily re-transform the code
                 if (transformedCode == null) {
-                    byte[] code = parentKernel.getCode(recipient);
+                    byte[] code = thisTransactionKernel.getCode(recipient);
                     //'parentKernel.getCode(recipient) != null' means this recipient's DApp is not self-destructed.
                     if (code != null) {
-                        transformedCode = CodeReTransformer.transformCode(code, parentKernel.getBlockTimestamp(), this.preserveDebuggability, this.enableVerboseContractErrors);
+                        transformedCode = CodeReTransformer.transformCode(code, thisTransactionKernel.getBlockTimestamp(), this.preserveDebuggability, this.enableVerboseContractErrors);
                         if (transformedCode == null) {
                             // re-transformation of the code failed
                             result = TransactionResultUtil.setNonRevertedFailureAndEnergyUsed(result, AvmInternalError.FAILED_RETRANSFORMATION, energyLimit);
                         } else {
-                            parentKernel.setTransformedCode(recipient, transformedCode);
+                            thisTransactionKernel.setTransformedCode(recipient, transformedCode);
                         }
                     }
                 } else {
