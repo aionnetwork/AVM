@@ -11,10 +11,10 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
 
-import org.aion.avm.tooling.util.JarBuilder;
-import org.aion.avm.tooling.util.Utilities;
 import org.aion.avm.userlib.*;
 import org.aion.avm.userlib.abi.*;
+import org.aion.avm.utilities.JarBuilder;
+import org.aion.avm.utilities.Utilities;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 

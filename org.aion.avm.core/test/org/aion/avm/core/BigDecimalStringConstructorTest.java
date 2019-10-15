@@ -5,7 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
@@ -543,7 +543,7 @@ public class BigDecimalStringConstructorTest {
     }
 
     private static AionAddress deployContract() {
-        byte[] jar = new CodeAndArguments(JarBuilder.buildJarForMainAndClassesAndUserlib(BigDecimalConstructorTarget.class), null).encodeToBytes();
+        byte[] jar = new CodeAndArguments(UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(BigDecimalConstructorTarget.class), null).encodeToBytes();
         Transaction transaction = AvmTransactionUtil.create(DEPLOYER, kernel.getNonce(DEPLOYER), BigInteger.ZERO, jar, 5_000_000, 1);
         TransactionResult result = avm.run(kernel, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         assertTrue(result.transactionStatus.isSuccess());

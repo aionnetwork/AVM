@@ -2,8 +2,8 @@ package org.aion.avm.tooling.deploy.eliminator;
 
 import org.aion.avm.tooling.deploy.JarOptimizer;
 import org.aion.avm.tooling.deploy.eliminator.resources.jarOptimizer.*;
-import org.aion.avm.tooling.util.JarBuilder;
-import org.aion.avm.tooling.util.Utilities;
+import org.aion.avm.utilities.JarBuilder;
+import org.aion.avm.utilities.Utilities;
 import org.junit.Assert;
 import org.junit.Test;
 

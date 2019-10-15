@@ -8,7 +8,7 @@ import java.io.PrintStream;
 import avm.Address;
 import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.TestingBlock;
 import org.junit.AfterClass;
@@ -68,7 +68,7 @@ public class AvmCLIIntegrationTest {
     @Test
     public void callWithAddressArgument() throws Exception {
         // Create the JAR and write it to a location we can parse from the command-line.
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(LengthOfAddressTarget.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(LengthOfAddressTarget.class);
         File temp = this.folder.newFile();
         Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
         
@@ -88,7 +88,7 @@ public class AvmCLIIntegrationTest {
 
     @Test
     public void callSimpleStackDemo() throws Exception {
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(SimpleStackDemo.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(SimpleStackDemo.class);
         File temp = this.folder.newFile();
         Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
         
@@ -125,7 +125,7 @@ public class AvmCLIIntegrationTest {
 
     @Test
     public void multiSimpleStackDemo() throws Exception {
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(SimpleStackDemo.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(SimpleStackDemo.class);
         File temp = this.folder.newFile();
         Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
         
@@ -220,7 +220,7 @@ public class AvmCLIIntegrationTest {
         java.math.BigInteger contractBalance;
 
         //deploy a contract first
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(SimpleStackDemo.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(SimpleStackDemo.class);
         File temp = this.folder.newFile();
         Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
 
@@ -250,7 +250,7 @@ public class AvmCLIIntegrationTest {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         TestingState kernelInterface = new TestingState(storageFile, block);
 
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(SimpleStackDemo.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(SimpleStackDemo.class);
         File temp = this.folder.newFile();
         Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
 
@@ -281,7 +281,7 @@ public class AvmCLIIntegrationTest {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         TestingState kernelInterface = new TestingState(storageFile, block);
 
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(SimpleStackDemo.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(SimpleStackDemo.class);
         File temp = this.folder.newFile();
         Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
 
@@ -300,7 +300,7 @@ public class AvmCLIIntegrationTest {
     public void testDeployWithInvalidBalanceTransfer() throws IOException {
         String invalidBalance = "123abc";
 
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(SimpleStackDemo.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(SimpleStackDemo.class);
         File temp = this.folder.newFile();
         Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
 
@@ -317,7 +317,7 @@ public class AvmCLIIntegrationTest {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
         TestingState kernelInterface = new TestingState(storageFile, block);
 
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(SimpleStackDemo.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(SimpleStackDemo.class);
         File temp = this.folder.newFile();
         Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
 

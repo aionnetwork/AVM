@@ -4,6 +4,7 @@ import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.utilities.Utilities;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,10 +39,10 @@ public class ClassMeteringTest {
 
         // Setup and rewrite the class.
         String className = TestResource.class.getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Utilities.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(className, this.commonCostBuilder.apply(raw));
-        byte[] stubBytecode = Helpers.loadRequiredResourceAsBytes(HelperStub.CLASS_NAME + ".class");
+        byte[] stubBytecode = Utilities.loadRequiredResourceAsBytes(HelperStub.CLASS_NAME + ".class");
         Map<String, byte[]> classesAndHelper = Helpers.mapIncludingHelperBytecode(classes, stubBytecode);
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classesAndHelper);
         this.clazz = loader.loadClass(className);
@@ -81,7 +82,7 @@ public class ClassMeteringTest {
     public void testInterface() throws Exception {
         // Setup and rewrite the interface.
         String interfaceName = TestInterface.class.getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(interfaceName.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Utilities.loadRequiredResourceAsBytes(interfaceName.replaceAll("\\.", "/") + ".class");
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(interfaceName, this.commonCostBuilder.apply(raw));
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classes);
@@ -113,7 +114,7 @@ public class ClassMeteringTest {
     }
 
     public static class HelperStub {
-        public static String CLASS_NAME = Helpers.fulllyQualifiedNameToInternalName(HelperStub.class.getName());
+        public static String CLASS_NAME = Utilities.fulllyQualifiedNameToInternalName(HelperStub.class.getName());
         public static void chargeEnergy(int cost) {
             TestEnergy.totalCost += cost;
             TestEnergy.totalCharges += 1;

@@ -7,6 +7,9 @@
     <property name="dir.global.build.scratch-deps-jar" value="${dir.global.build.main}/scratch-deps.jar"/>
 
     <target name="clean">
+        <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.utilities/build.xml" target="clean">
+            <property name="compile.debug" value="${compile.debug}"/>
+        </ant>
         <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.rt/build.xml" target="clean">
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
@@ -34,6 +37,9 @@
         <echo message="Building ${ant.project.name}..."/>
 
         <delete dir="${dir.global.build.main}"/>
+        <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.utilities/build.xml" target="clean_buildmain">
+            <property name="compile.debug" value="${compile.debug}"/>
+        </ant>
         <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.api/build.xml" target="clean_buildmain">
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
@@ -124,6 +130,9 @@
     <target name="test">
         <echo message="Building tests for ${ant.project.name}..."/>
 
+        <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.utilities/build.xml" target="test">
+            <property name="compile.debug" value="${compile.debug}"/>
+        </ant>
         <ant inheritAll="false" antfile="${dir.global.workspace}/org.aion.avm.userlib/build.xml" target="test">
             <property name="compile.debug" value="${compile.debug}"/>
         </ant>
@@ -168,6 +177,7 @@
 <!-- We will treat our "package" build as a distinct task which just puts together the JARs we need for embedding in the kernel.
  -->
     <target name="package">
+        <property name="jar.utilities" value="org-aion-avm-utilities"/>
         <property name="jar.api" value="org-aion-avm-api"/>
         <property name="jar.core" value="org-aion-avm-core"/>
         <property name="jar.rt" value="org-aion-avm-rt"/>
@@ -184,6 +194,7 @@
 
         <delete dir="${dir.embedding}"/>
         <mkdir dir="${dir.embedding}"/>
+        <copy file="${dir.global.build.main}/${jar.utilities}.jar" tofile="${dir.embedding}/${jar.utilities}-${git.revision}.jar"/>
         <copy file="${dir.global.build.main}/${jar.api}.jar"     tofile="${dir.embedding}/${jar.api}-${git.revision}.jar"/>
         <copy file="${dir.global.build.main}/${jar.core}.jar"    tofile="${dir.embedding}/${jar.core}-${git.revision}.jar"/>
         <copy file="${dir.global.build.main}/${jar.rt}.jar"      tofile="${dir.embedding}/${jar.rt}-${git.revision}.jar"/>

@@ -82,6 +82,7 @@
                 <pathelement location="${dir.global.lib}/spongycastle-1.58.0.0.jar"/>
                 <pathelement location="${dir.global.lib}/aion-types-22a3be9.jar"/>
                 <pathelement location="${dir.global.lib}/ed25519.jar"/>
+                <pathelement location="${dir.global.build.main}/org-aion-avm-utilities.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-core.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-rt.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-userlib.jar"/>
@@ -108,6 +109,7 @@
                 <pathelement location="${dir.global.lib}/spongycastle-1.58.0.0.jar"/>
                 <pathelement location="${dir.global.lib}/aion-types-22a3be9.jar"/>
                 <pathelement location="${dir.global.lib}/ed25519.jar"/>
+                <pathelement location="${dir.global.build.main}/org-aion-avm-utilities.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-core.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-rt.jar"/>
                 <pathelement location="${dir.global.build.main}/org-aion-avm-userlib.jar"/>

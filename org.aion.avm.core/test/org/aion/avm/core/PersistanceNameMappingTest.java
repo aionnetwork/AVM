@@ -6,7 +6,7 @@ import java.math.BigInteger;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.AionMap;
@@ -71,7 +71,7 @@ public class PersistanceNameMappingTest {
     }
 
     private AionAddress deployContract(AvmImpl avm, IExternalState externalState) {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(PersistanceNameMappingTestTarget.class, ABIDecoder.class, ABIException.class, ABIToken.class, AionBuffer.class, AionSet.class, AionMap.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(PersistanceNameMappingTestTarget.class, ABIDecoder.class, ABIException.class, ABIToken.class, AionBuffer.class, AionSet.class, AionMap.class);
         byte[] data = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         Transaction createTransaction = AvmTransactionUtil.create(deployer, externalState.getNonce(deployer), BigInteger.ZERO, data, 5_000_000L, 1L);

@@ -10,7 +10,7 @@ public class JarBuilderTest {
      */
     @Test
     public void testPreserveMainClass() throws Exception {
-        byte[] bytes = JarBuilder.buildJarForMainAndClasses(JarBuilderTest.class);
+        byte[] bytes = UserlibJarBuilder.buildJarForMainAndClasses(JarBuilderTest.class);
         LoadedJar jar = LoadedJar.fromBytes(bytes);
         Assert.assertEquals(JarBuilderTest.class.getName(), jar.mainClassName);
     }
@@ -20,9 +20,9 @@ public class JarBuilderTest {
      */
     @Test
     public void testConsistencyOnCall() throws Exception {
-        byte[] bytes = JarBuilder.buildJarForMainAndClasses(JarBuilderTest.class);
+        byte[] bytes = UserlibJarBuilder.buildJarForMainAndClasses(JarBuilderTest.class);
         Thread.sleep(2000);
-        byte[] bytes2 = JarBuilder.buildJarForMainAndClasses(JarBuilderTest.class);
+        byte[] bytes2 = UserlibJarBuilder.buildJarForMainAndClasses(JarBuilderTest.class);
         Assert.assertArrayEquals(bytes, bytes2);
     }
 }

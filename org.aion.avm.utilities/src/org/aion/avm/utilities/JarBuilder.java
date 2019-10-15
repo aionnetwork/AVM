@@ -1,4 +1,4 @@
-package org.aion.avm.core.dappreading;
+package org.aion.avm.utilities;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -12,15 +12,6 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 
-import org.aion.avm.core.util.Helpers;
-import i.RuntimeAssertionError;
-import org.aion.avm.userlib.*;
-import org.aion.avm.userlib.abi.ABIDecoder;
-import org.aion.avm.userlib.abi.ABIEncoder;
-import org.aion.avm.userlib.abi.ABIException;
-import org.aion.avm.userlib.abi.ABIStreamingEncoder;
-import org.aion.avm.userlib.abi.ABIToken;
-
 
 /**
  * A utility to build in-memory JAR representations for tests and examples.
@@ -33,38 +24,40 @@ public class JarBuilder {
     // were written and some of them assume compressed size).
     private static long FIXED_TIMESTAMP = 1_000_000_000_000L;
 
-    private static Class<?>[] userlibClasses = new Class[] {ABIDecoder.class, ABIEncoder.class,
-        ABIStreamingEncoder.class, ABIException.class, ABIToken.class, AionBuffer.class, AionList.class, AionMap.class, AionSet.class, AionUtilities.class};
 
     /**
-     * Creates the in-memory representation of a JAR with the given main class, other classes, and all classes in the Userlib.
-     *
-     * @param mainClass The main class to include and list in manifest (can be null).
-     * @param otherClasses The other classes to include (main is already included).
+     * Creates the in-memory representation of a JAR with the given class names and direct bytes.
      * @return The bytes representing this JAR.
      */
-    public static byte[] buildJarForMainAndClassesAndUserlib(Class<?> mainClass, Class<?> ...otherClasses) {
-        JarBuilder builder = new JarBuilder(mainClass, null);
-        for (Class<?> clazz : otherClasses) {
-            builder.addClassAndInners(clazz);
-        }
-        for (Class<?> clazz : userlibClasses) {
-            builder.addClassAndInners(clazz);
+    public static byte[] buildJarForExplicitClassNamesAndBytecode(String mainClassName, byte[] mainClassBytes, Map<String, byte[]> classMap, Class<?> ...otherClasses) {
+        JarBuilder builder = new JarBuilder(null, mainClassName);
+        try {
+            builder.saveClassToStream(mainClassName, mainClassBytes);
+            for (Map.Entry<String, byte[]> entry : classMap.entrySet()) {
+                builder.saveClassToStream(entry.getKey(), entry.getValue());
+            }
+            for (Class<?> clazz : otherClasses) {
+                builder.addClassAndInners(clazz);
+            }
+        } catch (IOException e) {
+            // Can't happen - in-memory.
+            throw new AssertionError(e);
         }
         return builder.toBytes();
     }
 
-    /**
-     * Creates the in-memory representation of a JAR with the given main class and other classes.
-     * 
-     * @param mainClass The main class to include and list in manifest (can be null).
-     * @param otherClasses The other classes to include (main is already included).
-     * @return The bytes representing this JAR.
-     */
-    public static byte[] buildJarForMainAndClasses(Class<?> mainClass, Class<?> ...otherClasses) {
+    public static byte[] buildJarForMainClassAndExplicitClassNamesAndBytecode(Class<?> mainClass, Map<String, byte[]> classMap, Class<?> ...otherClasses) {
         JarBuilder builder = new JarBuilder(mainClass, null);
-        for (Class<?> clazz : otherClasses) {
-            builder.addClassAndInners(clazz);
+        try {
+            for (Map.Entry<String, byte[]> entry : classMap.entrySet()) {
+                builder.saveClassToStream(entry.getKey(), entry.getValue());
+            }
+            for (Class<?> clazz : otherClasses) {
+                builder.addClassAndInners(clazz);
+            }
+        } catch (IOException e) {
+            // Can't happen - in-memory.
+            throw new AssertionError(e);
         }
         return builder.toBytes();
     }
@@ -85,79 +78,6 @@ public class JarBuilder {
         return builder.toBytes();
     }
 
-    /**
-     * Creates the in-memory representation of a JAR with the given class name and direct bytes.
-     * NOTE:  This method is really just used to build invalid JARs (given classes may be corrupt/invalid).
-     * 
-     * @return The bytes representing this JAR.
-     */
-    public static byte[] buildJarForExplicitClassNameAndBytecode(String mainClassName, byte[] mainClassBytes) {
-        JarBuilder builder = new JarBuilder(null, mainClassName);
-        try {
-            builder.saveClassToStream(mainClassName, mainClassBytes);
-        } catch (IOException e) {
-            // Can't happen - in-memory.
-            RuntimeAssertionError.unexpected(e);
-        }
-        return builder.toBytes();
-    }
-
-    /**
-     * Creates the in-memory representation of a JAR with the given class names and direct bytes.
-     * @return The bytes representing this JAR.
-     */
-    public static byte[] buildJarForExplicitClassNamesAndBytecode(String mainClassName, byte[] mainClassBytes, Map<String, byte[]> classMap, Class<?> ...otherClasses) {
-        JarBuilder builder = new JarBuilder(null, mainClassName);
-        try {
-            builder.saveClassToStream(mainClassName, mainClassBytes);
-            for (Map.Entry<String, byte[]> entry : classMap.entrySet()) {
-                builder.saveClassToStream(entry.getKey(), entry.getValue());
-            }
-            for (Class<?> clazz : otherClasses) {
-                builder.addClassAndInners(clazz);
-            }
-        } catch (IOException e) {
-            // Can't happen - in-memory.
-            RuntimeAssertionError.unexpected(e);
-        }
-        return builder.toBytes();
-    }
-
-    public static byte[] buildJarForExplicitClassNamesAndBytecodeAndUserlib(Class<?> mainClass, Map<String, byte[]> classMap, Class<?> ...otherClasses) {
-        JarBuilder builder = new JarBuilder(mainClass, null);
-        try {
-            for (Map.Entry<String, byte[]> entry : classMap.entrySet()) {
-                builder.saveClassToStream(entry.getKey(), entry.getValue());
-            }
-            for (Class<?> clazz : otherClasses) {
-                builder.addClassAndInners(clazz);
-            }
-            for (Class<?> clazz : userlibClasses) {
-                builder.addClassAndInners(clazz);
-            }
-        } catch (IOException e) {
-            // Can't happen - in-memory.
-            RuntimeAssertionError.unexpected(e);
-        }
-        return builder.toBytes();
-    }
-
-    /**
-     * Creates the in-memory representation of a JAR with the given class names and direct bytes, but a fixed main class.
-     * @return The bytes representing this JAR.
-     */
-    public static byte[] buildJarForMainClassAndExplicitClassNamesAndBytecode(Class<?> mainClass, Map<String, byte[]> classMap) {
-        JarBuilder builder = new JarBuilder(mainClass, null);
-        try {
-            for (Map.Entry<String, byte[]> entry : classMap.entrySet()) {
-                builder.saveClassToStream(entry.getKey(), entry.getValue());
-            }
-        } catch (IOException e) {
-            // Can't happen - in-memory.
-            RuntimeAssertionError.unexpected(e);
-        }
-        return builder.toBytes();
-    }
 
     private final ByteArrayOutputStream byteStream;
     private final JarOutputStream jarStream;
@@ -175,7 +95,7 @@ public class JarBuilder {
         } else if (null != mainClassName) {
             mainAttributes.put(Attributes.Name.MAIN_CLASS, mainClassName);
         }
-        
+
         // Create the underlying byte stream (hold onto this for serialization).
         this.byteStream = new ByteArrayOutputStream();
         JarOutputStream stream = null;
@@ -190,11 +110,11 @@ public class JarBuilder {
             stream.closeEntry();
         } catch (IOException e) {
             // We are using a byte array so this can't happen.
-            throw RuntimeAssertionError.unexpected(e);
+            throw new AssertionError(e);
         }
         this.jarStream = stream;
         this.entriesInJar = new HashSet<>();
-        
+
         // Finally, add this class.
         if (null != mainClass) {
             addClassAndInners(mainClass);
@@ -217,7 +137,7 @@ public class JarBuilder {
             }
         } catch (IOException e) {
             // We are serializing to a byte array so this is unexpected.
-            throw RuntimeAssertionError.unexpected(e);
+            throw new AssertionError(e);
         }
         return this;
     }
@@ -225,27 +145,32 @@ public class JarBuilder {
     private void loadClassAndAnonymous(Class<?> clazz) throws IOException {
         // Start with the fully-qualified class name, since we use that for addressing it.
         String className = clazz.getName();
-        byte[] bytes = Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(className) + ".class");
-        RuntimeAssertionError.assertTrue(null != bytes);
+        byte[] bytes = Utilities.loadRequiredResourceAsBytes(Utilities.fulllyQualifiedNameToInternalName(className) + ".class");
+        if (null == bytes) {
+            throw new AssertionError("Class bytes could not be found");
+        }
         saveClassToStream(className, bytes);
         
         // Load any inner classes which might exist (these are just decimal suffixes, starting at 1.
         int i = 1;
         String innerName = className + "$" + Integer.toString(i);
-        byte[] innerBytes = Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(innerName) + ".class");
+        byte[] innerBytes = Utilities.loadRequiredResourceAsBytes(Utilities.fulllyQualifiedNameToInternalName(innerName) + ".class");
         while (null != innerBytes) {
             saveClassToStream(innerName, innerBytes);
             
             i += 1;
             innerName = className + "$" + Integer.toString(i);
-            innerBytes = Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(innerName) + ".class");
+            innerBytes = Utilities.loadRequiredResourceAsBytes(Utilities.fulllyQualifiedNameToInternalName(innerName) + ".class");
         }
     }
 
     private void saveClassToStream(String qualifiedClassName, byte[] bytes) throws IOException {
         // Convert this fully-qualified name into an internal name, since that is the serialized name it needs.
-        String internalName = Helpers.fulllyQualifiedNameToInternalName(qualifiedClassName);
-        RuntimeAssertionError.assertTrue(!this.entriesInJar.contains(internalName));
+        String internalName = Utilities.fulllyQualifiedNameToInternalName(qualifiedClassName);
+        if (this.entriesInJar.contains(internalName)) {
+            // This is a static usage error.
+            throw new AssertionError("Added class to JAR twice");
+        }
         JarEntry entry = new JarEntry(internalName + ".class");
         // AKI-135: While we only use this utility in tests, it is still convenient if we force the timestamp for deterministic JAR creation.
         entry.setTime(FIXED_TIMESTAMP);
@@ -262,7 +187,7 @@ public class JarBuilder {
             this.byteStream.close();
         } catch (IOException e) {
             // We are using a byte array so this can't happen.
-            throw RuntimeAssertionError.unexpected(e);
+            throw new AssertionError(e);
         }
         return this.byteStream.toByteArray();
     }

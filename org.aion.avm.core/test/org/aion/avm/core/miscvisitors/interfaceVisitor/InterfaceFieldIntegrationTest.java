@@ -2,7 +2,7 @@ package org.aion.avm.core.miscvisitors.interfaceVisitor;
 
 import org.aion.avm.core.*;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.miscvisitors.interfaceVisitor.interfaces.*;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
@@ -49,7 +49,7 @@ public class InterfaceFieldIntegrationTest {
 
     @Test
     public void FIELDSClassDefinedFail() throws IOException {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(FieldsClassDefinedInterfaceFail.class, FIELDSInterfaceFail.class, ABIEncoder.class, ABIDecoder.class, ABIException.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(FieldsClassDefinedInterfaceFail.class, FIELDSInterfaceFail.class, ABIEncoder.class, ABIDecoder.class, ABIException.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 
@@ -75,7 +75,7 @@ public class InterfaceFieldIntegrationTest {
 
     @Test
     public void FIELDSNotDefinedInInterfaceSuccess() throws IOException {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(FieldsNotDefinedSuccess.class, NoFIELDSInterface.class, SampleObj.class, ABIEncoder.class, ABIException.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(FieldsNotDefinedSuccess.class, NoFIELDSInterface.class, SampleObj.class, ABIEncoder.class, ABIException.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 
@@ -95,7 +95,7 @@ public class InterfaceFieldIntegrationTest {
 
     @Test
     public void FIELDSInInnerInterface() throws IOException {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ClassWithNestedInterfaces.class, LevelOneInterface.class, ABIEncoder.class, ABIException.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(ClassWithNestedInterfaces.class, LevelOneInterface.class, ABIEncoder.class, ABIException.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 
@@ -114,7 +114,7 @@ public class InterfaceFieldIntegrationTest {
 
     @Test
     public void FIELDSDefinedInInterfaceSuccess() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(AcceptFieldsNewAVM.class, FIELDSInterfaceSuccess.class, ABIEncoder.class, ABIDecoder.class, ABIException.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(AcceptFieldsNewAVM.class, FIELDSInterfaceSuccess.class, ABIEncoder.class, ABIDecoder.class, ABIException.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 
@@ -126,7 +126,7 @@ public class InterfaceFieldIntegrationTest {
 
     @Test
     public void FIELDSAsInnerInterfaceName() throws IOException {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ClassWithFIELDSAsInterfaceName.class, InnerFIELDSInterface.class, ABIEncoder.class, ABIException.class, InnerFIELDSImplementation.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(ClassWithFIELDSAsInterfaceName.class, InnerFIELDSInterface.class, ABIEncoder.class, ABIException.class, InnerFIELDSImplementation.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 
@@ -143,7 +143,7 @@ public class InterfaceFieldIntegrationTest {
 
     @Test
     public void FIELDSAsInterfaceName() throws IOException {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ClassWithFieldsInterface.class, ABIEncoder.class, ABIException.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(ClassWithFieldsInterface.class, ABIEncoder.class, ABIException.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 
@@ -161,7 +161,7 @@ public class InterfaceFieldIntegrationTest {
 
     @Test
     public void FIELDSAsInterfaceNameAVM2() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ClassWithFieldsInterface.class, ABIEncoder.class, ABIException.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(ClassWithFieldsInterface.class, ABIEncoder.class, ABIException.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 
@@ -174,7 +174,7 @@ public class InterfaceFieldIntegrationTest {
 
     @Test
     public void FIELDSAsInnerInterfaceNameAVM2() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ClassWithFIELDSAsInterfaceName.class, InnerFIELDSInterface.class, ABIEncoder.class, ABIException.class, InnerFIELDSImplementation.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(ClassWithFIELDSAsInterfaceName.class, InnerFIELDSInterface.class, ABIEncoder.class, ABIException.class, InnerFIELDSImplementation.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 
@@ -192,7 +192,7 @@ public class InterfaceFieldIntegrationTest {
         classes.put("NestedInterfaces$FIELDS", getNestedInterfaceCalledFIELDSLevelOne());
         classes.put("NestedInterfaces$FIELDS$FIELDS", getNestedInterfaceCalledFIELDSLevelTwo());
 
-        byte[] jar = JarBuilder.buildJarForExplicitClassNamesAndBytecode("NestedMain", getFIELDMainClassBytes(), classes);
+        byte[] jar = UserlibJarBuilder.buildJarForExplicitClassNamesAndBytecode("NestedMain", getFIELDMainClassBytes(), classes);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 
@@ -204,7 +204,7 @@ public class InterfaceFieldIntegrationTest {
 
     @Test
     public void testInterfaceWithNoDeclaredFields() throws IOException {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ImplementationNoFields.class, InterfaceNoFields.class, ABIEncoder.class, ABIException.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(ImplementationNoFields.class, InterfaceNoFields.class, ABIEncoder.class, ABIException.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 
@@ -223,7 +223,7 @@ public class InterfaceFieldIntegrationTest {
 
     @Test
     public void testInterfaceWithNoDeclaredFieldsAVM2() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ImplementationNoFields.class, InterfaceNoFields.class, ABIEncoder.class, ABIException.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(ImplementationNoFields.class, InterfaceNoFields.class, ABIEncoder.class, ABIException.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 

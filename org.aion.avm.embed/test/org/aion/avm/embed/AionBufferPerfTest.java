@@ -4,7 +4,7 @@ import java.math.BigInteger;
 import org.aion.avm.core.*;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.embed.StandardCapabilities;
@@ -26,7 +26,7 @@ public class AionBufferPerfTest {
     private long energyPrice = 1;
 
     private byte[] buildBufferPerfJar() {
-        return JarBuilder.buildJarForMainAndClassesAndUserlib(AionBufferPerfContract.class);
+        return UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(AionBufferPerfContract.class);
     }
 
     private TransactionResult deploy(IExternalState kernel, AvmImpl avm, byte[] testJar){

@@ -5,7 +5,7 @@ import java.math.BigInteger;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
@@ -35,7 +35,7 @@ public class BasicPerfTest {
     public void testDeployAndRun() throws Throwable {
         TestRunnable[] threads = new TestRunnable[THREAD_COUNT];
         // Setup.
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(BasicPerfContract.class
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(BasicPerfContract.class
                 , AionList.class
                 , AionMap.class
                 , AionSet.class

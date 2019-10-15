@@ -6,7 +6,7 @@ import org.aion.types.AionAddress;
 import org.aion.types.InternalTransaction;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIDecoder;
@@ -310,7 +310,7 @@ public class MetaTransactionTest {
     @Test
     public void testInternalTransactionEnergyCost_Call() {
         // Deploy initial contract.
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(InternalTransactionEnergyTarget.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(InternalTransactionEnergyTarget.class);
         byte[] codeAndArgs = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress contractAddress = createDApp(codeAndArgs);
         byte[] doNothingData = new ABIStreamingEncoder().encodeOneString("doNothing").toBytes();
@@ -338,7 +338,7 @@ public class MetaTransactionTest {
     public void testInternalTransactionEnergyCost_Create() {
         // Deploy initial contract.
         // (we assemble this manually to keep it small since we don't have the optimizer in this project).
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(InternalTransactionEnergyTarget.class, ABIEncoder.class, ABIDecoder.class, ABIException.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(InternalTransactionEnergyTarget.class, ABIEncoder.class, ABIDecoder.class, ABIException.class);
         byte[] codeAndArgs = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress contractAddress = createDApp(codeAndArgs);
         
@@ -358,7 +358,7 @@ public class MetaTransactionTest {
     @Test
     public void testInternalTransactionEnergyCost_Invoke() {
         // Deploy initial contract.
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(InternalTransactionEnergyTarget.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(InternalTransactionEnergyTarget.class);
         byte[] codeAndArgs = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress contractAddress = createDApp(codeAndArgs);
         byte[] doNothingData = new ABIStreamingEncoder().encodeOneString("doNothing").toBytes();
@@ -560,7 +560,7 @@ public class MetaTransactionTest {
     }
 
     private static byte[] codeAndArgsForTargetDeployment(boolean expectHighEnergyLimit, byte[] invokable, boolean interpretAsApiCreate) {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(MetaTransactionTarget.class, ABIEncoder.class, ABIDecoder.class, ABIException.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(MetaTransactionTarget.class, ABIEncoder.class, ABIDecoder.class, ABIException.class);
         byte[] args = new ABIStreamingEncoder()
                 .encodeOneBoolean(expectHighEnergyLimit)
                 .encodeOneByteArray(invokable)

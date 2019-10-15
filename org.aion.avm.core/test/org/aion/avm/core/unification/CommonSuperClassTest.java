@@ -9,7 +9,7 @@ import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.AionList;
@@ -60,7 +60,7 @@ public class CommonSuperClassTest {
 
     @Test
     public void combineInterfaces() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineWithInterfaces.class, CommonSuperClassTypes.class,
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineWithInterfaces.class, CommonSuperClassTypes.class,
             AionList.class, AionBuffer.class, ABIEncoder.class, ABIToken.class, ABIException.class);
         byte[] arguments = new byte[0];
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
@@ -77,7 +77,7 @@ public class CommonSuperClassTest {
 
     @Test
     public void combineJcl() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineWithJcl.class, CommonSuperClassTypes.class, ABIException.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineWithJcl.class, CommonSuperClassTypes.class, ABIException.class);
         byte[] arguments = new byte[0];
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
 
@@ -88,7 +88,7 @@ public class CommonSuperClassTest {
 
     @Test
     public void combineApi() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineWithApi.class, CommonSuperClassTypes.class, AionBuffer.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineWithApi.class, CommonSuperClassTypes.class, AionBuffer.class);
         byte[] arguments = new byte[0];
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
 
@@ -99,7 +99,7 @@ public class CommonSuperClassTest {
 
     @Test
     public void combineUserlib() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineWithUserlib.class, CommonSuperClassTarget_combineWithApi.class, CommonSuperClassTypes.class, AionMap.class, AionBuffer.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineWithUserlib.class, CommonSuperClassTarget_combineWithApi.class, CommonSuperClassTypes.class, AionMap.class, AionBuffer.class);
         byte[] arguments = new byte[0];
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
 
@@ -110,7 +110,7 @@ public class CommonSuperClassTest {
 
     @Test
     public void combineEnums() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineWithEnums.class, CommonSuperClassTypes.class, AionList.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineWithEnums.class, CommonSuperClassTypes.class, AionList.class);
         byte[] arguments = new byte[0];
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
 
@@ -125,7 +125,7 @@ public class CommonSuperClassTest {
 
     @Test
     public void combineExceptions() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineWithExceptions.class, CommonSuperClassTypes.class, AionMap.class, ABIException.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineWithExceptions.class, CommonSuperClassTypes.class, AionMap.class, ABIException.class);
         byte[] arguments = new byte[0];
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
 
@@ -141,7 +141,7 @@ public class CommonSuperClassTest {
 
     @Test
     public void combineArrays() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineWithArrays.class, CommonSuperClassTypes.class, AionBuffer.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineWithArrays.class, CommonSuperClassTypes.class, AionBuffer.class);
         byte[] arguments = new byte[0];
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
 
@@ -152,7 +152,7 @@ public class CommonSuperClassTest {
 
     @Test
     public void combineAmbiguousUserClasses() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineAmbiguousClasses.class, CommonSuperClassTypes.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineAmbiguousClasses.class, CommonSuperClassTypes.class);
         byte[] arguments = new byte[0];
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
 
@@ -168,7 +168,7 @@ public class CommonSuperClassTest {
 
     @Test
     public void combineAmbiguousArrays() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineAmbiguousArrays.class, CommonSuperClassTypes.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineAmbiguousArrays.class, CommonSuperClassTypes.class);
         byte[] arguments = new byte[0];
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
 
@@ -179,7 +179,7 @@ public class CommonSuperClassTest {
 
     @Test
     public void combineAmbiguousEnums() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineAmbiguousEnums.class, CommonSuperClassTypes.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineAmbiguousEnums.class, CommonSuperClassTypes.class);
         byte[] arguments = new byte[0];
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
 
@@ -190,7 +190,7 @@ public class CommonSuperClassTest {
 
     @Test
     public void combineAmbiguousExceptions() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineAmbiguousExceptions.class, CommonSuperClassTypes.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineAmbiguousExceptions.class, CommonSuperClassTypes.class);
         byte[] arguments = new byte[0];
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
 
@@ -201,7 +201,7 @@ public class CommonSuperClassTest {
 
     @Test
     public void combineAmbiguousJclClasses() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineAmbiguousJcl.class, CommonSuperClassTypes.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(CommonSuperClassTarget_combineAmbiguousJcl.class, CommonSuperClassTypes.class);
         byte[] arguments = new byte[0];
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
 
@@ -213,7 +213,7 @@ public class CommonSuperClassTest {
 
     @Test
     public void watchClassHierarchy() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(UnificationSample.class, AionBuffer.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(UnificationSample.class, AionBuffer.class);
         byte[] arguments = new byte[0];
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
 
@@ -224,7 +224,7 @@ public class CommonSuperClassTest {
 
     @Test
     public void watchArrayClassHierarchy() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(UnificationArraySample.class, UnificationSample.class, AionBuffer.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(UnificationArraySample.class, UnificationSample.class, AionBuffer.class);
         byte[] arguments = new byte[0];
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
 

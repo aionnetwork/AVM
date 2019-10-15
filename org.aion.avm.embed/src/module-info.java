@@ -6,6 +6,7 @@ module org.aion.avm.embed {
     requires org.aion.avm.api;
     requires org.aion.avm.core;
     requires org.aion.avm.tooling;
+    requires org.aion.avm.utilities;
 
     // external modules
     requires spongycastle;

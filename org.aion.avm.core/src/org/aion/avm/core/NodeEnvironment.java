@@ -7,7 +7,7 @@ import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.instrument.JCLAndAPIHeapInstanceSize;
 import org.aion.avm.core.types.*;
 import org.aion.avm.core.util.MethodDescriptorCollector;
-import org.aion.avm.core.util.Helpers;
+import org.aion.avm.utilities.Utilities;
 import i.*;
 
 import java.io.IOException;
@@ -142,7 +142,7 @@ public class NodeEnvironment {
 
             // we have to add the common generated exception/error classes as it's not pre-loaded
             this.jclClassNames.addAll(Stream.of(CommonGenerators.kExceptionClassNames)
-                    .map(Helpers::fulllyQualifiedNameToInternalName)
+                    .map(Utilities::fulllyQualifiedNameToInternalName)
                     .collect(Collectors.toList()));
 
             // include the invoke classes
@@ -363,7 +363,7 @@ public class NodeEnvironment {
             Class<?> instance = Class.forName(clazz.getName(), initialize, loader);
             RuntimeAssertionError.assertTrue(clazz == instance);
 
-            String className = Helpers.fulllyQualifiedNameToInternalName(clazz.getName());
+            String className = Utilities.fulllyQualifiedNameToInternalName(clazz.getName());
             classNames.add(className.substring(PackageConstants.kShadowSlashPrefix.length()));
         }
 
@@ -388,8 +388,8 @@ public class NodeEnvironment {
      */
     private Map<String, Integer> computeRuntimeObjectSizes() {
         List<String> classNames = new ArrayList<>();
-        classNames.addAll(Arrays.stream(this.shadowApiClasses).map(c -> Helpers.fulllyQualifiedNameToInternalName(c.getName())).collect(Collectors.toList()));
-        classNames.addAll(Arrays.stream(this.shadowClasses).map(c -> Helpers.fulllyQualifiedNameToInternalName(c.getName())).collect(Collectors.toList()));
+        classNames.addAll(Arrays.stream(this.shadowApiClasses).map(c -> Utilities.fulllyQualifiedNameToInternalName(c.getName())).collect(Collectors.toList()));
+        classNames.addAll(Arrays.stream(this.shadowClasses).map(c -> Utilities.fulllyQualifiedNameToInternalName(c.getName())).collect(Collectors.toList()));
 
         Map<String, Integer> objectHeapSizeMap = new HashMap<>();
         for(String name: classNames){
@@ -399,7 +399,7 @@ public class NodeEnvironment {
         // add the generated classes, i.e., exceptions in the generated shadow JDK
         Stream.of(CommonGenerators.kExceptionClassNames)
                 .filter(s -> !CommonGenerators.kHandWrittenExceptionClassNames.contains(s))
-                .map(name -> Helpers.fulllyQualifiedNameToInternalName(PackageConstants.kShadowDotPrefix + name))
+                .map(name -> Utilities.fulllyQualifiedNameToInternalName(PackageConstants.kShadowDotPrefix + name))
                 .forEach(s -> objectHeapSizeMap.put(s, JCLAndAPIHeapInstanceSize.getAllocationSizeForGeneratedExceptionSlashClass()));
         return objectHeapSizeMap;
     }

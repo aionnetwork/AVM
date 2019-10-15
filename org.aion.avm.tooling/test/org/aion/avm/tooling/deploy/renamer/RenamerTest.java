@@ -4,7 +4,7 @@ import org.aion.avm.tooling.deploy.eliminator.ClassInfo;
 import org.aion.avm.tooling.deploy.eliminator.MethodReachabilityDetector;
 import org.aion.avm.tooling.deploy.eliminator.TestUtil;
 import org.aion.avm.tooling.deploy.renamer.resources.*;
-import org.aion.avm.tooling.util.Utilities;
+import org.aion.avm.utilities.Utilities;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.ClassWriter;

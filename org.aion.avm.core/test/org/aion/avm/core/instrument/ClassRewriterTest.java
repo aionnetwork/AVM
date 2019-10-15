@@ -2,7 +2,7 @@ package org.aion.avm.core.instrument;
 
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.util.Helpers;
+import org.aion.avm.utilities.Utilities;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.ClassWriter;
@@ -31,7 +31,7 @@ public class ClassRewriterTest {
             visitor.visitEnd();
         };
         String className = original.getClass().getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Utilities.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         Function<byte[], byte[]> rewriterCall = (inputBytes) -> ClassRewriter.
                 rewriteOneMethodInClass(inputBytes, "hashCode", replacer, ClassWriter.COMPUTE_FRAMES);
         Map<String, byte[]> classes = new HashMap<>();

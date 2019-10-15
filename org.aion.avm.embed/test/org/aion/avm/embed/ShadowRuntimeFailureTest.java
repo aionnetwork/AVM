@@ -1,6 +1,6 @@
 package org.aion.avm.embed;
 
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.tooling.deploy.JarOptimizer;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIDecoder;
@@ -66,7 +66,7 @@ public class ShadowRuntimeFailureTest {
 
     private byte[] getDappBytesWithUserlib(Class<?> mainClass, byte[] arguments, Class<?>... otherClasses) {
         JarOptimizer jarOptimizer = new JarOptimizer(preserveDebugInfo);
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(mainClass, otherClasses);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(mainClass, otherClasses);
         byte[] optimizedDappBytes = jarOptimizer.optimize(jar);
         return new CodeAndArguments(optimizedDappBytes, arguments).encodeToBytes();
     }

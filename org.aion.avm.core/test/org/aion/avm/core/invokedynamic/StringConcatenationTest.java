@@ -16,6 +16,8 @@ import org.aion.avm.core.types.ClassHierarchyBuilder;
 import org.aion.avm.core.types.CommonType;
 import org.aion.avm.core.util.DebugNameResolver;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.utilities.Utilities;
+
 import i.CommonInstrumentation;
 import i.IInstrumentation;
 import i.IRuntimeSetup;
@@ -35,7 +37,6 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.aion.avm.core.invokedynamic.InvokedynamicUtils.buildSingletonAccessRules;
-import static org.aion.avm.core.util.Helpers.loadRequiredResourceAsBytes;
 import static org.junit.Assert.assertFalse;
 
 
@@ -126,7 +127,7 @@ public class StringConcatenationTest {
 
     private Class<?> transformClass(Class<?> clazz) throws Exception {
         final var className = clazz.getName();
-        final byte[] origBytecode = loadRequiredResourceAsBytes(InvokedynamicUtils.getSlashClassNameFrom(className));
+        final byte[] origBytecode = Utilities.loadRequiredResourceAsBytes(InvokedynamicUtils.getSlashClassNameFrom(className));
         
         Collection<byte[]> inputClasses = Collections.singleton(origBytecode);
         ConstantClassBuilder.ConstantClassInfo constantClass = ConstantClassBuilder.buildConstantClassBytecodeForClasses(PackageConstants.kConstantClassName, inputClasses);

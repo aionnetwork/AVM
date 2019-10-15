@@ -4,7 +4,7 @@ import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.testBlake2b.Blake2b;
 import org.aion.avm.core.testBlake2b.Main;
 import org.aion.avm.core.testWallet.ByteArrayHelpers;
@@ -133,6 +133,6 @@ public class DeploymentCostTest {
     }
 
     private byte[] classesToJarBytes(Class<?> main, Class<?>... others) {
-        return new CodeAndArguments(JarBuilder.buildJarForMainAndClassesAndUserlib(main, others), null).encodeToBytes();
+        return new CodeAndArguments(UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(main, others), null).encodeToBytes();
     }
 }

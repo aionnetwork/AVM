@@ -15,10 +15,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.aion.avm.tooling.deploy.eliminator.TestUtil;
-import org.aion.avm.tooling.util.JarBuilder;
-import org.aion.avm.tooling.util.Utilities;
 import org.aion.avm.userlib.*;
 import org.aion.avm.userlib.abi.*;
+import org.aion.avm.utilities.JarBuilder;
+import org.aion.avm.utilities.Utilities;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

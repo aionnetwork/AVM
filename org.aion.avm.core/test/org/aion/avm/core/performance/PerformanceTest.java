@@ -4,7 +4,7 @@ import org.aion.avm.core.*;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIEncoder;
@@ -51,7 +51,7 @@ public class PerformanceTest {
     public void deploy() {
         long startTime = System.currentTimeMillis();
 
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(PerformanceTestTarget.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(PerformanceTestTarget.class);
 
         byte[] args = ABIEncoder.encodeOneIntegerArray(new int[] { heavyLevel, allocSize });
         byte[] txData = new CodeAndArguments(jar, args).encodeToBytes();

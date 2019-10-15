@@ -5,7 +5,7 @@ import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.TestingBlock;
@@ -49,7 +49,7 @@ public class RejectVirtualMachineErrorIntegrationTest {
 
     @Test
     public void rejectCatchError() throws Exception {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(RejectCatchError.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(RejectCatchError.class);
 
         // Deploy.
         TransactionResult createResult = deployJar(jar);
@@ -58,7 +58,7 @@ public class RejectVirtualMachineErrorIntegrationTest {
 
     @Test
     public void rejectInstantiateError() throws Exception {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(RejectInstantiateError.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(RejectInstantiateError.class);
 
         // Deploy.
         TransactionResult createResult = deployJar(jar);
@@ -67,7 +67,7 @@ public class RejectVirtualMachineErrorIntegrationTest {
 
     @Test
     public void rejectSubclassError() throws Exception {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(RejectSubclassError.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(RejectSubclassError.class);
 
         // Deploy.
         TransactionResult createResult = deployJar(jar);

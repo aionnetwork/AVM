@@ -2,7 +2,7 @@ package org.aion.avm.core.collection;
 
 import org.aion.avm.core.*;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.CodeAndArguments;
@@ -144,7 +144,7 @@ public class AionMapEnergyTest {
 
     private AionAddress deployContract(Class<?> mainClass, Class<?>... otherClasses) {
 
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(mainClass, otherClasses);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(mainClass, otherClasses);
         Transaction createTransaction = AvmTransactionUtil.create(from, externalState.getNonce(from), BigInteger.ZERO, new CodeAndArguments(jar, null).encodeToBytes(), 5_000_000, 1L);
         TransactionResult createResult = avm.run(externalState, new Transaction[]{createTransaction}, ExecutionType.ASSUME_MAINCHAIN, externalState.getBlockNumber() - 1)[0].getResult();
 

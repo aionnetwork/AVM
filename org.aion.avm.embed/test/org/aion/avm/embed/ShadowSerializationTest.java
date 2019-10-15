@@ -1,6 +1,6 @@
 package org.aion.avm.embed;
 
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.embed.AvmRule;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.deploy.JarOptimizer;
@@ -259,7 +259,7 @@ public class ShadowSerializationTest {
 
     private byte[] getDappBytesWithUserlib(Class<?> mainClass, byte[] arguments, Class<?>... otherClasses) {
         JarOptimizer jarOptimizer = new JarOptimizer(preserveDebugInfo);
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(mainClass, otherClasses);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(mainClass, otherClasses);
         byte[] optimizedDappBytes = jarOptimizer.optimize(jar);
         return new CodeAndArguments(optimizedDappBytes, arguments).encodeToBytes();
     }

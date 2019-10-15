@@ -6,7 +6,7 @@ import org.aion.avm.core.*;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIDecoder;
@@ -28,7 +28,7 @@ public class StringShadowingTest {
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         kernel.generateBlock();
         // deploy it
-        byte[] testJar = JarBuilder.buildJarForMainAndClassesAndUserlib(TestResource.class);
+        byte[] testJar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(TestResource.class);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
         Transaction tx = AvmTransactionUtil.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         AionAddress dappAddr = new AionAddress(avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult().copyOfTransactionOutput().orElseThrow());
@@ -107,7 +107,7 @@ public class StringShadowingTest {
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         // We do the deployment, first, since we need the resultant DApp address for the other calls.
-        byte[] testJar = JarBuilder.buildJarForMainAndClassesAndUserlib(TestResource.class);
+        byte[] testJar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(TestResource.class);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
         Transaction tx = AvmTransactionUtil.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         AionAddress dappAddr = new AionAddress(avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult().copyOfTransactionOutput().orElseThrow());
@@ -157,7 +157,7 @@ public class StringShadowingTest {
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
         // We do the deployment, first, since we need the resultant DApp address for the other calls.
-        byte[] testJar = JarBuilder.buildJarForMainAndClassesAndUserlib(TestResource.class);
+        byte[] testJar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(TestResource.class);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
         Transaction tx = AvmTransactionUtil.create(from, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         AionAddress dappAddr = new AionAddress(avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult().copyOfTransactionOutput().orElseThrow());

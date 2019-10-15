@@ -3,7 +3,7 @@ package org.aion.avm.core;
 import avm.Address;
 
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIDecoder;
@@ -42,7 +42,7 @@ public class ResultTest {
         AVM = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), config);
         
         // We manually construct the JAR so it can fit in a deployment argument.
-        JAR = JarBuilder.buildJarForMainAndClasses(ResultTestTarget.class
+        JAR = UserlibJarBuilder.buildJarForMainAndClasses(ResultTestTarget.class
                 , ABIDecoder.class
                 , ABIException.class
                 );

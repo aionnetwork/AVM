@@ -3,7 +3,7 @@ package org.aion.avm.core.persistence;
 import avm.Address;
 import org.aion.avm.core.*;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIDecoder;
@@ -41,7 +41,7 @@ public class TransformedCodeCacheTest {
     @Test
     public void notWriteToCacheAfterSuccessfulTransactionTest() {
         TestingState kernel = new TestingState(block);
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 
@@ -75,7 +75,7 @@ public class TransformedCodeCacheTest {
     @Test
     public void writeToCacheAfterFailedTransactionTest() {
         TestingState kernel = new TestingState(block);
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 
@@ -116,7 +116,7 @@ public class TransformedCodeCacheTest {
     @Test
     public void reorganizationTest() {
         TestingState kernel = new TestingState(block);
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 
@@ -144,7 +144,7 @@ public class TransformedCodeCacheTest {
     @Test
     public void internalTransactionTest() {
         TestingState kernel = new TestingState(block);
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress1 = deploy(deployer, kernel, txData);
         AionAddress dappAddress2 = deploy(deployer, kernel, txData);
@@ -176,7 +176,7 @@ public class TransformedCodeCacheTest {
 
     @Test
     public void selfDestructTest() {
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         TestingState kernel = new TestingState(block);
         AionAddress dappAddress = deploy(deployer, kernel, txData);
@@ -200,7 +200,7 @@ public class TransformedCodeCacheTest {
     @Test
     public void notWriteToCacheAfterEthCallTest() {
         TestingState kernel = new TestingState(block);
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 
@@ -231,7 +231,7 @@ public class TransformedCodeCacheTest {
     @Test
     public void writeBackToCacheAfterEthCallTest() {
         TestingState kernel = new TestingState(block);
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 
@@ -262,7 +262,7 @@ public class TransformedCodeCacheTest {
     @Test
     public void writeBackToCacheAfterMiningTest() {
         TestingState kernel = new TestingState(block);
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 
@@ -297,7 +297,7 @@ public class TransformedCodeCacheTest {
     @Test
     public void deepSidechainTest() {
         TestingState kernel = new TestingState(block);
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, kernel, txData);
 

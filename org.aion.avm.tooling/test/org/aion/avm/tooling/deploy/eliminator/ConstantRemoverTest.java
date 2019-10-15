@@ -1,18 +1,16 @@
 package org.aion.avm.tooling.deploy.eliminator;
 
-import org.aion.avm.tooling.util.Utilities;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.userlib.abi.ABIException;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
+import org.aion.avm.utilities.Utilities;
 import org.junit.Assert;
 import org.junit.Test;
 
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.util.Arrays;

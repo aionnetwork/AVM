@@ -8,7 +8,7 @@ import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
@@ -121,7 +121,7 @@ public class AvmParallelTest {
     @Test
     public void internalTransactionTest(){
 
-        byte[] code = JarBuilder.buildJarForMainAndClassesAndUserlib(TestContract.class);
+        byte[] code = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(TestContract.class);
 
         TestingState kernel = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
@@ -206,7 +206,7 @@ public class AvmParallelTest {
 
     @Test
     public void reentrantAbort() {
-        byte[] code = JarBuilder.buildJarForMainAndClassesAndUserlib(TestContract.class);
+        byte[] code = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(TestContract.class);
 
         TestingState kernel = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
@@ -271,7 +271,7 @@ public class AvmParallelTest {
     @Test
     public void internalTransactionAbort() {
 
-        byte[] code = JarBuilder.buildJarForMainAndClassesAndUserlib(TestContract.class);
+        byte[] code = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(TestContract.class);
 
         TestingState kernel = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
@@ -335,7 +335,7 @@ public class AvmParallelTest {
     @Test
     public void internalTransactionAbortDuringTransformation() {
 
-        byte[] code = JarBuilder.buildJarForMainAndClassesAndUserlib(TestContract.class);
+        byte[] code = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(TestContract.class);
 
         TestingState kernel = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());

@@ -5,7 +5,7 @@ import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIDecoder;
@@ -31,7 +31,7 @@ public class ExceptionWrappingIntegrationTest {
     @Test
     public void testExceptionPersistence() throws Exception {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(PersistentExceptionTarget.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         TestingState kernel = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
@@ -63,7 +63,7 @@ public class ExceptionWrappingIntegrationTest {
     @Test
     public void testOutOfEnergy() throws Exception {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(PersistentExceptionTarget.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         TestingState kernel = new TestingState(block);
         AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(persistentExceptionDeploymentEnergyCalls, () -> {throw new OutOfEnergyException();}), new EmptyCapabilities(), new AvmConfiguration());
@@ -85,7 +85,7 @@ public class ExceptionWrappingIntegrationTest {
     @Test
     public void testNullPointerException() throws Exception {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(PersistentExceptionTarget.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(PersistentExceptionTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         TestingState kernel = new TestingState(block);
         AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(persistentExceptionDeploymentEnergyCalls, () -> {throw new NullPointerException();}), new EmptyCapabilities(), new AvmConfiguration());
@@ -107,7 +107,7 @@ public class ExceptionWrappingIntegrationTest {
     @Test
     public void testOutOfMemoryError() throws Exception {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(AttackExceptionHandlingTarget.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(AttackExceptionHandlingTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         TestingState kernel = new TestingState(block);
         AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(attackExceptionHandlingTargetDeploymentEnergyCalls, () -> {throw new OutOfMemoryError();}), new EmptyCapabilities(), new AvmConfiguration());
@@ -145,7 +145,7 @@ public class ExceptionWrappingIntegrationTest {
     @Test
     public void testOutOfMemoryErrorReentrant() throws Exception {
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(AttackExceptionHandlingTarget.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(AttackExceptionHandlingTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         TestingState kernel = new TestingState(block);
         AvmImpl avm = NodeEnvironment.singleton.buildAvmInstance(new MockFailureInstrumentationFactory(attackExceptionHandlingTargetDeploymentEnergyCalls, () -> {throw new OutOfMemoryError();}), new EmptyCapabilities(), new AvmConfiguration());

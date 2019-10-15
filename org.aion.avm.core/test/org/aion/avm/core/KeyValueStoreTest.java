@@ -13,7 +13,7 @@ import org.aion.types.Transaction;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 import org.aion.avm.StorageFees;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
@@ -43,7 +43,7 @@ public class KeyValueStoreTest {
         AvmConfiguration avmConfig = new AvmConfiguration();
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), avmConfig);
 
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(KeyValueStoreTestTarget.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(KeyValueStoreTestTarget.class);
         Transaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, null).encodeToBytes(), energyLimit, energyPrice);
         TransactionResult txResult = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         assertTrue(txResult.transactionStatus.isSuccess());

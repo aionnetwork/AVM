@@ -4,6 +4,8 @@ import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.utilities.Utilities;
+
 import i.CommonInstrumentation;
 import i.Helper;
 import i.IInstrumentation;
@@ -36,7 +38,7 @@ public class StackWatcherTest {
     // We only need to load the instrumented class once.
     public void getInstrumentedClass() throws ClassNotFoundException {
         String className = TestResource.class.getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Utilities.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         Function<byte[], byte[]> transformer = (inputBytes) -> {
             byte[] transformed = new ClassToolchain.Builder(inputBytes, ClassReader.EXPAND_FRAMES)
                     .addNextVisitor(new StackWatcherClassAdapter())

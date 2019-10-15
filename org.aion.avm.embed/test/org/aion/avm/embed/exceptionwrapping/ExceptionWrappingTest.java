@@ -2,7 +2,7 @@ package org.aion.avm.embed.exceptionwrapping;
 
 import i.PackageConstants;
 import org.aion.avm.core.*;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.embed.StandardCapabilities;
 import org.aion.avm.tooling.ABIUtil;
@@ -32,7 +32,7 @@ public class ExceptionWrappingTest {
         kernel = new TestingState(block);
         avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new StandardCapabilities(), new AvmConfiguration());
 
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(TestExceptionResource.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(TestExceptionResource.class);
         byte[] arguments = null;
         Transaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionResult txResult = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, 0)[0].getResult();

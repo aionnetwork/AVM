@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.types.AionAddress;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.types.TransactionResult;
@@ -80,7 +80,7 @@ public class CircularDependenciesTest {
         Map<String, byte[]> classMap = new HashMap<>();
         classMap.put("CircularClassTypesATarget", interfaceA);
         classMap.put("CircularInterfaceTypesBTarget", interfaceB);
-        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(
+        byte[] jar = UserlibJarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(
             SelfDestructSmallResource.class, classMap);
         CodeAndArguments codeAndArguments = new CodeAndArguments(jar, null);
         AvmRule.ResultWrapper result = avmRule.deploy(DEPLOYER_API, BigInteger.ZERO, codeAndArguments.encodeToBytes(), ENERGY_LIMIT, ENERGY_PRICE);
@@ -97,7 +97,7 @@ public class CircularDependenciesTest {
         Map<String, byte[]> classMap = new HashMap<>();
         classMap.put("CircularClassTypesATarget", classA);
         classMap.put("CircularInterfaceTypesBTarget", classB);
-        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(
+        byte[] jar = UserlibJarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(
             SelfDestructSmallResource.class, classMap);
         CodeAndArguments codeAndArguments = new CodeAndArguments(jar, null);
         AvmRule.ResultWrapper result = avmRule.deploy(DEPLOYER_API, BigInteger.ZERO, codeAndArguments.encodeToBytes(), ENERGY_LIMIT, ENERGY_PRICE);
@@ -111,7 +111,7 @@ public class CircularDependenciesTest {
      public void testCircularDependencyToNestedParent() {
          Map<String, byte[]> classMap = new HashMap<>();
          classMap.put("b.Child$Parent", getByteCodeForNestedParent());
-         byte[] jar = JarBuilder.buildJarForExplicitClassNamesAndBytecode(
+         byte[] jar = UserlibJarBuilder.buildJarForExplicitClassNamesAndBytecode(
                  "b.Child", getByteCodeForOuterChild(),  classMap);
 
          byte[] txData = new CodeAndArguments(jar, null).encodeToBytes();

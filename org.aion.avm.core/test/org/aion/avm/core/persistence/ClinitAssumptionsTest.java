@@ -1,7 +1,7 @@
 package org.aion.avm.core.persistence;
 
 import org.aion.avm.core.miscvisitors.SingleLoader;
-import org.aion.avm.core.util.Helpers;
+import org.aion.avm.utilities.Utilities;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -18,7 +18,7 @@ public class ClinitAssumptionsTest {
     public void verifyForcedLoad() throws Exception {
         // Find the class we want to verify, and its associated bytecode.
         String targetTestName = EmptyAccessClass.class.getName();
-        byte[] targetTestBytes = Helpers.loadRequiredResourceAsBytes(targetTestName.replaceAll("\\.", "/") + ".class");
+        byte[] targetTestBytes = Utilities.loadRequiredResourceAsBytes(targetTestName.replaceAll("\\.", "/") + ".class");
         
         // Verify we haven't touched the counter yet.
         Assert.assertEquals(0, COUNTER);

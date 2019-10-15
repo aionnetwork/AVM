@@ -3,7 +3,7 @@ package org.aion.avm.core;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
@@ -60,7 +60,7 @@ public class EnergyUsageDebugModeTest {
         config.enableVerboseContractErrors = true;
         AvmImpl avmDebugMode = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), config);
 
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(EnergyUsageDebugModeTarget.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(EnergyUsageDebugModeTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         long energyPrice = 1l;
 
@@ -85,7 +85,7 @@ public class EnergyUsageDebugModeTest {
     private long testEnergyUsedInNormalMode(int a, int b){
 
         AvmImpl avmNormalMode = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(EnergyUsageDebugModeTarget.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(EnergyUsageDebugModeTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         long energyLimit = 1_000_000l;
         long energyPrice = 1l;

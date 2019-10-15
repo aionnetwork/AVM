@@ -14,7 +14,7 @@ import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Log;
 import org.aion.types.Transaction;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.LogSizeUtils;
 import org.aion.avm.tooling.ABIUtil;
@@ -181,7 +181,7 @@ public class ContractLoggingTest {
     }
 
     private static void deployContract() {
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(LoggingTarget.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(LoggingTarget.class);
         jar = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         Transaction transaction = AvmTransactionUtil.create(from, kernel.getNonce(from), BigInteger.ZERO, jar, energyLimit, energyPrice);

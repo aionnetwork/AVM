@@ -6,7 +6,7 @@ import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
@@ -28,8 +28,8 @@ public class DeploymentArgumentTest {
     private static final long ENERGY_PRICE = 1L;
     private static final AionAddress DEPLOYER = TestingState.PREMINED_ADDRESS;
     private static final Address DEPLOYER_API = new Address(DEPLOYER.toByteArray());
-    private static final byte[] JAR = JarBuilder.buildJarForMainAndClassesAndUserlib(DeploymentArgumentTarget.class);
-    private static final byte[] SMALL_JAR = JarBuilder.buildJarForMainAndClasses(DeploymentArgumentSmallTarget.class);
+    private static final byte[] JAR = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(DeploymentArgumentTarget.class);
+    private static final byte[] SMALL_JAR = UserlibJarBuilder.buildJarForMainAndClasses(DeploymentArgumentSmallTarget.class);
 
     private static TestingState kernel;
     private static AvmImpl avm;

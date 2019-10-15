@@ -1,6 +1,6 @@
 package org.aion.avm.core;
 
-import org.aion.avm.core.util.Helpers;
+import org.aion.avm.utilities.Utilities;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -18,7 +18,7 @@ public class PrivateInterfaceMethodTest {
     public void testPrivateMethod() {
         Set<String> methods = new HashSet<>();
 
-        byte[] bytes = Helpers.loadRequiredResourceAsBytes(PrivateInterfaceMethod.class.getName().replaceAll("\\.", "/") + ".class");
+        byte[] bytes = Utilities.loadRequiredResourceAsBytes(PrivateInterfaceMethod.class.getName().replaceAll("\\.", "/") + ".class");
         ClassReader cr = new ClassReader(bytes);
         ClassVisitor cv = new ClassVisitor(Opcodes.ASM6) {
             @Override

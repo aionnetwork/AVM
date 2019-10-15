@@ -6,7 +6,7 @@ import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIDecoder;
@@ -41,7 +41,7 @@ public class HashCodeIntegrationTest {
 
     @Test
     public void testPersistentHashCode() throws Exception {
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HashCodeIntegrationTestTarget.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HashCodeIntegrationTestTarget.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         
         // Deploy.

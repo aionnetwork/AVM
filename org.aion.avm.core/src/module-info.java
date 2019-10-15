@@ -10,6 +10,7 @@ module org.aion.avm.core {
     requires org.aion.avm.rt;
     requires org.aion.avm.userlib;
     requires org.aion.avm.api;
+    requires org.aion.avm.utilities;
 
     // external modules
     requires org.objectweb.asm;

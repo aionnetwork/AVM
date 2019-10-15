@@ -1,13 +1,13 @@
 package org.aion.avm.core;
 
-import org.aion.avm.core.util.Helpers;
+import org.aion.avm.utilities.Utilities;
 import org.junit.Ignore;
 import org.junit.Test;
 
 public class ClassLoadingTest {
 
     private String clazzName = ClassLoadingResource.class.getName();
-    private byte[] clazzBytes = Helpers.loadRequiredResourceAsBytes(clazzName.replaceAll("\\.", "/") + ".class");
+    private byte[] clazzBytes = Utilities.loadRequiredResourceAsBytes(clazzName.replaceAll("\\.", "/") + ".class");
 
     /**
      * This test is more like a benchmark, rather than functionality test.

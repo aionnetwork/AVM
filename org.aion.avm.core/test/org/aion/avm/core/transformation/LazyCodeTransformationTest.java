@@ -3,7 +3,7 @@ package org.aion.avm.core.transformation;
 import avm.Address;
 import org.aion.avm.core.*;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.rejection.RejectClassNameWhichIsWaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaayTooLong;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
@@ -172,7 +172,7 @@ public class LazyCodeTransformationTest {
     @Test
     public void validateRetransformingInvalidCodeFails() {
         // In order to mock rejection, setup the kernel database as if this class was acceptable before and was deployed successfully
-        byte[] bytes = JarBuilder.buildJarForMainAndClasses(RejectClassNameWhichIsWaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaayTooLong.class);
+        byte[] bytes = UserlibJarBuilder.buildJarForMainAndClasses(RejectClassNameWhichIsWaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaayTooLong.class);
         kernel.putCode(dappAddress, bytes);
         kernel.setTransformedCode(dappAddress, null);
         kernel.putObjectGraph(dappAddress, new byte[]{0, 0, 0, 1});
@@ -190,7 +190,7 @@ public class LazyCodeTransformationTest {
     @Test
     public void validateRetransformingInvalidCodeInternalTxFails() {
         // In order to mock rejection, setup the kernel database as if this class was acceptable before and was deployed successfully
-        byte[] bytes = JarBuilder.buildJarForMainAndClasses(RejectClassNameWhichIsWaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaayTooLong.class);
+        byte[] bytes = UserlibJarBuilder.buildJarForMainAndClasses(RejectClassNameWhichIsWaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaayTooLong.class);
         AionAddress callee = new AionAddress(Helpers.hexStringToBytes("a025f4fd54064e869f158c1b4eb0ed34820f67e60ee80a53b469f725efc06371"));
         kernel.putCode(callee, bytes);
         kernel.setTransformedCode(callee, null);
@@ -216,6 +216,6 @@ public class LazyCodeTransformationTest {
     }
 
     private static byte[] getCode() {
-        return JarBuilder.buildJarForMainAndClasses(SampleContract.class, ABIDecoder.class, ABIEncoder.class, ABIException.class);
+        return UserlibJarBuilder.buildJarForMainAndClasses(SampleContract.class, ABIDecoder.class, ABIEncoder.class, ABIException.class);
     }
 }

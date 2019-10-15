@@ -6,7 +6,6 @@ import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.types.AionAddress;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 import org.aion.avm.StorageFees;
-import org.aion.avm.core.ClassRenamer.ArrayType;
 import org.aion.avm.core.arraywrapping.ArraysWithKnownTypesClassVisitor;
 import org.aion.avm.core.arraywrapping.ArraysRequiringAnalysisClassVisitor;
 import org.aion.avm.core.exceptionwrapping.ExceptionWrapping;
@@ -34,6 +33,7 @@ import org.aion.avm.core.util.DebugNameResolver;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.verification.Verifier;
 import org.aion.avm.userlib.CodeAndArguments;
+import org.aion.avm.utilities.Utilities;
 
 import i.*;
 import org.aion.kernel.*;
@@ -100,7 +100,7 @@ public class DAppCreator {
         // We also want to expose this type to the class writer so it can compute common superclasses.
         GeneratedClassConsumer generatedClassesSink = (superClassSlashName, classSlashName, bytecode) -> {
             // Note that the processed classes are expected to use .-style names.
-            String classDotName = Helpers.internalNameToFulllyQualifiedName(classSlashName);
+            String classDotName = Utilities.internalNameToFulllyQualifiedName(classSlashName);
             processedClasses.put(classDotName, bytecode);
         };
         Map<String, Integer> postRenameObjectSizes = computeAllPostRenameObjectSizes(oldPreRenameForest, preserveDebuggability);

@@ -3,7 +3,7 @@ package org.aion.avm.embed;
 import org.aion.avm.core.*;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.*;
@@ -86,7 +86,7 @@ public class CryptoUtilMethodFeeBenchmarkTest {
 
     @Before
     public void setup() {
-        byte[] basicAppTestJar = JarBuilder.buildJarForMainAndClassesAndUserlib(CryptoUtilMethodFeeBenchmarkTestTargetClass.class);
+        byte[] basicAppTestJar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(CryptoUtilMethodFeeBenchmarkTestTargetClass.class);
 
         byte[] txData = new CodeAndArguments(basicAppTestJar, null).encodeToBytes();
 

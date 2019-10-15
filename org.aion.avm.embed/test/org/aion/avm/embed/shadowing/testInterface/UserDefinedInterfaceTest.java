@@ -1,7 +1,7 @@
 package org.aion.avm.embed.shadowing.testInterface;
 
 import avm.Address;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.embed.AvmRule;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.userlib.CodeAndArguments;
@@ -25,7 +25,7 @@ public class UserDefinedInterfaceTest {
 
     @BeforeClass
     public static void setup() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(UserDefinedInterfaceTarget.class, OuterInterface.class, ABIEncoder.class, ABIDecoder.class, ABIException.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(UserDefinedInterfaceTarget.class, OuterInterface.class, ABIEncoder.class, ABIDecoder.class, ABIException.class);
         AvmRule.ResultWrapper resultWrapper = avmRule.deploy(from, BigInteger.ZERO, new CodeAndArguments(jar, null).encodeToBytes());
         Assert.assertTrue(resultWrapper.getReceiptStatus().isSuccess());
         DAppAddr = resultWrapper.getDappAddress();

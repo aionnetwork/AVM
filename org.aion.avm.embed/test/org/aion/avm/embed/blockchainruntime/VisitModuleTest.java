@@ -1,7 +1,7 @@
 package org.aion.avm.embed.blockchainruntime;
 
 import avm.Address;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.embed.AvmRule;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.userlib.CodeAndArguments;
@@ -34,7 +34,7 @@ public class VisitModuleTest {
         byte[] moduleClass = Files.readAllBytes(Paths.get("test/resources/module-info.class"));
         Assert.assertNotNull(moduleClass);
 
-        byte[] jar = JarBuilder.buildJarForExplicitClassNamesAndBytecodeAndUserlib(
+        byte[] jar = UserlibJarBuilder.buildJarForExplicitClassNamesAndBytecodeAndUserlib(
                 VisitModuleTarget.class,
                 new HashMap<>(){{
                     put("module-info", moduleClass);

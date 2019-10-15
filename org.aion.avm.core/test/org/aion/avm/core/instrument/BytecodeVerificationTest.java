@@ -2,7 +2,7 @@ package org.aion.avm.core.instrument;
 
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.util.Helpers;
+import org.aion.avm.utilities.Utilities;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.Label;
@@ -39,7 +39,7 @@ public class BytecodeVerificationTest {
             }};
 
         String className = original.getClass().getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Utilities.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         byte[] rewrittten = ClassRewriter.rewriteOneMethodInClass(raw, "hashCode", replacer, 0);
         
         Map<String, byte[]> classes = new HashMap<>();
@@ -83,7 +83,7 @@ public class BytecodeVerificationTest {
             }};
 
         String className = original.getClass().getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Utilities.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         byte[] rewrittten = ClassRewriter.rewriteOneMethodInClass(raw, "hashCode", replacer, 0);
         
         Map<String, byte[]> classes = new HashMap<>();
@@ -126,7 +126,7 @@ public class BytecodeVerificationTest {
             }};
 
         String className = original.getClass().getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Utilities.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         byte[] rewrittten = ClassRewriter.rewriteOneMethodInClass(raw, "hashCode", replacer, 0);
         
         Map<String, byte[]> classes = new HashMap<>();

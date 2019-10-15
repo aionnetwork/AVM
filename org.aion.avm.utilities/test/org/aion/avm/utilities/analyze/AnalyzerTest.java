@@ -1,6 +1,6 @@
-package org.aion.avm.tooling.analyze;
+package org.aion.avm.utilities.analyze;
 
-import org.aion.avm.tooling.util.Utilities;
+import org.aion.avm.utilities.Utilities;
 import org.junit.Assert;
 import org.junit.Test;
 

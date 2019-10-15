@@ -3,7 +3,7 @@ package org.aion.avm.core.verification;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.aion.avm.core.util.Helpers;
+import org.aion.avm.utilities.Utilities;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -100,7 +100,7 @@ public class VerifierTest {
         Map<String, byte[]> map = new HashMap<>();
         for (Class<?> clazz : classes) {
             String name = clazz.getName();
-            byte[] bytes = Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(name) + ".class");
+            byte[] bytes = Utilities.loadRequiredResourceAsBytes(Utilities.fulllyQualifiedNameToInternalName(name) + ".class");
             Assert.assertNotNull(bytes);
             map.put(name, bytes);
         }

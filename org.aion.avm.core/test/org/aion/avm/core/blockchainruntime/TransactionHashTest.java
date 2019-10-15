@@ -8,7 +8,7 @@ import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.ExecutionType;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIDecoder;
@@ -144,7 +144,7 @@ public class TransactionHashTest {
     }
 
     private static byte[] produceJar() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(TransactionHashTarget.class, ABIDecoder.class, ABIEncoder.class, ABIException.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(TransactionHashTarget.class, ABIDecoder.class, ABIEncoder.class, ABIException.class);
         return new CodeAndArguments(jar, new byte[0]).encodeToBytes();
     }
 

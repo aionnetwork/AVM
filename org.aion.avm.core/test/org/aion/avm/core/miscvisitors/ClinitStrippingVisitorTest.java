@@ -1,7 +1,7 @@
 package org.aion.avm.core.miscvisitors;
 
 import org.aion.avm.core.ClassToolchain;
-import org.aion.avm.core.util.Helpers;
+import org.aion.avm.utilities.Utilities;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +22,7 @@ public class ClinitStrippingVisitorTest {
     @Before
     public void setup() throws Exception {
         String targetTestName = ClinitStrippingVisitorTestTarget.class.getName();
-        byte[] targetTestBytes = Helpers.loadRequiredResourceAsBytes(targetTestName.replaceAll("\\.", "/") + ".class");
+        byte[] targetTestBytes = Utilities.loadRequiredResourceAsBytes(targetTestName.replaceAll("\\.", "/") + ".class");
         
         byte[] strippedBytes = new ClassToolchain.Builder(targetTestBytes, ClassReader.SKIP_DEBUG)
                         .addNextVisitor(new ClinitStrippingVisitor())

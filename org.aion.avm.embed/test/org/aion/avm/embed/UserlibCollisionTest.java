@@ -1,11 +1,11 @@
 package org.aion.avm.embed;
 
 import avm.Address;
-import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.Helpers;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.tooling.abi.ABICompiler;
 import org.aion.avm.tooling.deploy.JarOptimizer;
 import org.aion.avm.userlib.CodeAndArguments;
+import org.aion.avm.utilities.Utilities;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -63,7 +63,7 @@ public class UserlibCollisionTest {
     public void testAvmPackageContract() {
         ;
         JarOptimizer jarOptimizer = new JarOptimizer(false);
-        byte[] jar = JarBuilder.buildJarForExplicitClassNameAndBytecode("avm.Main", getAvmPackageClassBytes());
+        byte[] jar = UserlibJarBuilder.buildJarForExplicitClassNameAndBytecode("avm.Main", getAvmPackageClassBytes());
         ABICompiler compiler = ABICompiler.compileJarBytes(jar);
         byte[] optimizedDappBytes = jarOptimizer.optimize(compiler.getJarFileBytes());
         byte[] txData = new CodeAndArguments(optimizedDappBytes, null).encodeToBytes();
@@ -142,7 +142,7 @@ public class UserlibCollisionTest {
         Set<String> entriesInJar = new HashSet<>();
 
         try {
-            String internalName = Helpers.fulllyQualifiedNameToInternalName(mainClassName);
+            String internalName = Utilities.fulllyQualifiedNameToInternalName(mainClassName);
             assertTrue(!entriesInJar.contains(internalName));
             JarEntry entry = new JarEntry(internalName + ".class");
             jarStream.putNextEntry(entry);

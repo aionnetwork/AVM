@@ -7,7 +7,7 @@ import org.aion.avm.core.*;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.*;
@@ -147,7 +147,7 @@ public class FunctionShadowTest {
 
 
     private AionAddress deployTest(Class<?> testClass) {
-        byte[] testJar = JarBuilder.buildJarForMainAndClassesAndUserlib(testClass);
+        byte[] testJar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(testClass);
         byte[] txData = new CodeAndArguments(testJar, null).encodeToBytes();
         Transaction tx = AvmTransactionUtil.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ERNGY_PRICE);
         Optional<byte[]> optionalOutput = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult().copyOfTransactionOutput();

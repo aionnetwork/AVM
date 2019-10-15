@@ -1,7 +1,7 @@
 package org.aion.avm.tooling.deploy.eliminator;
 
 import org.aion.avm.tooling.deploy.eliminator.resources.*;
-import org.aion.avm.tooling.util.Utilities;
+import org.aion.avm.utilities.Utilities;
 import org.junit.Test;
 
 import java.util.Map;

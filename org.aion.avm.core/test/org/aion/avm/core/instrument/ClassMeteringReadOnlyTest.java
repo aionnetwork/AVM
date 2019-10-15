@@ -2,7 +2,7 @@ package org.aion.avm.core.instrument;
 
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.util.Helpers;
+import org.aion.avm.utilities.Utilities;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +23,7 @@ public class ClassMeteringReadOnlyTest {
     public void setup() throws Exception {
         // Setup and rewrite the class.
         String className = TestResource.class.getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Utilities.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         Map<String, byte[]> classes = new HashMap<>();
         classes.put(className, raw);
         AvmClassLoader loader = NodeEnvironment.singleton.createInvocationClassLoader(classes);

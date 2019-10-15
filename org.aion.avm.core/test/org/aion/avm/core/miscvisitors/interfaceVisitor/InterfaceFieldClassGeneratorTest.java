@@ -6,7 +6,7 @@ import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.miscvisitors.InterfaceFieldClassGeneratorVisitor;
 import org.aion.avm.core.miscvisitors.InterfaceFieldNameMappingVisitor;
 import org.aion.avm.core.types.GeneratedClassConsumer;
-import org.aion.avm.core.util.Helpers;
+import org.aion.avm.utilities.Utilities;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.ClassWriter;
@@ -36,14 +36,14 @@ public class InterfaceFieldClassGeneratorTest {
         Map<String, byte[]> classes = new HashMap<>();
 
         GeneratedClassConsumer consumer = (superClassName, className, bytecode) -> {
-            classes.put(Helpers.internalNameToFulllyQualifiedName(className), bytecode);
+            classes.put(Utilities.internalNameToFulllyQualifiedName(className), bytecode);
         };
         Map<String, String> interfaceFieldClassNames = new HashMap<>();
         String javaLangObjectSlashName = "java/lang/Object";
 
         byte[][] bytecode = new byte[classNames.length][];
         for (int i = 0; i < classNames.length; ++i) {
-            bytecode[i] = Helpers.loadRequiredResourceAsBytes(classNames[i] + ".class");
+            bytecode[i] = Utilities.loadRequiredResourceAsBytes(classNames[i] + ".class");
         }
 
         Function<byte[], byte[]> transformer = (inputBytes) ->
@@ -55,7 +55,7 @@ public class InterfaceFieldClassGeneratorTest {
                         .runAndGetBytecode();
 
         for (int i = 0; i < classNames.length; ++i) {
-            classes.put(Helpers.internalNameToFulllyQualifiedName(classNames[i]), transformer.apply(bytecode[i]));
+            classes.put(Utilities.internalNameToFulllyQualifiedName(classNames[i]), transformer.apply(bytecode[i]));
         }
 
         //ensure FIELDS class is generated for all the interface
@@ -108,14 +108,14 @@ public class InterfaceFieldClassGeneratorTest {
         Map<String, byte[]> classes = new HashMap<>();
 
         GeneratedClassConsumer consumer = (superClassName, className, bytecode) -> {
-            classes.put(Helpers.internalNameToFulllyQualifiedName(className), bytecode);
+            classes.put(Utilities.internalNameToFulllyQualifiedName(className), bytecode);
         };
         Map<String, String> interfaceFieldClassNames = new HashMap<>();
         String javaLangObjectSlashName = "java/lang/Object";
 
         byte[][] bytecode = new byte[classNames.length][];
         for (int i = 0; i < classNames.length; ++i) {
-            bytecode[i] = Helpers.loadRequiredResourceAsBytes(classNames[i] + ".class");
+            bytecode[i] = Utilities.loadRequiredResourceAsBytes(classNames[i] + ".class");
         }
 
         Function<byte[], byte[]> transformer = (inputBytes) ->
@@ -127,7 +127,7 @@ public class InterfaceFieldClassGeneratorTest {
                         .runAndGetBytecode();
 
         for (int i = 0; i < classNames.length; ++i) {
-            classes.put(Helpers.internalNameToFulllyQualifiedName(classNames[i]), transformer.apply(bytecode[i]));
+            classes.put(Utilities.internalNameToFulllyQualifiedName(classNames[i]), transformer.apply(bytecode[i]));
         }
 
         //ensure FIELDS class is generated for all the interface
@@ -176,14 +176,14 @@ public class InterfaceFieldClassGeneratorTest {
         Map<String, byte[]> classes = new HashMap<>();
 
         GeneratedClassConsumer consumer = (superClassName, className, bytecode) -> {
-            classes.put(Helpers.internalNameToFulllyQualifiedName(className), bytecode);
+            classes.put(Utilities.internalNameToFulllyQualifiedName(className), bytecode);
         };
         Map<String, String> interfaceFieldClassNames = new HashMap<>();
         String javaLangObjectSlashName = "java/lang/Object";
 
         byte[][] bytecode = new byte[classNames.length][];
         for (int i = 0; i < classNames.length; ++i) {
-            bytecode[i] = Helpers.loadRequiredResourceAsBytes(classNames[i] + ".class");
+            bytecode[i] = Utilities.loadRequiredResourceAsBytes(classNames[i] + ".class");
         }
 
         Function<byte[], byte[]> transformer = (inputBytes) ->
@@ -195,7 +195,7 @@ public class InterfaceFieldClassGeneratorTest {
                         .runAndGetBytecode();
 
         for (int i = 0; i < classNames.length; ++i) {
-            classes.put(Helpers.internalNameToFulllyQualifiedName(classNames[i]), transformer.apply(bytecode[i]));
+            classes.put(Utilities.internalNameToFulllyQualifiedName(classNames[i]), transformer.apply(bytecode[i]));
         }
 
         //ensure FIELDS class is generated for all the interface
@@ -238,14 +238,14 @@ public class InterfaceFieldClassGeneratorTest {
         Map<String, byte[]> classes = new HashMap<>();
 
         GeneratedClassConsumer consumer = (superClassName, className, bytecode) -> {
-            classes.put(Helpers.internalNameToFulllyQualifiedName(className), bytecode);
+            classes.put(Utilities.internalNameToFulllyQualifiedName(className), bytecode);
         };
         Map<String, String> interfaceFieldClassNames = new HashMap<>();
         String javaLangObjectSlashName = "java/lang/Object";
 
         byte[][] bytecode = new byte[classNames.length][];
         for (int i = 0; i < classNames.length; ++i) {
-            bytecode[i] = Helpers.loadRequiredResourceAsBytes(classNames[i] + ".class");
+            bytecode[i] = Utilities.loadRequiredResourceAsBytes(classNames[i] + ".class");
         }
 
         Function<byte[], byte[]> transformer = (inputBytes) ->
@@ -257,7 +257,7 @@ public class InterfaceFieldClassGeneratorTest {
                         .runAndGetBytecode();
 
         for (int i = 0; i < classNames.length; ++i) {
-            classes.put(Helpers.internalNameToFulllyQualifiedName(classNames[i]), transformer.apply(bytecode[i]));
+            classes.put(Utilities.internalNameToFulllyQualifiedName(classNames[i]), transformer.apply(bytecode[i]));
         }
 
         //ensure FIELDS class is generated for all the interface
@@ -284,14 +284,14 @@ public class InterfaceFieldClassGeneratorTest {
         Map<String, byte[]> classes = new HashMap<>();
 
         GeneratedClassConsumer consumer = (superClassName, className, bytecode) -> {
-            classes.put(Helpers.internalNameToFulllyQualifiedName(className), bytecode);
+            classes.put(Utilities.internalNameToFulllyQualifiedName(className), bytecode);
         };
         Map<String, String> interfaceFieldClassNames = new HashMap<>();
         String javaLangObjectSlashName = "java/lang/Object";
 
         byte[][] bytecode = new byte[classNames.length][];
         for (int i = 0; i < classNames.length; ++i) {
-            bytecode[i] = Helpers.loadRequiredResourceAsBytes(classNames[i] + ".class");
+            bytecode[i] = Utilities.loadRequiredResourceAsBytes(classNames[i] + ".class");
         }
 
         Function<byte[], byte[]> transformer = (inputBytes) ->
@@ -303,7 +303,7 @@ public class InterfaceFieldClassGeneratorTest {
                         .runAndGetBytecode();
 
         for (int i = 0; i < classNames.length; ++i) {
-            classes.put(Helpers.internalNameToFulllyQualifiedName(classNames[i]), transformer.apply(bytecode[i]));
+            classes.put(Utilities.internalNameToFulllyQualifiedName(classNames[i]), transformer.apply(bytecode[i]));
         }
 
         Assert.assertEquals(3, classes.size());
@@ -314,7 +314,7 @@ public class InterfaceFieldClassGeneratorTest {
         Map<String, byte[]> classes = new HashMap<>();
 
         GeneratedClassConsumer consumer = (superClassName, className, bytecode) -> {
-            classes.put(Helpers.internalNameToFulllyQualifiedName(className), bytecode);
+            classes.put(Utilities.internalNameToFulllyQualifiedName(className), bytecode);
         };
         Map<String, String> interfaceFieldClassNames = new HashMap<>();
         String javaLangObjectSlashName = "java/lang/Object";

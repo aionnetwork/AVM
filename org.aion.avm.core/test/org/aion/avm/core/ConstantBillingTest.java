@@ -7,7 +7,7 @@ import java.math.BigInteger;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.instrument.BytecodeFeeScheduler;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
@@ -23,7 +23,7 @@ public class ConstantBillingTest {
 
     @Test
     public void test() {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(ConstantBillingTarget.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(ConstantBillingTarget.class);
 
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);

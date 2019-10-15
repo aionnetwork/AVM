@@ -1,11 +1,11 @@
 package org.aion.avm.core.instrument;
 
 import org.aion.avm.core.NodeEnvironment;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.types.RawDappModule;
-import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.utilities.Utilities;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -46,7 +46,7 @@ public class HeapMemoryCostCalculatorTest {
 
     private Map<String, Integer> getObjectSizes(Class mainClass, Class<?>... classes) {
         Assert.assertNotNull(NodeEnvironment.singleton);
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(mainClass, classes);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(mainClass, classes);
         RawDappModule rawDapp = RawDappModule.readFromJar(jar, false, false);
         HeapMemoryCostCalculator objectSizeCalculator = new HeapMemoryCostCalculator();
         objectSizeCalculator.calcClassesInstanceSize(rawDapp.classHierarchyForest);
@@ -61,7 +61,7 @@ public class HeapMemoryCostCalculatorTest {
     }
 
     private void assertSize(Map<String, Integer> userObjectSizes, String className, int size) {
-        Assert.assertEquals(size, (int) userObjectSizes.get(Helpers.fulllyQualifiedNameToInternalName(className)));
+        Assert.assertEquals(size, (int) userObjectSizes.get(Utilities.fulllyQualifiedNameToInternalName(className)));
     }
 
 }

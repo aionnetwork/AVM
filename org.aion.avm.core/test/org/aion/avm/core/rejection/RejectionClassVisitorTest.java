@@ -10,7 +10,8 @@ import org.aion.avm.core.ClassToolchain;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
-import org.aion.avm.core.util.Helpers;
+import org.aion.avm.utilities.Utilities;
+
 import i.PackageConstants;
 import org.junit.Assert;
 import org.junit.Test;
@@ -31,7 +32,7 @@ public class RejectionClassVisitorTest {
     @Test
     public void testFiltering() throws Exception {
         String className = FilteringResource.class.getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Utilities.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
 
         Set<String> userClassDotNameSet = Set.of(className, className+"$A", className+"$B");
         PreRenameClassAccessRules preRenameClassAccessRules = createTestingAccessRules(userClassDotNameSet);
@@ -120,7 +121,7 @@ public class RejectionClassVisitorTest {
     @Test(expected=RejectedClassException.class)
     public void testRejection_finalize() throws Exception {
         String className = RejectFinalizeResource.class.getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Utilities.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         // We expect this to fail since we have a finalize() method, which isn't allowed.
         commonFilterBytes(className, raw);
     }
@@ -128,7 +129,7 @@ public class RejectionClassVisitorTest {
     @Test(expected=RejectedClassException.class)
     public void testRejection_unknownArray() throws Exception {
         String className = RejectUnknownArray.class.getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Utilities.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         // Expected to fail since we try to call clone on a java/util/HashSet array, which isn't allowed.
         commonFilterBytes(className, raw);
     }
@@ -136,7 +137,7 @@ public class RejectionClassVisitorTest {
     @Test
     public void testRejection_goodArrays() throws Exception {
         String className = AcceptedArrayCases.class.getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Utilities.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         byte[] result = commonFilterBytes(className, raw);
         Assert.assertNotNull(result);
     }
@@ -144,7 +145,7 @@ public class RejectionClassVisitorTest {
     @Test(expected=RejectedClassException.class)
     public void testRejection_synchronizedMethod() throws Exception {
         String className = RejectSynchronizedMethod.class.getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Utilities.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         // Expected to fail since a method is marked as "synchronized" which isn't allowed.
         commonFilterBytes(className, raw);
     }
@@ -152,7 +153,7 @@ public class RejectionClassVisitorTest {
     @Test(expected=RejectedClassException.class)
     public void testRejection_monitorOperations() throws Exception {
         String className = RejectMonitorOperations.class.getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Utilities.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         // Expected to fail since a method uses monitor bytecodes, which isn't allowed.
         commonFilterBytes(className, raw);
     }
@@ -160,7 +161,7 @@ public class RejectionClassVisitorTest {
     @Test(expected=RejectedClassException.class)
     public void testRejection_nonWhitelistReceiverType() throws Exception {
         String className = SendToNonWhitelistType.class.getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Utilities.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         // Expected to fail since a method we are trying to call is defined in "java.util.Scanner", which is not on the JCL whitelist.
         commonFilterBytes(className, raw);
     }
@@ -168,7 +169,7 @@ public class RejectionClassVisitorTest {
     @Test(expected=RejectedClassException.class)
     public void testRejection_missingMethod_stringStaticJoin() throws Exception {
         String className = RejectStaticStringCall.class.getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Utilities.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         // Expected to fail since a method we are trying to call is defined on a class we handle, but it is a method we don't.
         commonFilterBytes(className, raw);
     }
@@ -176,7 +177,7 @@ public class RejectionClassVisitorTest {
     @Test(expected=RejectedClassException.class)
     public void testRejection_missingMethod_decimalVirtualDivide() throws Exception {
         String className = RejectBigDecimalDivision.class.getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Utilities.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         // Expected to fail since a method we are trying to call is defined on a class we handle, but it is a method we don't.
         commonFilterBytes(className, raw);
     }
@@ -184,7 +185,7 @@ public class RejectionClassVisitorTest {
     @Test(expected=RejectedClassException.class)
     public void testRejection_classNameTooLong() throws Exception {
         String className = RejectClassNameWhichIsWaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaayTooLong.class.getName();
-        byte[] raw = Helpers.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
+        byte[] raw = Utilities.loadRequiredResourceAsBytes(className.replaceAll("\\.", "/") + ".class");
         // Expected to fail since a method we are trying to call is defined on a class we handle, but it is a method we don't.
         commonFilterBytes(className, raw);
     }

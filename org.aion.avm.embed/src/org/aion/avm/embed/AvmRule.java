@@ -5,7 +5,7 @@ import org.aion.avm.core.*;
 import org.aion.avm.tooling.deploy.OptimizedJarBuilder;
 import org.aion.kernel.TestingState;
 import org.aion.types.*;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.abi.ABICompiler;
@@ -101,7 +101,7 @@ public final class AvmRule implements TestRule {
      * @return Byte array corresponding to the deployable Dapp jar and arguments.
      */
     public byte[] getDappBytesWithoutOptimization(Class<?> mainClass, byte[] arguments, Class<?>... otherClasses) {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(mainClass, otherClasses);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(mainClass, otherClasses);
         ABICompiler compiler = ABICompiler.compileJarBytes(jar, ABIConfig.LATEST_VERSION);
         return new CodeAndArguments(compiler.getJarFileBytes(), arguments).encodeToBytes();
     }
@@ -284,7 +284,7 @@ public final class AvmRule implements TestRule {
     }
 
     private byte[] compileAndOptimizeDapp(Class<?> mainClass, byte[] arguments, int abiVersion, Class<?>[] otherClasses){
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(mainClass, otherClasses);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(mainClass, otherClasses);
         byte[] optimizedJar = new OptimizedJarBuilder(debugMode, jar, abiVersion)
                 .withUnreachableMethodRemover()
                 .withRenamer()

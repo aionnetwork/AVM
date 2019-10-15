@@ -5,7 +5,7 @@ import org.aion.avm.core.miscvisitors.InterfaceFieldClassGeneratorVisitor;
 import org.aion.avm.core.miscvisitors.InterfaceFieldNameMappingVisitor;
 import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.types.GeneratedClassConsumer;
-import org.aion.avm.core.util.Helpers;
+import org.aion.avm.utilities.Utilities;
 import org.junit.Test;
 import org.objectweb.asm.ClassWriter;
 
@@ -13,7 +13,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -26,12 +25,12 @@ public class InterfaceFieldsTest {
         Map<String, byte[]> classes = new HashMap<>();
 
         GeneratedClassConsumer consumer = (superClassName, className, bytecode) -> {
-            classes.put(Helpers.internalNameToFulllyQualifiedName(className), bytecode);
+            classes.put(Utilities.internalNameToFulllyQualifiedName(className), bytecode);
         };
         Map<String, String> interfaceFieldClassNames = new HashMap<>();
         String javaLangObjectSlashName = "java/lang/Object";
 
-        byte[] bytecode = Helpers.loadRequiredResourceAsBytes(OuterInteface.class.getName().replaceAll("\\.", "/") + ".class");
+        byte[] bytecode = Utilities.loadRequiredResourceAsBytes(OuterInteface.class.getName().replaceAll("\\.", "/") + ".class");
         byte[] transformed = new ClassToolchain.Builder(bytecode, 0)
                 .addNextVisitor(new InterfaceFieldClassGeneratorVisitor(consumer, interfaceFieldClassNames, javaLangObjectSlashName))
                 .addNextVisitor(new InterfaceFieldNameMappingVisitor(interfaceFieldClassNames))

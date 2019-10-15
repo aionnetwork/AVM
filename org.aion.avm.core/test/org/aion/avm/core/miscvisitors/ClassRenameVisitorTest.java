@@ -1,7 +1,8 @@
 package org.aion.avm.core.miscvisitors;
 
 import org.aion.avm.core.ClassToolchain;
-import org.aion.avm.core.util.Helpers;
+import org.aion.avm.utilities.Utilities;
+
 import i.Helper;
 import org.junit.Assert;
 import org.junit.Test;
@@ -16,7 +17,7 @@ public class ClassRenameVisitorTest {
     @Test
     public void testSmallTarget() throws Exception {
         String targetTestName = ClassRenameVisitorTestTarget.class.getName();
-        byte[] targetTestBytes = Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(targetTestName) + ".class");
+        byte[] targetTestBytes = Utilities.loadRequiredResourceAsBytes(Utilities.fulllyQualifiedNameToInternalName(targetTestName) + ".class");
         
         String newName = "THE_NEW_CLASS";
         byte[] renamedBytes = new ClassToolchain.Builder(targetTestBytes, PARSING_OPTIONS)
@@ -33,7 +34,7 @@ public class ClassRenameVisitorTest {
     @Test
     public void testRealHelper() throws Exception {
         String targetTestName = Helper.class.getName();
-        byte[] targetTestBytes = Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(targetTestName) + ".class");
+        byte[] targetTestBytes = Utilities.loadRequiredResourceAsBytes(Utilities.fulllyQualifiedNameToInternalName(targetTestName) + ".class");
         
         String newName = "THE_NEW_CLASS";
         byte[] renamedBytes = new ClassToolchain.Builder(targetTestBytes, PARSING_OPTIONS)

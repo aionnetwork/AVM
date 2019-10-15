@@ -10,6 +10,8 @@ import org.aion.avm.core.miscvisitors.NamespaceMapper;
 import org.aion.avm.core.miscvisitors.PreRenameClassAccessRules;
 import org.aion.avm.core.miscvisitors.UserClassMappingVisitor;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.utilities.Utilities;
+
 import i.*;
 import org.junit.Assert;
 import org.junit.Test;
@@ -199,7 +201,7 @@ public class ClassShadowingTest {
     private AvmClassLoader transformAndLoadClass(String... classNames) {
         byte[][] bytecode = new byte[classNames.length][];
         for (int i = 0; i < classNames.length; ++i) {
-            bytecode[i] = Helpers.loadRequiredResourceAsBytes(classNames[i].replaceAll("\\.", "/") + ".class");
+            bytecode[i] = Utilities.loadRequiredResourceAsBytes(classNames[i].replaceAll("\\.", "/") + ".class");
         }
 
         // We will need to produce the constant class.

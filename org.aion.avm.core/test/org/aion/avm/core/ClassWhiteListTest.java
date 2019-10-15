@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
-import org.aion.avm.core.util.Helpers;
+import org.aion.avm.utilities.Utilities;
+
 import i.PackageConstants;
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,7 +36,7 @@ public class ClassWhiteListTest {
     @Test
     public void testContractType() {
         String exceptionClassDotName = PackageConstants.kUserDotPrefix + "my.contract.exception";
-        String className = Helpers.fulllyQualifiedNameToInternalName(exceptionClassDotName);
+        String className = Utilities.fulllyQualifiedNameToInternalName(exceptionClassDotName);
         ClassWhiteList list = new ClassWhiteList();
         Assert.assertFalse(list.isJdkClass(className));
         Assert.assertTrue(list.isInWhiteList(className));

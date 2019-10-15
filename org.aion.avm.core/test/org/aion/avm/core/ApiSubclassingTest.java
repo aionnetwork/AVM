@@ -8,7 +8,7 @@ import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.TestingBlock;
@@ -36,7 +36,7 @@ public class ApiSubclassingTest {
 
     @Test
     public void testDeployAndCallContractWithAbiSubclasses() {
-        byte[] jar = new CodeAndArguments(JarBuilder.buildJarForMainAndClassesAndUserlib(ApiSubclassingTarget.class), null).encodeToBytes();
+        byte[] jar = new CodeAndArguments(UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(ApiSubclassingTarget.class), null).encodeToBytes();
         Transaction transaction = AvmTransactionUtil.create(this.deployer, this.kernel.getNonce(deployer), BigInteger.ZERO, jar, 5_000_000, 1);
         TransactionResult result = this.avm.run(this.kernel, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         assertEquals(AvmInternalError.FAILED_REJECTED_CLASS.error, result.transactionStatus.causeOfError);

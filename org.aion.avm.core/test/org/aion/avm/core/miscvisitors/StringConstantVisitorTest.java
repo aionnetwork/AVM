@@ -6,6 +6,8 @@ import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.DebugNameResolver;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.utilities.Utilities;
+
 import i.CommonInstrumentation;
 import i.IInstrumentation;
 import i.IRuntimeSetup;
@@ -33,9 +35,9 @@ public class StringConstantVisitorTest {
     @Before
     public void setup() throws Exception {
         String targetTestName = StringConstantVisitorTestTarget.class.getName();
-        byte[] targetTestBytes = Helpers.loadRequiredResourceAsBytes(targetTestName.replaceAll("\\.", "/") + ".class");
+        byte[] targetTestBytes = Utilities.loadRequiredResourceAsBytes(targetTestName.replaceAll("\\.", "/") + ".class");
         String targetNoStaticName = StringConstantVisitorTestTargetNoStatic.class.getName();
-        byte[] targetNoStaticBytes = Helpers.loadRequiredResourceAsBytes(targetNoStaticName.replaceAll("\\.", "/") + ".class");
+        byte[] targetNoStaticBytes = Utilities.loadRequiredResourceAsBytes(targetNoStaticName.replaceAll("\\.", "/") + ".class");
         
         // WARNING:  We are providing the class set as both the "classes only" and "classes plus interfaces" sets.
         // This works for this test but, in general, is not correct.

@@ -47,5 +47,4 @@ org.aion.avm.api/bin/overview.html
 
 [master]
 org.aion.avm.microbenchmark/
-utilities/
 org.aion.avm.rt-new/

@@ -1,7 +1,7 @@
 package org.aion.avm.embed.deploy.remover;
 
 import avm.Address;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.embed.AvmRule;
 import org.aion.avm.embed.deploy.remover.resources.ClassA;
 import org.aion.avm.embed.deploy.remover.resources.Main;
@@ -26,7 +26,7 @@ public class UnreachableMethodRemoverTest {
 
     @Test
     public void testInvokeStatic() throws Exception {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(Main.class, ClassA.class, ClassB.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(Main.class, ClassA.class, ClassB.class);
         ABICompiler compiler = ABICompiler.compileJarBytes(jar);
         byte[] optimizedDappBytes = UnreachableMethodRemover.optimize(compiler.getJarFileBytes());
         byte[] data = new CodeAndArguments(optimizedDappBytes, null).encodeToBytes();

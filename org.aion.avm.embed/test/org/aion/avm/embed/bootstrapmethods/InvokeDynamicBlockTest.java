@@ -1,8 +1,8 @@
 package org.aion.avm.embed.bootstrapmethods;
 
 import avm.Address;
-import org.aion.avm.core.dappreading.JarBuilder;
-import org.aion.avm.core.util.Helpers;
+
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.embed.AvmRule;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.deploy.OptimizedJarBuilder;
@@ -52,7 +52,7 @@ public class InvokeDynamicBlockTest {
     }
 
     private byte[] getDappBytes(boolean debugMode) {
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(InvokeDynamicBlockTarget.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(InvokeDynamicBlockTarget.class);
         byte[] arguments = ABIUtil.encodeDeploymentArguments("A", "B");
         byte[] optimizedJar = new OptimizedJarBuilder(debugMode, jar, 1)
                 .withUnreachableMethodRemover()

@@ -6,7 +6,7 @@ import java.math.BigInteger;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.testWallet.ByteArrayHelpers;
 import org.aion.avm.core.testWallet.ByteArrayWrapper;
 import org.aion.avm.core.testWallet.BytesKey;
@@ -60,7 +60,7 @@ public class PocWalletTest {
     }
 
     private byte[] buildTestWalletJar() {
-        return JarBuilder.buildJarForMainAndClassesAndUserlib(Wallet.class
+        return UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(Wallet.class
                 , Multiowned.class
                 , ByteArrayWrapper.class
                 , Operation.class

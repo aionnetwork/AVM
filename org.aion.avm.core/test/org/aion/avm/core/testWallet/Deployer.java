@@ -15,7 +15,7 @@ import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
 import org.aion.avm.core.blockchainruntime.TestingBlockchainRuntime;
 import org.aion.avm.core.classloading.AvmClassLoader;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.miscvisitors.ClassRenameVisitor;
 import org.aion.avm.core.miscvisitors.SingleLoader;
@@ -27,6 +27,8 @@ import org.aion.avm.core.types.CommonType;
 import org.aion.avm.core.util.BlockchainRuntime;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.core.util.TestingHelper;
+import org.aion.avm.utilities.Utilities;
+
 import i.*;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -104,7 +106,7 @@ public class Deployer {
         int WRITING_OPTIONS = ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS;
 
         String targetTestName = BlockchainRuntime.class.getName();
-        byte[] targetTestBytes = Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(targetTestName) + ".class");
+        byte[] targetTestBytes = Utilities.loadRequiredResourceAsBytes(Utilities.fulllyQualifiedNameToInternalName(targetTestName) + ".class");
 
         String newName = "avm/Blockchain";
         byte[] renamedBytes = new ClassToolchain.Builder(targetTestBytes, PARSING_OPTIONS)
@@ -115,14 +117,14 @@ public class Deployer {
         try {
             SingleLoader loader = new SingleLoader("", new byte[0]);
             Class<?> blockchainRuntime = loader.loadClassFromByteCode("avm.Blockchain", renamedBytes);
-            Class<?> directProxy = loader.loadClassFromByteCode(DirectProxy.class.getName(), Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(DirectProxy.class.getName()) + ".class"));
-            Class<?> walletShim = loader.loadClassFromByteCode(WalletShim.class.getName(), Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(WalletShim.class.getName()) + ".class"));
-            Class<?> multiOwned = loader.loadClassFromByteCode(Multiowned.class.getName(), Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(Multiowned.class.getName()) + ".class"));
-            Class<?> wallet = loader.loadClassFromByteCode(Wallet.class.getName(), Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(Wallet.class.getName()) + ".class"));
-            Class<?> tx = loader.loadClassFromByteCode(Wallet.class.getName() + "$Transaction", Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(Wallet.class.getName() + "$Transaction") + ".class"));
-            Class<?> eventLogger = loader.loadClassFromByteCode(EventLogger.class.getName(), Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(EventLogger.class.getName()) + ".class"));
-            Class<?> operation = loader.loadClassFromByteCode(Operation.class.getName(), Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(Operation.class.getName()) + ".class"));
-            Class<?> dayLimit = loader.loadClassFromByteCode(Daylimit.class.getName(), Helpers.loadRequiredResourceAsBytes(Helpers.fulllyQualifiedNameToInternalName(Daylimit.class.getName()) + ".class"));
+            Class<?> directProxy = loader.loadClassFromByteCode(DirectProxy.class.getName(), Utilities.loadRequiredResourceAsBytes(Utilities.fulllyQualifiedNameToInternalName(DirectProxy.class.getName()) + ".class"));
+            Class<?> walletShim = loader.loadClassFromByteCode(WalletShim.class.getName(), Utilities.loadRequiredResourceAsBytes(Utilities.fulllyQualifiedNameToInternalName(WalletShim.class.getName()) + ".class"));
+            Class<?> multiOwned = loader.loadClassFromByteCode(Multiowned.class.getName(), Utilities.loadRequiredResourceAsBytes(Utilities.fulllyQualifiedNameToInternalName(Multiowned.class.getName()) + ".class"));
+            Class<?> wallet = loader.loadClassFromByteCode(Wallet.class.getName(), Utilities.loadRequiredResourceAsBytes(Utilities.fulllyQualifiedNameToInternalName(Wallet.class.getName()) + ".class"));
+            Class<?> tx = loader.loadClassFromByteCode(Wallet.class.getName() + "$Transaction", Utilities.loadRequiredResourceAsBytes(Utilities.fulllyQualifiedNameToInternalName(Wallet.class.getName() + "$Transaction") + ".class"));
+            Class<?> eventLogger = loader.loadClassFromByteCode(EventLogger.class.getName(), Utilities.loadRequiredResourceAsBytes(Utilities.fulllyQualifiedNameToInternalName(EventLogger.class.getName()) + ".class"));
+            Class<?> operation = loader.loadClassFromByteCode(Operation.class.getName(), Utilities.loadRequiredResourceAsBytes(Utilities.fulllyQualifiedNameToInternalName(Operation.class.getName()) + ".class"));
+            Class<?> dayLimit = loader.loadClassFromByteCode(Daylimit.class.getName(), Utilities.loadRequiredResourceAsBytes(Utilities.fulllyQualifiedNameToInternalName(Daylimit.class.getName()) + ".class"));
 
             // Init the Wallet.
             directProxy.getDeclaredMethod("init", java.util.function.Consumer.class, Address.class, Address.class, int.class, long.class).invoke(null, getBlockchainRuntime(blockchainRuntime, sender), extra1Api, extra2Api, requiredVotes, dailyLimit);
@@ -222,7 +224,7 @@ public class Deployer {
     private static void invokeTransformed() throws Throwable {
         Map<String, Integer> eventCounts = new HashMap<>();
 
-        byte[] jarBytes = JarBuilder.buildJarForMainAndClassesAndUserlib(Wallet.class
+        byte[] jarBytes = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(Wallet.class
                 , Multiowned.class
                 , ByteArrayWrapper.class
                 , Operation.class

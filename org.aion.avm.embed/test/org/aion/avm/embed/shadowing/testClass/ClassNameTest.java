@@ -2,7 +2,7 @@ package org.aion.avm.embed.shadowing.testClass;
 
 import avm.Address;
 
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.embed.AvmRule;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.abi.ABICompiler;
@@ -29,7 +29,7 @@ public class ClassNameTest {
     @BeforeClass
     public static void setup() throws Exception{
         // class and method renaming is not used
-        byte[] jar = JarBuilder.buildJarForMainAndClasses(TestResource.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(TestResource.class);
         ABICompiler compiler = ABICompiler.compileJarBytes(jar);
         byte[] optimizedDappBytes = new JarOptimizer(true).optimize(compiler.getJarFileBytes());
         optimizedDappBytes = UnreachableMethodRemover.optimize(optimizedDappBytes);

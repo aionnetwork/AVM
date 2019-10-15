@@ -8,7 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.embed.AvmRule;
 import org.aion.avm.embed.AvmRule.ResultWrapper;
@@ -285,7 +285,7 @@ public class BenchmarkTest {
         Helpers.writeBytesToFile(optimized, jarPath);
         System.out.println("Wrote: " + jarPath);
         try (FileOutputStream output = new FileOutputStream(abiPath)) {
-            ABICompiler.compileJarBytes(JarBuilder.buildJarForMainAndClasses(clazz)).writeAbi(output, ABICompiler.getDefaultVersionNumber());
+            ABICompiler.compileJarBytes(UserlibJarBuilder.buildJarForMainAndClasses(clazz)).writeAbi(output, ABICompiler.getDefaultVersionNumber());
         }
         System.out.println("Wrote: " + abiPath);
     }

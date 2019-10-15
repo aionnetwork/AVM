@@ -7,6 +7,8 @@ import org.aion.avm.core.ConstantClassBuilder;
 import org.aion.avm.core.NodeEnvironment;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.utilities.Utilities;
+
 import i.PackageConstants;
 import org.junit.Assert;
 import org.junit.Test;
@@ -49,7 +51,7 @@ public class ConstantVisitorTest {
         
         byte[] bytecode = writer.toByteArray();
         // Get the class and make sure there are no issues.  Note that this would fail in our old implementation (duplicate <clinit>).
-        byte[] stubBytecode = Helpers.loadRequiredResourceAsBytes(HelperStub.CLASS_NAME + ".class");
+        byte[] stubBytecode = Utilities.loadRequiredResourceAsBytes(HelperStub.CLASS_NAME + ".class");
         Map<String, byte[]> classes = Map.of(testClassName, bytecode
                 , constantClassName, constantClass.bytecode
         );
@@ -71,7 +73,7 @@ public class ConstantVisitorTest {
      * Note that this is just because the ConstantVisitor injects helper calls which need to go somewhere.
      */
     public static class HelperStub {
-        public static final String CLASS_NAME = Helpers.fulllyQualifiedNameToInternalName(HelperStub.class.getName());
+        public static final String CLASS_NAME = Utilities.fulllyQualifiedNameToInternalName(HelperStub.class.getName());
         public static s.java.lang.String wrapAsString(String input) {
             TestHelpers.wrapAsStringCounter += 1;
             // We don't do anything with this so even null works.

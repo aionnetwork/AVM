@@ -13,6 +13,8 @@ import i.CommonInstrumentation;
 import i.IBlockchainRuntime;
 import org.aion.avm.core.classloading.AvmClassLoader;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.utilities.Utilities;
+
 import i.IInstrumentation;
 import i.IRuntimeSetup;
 import i.InstrumentationHelpers;
@@ -37,7 +39,7 @@ public class SimpleAvm {
         Map<String, byte[]> preTransformedClassBytecode = new HashMap<>();
 
         Stream.of(classes).forEach(clazz -> preTransformedClassBytecode.put(clazz.getName(),
-                Helpers.loadRequiredResourceAsBytes(clazz.getName().replaceAll("\\.", "/") + ".class")));
+                Utilities.loadRequiredResourceAsBytes(clazz.getName().replaceAll("\\.", "/") + ".class")));
 
         // build class hierarchy
         Forest<String, ClassInfo> classHierarchy = buildOldClassHierarchy(preTransformedClassBytecode);

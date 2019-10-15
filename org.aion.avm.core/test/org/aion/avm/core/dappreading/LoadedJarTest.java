@@ -38,7 +38,7 @@ public class LoadedJarTest {
 
     @Test
     public void checkExpectedClassesReadFromJar() throws IOException {
-        byte[] jarBytes = JarBuilder.buildJarForMainAndClasses(Main.class, C1.class, C2.class, JavaAccessor.class, TestAnnotation.class, C3.class);
+        byte[] jarBytes = UserlibJarBuilder.buildJarForMainAndClasses(Main.class, C1.class, C2.class, JavaAccessor.class, TestAnnotation.class, C3.class);
         Map<String, byte[]> actualClasses = LoadedJar.fromBytes(jarBytes).classBytesByQualifiedNames;
         checkIfMatchExpected(actualClasses);
     }

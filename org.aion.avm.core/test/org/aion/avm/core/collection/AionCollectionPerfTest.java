@@ -5,7 +5,7 @@ import org.aion.avm.core.*;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
@@ -25,15 +25,15 @@ public class AionCollectionPerfTest {
     private long energyPrice = 1;
 
     private byte[] buildListPerfJar() {
-        return JarBuilder.buildJarForMainAndClassesAndUserlib(AionListPerfContract.class);
+        return UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(AionListPerfContract.class);
     }
 
     private byte[] buildSetPerfJar() {
-        return JarBuilder.buildJarForMainAndClassesAndUserlib(AionSetPerfContract.class);
+        return UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(AionSetPerfContract.class);
     }
 
     private byte[] buildMapPerfJar() {
-        return JarBuilder.buildJarForMainAndClassesAndUserlib(AionMapPerfContract.class);
+        return UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(AionMapPerfContract.class);
     }
 
     private TransactionResult deploy(IExternalState externalState, AvmImpl avm, byte[] testJar){

@@ -2,7 +2,7 @@ package org.aion.avm.embed;
 
 import examples.BetaMapEvents;
 import examples.HelloWorld;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.deploy.JarOptimizer;
 import avm.Address;
@@ -50,7 +50,7 @@ public class ExamplesIntegrationTest {
     @Test
     public void test_HelloWorld() throws Exception {
         JarOptimizer jarOptimizer = new JarOptimizer(preserveDebugInfo);
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HelloWorld.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HelloWorld.class);
         byte[] optimizedDappBytes = jarOptimizer.optimize(jar);
         byte[] txData = new CodeAndArguments(optimizedDappBytes, new byte[0]).encodeToBytes();
         // Deploy.

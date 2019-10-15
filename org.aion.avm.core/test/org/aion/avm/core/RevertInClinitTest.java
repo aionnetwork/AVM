@@ -2,7 +2,7 @@ package org.aion.avm.core;
 
 import java.math.BigInteger;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.TestingBlock;
@@ -35,7 +35,7 @@ public class RevertInClinitTest {
 
     @Test
     public void testRevertInClinitUsesEnergy() {
-        byte[] jar = new CodeAndArguments(JarBuilder.buildJarForMainAndClassesAndUserlib(RevertInClinitTarget.class), null).encodeToBytes();
+        byte[] jar = new CodeAndArguments(UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(RevertInClinitTarget.class), null).encodeToBytes();
         Transaction transaction = AvmTransactionUtil.create(this.deployer, this.kernel.getNonce(deployer), BigInteger.ZERO, jar, this.energyLimit, 1);
         TransactionResult result = this.avm.run(this.kernel, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isReverted());
@@ -46,7 +46,7 @@ public class RevertInClinitTest {
 
     @Test
     public void testRevertInClinitDoesNotUseAllEnergy() {
-        byte[] jar = new CodeAndArguments(JarBuilder.buildJarForMainAndClassesAndUserlib(RevertInClinitTarget.class), null).encodeToBytes();
+        byte[] jar = new CodeAndArguments(UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(RevertInClinitTarget.class), null).encodeToBytes();
         Transaction transaction = AvmTransactionUtil.create(this.deployer, this.kernel.getNonce(deployer), BigInteger.ZERO, jar, this.energyLimit, 1);
         TransactionResult result = this.avm.run(this.kernel, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isReverted());

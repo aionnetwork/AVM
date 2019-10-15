@@ -1,7 +1,7 @@
 package org.aion.avm.embed;
 
 import avm.Address;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.embed.poc.AionBufferPerfContract;
 import org.aion.avm.embed.poc.TRS;
 import org.aion.avm.embed.testExchange.*;
@@ -156,11 +156,11 @@ public class DeploymentCostTest {
     }
 
     private byte[] classesToJarBytes(Class<?> main, Class<?>... others) {
-        return new CodeAndArguments(JarBuilder.buildJarForMainAndClasses(main, others), null).encodeToBytes();
+        return new CodeAndArguments(UserlibJarBuilder.buildJarForMainAndClasses(main, others), null).encodeToBytes();
     }
 
     private byte[] classesToJarBytesWithClinitArgs(byte[] clinitArgs, Class<?> main, Class<?>... others) {
-        return new CodeAndArguments(JarBuilder.buildJarForMainAndClasses(main, others), clinitArgs).encodeToBytes();
+        return new CodeAndArguments(UserlibJarBuilder.buildJarForMainAndClasses(main, others), clinitArgs).encodeToBytes();
     }
 
 }

@@ -7,6 +7,7 @@ module org.aion.avm.tooling {
 
     requires org.aion.avm.userlib;
     requires org.aion.avm.api;
+    requires org.aion.avm.utilities;
 
     // external modules
     requires org.objectweb.asm;

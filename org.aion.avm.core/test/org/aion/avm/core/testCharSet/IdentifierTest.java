@@ -9,7 +9,7 @@ import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
@@ -46,7 +46,7 @@ public class IdentifierTest {
 
     @Test
     public void testCharSet() {
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(Identifier.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(Identifier.class);
         long energyLimit = 10_000_000L;
         kernel.generateBlock();
         Transaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO,
@@ -124,7 +124,7 @@ public class IdentifierTest {
 
     @Test
     public void testClassNaming() {
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(哈哈ÿ.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(哈哈ÿ.class);
         long energyLimit = 10_000_000L;
         kernel.generateBlock();
         Transaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO,
@@ -155,7 +155,7 @@ public class IdentifierTest {
 
     @Test
     public void testInvalidUtf8Code() {
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(哈哈ÿ.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(哈哈ÿ.class);
         long energyLimit = 10_000_000L;
         kernel.generateBlock();
         Transaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO,

@@ -3,7 +3,7 @@ package org.aion.avm.core.persistence;
 import avm.Address;
 import org.aion.avm.core.*;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.JarBuilder;
+import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIDecoder;
@@ -49,7 +49,7 @@ public class ExecutionTypeCacheTest {
         TestingState mainchainKernel = new TestingState(block);
 
         //deploy to both
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, mainchainKernel, txData);
         deploy(deployer, sidechainKernel, txData);
@@ -102,7 +102,7 @@ public class ExecutionTypeCacheTest {
         TestingState mainchainKernel = new TestingState(block);
 
         //deploy to both
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, mainchainKernel, txData);
         deploy(deployer, sidechainKernel, txData);
@@ -152,7 +152,7 @@ public class ExecutionTypeCacheTest {
         TestingState mainchainKernel = new TestingState(block);
 
         //deploy to both
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, mainchainKernel, txData);
         deploy(deployer, sidechainKernel, txData);
@@ -210,7 +210,7 @@ public class ExecutionTypeCacheTest {
         TestingState mainchainKernel = new TestingState(block);
 
         //deploy to both
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, mainchainKernel, txData);
         deploy(deployer, sidechainKernel, txData);
@@ -247,7 +247,7 @@ public class ExecutionTypeCacheTest {
         TestingState mainchainKernel = new TestingState(block);
 
         //deploy to both
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, mainchainKernel, txData);
         deploy(deployer, sidechainKernel, txData);
@@ -302,7 +302,7 @@ public class ExecutionTypeCacheTest {
         TestingState miningKernel = new TestingState(block);
 
         //deploy to both
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, miningKernel, txData);
 
@@ -347,7 +347,7 @@ public class ExecutionTypeCacheTest {
         TestingState miningKernel = new TestingState(block);
 
         //deploy to both
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, miningKernel, txData);
 
@@ -408,7 +408,7 @@ public class ExecutionTypeCacheTest {
         TestingState miningKernel = new TestingState(block);
 
         //deploy to both
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, miningKernel, txData);
 
@@ -446,7 +446,7 @@ public class ExecutionTypeCacheTest {
         TestingState mainchainKernel = new TestingState(block);
 
         //deploy to both
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, mainchainKernel, txData);
         deploy(deployer, sidechainKernel, txData);
@@ -506,7 +506,7 @@ public class ExecutionTypeCacheTest {
         TestingState mainchainKernel = new TestingState(block);
 
         //deploy to both
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, mainchainKernel, txData);
         deploy(deployer, sidechainKernel, txData);
@@ -564,7 +564,7 @@ public class ExecutionTypeCacheTest {
         TestingState mainchainKernel = new TestingState(block);
 
         //deploy to both
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, mainchainKernel, txData);
 
@@ -594,7 +594,7 @@ public class ExecutionTypeCacheTest {
         TestingState mainchainKernel = new TestingState(block);
 
         //deploy to both
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, mainchainKernel, txData);
 
@@ -625,7 +625,7 @@ public class ExecutionTypeCacheTest {
         TestingState mainchainKernel = new TestingState(block);
 
         //deploy to both
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, mainchainKernel, txData);
 
@@ -675,7 +675,7 @@ public class ExecutionTypeCacheTest {
         TestingState mainchainKernel = new TestingState(block);
 
         //deploy to both
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, mainchainKernel, txData);
 
@@ -726,7 +726,7 @@ public class ExecutionTypeCacheTest {
         TestingState mainchainKernel = new TestingState(block);
 
         //deploy to both
-        byte[] jar = JarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress dappAddress = deploy(deployer, mainchainKernel, txData);
 
@@ -789,7 +789,7 @@ public class ExecutionTypeCacheTest {
      */
     @Test
     public void concurrentSidechainExecution() {
-        byte[] code = JarBuilder.buildJarForMainAndClassesAndUserlib(TestContract.class);
+        byte[] code = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(TestContract.class);
 
         TestingState mainchainKernel = new TestingState(block);
         TestingState sidechainKernel = new TestingState(block);
