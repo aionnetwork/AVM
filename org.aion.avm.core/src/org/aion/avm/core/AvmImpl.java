@@ -35,6 +35,7 @@ public class AvmImpl implements AvmInternal {
     // Long-lived state which is book-ended by the startup/shutdown calls.
     private static AvmImpl currentAvm;  // (only here for testing - makes sure that we properly clean these up between invocations)
     private SoftCache<ByteArrayWrapper, LoadedDApp> hotCache;
+    private SoftCache<ByteArrayWrapper, byte[]> transformedCodeCache;
     private HandoffMonitor handoff;
 
     // Short-lived state which is reset for each batch of transaction request.
@@ -157,7 +158,9 @@ public class AvmImpl implements AvmInternal {
         AvmImpl.currentAvm = this;
         
         RuntimeAssertionError.assertTrue(null == this.hotCache);
+        RuntimeAssertionError.assertTrue(null == this.transformedCodeCache);
         this.hotCache = new SoftCache<>();
+        this.transformedCodeCache = new SoftCache<>();
 
         RuntimeAssertionError.assertTrue(null == this.resourceMonitor);
         this.resourceMonitor = new AddressResourceMonitor();
@@ -201,6 +204,8 @@ public class AvmImpl implements AvmInternal {
             validateCodeCache(commonMainchainBlockNumber + 1);
             purgeDataCache();
         }
+
+        cleanupTransformedCodeCache();
 
         if (null != this.backgroundFatalError) {
             throw this.backgroundFatalError;
@@ -308,6 +313,7 @@ public class AvmImpl implements AvmInternal {
         RuntimeAssertionError.assertTrue(this == AvmImpl.currentAvm);
         AvmImpl.currentAvm = null;
         this.hotCache = null;
+        this.transformedCodeCache = null;
         
         // Note that we don't want to hide the background exception, if one happened, but we do want to complete the shutdown, so we do this at the end.
         if (null != errorDuringShutdown) {
@@ -474,9 +480,16 @@ public class AvmImpl implements AvmInternal {
 
                 boolean updateDataCache;
 
+                // writes the transformed code into the cache, only when the recipient dApp does not have an associated transformed code in the database and the transaction fails.
+                boolean writeToTransformedCodeCache = false;
+                byte[] cachedTransformedCode = null;
+
                 // there are no interactions with either cache in ASSUME_DEEP_SIDECHAIN
                 if (task.executionType != ExecutionType.ASSUME_DEEP_SIDECHAIN) {
                     dappInHotCache = this.hotCache.checkout(addressWrapper);
+                    if(transformedCode == null){
+                        cachedTransformedCode = this.transformedCodeCache.checkout(addressWrapper);
+                    }
                 }
 
                 if (task.executionType == ExecutionType.ASSUME_MAINCHAIN || task.executionType == ExecutionType.SWITCHING_MAINCHAIN) {
@@ -515,17 +528,38 @@ public class AvmImpl implements AvmInternal {
                     updateDataCache = false;
                 }
 
-                // lazily re-transform the code
                 if (transformedCode == null) {
                     byte[] code = thisTransactionKernel.getCode(recipient);
-                    //'parentKernel.getCode(recipient) != null' means this recipient's DApp is not self-destructed.
+                    //'thisTransactionKernel.getCode(recipient) != null' means this recipient's DApp is not self-destructed.
                     if (code != null) {
-                        transformedCode = CodeReTransformer.transformCode(code, thisTransactionKernel.getBlockTimestamp(), this.preserveDebuggability, this.enableVerboseContractErrors);
-                        if (transformedCode == null) {
-                            // re-transformation of the code failed
-                            result = TransactionResultUtil.setNonRevertedFailureAndEnergyUsed(result, AvmInternalError.FAILED_RETRANSFORMATION, energyLimit);
+                        // if the transformed code was not in the cache, re-transform the code
+                        if (cachedTransformedCode == null) {
+                            transformedCode = CodeReTransformer.transformCode(code, thisTransactionKernel.getBlockTimestamp(), this.preserveDebuggability, this.enableVerboseContractErrors);
+                            if (transformedCode == null) {
+                                // re-transformation failed. This dApp is no longer supported in the new version of AVM.
+                                result = TransactionResultUtil.setNonRevertedFailureAndEnergyUsed(result, AvmInternalError.FAILED_RETRANSFORMATION, energyLimit);
+                            }
                         } else {
+                            transformedCode = cachedTransformedCode;
+                        }
+
+                        if (transformedCode != null) {
                             thisTransactionKernel.setTransformedCode(recipient, transformedCode);
+                            /* Writing the transformed code into a cache is only done for failed transactions and follows a similar pattern to the code cache, but it's much simpler. Transformed code cache does not depend on block number
+                            because any transformed code after the fork point is valid as long as the contract has not been self destructed. So for mainchain, sidechain, and switching mainchain blocks cache is read and updated if necessary.
+                            Only if a side chain has been created before the fork point where the avm version changes, cache might become invalid. To prevent this, on the kernel side we ensure when the avm version changes, a new instance of
+                            avm2.0 is run. Also, we don't rely on the cache if the block is in a deep side chain. For mining and eth_call blocks, we read the cache but only write if the transformed code was already stored in the cache.
+                            */
+                            if (task.executionType == ExecutionType.ASSUME_MAINCHAIN || task.executionType == ExecutionType.SWITCHING_MAINCHAIN || task.executionType == ExecutionType.ASSUME_SIDECHAIN) {
+                                writeToTransformedCodeCache = true;
+                            }
+                        }
+                        if (task.executionType == ExecutionType.MINING || task.executionType == ExecutionType.ETH_CALL) {
+                            // Write the transformed code back to the cache (regardless of the transaction result), if it was there to begin with.
+                            // Mining and eth_call blocks should not change the state of the transformed code cache.
+                            if (cachedTransformedCode != null) {
+                                this.transformedCodeCache.checkin(addressWrapper, cachedTransformedCode);
+                            }
                         }
                     }
                 } else {
@@ -559,6 +593,12 @@ public class AvmImpl implements AvmInternal {
                             dapp.clearDataState();
                             this.hotCache.checkin(addressWrapper, dapp);
                         }
+                    }
+                    // Only add the transformed code to the cache if the transaction has failed and thisTransactionKernel.getTransformedCode(recipient) = null.
+                    // This means the transformed code was either successfully retrieved from the cache or the consensus code was successfully re-transformed.
+                    // This is only done for ASSUME_MAINCHAIN, SWITCHING_MAINCHAIN, and ASSUME_SIDECHAIN
+                    if (!result.isSuccess() && writeToTransformedCodeCache) {
+                        this.transformedCodeCache.checkin(addressWrapper, transformedCode);
                     }
                 }
             }
@@ -599,5 +639,13 @@ public class AvmImpl implements AvmInternal {
             }
         };
         this.hotCache.apply(softReferenceConsumer);
+    }
+
+    private void cleanupTransformedCodeCache() {
+        Predicate<SoftReference<byte[]>> condition = (v) -> {
+            // remove the map entry if the soft reference has been cleared and the referent is null
+            return v.get() == null;
+        };
+        this.transformedCodeCache.removeValueIf(condition);
     }
 }
