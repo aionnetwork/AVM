@@ -1,15 +1,18 @@
 package org.aion.avm.core;
 
 import org.aion.avm.core.util.TransactionResultUtil;
+import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.util.Helpers;
 import org.aion.kernel.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -52,6 +55,7 @@ public class AvmImpl implements AvmInternal {
     private final boolean preserveDebuggability;
     private final boolean enableVerboseContractErrors;
     private final boolean enableVerboseConcurrentExecutor;
+    private File dataLocation;
 
     public AvmImpl(IInstrumentationFactory instrumentationFactory, IExternalCapabilities capabilities, AvmConfiguration configuration) {
         this.instrumentationFactory = instrumentationFactory;
@@ -135,6 +139,11 @@ public class AvmImpl implements AvmInternal {
     }
 
     public void start() {
+        this.dataLocation = new File("OUTPUT_DIRECTORY");
+        if (!this.dataLocation.exists()) {
+            this.dataLocation.mkdirs();
+        }
+        RuntimeAssertionError.assertTrue(this.dataLocation.isDirectory());
         RuntimeAssertionError.assertTrue(null == AvmImpl.currentAvm);
         AvmImpl.currentAvm = this;
         
@@ -380,6 +389,21 @@ public class AvmImpl implements AvmInternal {
 
         // do nothing for balance transfers of which the recipient is not a DApp address.
         if (tx.isCreate) {
+            CodeAndArguments toProcess = CodeAndArguments.decodeFromBytes(tx.copyOfTransactionData());
+            if (null != toProcess) {
+                String newContract = Helpers.bytesToHexString(recipient.toByteArray());
+                File thisDirectory = new File(this.dataLocation, newContract);
+                thisDirectory.mkdirs();
+                Helpers.writeBytesToFile(toProcess.code, new File(thisDirectory, "code.jar").getAbsolutePath());
+                if (null != toProcess.arguments) {
+                    Helpers.writeBytesToFile(toProcess.arguments, new File(thisDirectory, "arguments.bin").getAbsolutePath());
+                }
+                Helpers.writeBytesToFile(tx.senderAddress.toByteArray(), new File(thisDirectory, "creator.bin").getAbsolutePath());
+                Helpers.writeBytesToFile(tx.nonce.toByteArray(), new File(thisDirectory, "creator_nonce.bin").getAbsolutePath());
+                Helpers.writeBytesToFile(Long.toString(parentKernel.getBlockNumber()).getBytes(), new File(thisDirectory, "block_height.txt").getAbsolutePath());
+            }
+            
+            
             result = DAppCreator.create(this.capabilities, thisTransactionKernel, this, task, tx, result, this.preserveDebuggability, this.enableVerboseContractErrors);
         } else { // call
             // See if this call is trying to reenter one already on this call-stack.  If so, we will need to partially resume its state.
