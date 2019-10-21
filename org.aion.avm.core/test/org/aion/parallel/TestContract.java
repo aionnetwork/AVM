@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import avm.Address;
 import avm.Blockchain;
 import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 
 public class TestContract {
@@ -30,14 +31,17 @@ public class TestContract {
                 addValue();
                 return new byte[0];
             } else if (methodName.equals("getCallCount")) {
-                return new ABIStreamingEncoder().encodeOneInteger(getCallCount()).toBytes();
+                return ABIEncoder.encodeOneInteger(getCallCount());
             } else if (methodName.equals("getValue")) {
-                return new ABIStreamingEncoder().encodeOneInteger(getValue()).toBytes();
+                return ABIEncoder.encodeOneInteger(getValue());
             } else if (methodName.equals("doCallThis")) {
                 doCallThis(decoder.decodeOneByteArray());
                 return new byte[0];
             } else if (methodName.equals("doCallOther")) {
                 doCallOther(decoder.decodeOneAddress(), decoder.decodeOneByteArray());
+                return new byte[0];
+            } else if(methodName.equals("deploy")){
+                deploy(decoder.decodeOneByteArray());
                 return new byte[0];
             } else {
                 return new byte[0];
@@ -69,6 +73,11 @@ public class TestContract {
 
     public static int getValue() {
         return value;
+    }
+
+    public static void deploy(byte[] data) {
+        Blockchain.require(
+                Blockchain.create(BigInteger.ZERO, data, Blockchain.getRemainingEnergy()).isSuccess());
     }
 
 }

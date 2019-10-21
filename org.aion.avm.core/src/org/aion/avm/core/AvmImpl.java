@@ -636,6 +636,10 @@ public class AvmImpl implements AvmInternal {
         return resourceMonitor;
     }
 
+    public static AvmThreadStats getCurrentThreadStats() {
+        return ((AvmExecutorThread) Thread.currentThread()).stats;
+    }
+
     private void validateCodeCache(long blockNum){
         // getLoadedDataBlockNum will always be either equal or less than getLoadedCodeBlockNum
         Predicate<SoftReference<LoadedDApp>> condition = (v) -> {
