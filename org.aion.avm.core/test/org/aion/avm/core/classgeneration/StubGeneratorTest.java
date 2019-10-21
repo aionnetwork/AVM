@@ -152,7 +152,7 @@ public class StubGeneratorTest {
         IRuntimeSetup runtimeSetup = new Helper();
         IInstrumentation instrumentation = new CommonInstrumentation();
         InstrumentationHelpers.attachThread(instrumentation);
-        InstrumentationHelpers.pushNewStackFrame(runtimeSetup, generated, 5L, 1, null);
+        InstrumentationHelpers.pushNewStackFrame(runtimeSetup, generated, 100L, 1, null);
         
         // Create an instance and prove that we can interact with it.
         Constructor<?> con = notFound.getConstructor(s.java.lang.String.class, s.java.lang.Throwable.class);

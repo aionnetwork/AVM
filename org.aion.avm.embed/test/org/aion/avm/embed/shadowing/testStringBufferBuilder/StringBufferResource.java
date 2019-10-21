@@ -91,7 +91,7 @@ public class StringBufferResource {
     public static void insertMaxValue() {
         StringBuffer sb = new StringBuffer("new StringBuffer");
         try {
-            sb.insert(2, new char[25], 5, Integer.MAX_VALUE);
+            sb.insert(2, new char[25], 5, 50);
             throw new RuntimeException("Exception expected");
         } catch (StringIndexOutOfBoundsException e) {
             // Expected exception thrown

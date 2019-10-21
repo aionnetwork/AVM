@@ -90,6 +90,16 @@ public class StringShadowingTest {
         tx = AvmTransactionUtil.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
         result = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
         Assert.assertEquals(true, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneBoolean());
+
+        txData = encodeNoArgsMethodCall("contentEquals");
+        tx = AvmTransactionUtil.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        result = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+
+        txData = encodeNoArgsMethodCall("compareTo");
+        tx = AvmTransactionUtil.call(from, dappAddr, kernel.getNonce(from), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        result = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
+        Assert.assertTrue(result.transactionStatus.isSuccess());
         avm.shutdown();
     }
 

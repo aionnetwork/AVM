@@ -19,7 +19,7 @@ public class ShadowEnergyLimitTarget {
     @Callable
     public static void callEdverifyMaxLengthOne() {
         byte[] n = new byte[460000];
-        Arrays.fill(n, 0, 460000, (byte) 1);
+        Arrays.fill(n, 0, 100000, (byte) 1);
         byte[] signature = "0367f714504761427cbc4abd5e4af97bbaa88553a7fa0076dc2fefdd200eca61".getBytes();
         byte[] pk = "8c11e9a4772bb651660a5a5e412be38d".getBytes();
         Blockchain.edVerify(n, signature, pk);

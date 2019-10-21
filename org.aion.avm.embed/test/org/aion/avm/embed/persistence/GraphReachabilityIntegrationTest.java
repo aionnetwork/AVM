@@ -1,6 +1,7 @@
 package org.aion.avm.embed.persistence;
 
 import avm.Address;
+import org.aion.avm.RuntimeMethodFeeSchedule;
 import org.aion.avm.StorageFees;
 import org.aion.avm.core.BillingRules;
 import org.aion.avm.core.dappreading.UserlibJarBuilder;
@@ -86,17 +87,17 @@ public class GraphReachabilityIntegrationTest {
         
         long storageReadCost = GRAPH_SIZE_BEFORE * StorageFees.READ_PRICE_PER_BYTE;
         long main = cost_mainPreamble();
-        long decodeMethodName = cost_decodeMethodNamePre() + 78L + 100L + 1526L + cost_decodeMethodNamePost();
-        long main2 = (3 * (63L + 730L)) + 94L;
-        long run249_reentrant_notLoaded = 88L + 134L + 29L + 223L + 645L + 36L + 100L + 1509L + 26L + 100L + 5000L;
+        long decodeMethodName = cost_decodeMethodNamePre() + 78L + 100L + 126L + cost_decodeMethodNamePost("run249_reentrant_notLoaded");
+        long main2 = (63 + 340 + 63 + 340 + 63 + 430) + 94L;
+        long run249_reentrant_notLoaded = 88L + 134L + 29L + 223L + 645L + 36L + 100L + 109L + 26L + 100L + 5000L;
         
         long nested_storageReadCost = GRAPH_SIZE_BEFORE * StorageFees.READ_PRICE_PER_BYTE;
         long nested_modify249 = getCost_modify249();
         long nested_storageWriteCost = GRAPH_SIZE_AFTER * StorageFees.WRITE_PRICE_PER_BYTE;
         long nestedCost = nested_storageReadCost + nested_modify249 + nested_storageWriteCost;
-        Assert.assertEquals(15612L, nestedCost);
+        Assert.assertEquals(11547L, nestedCost);
         
-        long newResult = 100L;
+        long newResult = 300L;
         long run249_reentrant_notLoaded2 = 60L + 100L + 23L + 29L + 23L;
         long main3 = cost_mainPostamble();
         long storageWriteCost = GRAPH_SIZE_AFTER * StorageFees.WRITE_PRICE_PER_BYTE;
@@ -129,17 +130,17 @@ public class GraphReachabilityIntegrationTest {
         
         long storageReadCost = GRAPH_SIZE_BEFORE * StorageFees.READ_PRICE_PER_BYTE;
         long main = cost_mainPreamble();
-        long decodeMethodName = cost_decodeMethodNamePre() + 69L + 100L + 1523L + cost_decodeMethodNamePost();
-        long main2 = (4 * (63L + 715L)) + 94L;
-        long run249_reentrant_loaded = 65L + 29L + 88L + 134L + 29L + 223L + 645L + 36L + 100L + 1509L + 26L + 100L + 5000L;
+        long decodeMethodName = cost_decodeMethodNamePre() + 69L + 100L + 123L + cost_decodeMethodNamePost("run249_reentrant_loaded");
+        long main2 = (63 + 340 + 63 + 340 + 63 + 415 + 63 + 415) + 94L;
+        long run249_reentrant_loaded = 65L + 29L + 88L + 134L + 29L + 223L + 645L + 36L + 100L + 109L + 26L + 100L + 5000L;
         
         long nested_storageReadCost = GRAPH_SIZE_BEFORE * StorageFees.READ_PRICE_PER_BYTE;
         long nested_modify249 = getCost_modify249();
         long nested_storageWriteCost = GRAPH_SIZE_AFTER * StorageFees.WRITE_PRICE_PER_BYTE;
         long nestedCost = nested_storageReadCost + nested_modify249 + nested_storageWriteCost;
-        Assert.assertEquals(15612L, nestedCost);
+        Assert.assertEquals(11547L, nestedCost);
         
-        long newResult = 100L;
+        long newResult = 300L;
         long run249_reentrant_loaded2 = 60L + 100L + 23L + 29L + 23L;
         long main3 = cost_mainPostamble();
         long storageWriteCost = GRAPH_SIZE_AFTER * StorageFees.WRITE_PRICE_PER_BYTE;
@@ -166,7 +167,7 @@ public class GraphReachabilityIntegrationTest {
         long transactionCost = BillingRules.getBasicTransactionCost(new ABIStreamingEncoder().encodeOneString("runNewInstance_reentrant").toBytes());
         Assert.assertEquals(22668L, transactionCost);
         
-        long combinedCost = getCost_runNewInstance_reentrant(transactionCost);
+        long combinedCost = getCost_runNewInstance_reentrant(transactionCost, "runNewInstance_reentrant", "modifyNewInstance");
         
         callStaticVoid(block, contractAddr, combinedCost, "runNewInstance_reentrant");
         
@@ -187,14 +188,14 @@ public class GraphReachabilityIntegrationTest {
         
         long storageReadCost = GRAPH_SIZE_BEFORE * StorageFees.READ_PRICE_PER_BYTE;
         long main = cost_mainPreamble();
-        long decodeMethodName = cost_decodeMethodNamePre() + 75L + 100L + 1525L + cost_decodeMethodNamePost();
-        long main2 = (6 * (63L + 725L)) + 94L;
-        long runNewInstance_reentrant = 134L + 29L + 223L + 720L + 81L + 100L + 1524L + 26L + 100L + 5000L;
+        long decodeMethodName = cost_decodeMethodNamePre() + 75L + 100L + 125L + cost_decodeMethodNamePost("runNewInstance_reentrant2");
+        long main2 = (63 + 340 + 63 + 340 + 63 + 425 + 63 + 415 + 63 + 420 + 63 + 425) + 94L;
+        long runNewInstance_reentrant = 134L + 29L + 223L + 720L + 81L + 100L + 124L + 26L + 100L + 5000L;
         
-        long nestedCost = getCost_runNewInstance_reentrant(0);
-        Assert.assertEquals(38727L, nestedCost);
+        long nestedCost = getCost_runNewInstance_reentrant(0, "runNewInstance_reentrant", "modifyNewInstance");
+        Assert.assertEquals(29832L, nestedCost);
         
-        long newResult = 100L;
+        long newResult = 300L;
         long runNewInstance_reentrant2 = 60L + 100L + 23L;
         long main3 = cost_mainPostamble();
         long storageWriteCost = GRAPH_SIZE_AFTER * StorageFees.WRITE_PRICE_PER_BYTE;
@@ -282,8 +283,8 @@ public class GraphReachabilityIntegrationTest {
         long transactionCost = BillingRules.getBasicTransactionCost(new ABIStreamingEncoder().encodeOneString("check249").encodeOneInteger(4).toBytes());
         long storageReadCost = graphSize * StorageFees.READ_PRICE_PER_BYTE;
         long main = cost_mainPreamble();
-        long decodeMethodName = cost_decodeMethodNamePre() + 24L + 100L + 1508L + cost_decodeMethodNamePost();
-        long main2 = 63L + 640L + 63L + 640L + 140L;
+        long decodeMethodName = cost_decodeMethodNamePre() + 24L + 100L + 108L + cost_decodeMethodNamePost("check249");
+        long main2 = 63L + 340L + 63L + 340L + 140L;
         long decodeOneInteger = 79L + 37L + 39L + 23L + 76L + 49L + 258L;
         long main3 = 65L + 29L + 50L;
         long main4 = before
@@ -305,8 +306,8 @@ public class GraphReachabilityIntegrationTest {
         long main = cost_mainPreamble() + 37L + 39L + 41L + 114L;
         long checkNullEmptyData = 37L + 39L + 23L;
         long checkMinLengthForObject = 53L + 23L;
-        long decodeMethodName = 76L + 53L + 82L + 148L + 256L + 24L + 100L + 1508L + cost_decodeMethodNamePost();
-        long main2 = 63L + 640L + 94L;
+        long decodeMethodName = 76L + 53L + 82L + 148L + 256L + 24L + 100L + 108L + cost_decodeMethodNamePost("setup249");
+        long main2 = 63L + 340L + 94L;
         long setup249 = 896L + (5 * 63L);
         long main3 = cost_mainPostamble();
         long storageWriteCost = GRAPH_SIZE_BEFORE * StorageFees.WRITE_PRICE_PER_BYTE;
@@ -319,36 +320,36 @@ public class GraphReachabilityIntegrationTest {
 
     private long getCost_modify249() {
         long main = cost_mainPreamble();
-        long decodeMethodName = cost_decodeMethodNamePre() + 27L + 100L + 1509L + cost_decodeMethodNamePost();
-        long main2 = (8 * (63L + 645L)) + 94L;
+        long decodeMethodName = cost_decodeMethodNamePre() + 27L + 100L + 109L + cost_decodeMethodNamePost("modify249");
+        long main2 = (63 + 340 + 63 + 340 + 63 + 345 + 63 + 345 + 63 + 345 + 63 + 345 + 63 + 345 + 63 + 345) + 94L;
         long modify249 = 65L + 29L + 85L;
         long main3 = cost_mainPostamble();
         return main + decodeMethodName + main2 + modify249 + main3;
     }
 
-    private long getCost_modifyNewInstance() {
+    private long getCost_nestedReentrantMethod(String methodName) {
         long main = cost_mainPreamble();
-        long decodeMethodName = cost_decodeMethodNamePre() + 51L + 100L + 1517L + cost_decodeMethodNamePost();
-        long main2 = (9 * (63L + 685L)) + 94L;
+        long decodeMethodName = cost_decodeMethodNamePre() + 51L + 100L + 117L + cost_decodeMethodNamePost(methodName);
+        long main2 = (63 + 340 + 63 + 340 + 63 + 385 + 63 + 385 + 63 + 385 + 63 + 385 + 63 + 380 + 63 + 345 + 63 + 385) + 94L;
         long modifyNewInstance = 230L + 63L;
         long main3 = cost_mainPostamble();
         return main + decodeMethodName + main2 + modifyNewInstance + main3;
     }
 
-    private long getCost_runNewInstance_reentrant(long transactionCost) {
+    private long getCost_runNewInstance_reentrant(long transactionCost, String methodName, String reentrantMethodName) {
         long storageReadCost = GRAPH_SIZE_BEFORE * StorageFees.READ_PRICE_PER_BYTE;
         long main = cost_mainPreamble();
-        long decodeMethodName = cost_decodeMethodNamePre() + 72L + 100L + 1524L + cost_decodeMethodNamePost();
-        long main2 = (5 * (63L + 720L)) + 94L;
-        long runNewInstance_reentrant = 134L + 29L + 223L + 685L + 60L + 100L + 1517L + 26L + 100L + 5000L;
+        long decodeMethodName = cost_decodeMethodNamePre() + 72L + 100L + 124L + cost_decodeMethodNamePost(methodName);
+        long main2 = (63 + 340 + 63 + 340 + 63 + 420 + 63 + 415 + 63 + 420) + 94L;
+        long runNewInstance_reentrant = 134L + 29L + 223L + 685L + 60L + 100L + 117L + 26L + 100L + 5000L;
         
         long nested_storageReadCost = GRAPH_SIZE_BEFORE * StorageFees.READ_PRICE_PER_BYTE;
-        long nested_modifyNewInstance = getCost_modifyNewInstance();
+        long nested_reeentrant_method = getCost_nestedReentrantMethod(reentrantMethodName);
         long nested_storageWriteCost = GRAPH_SIZE_AFTER * StorageFees.WRITE_PRICE_PER_BYTE;
-        long nestedCost = nested_storageReadCost + nested_modifyNewInstance + nested_storageWriteCost;
-        Assert.assertEquals(16826L, nestedCost);
+        long nestedCost = nested_storageReadCost + nested_reeentrant_method + nested_storageWriteCost;
+        Assert.assertEquals(12376L, nestedCost);
         
-        long newResult = 100L;
+        long newResult = 300L;
         long runNewInstance_reentrant2 = 60L + 100L + 23L;
         long main3 = cost_mainPostamble();
         long storageWriteCost = GRAPH_SIZE_AFTER * StorageFees.WRITE_PRICE_PER_BYTE;
@@ -363,8 +364,8 @@ public class GraphReachabilityIntegrationTest {
         Assert.assertEquals(22156L, check_transactionCost);
         long check_storageReadCost = GRAPH_SIZE_AFTER * StorageFees.READ_PRICE_PER_BYTE;
         long check_main = cost_mainPreamble();
-        long check_decodeMethodName = cost_decodeMethodNamePre() + 48L + 100L + 1516L + cost_decodeMethodNamePost();
-        long check_main2 = (7 * (63L + 680L)) + 69L;
+        long check_decodeMethodName = cost_decodeMethodNamePre() + 48L + 100L + 116L + cost_decodeMethodNamePost("checkNewInstance");
+        long check_main2 = (63 + 340 + 63 + 340 + 63 + 380 + 63 + 380 + 63 + 380 + 63 + 380 + 63 + 380) + 69L;
         long checkNewInstance = 63L;
         long check_main3 = 212L + 15L + 100L;
         long check_storageWriteCost = GRAPH_SIZE_AFTER * StorageFees.WRITE_PRICE_PER_BYTE;
@@ -382,8 +383,8 @@ public class GraphReachabilityIntegrationTest {
         return 37L + 39L + 41L + 114L + 37L + 39L + 23L + 53L + 23L + 76L + 53L + 82L + 148L + 256L;
     }
 
-    private static long cost_decodeMethodNamePost() {
-        return 600L + 26L + 26L;
+    private static long cost_decodeMethodNamePost(String methodName) {
+        return 300L + (methodName.getBytes().length * RuntimeMethodFeeSchedule.RT_METHOD_FEE_FACTOR_LEVEL_2) + 26L + 26L;
     }
 
     private static long cost_mainPostamble() {

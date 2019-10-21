@@ -321,7 +321,7 @@ public class MetaTransactionTest {
         Assert.assertTrue(result.transactionStatus.isSuccess());
         // Based on graph activity and executed code, we expect the doNothing() call to cost this much
         // - this should be EXACTLY the number billed by BlockchainRuntimeImpl when returning from the internal call.
-        long expectedDoNothingCost = 26_012L;
+        long expectedDoNothingCost = 22_657L;
         // Add the basic transaction cost to this.
         Assert.assertEquals(expectedDoNothingCost + BillingRules.getBasicTransactionCost(doNothingData), result.energyUsed);
         
@@ -331,7 +331,7 @@ public class MetaTransactionTest {
         result = AVM.run(KERNEL, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
         // We expect this to be the baseline cost we measured, plus API cost (call() and getRemainingEnergy() - see RuntimeMethodFeeSchedule) and allocate Result.
-        Assert.assertEquals(expectedDoNothingCost + 5000L + 100L + 100L, new ABIDecoder(result.copyOfTransactionOutput().get()).decodeOneLong());
+        Assert.assertEquals(expectedDoNothingCost + 5000L + 300L + 100L, new ABIDecoder(result.copyOfTransactionOutput().get()).decodeOneLong());
     }
 
     @Test
@@ -352,7 +352,7 @@ public class MetaTransactionTest {
         TransactionResult result = AVM.run(KERNEL, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
         // We expect this to be the baseline cost we measured, plus API cost (create() and getRemainingEnergy() - see RuntimeMethodFeeSchedule) and allocate Result.
-        Assert.assertEquals(expectedLocalDeploymentCost + 5000L + 100L + 100L, new ABIDecoder(result.copyOfTransactionOutput().get()).decodeOneLong());
+        Assert.assertEquals(expectedLocalDeploymentCost + 5000L + 300L + 100L, new ABIDecoder(result.copyOfTransactionOutput().get()).decodeOneLong());
     }
 
     @Test
@@ -369,7 +369,7 @@ public class MetaTransactionTest {
         Assert.assertTrue(result.transactionStatus.isSuccess());
         // Based on graph activity and executed code, we expect the doNothing() call to cost this much
         // - this should be EXACTLY the number billed by BlockchainRuntimeImpl when returning from the internal call.
-        long expectedDoNothingCost = 26_012L;
+        long expectedDoNothingCost = 22_657L;
         // Add the basic transaction cost to this.
         Assert.assertEquals(expectedDoNothingCost + BillingRules.getBasicTransactionCost(doNothingData), result.energyUsed);
         
@@ -380,7 +380,7 @@ public class MetaTransactionTest {
         result = AVM.run(KERNEL, new Transaction[] {transaction}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber() - 1)[0].getResult();
         Assert.assertTrue(result.transactionStatus.isSuccess());
         // We expect this to be the baseline cost we measured, plus API cost (call() and getRemainingEnergy() - see RuntimeMethodFeeSchedule) and allocate Result.
-        Assert.assertEquals(expectedDoNothingCost + 5000L + 100L + 100L, new ABIDecoder(result.copyOfTransactionOutput().get()).decodeOneLong());
+        Assert.assertEquals(expectedDoNothingCost + 5000L + 300L + 100L, new ABIDecoder(result.copyOfTransactionOutput().get()).decodeOneLong());
     }
 
     @Test

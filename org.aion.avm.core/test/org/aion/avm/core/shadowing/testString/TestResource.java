@@ -40,6 +40,10 @@ public class TestResource {
                 copyValueOfInvalidCount();
             } else if (methodName.equals("valueOfInvalidCount")) {
                 valueOfInvalidCount();
+            } else if (methodName.equals("contentEquals")) {
+                contentEquals();
+            } else if (methodName.equals("compareTo")) {
+                compareTo();
             } else {
                 return new byte[0];
             }
@@ -161,5 +165,83 @@ public class TestResource {
             Blockchain.require(remainingEnergy > Blockchain.getRemainingEnergy());
         }
         Blockchain.require(exceptionThrown);
+    }
+
+    public static void contentEquals(){
+        String str1 = "First String";
+        String str2 = "Second String";
+        StringBuffer str3 = new StringBuffer("Second String");
+        CharSequence str4 = "First String";
+
+        Blockchain.require(!str1.contentEquals(str3));
+        Blockchain.require(str2.contentEquals(str3));
+        Blockchain.require(str1.contentEquals(str4));
+        Blockchain.require(!str2.contentEquals(str4));
+
+        str3 = null;
+        str4 = null;
+
+        boolean NPEThrownForStringBuffer = false;
+        boolean NPEThrownForCharSequence = false;
+        long energy = 0;
+
+        try {
+            energy = Blockchain.getRemainingEnergy();
+            str1.contentEquals(str3);
+        } catch (NullPointerException e){
+            long energyAfter = Blockchain.getRemainingEnergy();
+            // ensure contentEquals consumed energy
+            Blockchain.require(energyAfter + 400 < energy);
+            NPEThrownForStringBuffer = true;
+        }
+
+        try {
+            energy = Blockchain.getRemainingEnergy();
+            str2.contentEquals(str4);
+        } catch (NullPointerException e){
+            long energyAfter = Blockchain.getRemainingEnergy();
+            // ensure contentEquals consumed energy
+            Blockchain.require(energyAfter + 400 < energy);
+            NPEThrownForCharSequence = true;
+        }
+
+        Blockchain.require(NPEThrownForStringBuffer && NPEThrownForCharSequence);
+
+        energy = Blockchain.getRemainingEnergy();
+        str2.equals(null);
+        Blockchain.require(Blockchain.getRemainingEnergy() + 300 < energy);
+    }
+
+    public static void compareTo() {
+        String str1 = "First String";
+        String str2 = "Second String";
+        Blockchain.require(str1.compareTo(str2) < 0);
+
+        long energy = 0;
+        boolean NPEThrown = false;
+
+        try {
+            energy = Blockchain.getRemainingEnergy();
+            str1.compareTo(null);
+        } catch (NullPointerException e){
+            long energyAfter = Blockchain.getRemainingEnergy();
+            // ensure compareTo consumed energy
+            Blockchain.require(energyAfter + 400 < energy);
+            NPEThrown = true;
+        }
+
+        Blockchain.require(NPEThrown);
+        NPEThrown = false;
+
+        try {
+            energy = Blockchain.getRemainingEnergy();
+            str1.compareToIgnoreCase(null);
+        } catch (NullPointerException e){
+            long energyAfter = Blockchain.getRemainingEnergy();
+            // ensure compareToIgnoreCase consumed energy
+            Blockchain.require(energyAfter + 400 < energy);
+            NPEThrown = true;
+        }
+        Blockchain.require(NPEThrown);
     }
 }
