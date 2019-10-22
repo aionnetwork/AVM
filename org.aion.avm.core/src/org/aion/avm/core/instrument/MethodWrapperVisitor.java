@@ -73,6 +73,8 @@ public final class MethodWrapperVisitor extends ClassToolchain.ToolChainClassVis
     @Override
     public void visitEnd() {
 
+        //TODO -- we need to generate all our static factory methods that will call into their respective constructors here.
+
         // Create a method wrapper for every non-abstract method we've visited.
         for (MethodInfo methodInfo : this.methodsToWrap) {
             int access = methodInfo.access;

@@ -2,6 +2,7 @@ package org.aion.avm.core;
 
 import org.aion.avm.core.miscvisitors.*;
 import org.aion.avm.core.instrument.MethodWrapperVisitor;
+import org.aion.avm.core.stacktracking.InitializationVisitor;
 import org.aion.avm.core.util.TransactionResultUtil;
 import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.types.AionAddress;
@@ -137,6 +138,17 @@ public class DAppCreator {
                     .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, classRenamer))
                     .build()
                     .runAndGetBytecode();
+//            transformedClasses.put(name, bytecode);
+
+            // ------------------- constructor instrumentation ------------------------
+            // This probably doesn't have to be done separately like this, but an isolated environment is useful for development.
+            bytecode = new ClassToolchain.Builder(bytecode, parsingOptions)
+                .addNextVisitor(new InitializationVisitor())
+                .addWriter(new TypeAwareClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, classHierarchy, classRenamer))
+                .build()
+                .runAndGetBytecode();
+            // ------------------------------------------------------------------------
+
             transformedClasses.put(name, bytecode);
         }
 
