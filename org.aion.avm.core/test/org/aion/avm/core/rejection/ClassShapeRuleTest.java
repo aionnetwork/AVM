@@ -20,6 +20,7 @@ import org.aion.types.TransactionResult;
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -44,6 +45,22 @@ public class ClassShapeRuleTest {
         Assert.assertTrue(result.transactionStatus.isFailed());
     }
 
+    @Test
+    public void testLimitCatch() throws Exception {
+        String className = "ClassName";
+        byte[] classBytes = createLongThrowClass(className, ConsensusLimitConstants.MAX_EXCEPTION_TABLE_ENTRIES);
+        TransactionResult result = deployOnAvm(className, classBytes);
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+    }
+
+    @Test
+    public void testDeepCatch() throws Exception {
+        String className = "ClassName";
+        byte[] classBytes = createLongThrowClass(className, ConsensusLimitConstants.MAX_EXCEPTION_TABLE_ENTRIES + 1);
+        TransactionResult result = deployOnAvm(className, classBytes);
+        Assert.assertTrue(result.transactionStatus.isFailed());
+    }
+
 
     private static byte[] createNoopClass(String className, int instructionCount) {
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
@@ -52,6 +69,44 @@ public class ClassShapeRuleTest {
         for (int i = 0; i < (instructionCount - 2); ++i) {
             method.visitInsn(Opcodes.NOP);
         }
+        method.visitInsn(Opcodes.ACONST_NULL);
+        method.visitInsn(Opcodes.ARETURN);
+        method.visitMaxs(0, 0);
+        method.visitEnd();
+        writer.visitEnd();
+        return writer.toByteArray();
+    }
+
+    private static byte[] createLongThrowClass(String className, int catchDepth) {
+        // Note that the way this test writes the method, catchDepth MUST be at least 1.
+        Assert.assertTrue(catchDepth >= 1);
+        
+        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+        writer.visit(Opcodes.V10, Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER, className, null, "java/lang/Object", new String[0]);
+        // To test on filesystem, use "([Ljava/lang/String;)V".
+        MethodVisitor method = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "main", "()[B", null, null);
+        Label start = new Label();
+        Label end = new Label();
+        Label handler = new Label();
+        method.visitTryCatchBlock(start, end, handler, "java/lang/NullPointerException");
+        method.visitLabel(start);
+        method.visitInsn(Opcodes.ACONST_NULL);
+        method.visitTypeInsn(Opcodes.CHECKCAST, "[Ljava/lang/Object;");
+        method.visitInsn(Opcodes.ARRAYLENGTH);
+        method.visitInsn(Opcodes.ACONST_NULL);
+        method.visitInsn(Opcodes.ARETURN);
+        method.visitLabel(end);
+        for (int i = 0; i < (catchDepth - 1); ++i) {
+            method.visitLabel(handler);
+            start = new Label();
+            end = new Label();
+            handler = new Label();
+            method.visitTryCatchBlock(start, end, handler, "java/lang/NullPointerException");
+            method.visitLabel(start);
+            method.visitInsn(Opcodes.ATHROW);
+            method.visitLabel(end);
+        }
+        method.visitLabel(handler);
         method.visitInsn(Opcodes.ACONST_NULL);
         method.visitInsn(Opcodes.ARETURN);
         method.visitMaxs(0, 0);
