@@ -33,96 +33,96 @@ public class ClassShapeRuleTest {
     public void testLimitNoop() throws Exception {
         String className = "ClassName";
         byte[] classBytes = createNoopClass(className, ConsensusLimitConstants.MAX_METHOD_BYTE_LENGTH);
-        TransactionResult result = deployOnAvm(className, classBytes);
-        Assert.assertTrue(result.transactionStatus.isSuccess());
+        boolean didDeploy = deployOnAvm(className, classBytes);
+        Assert.assertTrue(didDeploy);
     }
 
     @Test
     public void testLongNoop() throws Exception {
         String className = "ClassName";
         byte[] classBytes = createNoopClass(className, ConsensusLimitConstants.MAX_METHOD_BYTE_LENGTH + 1);
-        TransactionResult result = deployOnAvm(className, classBytes);
-        Assert.assertTrue(result.transactionStatus.isFailed());
+        boolean didDeploy = deployOnAvm(className, classBytes);
+        Assert.assertFalse(didDeploy);
     }
 
     @Test
     public void testLimitCatch() throws Exception {
         String className = "ClassName";
         byte[] classBytes = createLongThrowClass(className, ConsensusLimitConstants.MAX_EXCEPTION_TABLE_ENTRIES);
-        TransactionResult result = deployOnAvm(className, classBytes);
-        Assert.assertTrue(result.transactionStatus.isSuccess());
+        boolean didDeploy = deployOnAvm(className, classBytes);
+        Assert.assertTrue(didDeploy);
     }
 
     @Test
     public void testDeepCatch() throws Exception {
         String className = "ClassName";
         byte[] classBytes = createLongThrowClass(className, ConsensusLimitConstants.MAX_EXCEPTION_TABLE_ENTRIES + 1);
-        TransactionResult result = deployOnAvm(className, classBytes);
-        Assert.assertTrue(result.transactionStatus.isFailed());
+        boolean didDeploy = deployOnAvm(className, classBytes);
+        Assert.assertFalse(didDeploy);
     }
 
     @Test
     public void testLimitIntPush() throws Exception {
         String className = "ClassName";
         byte[] classBytes = createDeepPushClass(className, ConsensusLimitConstants.MAX_OPERAND_STACK_DEPTH, false);
-        TransactionResult result = deployOnAvm(className, classBytes);
-        Assert.assertTrue(result.transactionStatus.isSuccess());
+        boolean didDeploy = deployOnAvm(className, classBytes);
+        Assert.assertTrue(didDeploy);
     }
 
     @Test
     public void testDeepIntPush() throws Exception {
         String className = "ClassName";
         byte[] classBytes = createDeepPushClass(className, ConsensusLimitConstants.MAX_OPERAND_STACK_DEPTH + 1, false);
-        TransactionResult result = deployOnAvm(className, classBytes);
-        Assert.assertTrue(result.transactionStatus.isFailed());
+        boolean didDeploy = deployOnAvm(className, classBytes);
+        Assert.assertFalse(didDeploy);
     }
 
     @Test
     public void testLimitLongPush() throws Exception {
         String className = "ClassName";
         byte[] classBytes = createDeepPushClass(className, ceilingDivideByTwo(ConsensusLimitConstants.MAX_OPERAND_STACK_DEPTH), true);
-        TransactionResult result = deployOnAvm(className, classBytes);
-        Assert.assertTrue(result.transactionStatus.isSuccess());
+        boolean didDeploy = deployOnAvm(className, classBytes);
+        Assert.assertTrue(didDeploy);
     }
 
     @Test
     public void testDeepLongPush() throws Exception {
         String className = "ClassName";
         byte[] classBytes = createDeepPushClass(className, ceilingDivideByTwo(ConsensusLimitConstants.MAX_OPERAND_STACK_DEPTH) + 1, true);
-        TransactionResult result = deployOnAvm(className, classBytes);
-        Assert.assertTrue(result.transactionStatus.isFailed());
+        boolean didDeploy = deployOnAvm(className, classBytes);
+        Assert.assertFalse(didDeploy);
     }
 
     @Test
     public void testLimitIntVars() throws Exception {
         String className = "ClassName";
         byte[] classBytes = createVarHeavyClass(className, ConsensusLimitConstants.MAX_LOCAL_VARIABLES, false);
-        TransactionResult result = deployOnAvm(className, classBytes);
-        Assert.assertTrue(result.transactionStatus.isSuccess());
+        boolean didDeploy = deployOnAvm(className, classBytes);
+        Assert.assertTrue(didDeploy);
     }
 
     @Test
     public void testFailIntVars() throws Exception {
         String className = "ClassName";
         byte[] classBytes = createVarHeavyClass(className, ConsensusLimitConstants.MAX_LOCAL_VARIABLES + 1, false);
-        TransactionResult result = deployOnAvm(className, classBytes);
-        Assert.assertTrue(result.transactionStatus.isFailed());
+        boolean didDeploy = deployOnAvm(className, classBytes);
+        Assert.assertFalse(didDeploy);
     }
 
     @Test
     public void testLimitLongVars() throws Exception {
         String className = "ClassName";
         byte[] classBytes = createVarHeavyClass(className, ConsensusLimitConstants.MAX_LOCAL_VARIABLES - 1, true);
-        TransactionResult result = deployOnAvm(className, classBytes);
-        Assert.assertTrue(result.transactionStatus.isSuccess());
+        boolean didDeploy = deployOnAvm(className, classBytes);
+        Assert.assertTrue(didDeploy);
     }
 
     @Test
     public void testFailLongVars() throws Exception {
         String className = "ClassName";
         byte[] classBytes = createVarHeavyClass(className, ConsensusLimitConstants.MAX_LOCAL_VARIABLES, true);
-        TransactionResult result = deployOnAvm(className, classBytes);
-        Assert.assertTrue(result.transactionStatus.isFailed());
+        boolean didDeploy = deployOnAvm(className, classBytes);
+        Assert.assertFalse(didDeploy);
     }
 
 
@@ -242,17 +242,28 @@ public class ClassShapeRuleTest {
         return writer.toByteArray();
     }
 
-    private TransactionResult deployOnAvm(String className, byte[] classBytes) {
+    private boolean deployOnAvm(String className, byte[] classBytes) {
         byte[] jar = JarBuilder.buildJarForExplicitClassNamesAndBytecode(className, classBytes, Collections.emptyMap());
         byte[] deployment = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         TestingState kernel = new TestingState(BLOCK);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         long energyLimit = 5_000_000l;
         long energyPrice = 1l;
-        Transaction tx = AvmTransactionUtil.create(DEPLOYER, kernel.getNonce(DEPLOYER), BigInteger.ZERO, deployment, energyLimit, energyPrice);
-        TransactionResult result = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, 0)[0].getResult();
+        Transaction deploymentTransaction = AvmTransactionUtil.create(DEPLOYER, kernel.getNonce(DEPLOYER), BigInteger.ZERO, deployment, energyLimit, energyPrice);
+        TransactionResult deploymentResult = avm.run(kernel, new Transaction[] {deploymentTransaction}, ExecutionType.ASSUME_MAINCHAIN, 0)[0].getResult();
+        boolean didDeploy = deploymentResult.transactionStatus.isSuccess();
+        
+        // If the deployment was a success, we also want to send a basic call which should always succeed.
+        if (didDeploy) {
+            AionAddress contractAddress = new AionAddress(deploymentResult.copyOfTransactionOutput().orElseThrow());
+            Transaction callTransaction = AvmTransactionUtil.call(DEPLOYER, contractAddress, kernel.getNonce(DEPLOYER), BigInteger.ZERO, new byte[0], energyLimit, energyPrice);
+            TransactionResult result = avm.run(kernel, new Transaction[] {callTransaction}, ExecutionType.ASSUME_MAINCHAIN, 0)[0].getResult();
+            Assert.assertTrue(result.transactionStatus.isSuccess());
+        }
+        
+        // Now, shut down and return whether or not the deployment was a success.
         avm.shutdown();
-        return result;
+        return didDeploy;
     }
 
     private int ceilingDivideByTwo(int value) {
