@@ -93,6 +93,38 @@ public class ClassShapeRuleTest {
         Assert.assertTrue(result.transactionStatus.isFailed());
     }
 
+    @Test
+    public void testLimitIntVars() throws Exception {
+        String className = "ClassName";
+        byte[] classBytes = createVarHeavyClass(className, ConsensusLimitConstants.MAX_LOCAL_VARIABLES, false);
+        TransactionResult result = deployOnAvm(className, classBytes);
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+    }
+
+    @Test
+    public void testFailIntVars() throws Exception {
+        String className = "ClassName";
+        byte[] classBytes = createVarHeavyClass(className, ConsensusLimitConstants.MAX_LOCAL_VARIABLES + 1, false);
+        TransactionResult result = deployOnAvm(className, classBytes);
+        Assert.assertTrue(result.transactionStatus.isFailed());
+    }
+
+    @Test
+    public void testLimitLongVars() throws Exception {
+        String className = "ClassName";
+        byte[] classBytes = createVarHeavyClass(className, ConsensusLimitConstants.MAX_LOCAL_VARIABLES - 1, true);
+        TransactionResult result = deployOnAvm(className, classBytes);
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+    }
+
+    @Test
+    public void testFailLongVars() throws Exception {
+        String className = "ClassName";
+        byte[] classBytes = createVarHeavyClass(className, ConsensusLimitConstants.MAX_LOCAL_VARIABLES, true);
+        TransactionResult result = deployOnAvm(className, classBytes);
+        Assert.assertTrue(result.transactionStatus.isFailed());
+    }
+
 
     private static byte[] createNoopClass(String className, int instructionCount) {
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
@@ -172,6 +204,35 @@ public class ClassShapeRuleTest {
         // Reduce the push count by 1 since we have at least one more slot for the return value.
         for (int i = 0; i < (pushCount - 1); ++i) {
             method.visitVarInsn(loadOpcode, 0);
+        }
+        method.visitInsn(Opcodes.ACONST_NULL);
+        method.visitInsn(Opcodes.ARETURN);
+        method.visitMaxs(0, 0);
+        method.visitEnd();
+        writer.visitEnd();
+        return writer.toByteArray();
+    }
+
+    private static byte[] createVarHeavyClass(String className, int varCount, boolean isLong) {
+        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+        writer.visit(Opcodes.V10, Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER, className, null, "java/lang/Object", new String[0]);
+        MethodVisitor method = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "main", "()[B", null, null);
+        Object oneLong = Long.valueOf(1L);
+        Object oneInt = Integer.valueOf(1);
+        Object value = isLong
+                ? oneLong
+                : oneInt;
+        int storeOpcode = isLong ? Opcodes.LSTORE : Opcodes.ISTORE;
+        // visitLdcInsn uses a type check so make sure that we got the type we were expecting (some compilers try to get clever here).
+        if (isLong) {
+            Assert.assertTrue(value instanceof Long);
+        } else {
+            Assert.assertTrue(value instanceof Integer);
+        }
+        // Note that we will actually invalidate the local variable n-1 when writing a long, but this is just to verify that it reserves the next slot.
+        for (int i = 0; i < varCount; ++i) {
+            method.visitLdcInsn(value);
+            method.visitVarInsn(storeOpcode, i);
         }
         method.visitInsn(Opcodes.ACONST_NULL);
         method.visitInsn(Opcodes.ARETURN);
