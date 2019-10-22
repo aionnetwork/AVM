@@ -61,6 +61,38 @@ public class ClassShapeRuleTest {
         Assert.assertTrue(result.transactionStatus.isFailed());
     }
 
+    @Test
+    public void testLimitIntPush() throws Exception {
+        String className = "ClassName";
+        byte[] classBytes = createDeepPushClass(className, ConsensusLimitConstants.MAX_OPERAND_STACK_DEPTH, false);
+        TransactionResult result = deployOnAvm(className, classBytes);
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+    }
+
+    @Test
+    public void testDeepIntPush() throws Exception {
+        String className = "ClassName";
+        byte[] classBytes = createDeepPushClass(className, ConsensusLimitConstants.MAX_OPERAND_STACK_DEPTH + 1, false);
+        TransactionResult result = deployOnAvm(className, classBytes);
+        Assert.assertTrue(result.transactionStatus.isFailed());
+    }
+
+    @Test
+    public void testLimitLongPush() throws Exception {
+        String className = "ClassName";
+        byte[] classBytes = createDeepPushClass(className, ceilingDivideByTwo(ConsensusLimitConstants.MAX_OPERAND_STACK_DEPTH), true);
+        TransactionResult result = deployOnAvm(className, classBytes);
+        Assert.assertTrue(result.transactionStatus.isSuccess());
+    }
+
+    @Test
+    public void testDeepLongPush() throws Exception {
+        String className = "ClassName";
+        byte[] classBytes = createDeepPushClass(className, ceilingDivideByTwo(ConsensusLimitConstants.MAX_OPERAND_STACK_DEPTH) + 1, true);
+        TransactionResult result = deployOnAvm(className, classBytes);
+        Assert.assertTrue(result.transactionStatus.isFailed());
+    }
+
 
     private static byte[] createNoopClass(String className, int instructionCount) {
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
@@ -115,6 +147,40 @@ public class ClassShapeRuleTest {
         return writer.toByteArray();
     }
 
+    private static byte[] createDeepPushClass(String className, int pushCount, boolean isLong) {
+        // Note that the setup for the method requires at least 2 stack depth.
+        Assert.assertTrue(pushCount >= 2);
+        
+        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+        writer.visit(Opcodes.V10, Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER, className, null, "java/lang/Object", new String[0]);
+        MethodVisitor method = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "main", "()[B", null, null);
+        Object oneLong = Long.valueOf(1L);
+        Object oneInt = Integer.valueOf(1);
+        Object value = isLong
+                ? oneLong
+                : oneInt;
+        // visitLdcInsn uses a type check so make sure that we got the type we were expecting (some compilers try to get clever here).
+        if (isLong) {
+            Assert.assertTrue(value instanceof Long);
+        } else {
+            Assert.assertTrue(value instanceof Integer);
+        }
+        method.visitLdcInsn(value);
+        int storeOpcode = isLong ? Opcodes.LSTORE : Opcodes.ISTORE;
+        method.visitVarInsn(storeOpcode, 0);
+        int loadOpcode = isLong ? Opcodes.LLOAD : Opcodes.ILOAD;
+        // Reduce the push count by 1 since we have at least one more slot for the return value.
+        for (int i = 0; i < (pushCount - 1); ++i) {
+            method.visitVarInsn(loadOpcode, 0);
+        }
+        method.visitInsn(Opcodes.ACONST_NULL);
+        method.visitInsn(Opcodes.ARETURN);
+        method.visitMaxs(0, 0);
+        method.visitEnd();
+        writer.visitEnd();
+        return writer.toByteArray();
+    }
+
     private TransactionResult deployOnAvm(String className, byte[] classBytes) {
         byte[] jar = JarBuilder.buildJarForExplicitClassNamesAndBytecode(className, classBytes, Collections.emptyMap());
         byte[] deployment = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
@@ -126,5 +192,9 @@ public class ClassShapeRuleTest {
         TransactionResult result = avm.run(kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, 0)[0].getResult();
         avm.shutdown();
         return result;
+    }
+
+    private int ceilingDivideByTwo(int value) {
+        return (value + 1) / 2;
     }
 }
