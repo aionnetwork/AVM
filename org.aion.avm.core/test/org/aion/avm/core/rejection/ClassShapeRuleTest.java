@@ -125,6 +125,22 @@ public class ClassShapeRuleTest {
         Assert.assertFalse(didDeploy);
     }
 
+    @Test
+    public void testLimitMethodCount() throws Exception {
+        String className = "ClassName";
+        byte[] classBytes = createMethodHeavyClass(className, ConsensusLimitConstants.MAX_METHOD_COUNT);
+        boolean didDeploy = deployOnAvm(className, classBytes);
+        Assert.assertTrue(didDeploy);
+    }
+
+    @Test
+    public void testFailMethodCount() throws Exception {
+        String className = "ClassName";
+        byte[] classBytes = createMethodHeavyClass(className, ConsensusLimitConstants.MAX_METHOD_COUNT + 1);
+        boolean didDeploy = deployOnAvm(className, classBytes);
+        Assert.assertFalse(didDeploy);
+    }
+
 
     private static byte[] createNoopClass(String className, int instructionCount) {
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
@@ -238,6 +254,34 @@ public class ClassShapeRuleTest {
         method.visitInsn(Opcodes.ARETURN);
         method.visitMaxs(0, 0);
         method.visitEnd();
+        writer.visitEnd();
+        return writer.toByteArray();
+    }
+
+    private static byte[] createMethodHeavyClass(String className, int methodCount) {
+        // Note that the class will have the main so we need at least one method.
+        Assert.assertTrue(methodCount >= 1);
+        
+        String methodPrefix = "method_";
+        String methodDescriptor = "()V";
+        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+        writer.visit(Opcodes.V10, Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER, className, null, "java/lang/Object", new String[0]);
+        MethodVisitor method = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "main", "()[B", null, null);
+        for (int i = 0; i < (methodCount - 1); ++i) {
+            String methodName = methodPrefix + i;
+            method.visitMethodInsn(Opcodes.INVOKESTATIC, className, methodName, methodDescriptor, false);
+        }
+        method.visitInsn(Opcodes.ACONST_NULL);
+        method.visitInsn(Opcodes.ARETURN);
+        method.visitMaxs(0, 0);
+        method.visitEnd();
+        for (int i = 0; i < (methodCount - 1); ++i) {
+            String methodName = methodPrefix + i;
+            MethodVisitor targetMethod = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, methodName, methodDescriptor, null, null);
+            targetMethod.visitInsn(Opcodes.RETURN);
+            targetMethod.visitMaxs(0, 0);
+            targetMethod.visitEnd();
+        }
         writer.visitEnd();
         return writer.toByteArray();
     }
