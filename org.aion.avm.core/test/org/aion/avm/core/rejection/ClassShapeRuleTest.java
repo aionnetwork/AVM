@@ -141,6 +141,22 @@ public class ClassShapeRuleTest {
         Assert.assertFalse(didDeploy);
     }
 
+    @Test
+    public void testLimitConstantPoolEntries() throws Exception {
+        String className = "ClassName";
+        byte[] classBytes = createConstantHeavyClass(className, ConsensusLimitConstants.MAX_CONSTANT_POOL_ENTRIES);
+        boolean didDeploy = deployOnAvm(className, classBytes);
+        Assert.assertTrue(didDeploy);
+    }
+
+    @Test
+    public void testFailConstantPoolEntries() throws Exception {
+        String className = "ClassName";
+        byte[] classBytes = createConstantHeavyClass(className, ConsensusLimitConstants.MAX_CONSTANT_POOL_ENTRIES + 1);
+        boolean didDeploy = deployOnAvm(className, classBytes);
+        Assert.assertFalse(didDeploy);
+    }
+
 
     private static byte[] createNoopClass(String className, int instructionCount) {
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
@@ -278,6 +294,48 @@ public class ClassShapeRuleTest {
         for (int i = 0; i < (methodCount - 1); ++i) {
             String methodName = methodPrefix + i;
             MethodVisitor targetMethod = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, methodName, methodDescriptor, null, null);
+            targetMethod.visitInsn(Opcodes.RETURN);
+            targetMethod.visitMaxs(0, 0);
+            targetMethod.visitEnd();
+        }
+        writer.visitEnd();
+        return writer.toByteArray();
+    }
+
+    private static byte[] createConstantHeavyClass(String className, int constantCount) {
+        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+        writer.visit(Opcodes.V10, Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER, className, null, "java/lang/Object", new String[0]);
+        MethodVisitor method = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "main", "()[B", null, null);
+        // Note that we don't want to hit the method size limit so restrict this to 1000 constants per method.
+        int constantsPerMethod = 1000;
+        int methodCount = (constantCount + constantsPerMethod - 1) / constantsPerMethod; 
+        String methodPrefix = "method_";
+        String methodDescriptor = "()V";
+        
+        // Note that the class will have constants for names, etc, so make sure we at least specify enough for that.
+        // Specifically, there are 8 constants plus 3 per method generated.
+        int baseConstantsAdded = 8 + (methodCount * 3);
+        Assert.assertTrue(constantCount >= baseConstantsAdded);
+        int constantsToLoad = constantCount - baseConstantsAdded;
+        
+        for (int i = 0; i < methodCount; ++i) {
+            String methodName = methodPrefix + i;
+            method.visitMethodInsn(Opcodes.INVOKESTATIC, className, methodName, methodDescriptor, false);
+        }
+        method.visitInsn(Opcodes.ACONST_NULL);
+        method.visitInsn(Opcodes.ARETURN);
+        method.visitMaxs(0, 0);
+        method.visitEnd();
+        int constantsCreated = 0;
+        for (int i = 0; i < methodCount; ++i) {
+            String methodName = methodPrefix + i;
+            MethodVisitor targetMethod = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, methodName, methodDescriptor, null, null);
+            int constantsInMethod = Math.min((constantsToLoad - constantsCreated), constantsPerMethod);
+            for (int j = 0; j < constantsInMethod; ++j) {
+                targetMethod.visitLdcInsn(Integer.valueOf(constantsCreated + j));
+                targetMethod.visitInsn(Opcodes.POP);
+            }
+            constantsCreated += constantsInMethod;
             targetMethod.visitInsn(Opcodes.RETURN);
             targetMethod.visitMaxs(0, 0);
             targetMethod.visitEnd();
