@@ -237,5 +237,15 @@ public class StringBufferResource {
         Blockchain.require(sb.toString().length() == 108);
     }
 
+    @Callable
+    public static void stringBufferCharSequence() {
+        CharSequence charSeq = "charSeq";
+        StringBuffer s = new StringBuffer(charSeq);
+        Blockchain.require(s.toString().contentEquals(charSeq));
+
+        s.append(charSeq);
+        Blockchain.require(s.toString().equals("charSeqcharSeq"));
+    }
+
     public static class SampleClass{}
 }

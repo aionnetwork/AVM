@@ -150,5 +150,15 @@ public class StringBuilderResource {
         Blockchain.require(sb.toString().length() == 109);
     }
 
+    @Callable
+    public static void stringBuilderCharSequence() {
+        CharSequence charSeq = "charSeq";
+        StringBuilder s = new StringBuilder(charSeq);
+        Blockchain.require(s.toString().contentEquals(charSeq));
+
+        s.append(charSeq);
+        Blockchain.require(s.toString().equals("charSeqcharSeq"));
+    }
+
     public static class SampleClass{}
 }

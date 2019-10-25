@@ -1,5 +1,6 @@
 package org.aion.avm.embed.shadowing.testEnum;
 
+import avm.Blockchain;
 import org.aion.avm.tooling.abi.Callable;
 
 import java.math.MathContext;
@@ -96,10 +97,25 @@ public class TestResource {
         MathContext mc = new MathContext(1, RoundingMode.UP);
         ret = ret && (mc.hashCode() == 414);
 
-        ret = ret && (Type1.NORMAL.hashCode() == 31);
-        ret = ret && (Type2.SPECIALIZED.hashCode() == 29);
+        ret = ret && (Type1.NORMAL.hashCode() == 33);
+        ret = ret && (Type2.SPECIALIZED.hashCode() == 31);
 
         return ret;
+    }
+
+    @Callable
+    public static boolean EnumValueOf() {
+        Enum earthValue = TestEnum.valueOf("EARTH");
+        Blockchain.require(earthValue == earth);
+
+        boolean thrown = false;
+        try {
+            TestEnum.valueOf("earth");
+        } catch (IllegalArgumentException e){
+            thrown = true;
+        }
+
+        return thrown;
     }
 
     interface GeneralType {}

@@ -72,4 +72,12 @@ public class EnumShadowingTest {
         Assert.assertEquals(true, result);
     }
 
+    @Test
+    public void EnumValueOf() {
+        byte[] txData = ABIUtil.encodeMethodArguments("EnumValueOf");
+        Object result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice).getDecodedReturnData();
+
+        Assert.assertEquals(true, result);
+    }
+
 }

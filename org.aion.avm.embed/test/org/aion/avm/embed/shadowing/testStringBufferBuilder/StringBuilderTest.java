@@ -69,6 +69,11 @@ public class StringBuilderTest {
         callStatic("stringBuilderInvalidInsert");
     }
 
+    @Test
+    public void stringBuilderCharSequence(){
+        callStatic("stringBuilderCharSequence");
+    }
+
     private void callStatic(String methodName, Object... args) {
         byte[] data = ABIUtil.encodeMethodArguments(methodName, args);
         AvmRule.ResultWrapper result = avmRule.call(from, dappAddr, BigInteger.ZERO, data, 2_000_000, 1);
