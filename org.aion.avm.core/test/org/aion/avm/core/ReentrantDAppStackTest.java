@@ -12,9 +12,9 @@ public class ReentrantDAppStackTest {
     @Test
     public void commonPushAndPop() throws Exception {
         ReentrantDAppStack stack = new ReentrantDAppStack();
-        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, 1, null);
-        ReentrantDAppStack.ReentrantState state2 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x2), null, 1, null);
-        ReentrantDAppStack.ReentrantState state3 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x3), null, 1, null);
+        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, 1);
+        ReentrantDAppStack.ReentrantState state2 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x2), null, 1);
+        ReentrantDAppStack.ReentrantState state3 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x3), null, 1);
         
         stack.pushState(state1);
         stack.pushState(state2);
@@ -27,7 +27,7 @@ public class ReentrantDAppStackTest {
     @Test
     public void popEmptyAsNull() throws Exception {
         ReentrantDAppStack stack = new ReentrantDAppStack();
-        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, 1, null);
+        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, 1);
         
         stack.pushState(state1);
         Assert.assertEquals(state1, stack.popState());
@@ -37,9 +37,9 @@ public class ReentrantDAppStackTest {
     @Test
     public void basicSearch() throws Exception {
         ReentrantDAppStack stack = new ReentrantDAppStack();
-        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, 1, null);
-        ReentrantDAppStack.ReentrantState state2 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x2), null, 1, null);
-        ReentrantDAppStack.ReentrantState state3 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x3), null, 1, null);
+        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, 1);
+        ReentrantDAppStack.ReentrantState state2 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x2), null, 1);
+        ReentrantDAppStack.ReentrantState state3 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x3), null, 1);
         
         Assert.assertNull(stack.tryShareState(getNewAddress(0x1)));
         
@@ -62,10 +62,10 @@ public class ReentrantDAppStackTest {
     @Test
     public void shadowedSearch() throws Exception {
         ReentrantDAppStack stack = new ReentrantDAppStack();
-        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, 1, null);
-        ReentrantDAppStack.ReentrantState state2 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x2), null, 1, null);
-        ReentrantDAppStack.ReentrantState state3 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x3), null, 1, null);
-        ReentrantDAppStack.ReentrantState state1_again = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, 1, null);
+        ReentrantDAppStack.ReentrantState state1 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, 1);
+        ReentrantDAppStack.ReentrantState state2 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x2), null, 1);
+        ReentrantDAppStack.ReentrantState state3 = new ReentrantDAppStack.ReentrantState(getNewAddress(0x3), null, 1);
+        ReentrantDAppStack.ReentrantState state1_again = new ReentrantDAppStack.ReentrantState(getNewAddress(0x1), null, 1);
         
         stack.pushState(state1);
         stack.pushState(state2);

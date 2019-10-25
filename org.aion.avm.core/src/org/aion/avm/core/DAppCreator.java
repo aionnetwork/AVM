@@ -225,7 +225,7 @@ public class DAppCreator {
             
             // We start the nextHashCode at 1.
             int nextHashCode = 1;
-            InstrumentationHelpers.pushNewStackFrame(dapp.runtimeSetup, dapp.loader, energyLimit - result.energyUsed(), nextHashCode, new InternedClasses());
+            InstrumentationHelpers.pushNewStackFrame(dapp.runtimeSetup, dapp.loader, energyLimit - result.energyUsed(), nextHashCode, dapp.internedClasses);
             runtimeSetup = dapp.runtimeSetup;
 
             // (we pass a null reentrant state since we haven't finished initializing yet - nobody can call into us).
