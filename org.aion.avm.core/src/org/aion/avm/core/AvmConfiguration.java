@@ -1,5 +1,6 @@
 package org.aion.avm.core;
 
+import java.io.File;
 import java.io.PrintStream;
 
 /**
@@ -38,9 +39,15 @@ public class AvmConfiguration {
     public boolean enableBlockchainPrintln;
     /**
      * If set to non-null, enables the collection of deployment data: various information collected about deployed contracts.
-     * When shutting down the AVM instance, a histgram of this data will be dumped to the given PrintStream.
+     * When shutting down the AVM instance, a histogram of this data will be dumped to the given PrintStream.
      */
     public PrintStream deploymentDataHistorgramOutput;
+    /**
+     * If set to non-null, enables the capture of all deployed contracts into this directory, along with other information
+     * describing the context of the deployment transaction.
+     * This is useful for capturing the data from a network for offline analysis.
+     */
+    public File contractCaptureDirectory;
 
     public AvmConfiguration() {
         // 4 threads is generally a safe, yet useful, number.
@@ -54,5 +61,7 @@ public class AvmConfiguration {
         this.enableBlockchainPrintln = true;
         // This is not a cheap bit of instrumentation so we disable it, by default.
         this.deploymentDataHistorgramOutput = null;
+        // This is a very uncommon use-case so it defaults to off.
+        this.contractCaptureDirectory = null;
     }
 }

@@ -17,6 +17,7 @@ import java.util.function.Predicate;
 
 import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.util.ByteArrayWrapper;
+import org.aion.avm.core.util.ContractCaptureTool;
 import org.aion.avm.core.util.SoftCache;
 import i.IInstrumentation;
 import i.IInstrumentationFactory;
@@ -54,6 +55,7 @@ public class AvmImpl implements AvmInternal {
     private final boolean enableVerboseConcurrentExecutor;
     private final boolean enableBlockchainPrintln;
     private final HistogramDataCollector histogramDataCollector;
+    private final ContractCaptureTool contractCaptureTool;
 
     public AvmImpl(IInstrumentationFactory instrumentationFactory, IExternalCapabilities capabilities, AvmConfiguration configuration) {
         this.instrumentationFactory = instrumentationFactory;
@@ -70,6 +72,9 @@ public class AvmImpl implements AvmInternal {
         this.internalLogger = new InternalLogger(System.err);
         this.histogramDataCollector = (null != configuration.deploymentDataHistorgramOutput)
                 ? new HistogramDataCollector(configuration.deploymentDataHistorgramOutput)
+                : null;
+        this.contractCaptureTool = (null != configuration.contractCaptureDirectory)
+                ? new ContractCaptureTool(configuration.contractCaptureDirectory)
                 : null;
     }
 
@@ -161,6 +166,11 @@ public class AvmImpl implements AvmInternal {
         // There are currently no consumers which have more than 1 AVM instance running concurrently so we enforce this in order to flag static errors.
         RuntimeAssertionError.assertTrue(null == AvmImpl.currentAvm);
         AvmImpl.currentAvm = this;
+        
+        // See if we need to enable the contract capture.
+        if (null != this.contractCaptureTool) {
+            this.contractCaptureTool.startup();
+        }
         
         RuntimeAssertionError.assertTrue(null == this.hotCache);
         RuntimeAssertionError.assertTrue(null == this.transformedCodeCache);
@@ -459,11 +469,16 @@ public class AvmImpl implements AvmInternal {
 
         // do nothing for balance transfers of which the recipient is not a DApp address.
         if (isCreate) {
-            if (null != this.histogramDataCollector) {
+            if ((null != this.histogramDataCollector) || (null != this.contractCaptureTool)) {
                 CodeAndArguments codeAndArguments = CodeAndArguments.decodeFromBytes(transactionData);
                 // If this data is invalid, we will get null.  We don't bother tracking this.
                 if (null != codeAndArguments) {
-                    this.histogramDataCollector.collectDataFromJarBytes(codeAndArguments.code);
+                    if (null != this.histogramDataCollector) {
+                        this.histogramDataCollector.collectDataFromJarBytes(codeAndArguments.code);
+                    }
+                    if (null != this.contractCaptureTool) {
+                        this.contractCaptureTool.captureDeployment(parentKernel.getBlockNumber(), senderAddress, recipient, nonce, codeAndArguments.code, codeAndArguments.arguments);
+                    }
                 }
             }
             result = DAppCreator.create(this.capabilities, thisTransactionKernel, this, task, senderAddress, recipient, effectiveTransactionOrigin, transactionData, transactionHash, energyLimit, energyPrice, transactionValue, result, this.preserveDebuggability, this.enableVerboseContractErrors, this.enableBlockchainPrintln);
