@@ -81,11 +81,6 @@ public class StringBufferTest {
     }
 
     @Test
-    public void stringBufferInvalidConstructor(){
-        callStatic("stringBufferInvalidConstructor");
-    }
-
-    @Test
     public void stringBufferInvalidAppend(){
         callStatic("stringBufferInvalidAppend");
     }

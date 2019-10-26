@@ -171,28 +171,11 @@ public class StringBufferResource {
 
     @Callable
     public static void stringBufferConstructor() {
-        StringBuffer sb = new StringBuffer(100);
-        Blockchain.require(sb.length() == 0);
-
         StringBuffer sb2 = new StringBuffer("MyString");
         Blockchain.require(sb2.toString().equals("MyString"));
 
         StringBuffer sb3 = new StringBuffer((CharSequence) "MyString");
         Blockchain.require(sb3.toString().equals("MyString"));
-    }
-
-    @Callable
-    public static void stringBufferInvalidConstructor() {
-        long energyRemaining = 0l;
-        boolean exceptionThrown = false;
-        try {
-            energyRemaining = Blockchain.getRemainingEnergy();
-            StringBuffer sb = new StringBuffer(-10000000);
-        } catch (NegativeArraySizeException e) {
-            exceptionThrown = true;
-            Blockchain.require(energyRemaining > Blockchain.getRemainingEnergy());
-        }
-        Blockchain.require(exceptionThrown);
     }
 
     @Callable
