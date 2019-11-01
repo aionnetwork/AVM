@@ -14,7 +14,6 @@ public class AionListTest {
     public void emptyListTest() {
         AionList<Integer> list = new AionList<>();
         Assert.assertEquals(0, list.size());
-        Assert.assertEquals(null, list.get(0));
         Assert.assertEquals(false, list.remove(Integer.valueOf(5)));
     }
 

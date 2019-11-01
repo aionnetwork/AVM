@@ -78,10 +78,10 @@ public class DeploymentCostTest {
     @Test
     public void testCostToDeployDapps() {
         TransactionResult blake2bResult = deployContract(Contract.BLAKE2B);
-        Assert.assertEquals(4_591_258L, blake2bResult.energyUsed);
+        Assert.assertEquals(4_621_113L, blake2bResult.energyUsed);
         
         TransactionResult walletResult = deployContract(Contract.POC_WALLET);
-        Assert.assertEquals(3_955_373L, walletResult.energyUsed);
+        Assert.assertEquals(3_985_228L, walletResult.energyUsed);
     }
 
     //<-----------------------------------------helpers-------------------------------------------->
@@ -100,7 +100,7 @@ public class DeploymentCostTest {
                     Main.class,
                     Blake2b.class);
                 // Verify that this size doesn't unexpectedly change.
-                Assert.assertEquals(67_969L, jarBytes.length);
+                Assert.assertEquals(68_420L, jarBytes.length);
                 break;
             case POC_WALLET:
                 jarBytes = classesToJarBytes(
@@ -114,7 +114,7 @@ public class DeploymentCostTest {
                     Daylimit.class,
                     EventLogger.class);
                 // Verify that this size doesn't unexpectedly change.
-                Assert.assertEquals(58_241L, jarBytes.length);
+                Assert.assertEquals(58_692L, jarBytes.length);
                 break;
             default: RuntimeAssertionError.unreachable("This should never be reached.");
         }
