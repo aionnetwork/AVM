@@ -61,7 +61,7 @@ public class DeploymentCostTest {
         Assert.assertEquals(100_000_000_000L, result.energyUsed);
         
         result = deployContract(Contract.BASIC_PERF);
-        Assert.assertEquals(2_032_564L, result.energyUsed);
+        Assert.assertEquals(2_062_419L, result.energyUsed);
         
         result = deployContract(Contract.POC_EXCHANGE);
         Assert.assertEquals(100_000_000_000L, result.energyUsed);
@@ -101,7 +101,7 @@ public class DeploymentCostTest {
                     AionMap.class,
                     AionSet.class);
                 // Verify that this size doesn't unexpectedly change.
-                Assert.assertEquals(28_281L, jarBytes.length);
+                Assert.assertEquals(28_732L, jarBytes.length);
                 break;
             case POC_EXCHANGE:
                 jarBytes = classesToJarBytes(
@@ -114,7 +114,7 @@ public class DeploymentCostTest {
                     AionSet.class,
                     AionMap.class);
                 // Verify that this size doesn't unexpectedly change.
-                Assert.assertEquals(32_122L, jarBytes.length);
+                Assert.assertEquals(32_573L, jarBytes.length);
                 break;
             case ERC20:
                 byte[] clinitArgs = ABIUtil.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
@@ -126,7 +126,7 @@ public class DeploymentCostTest {
                     AionSet.class,
                     AionMap.class);
                 // Verify that this size doesn't unexpectedly change.
-                Assert.assertEquals(27_561L, jarBytes.length);
+                Assert.assertEquals(28_012L, jarBytes.length);
                 break;
             case BASIC_APP:
                 jarBytes = classesToJarBytes(
@@ -135,7 +135,7 @@ public class DeploymentCostTest {
                     AionSet.class,
                     AionList.class);
                 // Verify that this size doesn't unexpectedly change.
-                Assert.assertEquals(25_655L, jarBytes.length);
+                Assert.assertEquals(26_106L, jarBytes.length);
                 break;
             case TRS:
                 jarBytes = classesToJarBytes(
