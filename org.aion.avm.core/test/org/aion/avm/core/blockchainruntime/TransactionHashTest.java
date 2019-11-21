@@ -3,18 +3,20 @@ package org.aion.avm.core.blockchainruntime;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
+import java.util.Collections;
+
 import org.aion.avm.core.AvmConfiguration;
 import org.aion.avm.core.AvmImpl;
 import org.aion.avm.core.AvmTransactionUtil;
 import org.aion.avm.core.CommonAvmFactory;
 import org.aion.avm.core.ExecutionType;
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.userlib.abi.ABIException;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
+import org.aion.avm.utilities.JarBuilder;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
@@ -144,7 +146,7 @@ public class TransactionHashTest {
     }
 
     private static byte[] produceJar() {
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(TransactionHashTarget.class, ABIDecoder.class, ABIEncoder.class, ABIException.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(TransactionHashTarget.class, Collections.emptyMap(), ABIDecoder.class, ABIEncoder.class, ABIException.class);
         return new CodeAndArguments(jar, new byte[0]).encodeToBytes();
     }
 

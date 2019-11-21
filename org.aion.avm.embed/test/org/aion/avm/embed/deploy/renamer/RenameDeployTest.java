@@ -1,17 +1,18 @@
 package org.aion.avm.embed.deploy.renamer;
 
 import avm.Address;
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.tooling.abi.ABICompiler;
 import org.aion.avm.tooling.deploy.renamer.Renamer;
 import org.aion.avm.embed.AvmRule;
 import org.aion.avm.embed.deploy.renamer.resources.*;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
+import org.aion.avm.utilities.JarBuilder;
 import org.aion.types.TransactionResult;
 import org.junit.*;
 
 import java.math.BigInteger;
+import java.util.Collections;
 
 import static org.junit.Assert.assertTrue;
 
@@ -26,7 +27,7 @@ public class RenameDeployTest {
 
     @Before
     public void setup() throws Exception {
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(RenameTarget.class, ClassA.class, ClassB.class, ClassC.class, InterfaceD.class, EnumElements.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(RenameTarget.class, Collections.emptyMap(), ClassA.class, ClassB.class, ClassC.class, InterfaceD.class, EnumElements.class);
         ABICompiler compiler = ABICompiler.compileJarBytes(jar);
         byte[] renamed = Renamer.rename(compiler.getJarFileBytes());
         byte[] data = new CodeAndArguments(renamed, null).encodeToBytes();

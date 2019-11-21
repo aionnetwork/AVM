@@ -1,5 +1,8 @@
 package org.aion.avm.core.dappreading;
 
+import java.util.Collections;
+
+import org.aion.avm.utilities.JarBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -10,7 +13,7 @@ public class JarBuilderTest {
      */
     @Test
     public void testPreserveMainClass() throws Exception {
-        byte[] bytes = UserlibJarBuilder.buildJarForMainAndClasses(JarBuilderTest.class);
+        byte[] bytes = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(JarBuilderTest.class, Collections.emptyMap());
         LoadedJar jar = LoadedJar.fromBytes(bytes);
         Assert.assertEquals(JarBuilderTest.class.getName(), jar.mainClassName);
     }
@@ -20,9 +23,9 @@ public class JarBuilderTest {
      */
     @Test
     public void testConsistencyOnCall() throws Exception {
-        byte[] bytes = UserlibJarBuilder.buildJarForMainAndClasses(JarBuilderTest.class);
+        byte[] bytes = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(JarBuilderTest.class, Collections.emptyMap());
         Thread.sleep(2000);
-        byte[] bytes2 = UserlibJarBuilder.buildJarForMainAndClasses(JarBuilderTest.class);
+        byte[] bytes2 = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(JarBuilderTest.class, Collections.emptyMap());
         Assert.assertArrayEquals(bytes, bytes2);
     }
 }

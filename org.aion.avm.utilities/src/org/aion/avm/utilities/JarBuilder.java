@@ -18,6 +18,8 @@ import java.util.zip.ZipEntry;
  * 
  * This is kept purely private and only the top-level factory method operates on the instances since they are stateful in ways which
  * would be complicated to communicate (streams are closed when reading the bytes, for example).
+ * 
+ * Note that the methods in this class do not implicitly add any classes.
  */
 public class JarBuilder {
     // AKI-135: We define this value as our fixed timestamp for tests (this number is similar to what we were using when the tests
@@ -26,7 +28,13 @@ public class JarBuilder {
 
 
     /**
-     * Creates the in-memory representation of a JAR with the given class names and direct bytes.
+     * Creates the in-memory representation of a JAR with the given main class name, main class bytecode a map of class names to
+     * bytecode, and other classes.
+     * 
+     * @param mainClassName The name of the main class to include and list in the manifest (cannot be null).
+     * @param mainClassBytes The bytecode of the main class (cannot be null).
+     * @param classMap A map of additional class names to bytecode.
+     * @param otherClasses The other classes to include (main is already included).
      * @return The bytes representing this JAR.
      */
     public static byte[] buildJarForExplicitClassNamesAndBytecode(String mainClassName, byte[] mainClassBytes, Map<String, byte[]> classMap, Class<?> ...otherClasses) {
@@ -46,6 +54,14 @@ public class JarBuilder {
         return builder.toBytes();
     }
 
+    /**
+     * Creates the in-memory representation of a JAR with the given main class, a map of class names to bytecode, and other classes.
+     *
+     * @param mainClass The main class to include and list in manifest (can be null).
+     * @param classMap A map of additional class names to bytecode.
+     * @param otherClasses The other classes to include (main is already included).
+     * @return The bytes representing this JAR.
+     */
     public static byte[] buildJarForMainClassAndExplicitClassNamesAndBytecode(Class<?> mainClass, Map<String, byte[]> classMap, Class<?> ...otherClasses) {
         JarBuilder builder = new JarBuilder(mainClass, null);
         try {

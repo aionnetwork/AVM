@@ -1,7 +1,6 @@
 package org.aion.avm.embed.deploy.remover;
 
 import avm.Address;
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.embed.AvmRule;
 import org.aion.avm.embed.deploy.remover.resources.ClassA;
 import org.aion.avm.embed.deploy.remover.resources.Main;
@@ -9,10 +8,12 @@ import org.aion.avm.embed.deploy.remover.resources.ClassB;
 import org.aion.avm.tooling.abi.ABICompiler;
 import org.aion.avm.tooling.deploy.eliminator.UnreachableMethodRemover;
 import org.aion.avm.userlib.CodeAndArguments;
+import org.aion.avm.utilities.JarBuilder;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.math.BigInteger;
+import java.util.Collections;
 
 import static org.junit.Assert.assertTrue;
 
@@ -26,7 +27,7 @@ public class UnreachableMethodRemoverTest {
 
     @Test
     public void testInvokeStatic() throws Exception {
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(Main.class, ClassA.class, ClassB.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(Main.class, Collections.emptyMap(), ClassA.class, ClassB.class);
         ABICompiler compiler = ABICompiler.compileJarBytes(jar);
         byte[] optimizedDappBytes = UnreachableMethodRemover.optimize(compiler.getJarFileBytes());
         byte[] data = new CodeAndArguments(optimizedDappBytes, null).encodeToBytes();

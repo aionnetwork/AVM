@@ -1,14 +1,15 @@
 package org.aion.avm.core.testBlake2b;
 
 import java.math.BigInteger;
+import java.util.Collections;
 
 import org.aion.avm.core.*;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
+import org.aion.avm.utilities.JarBuilder;
 import org.aion.kernel.*;
 import org.aion.types.TransactionResult;
 import org.junit.After;
@@ -36,7 +37,7 @@ public class Blake2bTest {
         this.kernel = new TestingState(block);
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(Main.class, Blake2b.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(Main.class, Collections.emptyMap(), Blake2b.class);
         byte[] arguments = null;
         Transaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();

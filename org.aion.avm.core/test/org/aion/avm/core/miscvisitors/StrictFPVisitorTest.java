@@ -1,16 +1,17 @@
 package org.aion.avm.core.miscvisitors;
 
 import java.math.BigInteger;
+import java.util.Collections;
 
 import org.aion.avm.core.*;
 import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.dappreading.LoadedJar;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
+import org.aion.avm.utilities.JarBuilder;
 import org.aion.kernel.TestingBlock;
 import org.aion.types.TransactionResult;
 import org.junit.After;
@@ -41,7 +42,7 @@ public class StrictFPVisitorTest {
         this.kernel = new TestingState(block);
         this.avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(StrictFPVisitorTestResource.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(StrictFPVisitorTestResource.class, Collections.emptyMap());
         byte[] arguments = null;
         Transaction tx = AvmTransactionUtil.create(deployer, kernel.getNonce(deployer), BigInteger.ZERO, new CodeAndArguments(jar, arguments).encodeToBytes(), energyLimit, energyPrice);
         TransactionResult txResult = avm.run(this.kernel, new Transaction[] {tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber()-1)[0].getResult();

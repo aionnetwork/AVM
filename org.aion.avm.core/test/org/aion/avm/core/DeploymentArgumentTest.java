@@ -10,9 +10,11 @@ import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
+import org.aion.avm.utilities.JarBuilder;
 import org.aion.kernel.TestingBlock;
 
 import java.math.BigInteger;
+import java.util.Collections;
 
 import org.aion.types.TransactionResult;
 import org.junit.*;
@@ -29,7 +31,7 @@ public class DeploymentArgumentTest {
     private static final AionAddress DEPLOYER = TestingState.PREMINED_ADDRESS;
     private static final Address DEPLOYER_API = new Address(DEPLOYER.toByteArray());
     private static final byte[] JAR = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(DeploymentArgumentTarget.class);
-    private static final byte[] SMALL_JAR = UserlibJarBuilder.buildJarForMainAndClasses(DeploymentArgumentSmallTarget.class);
+    private static final byte[] SMALL_JAR = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(DeploymentArgumentSmallTarget.class, Collections.emptyMap());
 
     private static TestingState kernel;
     private static AvmImpl avm;

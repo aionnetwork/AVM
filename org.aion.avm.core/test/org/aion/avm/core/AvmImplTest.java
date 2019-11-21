@@ -14,6 +14,7 @@ import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
+import org.aion.avm.utilities.JarBuilder;
 
 import i.AvmThrowable;
 import i.CommonInstrumentation;
@@ -117,7 +118,7 @@ public class AvmImplTest {
 
     @Test
     public void checkMainClassHasProperName() throws IOException {
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(MainClass.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(MainClass.class, Collections.emptyMap());
         final RawDappModule dappModule = RawDappModule.readFromJar(jar, false, true);
         final String mainClassName = MainClass.class.getName();
         assertEquals(mainClassName, dappModule.mainClass);
@@ -180,7 +181,7 @@ public class AvmImplTest {
 
     @Test
     public void testHelperStateRestore() {
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(AvmImplTestResource.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(AvmImplTestResource.class, Collections.emptyMap());
         byte[] arguments = new byte[0];
         byte[] txData = new CodeAndArguments(jar, arguments).encodeToBytes();
         TestingState kernel = new TestingState(block);
@@ -576,31 +577,31 @@ public class AvmImplTest {
 
     @Test
     public void testDeployFailedWithNullMainClass() {
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(null, MainClass.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(null, Collections.emptyMap(), MainClass.class);
         deployInvalidJar(jar);
     }
 
     @Test
     public void testDeployFailedWithMissingMainClass() {
-        byte[] jar = UserlibJarBuilder.buildJarForExplicitMainAndClasses("NonExistentClass", MainClass.class);
+        byte[] jar = JarBuilder.buildJarForExplicitMainAndClasses("NonExistentClass", MainClass.class);
         deployInvalidJar(jar);
     }
 
     @Test
     public void testDeployFailedWithInvalidMainClass() {
-        byte[] jar = UserlibJarBuilder.buildJarForExplicitMainAndClasses(".Invalid..Class.....Name", MainClass.class);
+        byte[] jar = JarBuilder.buildJarForExplicitMainAndClasses(".Invalid..Class.....Name", MainClass.class);
         deployInvalidJar(jar);
     }
 
     @Test
     public void testDeployFailedWithMissingMainMethod() {
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(InterfaceTestResource.class, MainClass.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(InterfaceTestResource.class, Collections.emptyMap(), MainClass.class);
         deployInvalidJar(jar);
     }
 
     @Test
     public void testDeployFailedWithInvalidMainClassBytecode() {
-        byte[] jar = UserlibJarBuilder.buildJarForExplicitClassNameAndBytecode("NotAValidClass", new byte[] {0x1, 0x2, 0x3});
+        byte[] jar = JarBuilder.buildJarForExplicitClassNamesAndBytecode("NotAValidClass", new byte[] {0x1, 0x2, 0x3}, Collections.emptyMap());
         deployInvalidJar(jar);
     }
 
@@ -711,7 +712,7 @@ public class AvmImplTest {
         byte[] args = (levelsToAdd > 1)
                 ? buildRecursiveCreate(levelsToAdd - 1)
                 : new byte[0];
-        byte[] recursiveSpawner = UserlibJarBuilder.buildJarForMainAndClasses(RecursiveSpawnerResource.class);
+        byte[] recursiveSpawner = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(RecursiveSpawnerResource.class, Collections.emptyMap());
         return new CodeAndArguments(recursiveSpawner, args).encodeToBytes();
     }
 

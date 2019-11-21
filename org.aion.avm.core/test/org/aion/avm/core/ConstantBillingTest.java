@@ -4,13 +4,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
+import java.util.Collections;
+
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.instrument.BytecodeFeeScheduler;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
+import org.aion.avm.utilities.JarBuilder;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingState;
 import org.aion.types.TransactionResult;
@@ -23,7 +25,7 @@ public class ConstantBillingTest {
 
     @Test
     public void test() {
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(ConstantBillingTarget.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(ConstantBillingTarget.class, Collections.emptyMap());
 
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
         TestingBlock block = new TestingBlock(new byte[32], 1, Helpers.randomAddress(), System.currentTimeMillis(), new byte[0]);

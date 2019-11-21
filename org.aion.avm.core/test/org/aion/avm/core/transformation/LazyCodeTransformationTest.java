@@ -3,7 +3,6 @@ package org.aion.avm.core.transformation;
 import avm.Address;
 import org.aion.avm.core.*;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.rejection.RejectClassNameWhichIsWaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaayTooLong;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
@@ -11,6 +10,7 @@ import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.userlib.abi.ABIException;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
+import org.aion.avm.utilities.JarBuilder;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
@@ -19,6 +19,7 @@ import org.aion.types.TransactionResult;
 import org.junit.*;
 
 import java.math.BigInteger;
+import java.util.Collections;
 
 import static org.junit.Assert.assertTrue;
 
@@ -172,7 +173,7 @@ public class LazyCodeTransformationTest {
     @Test
     public void validateRetransformingInvalidCodeFails() {
         // In order to mock rejection, setup the kernel database as if this class was acceptable before and was deployed successfully
-        byte[] bytes = UserlibJarBuilder.buildJarForMainAndClasses(RejectClassNameWhichIsWaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaayTooLong.class);
+        byte[] bytes = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(RejectClassNameWhichIsWaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaayTooLong.class, Collections.emptyMap());
         kernel.putCode(dappAddress, bytes);
         kernel.setTransformedCode(dappAddress, null);
         kernel.putObjectGraph(dappAddress, new byte[]{0, 0, 0, 1});
@@ -190,7 +191,7 @@ public class LazyCodeTransformationTest {
     @Test
     public void validateRetransformingInvalidCodeInternalTxFails() {
         // In order to mock rejection, setup the kernel database as if this class was acceptable before and was deployed successfully
-        byte[] bytes = UserlibJarBuilder.buildJarForMainAndClasses(RejectClassNameWhichIsWaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaayTooLong.class);
+        byte[] bytes = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(RejectClassNameWhichIsWaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaayTooLong.class, Collections.emptyMap());
         AionAddress callee = new AionAddress(Helpers.hexStringToBytes("a025f4fd54064e869f158c1b4eb0ed34820f67e60ee80a53b469f725efc06371"));
         kernel.putCode(callee, bytes);
         kernel.setTransformedCode(callee, null);
@@ -216,6 +217,6 @@ public class LazyCodeTransformationTest {
     }
 
     private static byte[] getCode() {
-        return UserlibJarBuilder.buildJarForMainAndClasses(SampleContract.class, ABIDecoder.class, ABIEncoder.class, ABIException.class);
+        return JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(SampleContract.class, Collections.emptyMap(), ABIDecoder.class, ABIEncoder.class, ABIException.class);
     }
 }

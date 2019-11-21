@@ -3,6 +3,7 @@ package org.aion.avm.core.rejection;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.aion.avm.core.*;
@@ -11,9 +12,9 @@ import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
+import org.aion.avm.utilities.JarBuilder;
 import org.aion.kernel.TestingBlock;
 import org.aion.types.TransactionResult;
 import org.junit.AfterClass;
@@ -50,7 +51,7 @@ public class RejectionIntegrationTest {
     @Test
     public void rejectNonShadowJclSubclassError() throws Exception {
         kernel.generateBlock();
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(RejectNonShadowJclSubclassError.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(RejectNonShadowJclSubclassError.class, Collections.emptyMap());
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         Transaction transaction = AvmTransactionUtil.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
@@ -62,7 +63,7 @@ public class RejectionIntegrationTest {
     public void rejectCorruptMainMethod() throws IOException {
         kernel.generateBlock();
         byte[] classBytes = Files.readAllBytes(Paths.get("test/resources/TestClassTemplate_corruptMainMethod.class"));
-        byte[] jar = UserlibJarBuilder.buildJarForExplicitClassNameAndBytecode("TestClassTemplate", classBytes);
+        byte[] jar = JarBuilder.buildJarForExplicitClassNamesAndBytecode("TestClassTemplate", classBytes, Collections.emptyMap());
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         Transaction transaction = AvmTransactionUtil.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
@@ -76,7 +77,7 @@ public class RejectionIntegrationTest {
         byte[] classBytes = Files.readAllBytes(Paths.get("test/resources/TestClassTemplate_corruptMethod.class"));
         Map<String, byte[]> classMap = new HashMap<>();
         classMap.put("TestClassTemplate_corruptMethod", classBytes);
-        byte[] jar = UserlibJarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(
             AvmImplTestResource.class, classMap);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
@@ -87,7 +88,7 @@ public class RejectionIntegrationTest {
 
     @Test
     public void accept31Variables() throws Exception {
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(RejectClass31Variables.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(RejectClass31Variables.class, Collections.emptyMap());
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         
         Transaction transaction = AvmTransactionUtil.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
@@ -97,7 +98,7 @@ public class RejectionIntegrationTest {
 
     @Test
     public void reject32Variables() throws Exception {
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(RejectClass32Variables.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(RejectClass32Variables.class, Collections.emptyMap());
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         
         Transaction transaction = AvmTransactionUtil.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
@@ -107,7 +108,7 @@ public class RejectionIntegrationTest {
 
     @Test
     public void reject32VariablesSubclass() throws Exception {
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(RejectClassExtend31Variables.class, RejectClass31Variables.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(RejectClassExtend31Variables.class, Collections.emptyMap(), RejectClass31Variables.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         
         Transaction transaction = AvmTransactionUtil.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);
@@ -117,7 +118,7 @@ public class RejectionIntegrationTest {
 
     @Test
     public void accept32VariablesSubclass() throws Exception {
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(RejectClassExtend31VariablesSafe.class, RejectClass31Variables.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(RejectClassExtend31VariablesSafe.class, Collections.emptyMap(), RejectClass31Variables.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         
         Transaction transaction = AvmTransactionUtil.create(FROM, kernel.getNonce(FROM), BigInteger.ZERO, txData, ENERGY_LIMIT, ENERGY_PRICE);

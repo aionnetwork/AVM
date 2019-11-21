@@ -4,7 +4,6 @@ import avm.Address;
 import org.aion.avm.RuntimeMethodFeeSchedule;
 import org.aion.avm.StorageFees;
 import org.aion.avm.core.BillingRules;
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.embed.AvmRule;
 import org.aion.avm.tooling.ABIUtil;
@@ -14,6 +13,7 @@ import org.aion.avm.tooling.deploy.eliminator.UnreachableMethodRemover;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
+import org.aion.avm.utilities.JarBuilder;
 import org.aion.kernel.*;
 import org.aion.types.TransactionResult;
 import org.junit.Assert;
@@ -21,6 +21,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import java.math.BigInteger;
+import java.util.Collections;
 
 
 /**
@@ -214,7 +215,7 @@ public class GraphReachabilityIntegrationTest {
         // The AvmRule invokes the ABICompiler on all input jars.
         // As a result, we have to run the ABICompiler on the input jar to get the correct expected gas values.
         JarOptimizer optimizer = new JarOptimizer(false);
-        ABICompiler compiler = ABICompiler.compileJarBytes(UserlibJarBuilder.buildJarForMainAndClasses(GraphReachabilityIntegrationTestTarget.class));
+        ABICompiler compiler = ABICompiler.compileJarBytes(JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(GraphReachabilityIntegrationTestTarget.class, Collections.emptyMap()));
         byte[] optimizedJar = optimizer.optimize(compiler.getJarFileBytes());
         optimizedJar = UnreachableMethodRemover.optimize(optimizedJar);
         // The size of the JAR shifts between versions of the JDK since they changed the line wrapping of the MANIFEST.MF in JDK 11, for some reason.

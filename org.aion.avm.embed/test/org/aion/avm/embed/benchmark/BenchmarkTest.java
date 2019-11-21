@@ -7,13 +7,14 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Collections;
 
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.embed.AvmRule;
 import org.aion.avm.embed.AvmRule.ResultWrapper;
 import org.aion.avm.tooling.abi.ABICompiler;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
+import org.aion.avm.utilities.JarBuilder;
 import org.aion.types.TransactionResult;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -285,7 +286,7 @@ public class BenchmarkTest {
         Helpers.writeBytesToFile(optimized, jarPath);
         System.out.println("Wrote: " + jarPath);
         try (FileOutputStream output = new FileOutputStream(abiPath)) {
-            ABICompiler.compileJarBytes(UserlibJarBuilder.buildJarForMainAndClasses(clazz)).writeAbi(output, ABICompiler.getDefaultVersionNumber());
+            ABICompiler.compileJarBytes(JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(clazz, Collections.emptyMap())).writeAbi(output, ABICompiler.getDefaultVersionNumber());
         }
         System.out.println("Wrote: " + abiPath);
     }

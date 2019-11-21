@@ -1,16 +1,17 @@
 package org.aion.avm.core;
 
 import java.math.BigInteger;
+import java.util.Collections;
 
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.avm.userlib.CodeAndArguments;
+import org.aion.avm.utilities.JarBuilder;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingState;
 
@@ -35,7 +36,7 @@ public class BasicPerfTest {
     public void testDeployAndRun() throws Throwable {
         TestRunnable[] threads = new TestRunnable[THREAD_COUNT];
         // Setup.
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(BasicPerfContract.class
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(BasicPerfContract.class, Collections.emptyMap()
                 , AionList.class
                 , AionMap.class
                 , AionSet.class

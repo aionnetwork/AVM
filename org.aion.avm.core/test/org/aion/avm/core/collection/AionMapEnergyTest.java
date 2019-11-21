@@ -2,7 +2,6 @@ package org.aion.avm.core.collection;
 
 import org.aion.avm.core.*;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.CodeAndArguments;
@@ -10,6 +9,7 @@ import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.userlib.abi.ABIException;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
+import org.aion.avm.utilities.JarBuilder;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
@@ -23,6 +23,7 @@ import org.junit.Test;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class AionMapEnergyTest {
@@ -144,7 +145,7 @@ public class AionMapEnergyTest {
 
     private AionAddress deployContract(Class<?> mainClass, Class<?>... otherClasses) {
 
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(mainClass, otherClasses);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(mainClass, Collections.emptyMap(), otherClasses);
         Transaction createTransaction = AvmTransactionUtil.create(from, externalState.getNonce(from), BigInteger.ZERO, new CodeAndArguments(jar, null).encodeToBytes(), 5_000_000, 1L);
         TransactionResult createResult = avm.run(externalState, new Transaction[]{createTransaction}, ExecutionType.ASSUME_MAINCHAIN, externalState.getBlockNumber() - 1)[0].getResult();
 

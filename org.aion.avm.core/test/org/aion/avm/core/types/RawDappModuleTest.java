@@ -1,6 +1,9 @@
 package org.aion.avm.core.types;
 
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
+import org.aion.avm.utilities.JarBuilder;
+
+import java.util.Collections;
+
 import org.aion.avm.core.dappreading.LoadedJar;
 import org.junit.Assert;
 import org.junit.Test;
@@ -10,7 +13,7 @@ public class RawDappModuleTest {
     @Test
     public void testDeployNoMain() throws Exception {
         // This is a valid jar.
-        byte[] jarBytes = UserlibJarBuilder.buildJarForMainAndClasses(null, RawDappModuleTest.class);
+        byte[] jarBytes = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(null, Collections.emptyMap(), RawDappModuleTest.class);
         LoadedJar jar = LoadedJar.fromBytes(jarBytes);
         Assert.assertNotNull(jar);
         Assert.assertNull(jar.mainClassName);
@@ -23,7 +26,7 @@ public class RawDappModuleTest {
     @Test
     public void testDeployNoClasses() throws Exception {
         // This is a valid jar.
-        byte[] jarBytes = UserlibJarBuilder.buildJarForMainAndClasses(null);
+        byte[] jarBytes = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(null, Collections.emptyMap());
         LoadedJar jar = LoadedJar.fromBytes(jarBytes);
         Assert.assertNotNull(jar);
         Assert.assertTrue(jar.classBytesByQualifiedNames.isEmpty());

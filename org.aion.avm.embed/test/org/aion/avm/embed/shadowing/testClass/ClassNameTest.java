@@ -2,18 +2,19 @@ package org.aion.avm.embed.shadowing.testClass;
 
 import avm.Address;
 
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.embed.AvmRule;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.avm.tooling.abi.ABICompiler;
 import org.aion.avm.tooling.deploy.JarOptimizer;
 import org.aion.avm.tooling.deploy.eliminator.UnreachableMethodRemover;
 import org.aion.avm.userlib.CodeAndArguments;
+import org.aion.avm.utilities.JarBuilder;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.math.BigInteger;
+import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -29,7 +30,7 @@ public class ClassNameTest {
     @BeforeClass
     public static void setup() throws Exception{
         // class and method renaming is not used
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(TestResource.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(TestResource.class, Collections.emptyMap());
         ABICompiler compiler = ABICompiler.compileJarBytes(jar);
         byte[] optimizedDappBytes = new JarOptimizer(true).optimize(compiler.getJarFileBytes());
         optimizedDappBytes = UnreachableMethodRemover.optimize(optimizedDappBytes);

@@ -1,10 +1,10 @@
 package org.aion.avm.embed;
 
 import avm.Address;
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.tooling.abi.ABICompiler;
 import org.aion.avm.tooling.deploy.JarOptimizer;
 import org.aion.avm.userlib.CodeAndArguments;
+import org.aion.avm.utilities.JarBuilder;
 import org.aion.avm.utilities.Utilities;
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -16,6 +16,7 @@ import org.objectweb.asm.MethodVisitor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.Attributes;
@@ -63,7 +64,7 @@ public class UserlibCollisionTest {
     public void testAvmPackageContract() {
         ;
         JarOptimizer jarOptimizer = new JarOptimizer(false);
-        byte[] jar = UserlibJarBuilder.buildJarForExplicitClassNameAndBytecode("avm.Main", getAvmPackageClassBytes());
+        byte[] jar = JarBuilder.buildJarForExplicitClassNamesAndBytecode("avm.Main", getAvmPackageClassBytes(), Collections.emptyMap());
         ABICompiler compiler = ABICompiler.compileJarBytes(jar);
         byte[] optimizedDappBytes = jarOptimizer.optimize(compiler.getJarFileBytes());
         byte[] txData = new CodeAndArguments(optimizedDappBytes, null).encodeToBytes();

@@ -4,12 +4,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Collections;
 
 import avm.Address;
 import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
+import org.aion.avm.utilities.JarBuilder;
 import org.aion.kernel.TestingBlock;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -300,7 +302,7 @@ public class AvmCLIIntegrationTest {
     public void testDeployWithInvalidBalanceTransfer() throws IOException {
         String invalidBalance = "123abc";
 
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(SimpleStackDemo.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(SimpleStackDemo.class, Collections.emptyMap());
         File temp = this.folder.newFile();
         Helpers.writeBytesToFile(jar, temp.getAbsolutePath());
 

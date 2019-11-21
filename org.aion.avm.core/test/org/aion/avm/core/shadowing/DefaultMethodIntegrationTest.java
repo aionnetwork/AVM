@@ -5,15 +5,16 @@ import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.types.Transaction;
 import org.aion.types.AionAddress;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.CodeAndArguments;
+import org.aion.avm.utilities.JarBuilder;
 import org.aion.kernel.*;
 import org.aion.types.TransactionResult;
 import org.junit.*;
 
 import java.math.BigInteger;
+import java.util.Collections;
 
 
 /**
@@ -38,7 +39,7 @@ public class DefaultMethodIntegrationTest {
 
     @Test
     public void testMissingDefaultInClinit() throws Exception {
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(TestDefaultMethodInClinitResource.class, AionMap.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(TestDefaultMethodInClinitResource.class, Collections.emptyMap(), AionMap.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         
         // Deploy.
@@ -53,7 +54,7 @@ public class DefaultMethodIntegrationTest {
 
     @Test
     public void testMissingDefaultInMain() throws Exception {
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(TestDefaultMethodInMainResource.class, AionMap.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(TestDefaultMethodInMainResource.class, Collections.emptyMap(), AionMap.class);
         byte[] txData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         
         // Deploy.

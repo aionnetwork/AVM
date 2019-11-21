@@ -16,6 +16,8 @@ import org.aion.avm.utilities.JarBuilder;
 /**
  * This just sits on top of the common JarBuilder, from the utilities module, stitching in the userlib where required by tests
  * in core and embed modules.
+ * All the actual heavy-lifting is done in JarBuilder but, since it doesn't have visibility into the userlib module (as it is
+ * in utilities), this class exists to add those classes, where required.
  */
 public class UserlibJarBuilder {
     private static Class<?>[] userlibClasses = new Class[] {ABIDecoder.class, ABIEncoder.class,
@@ -34,56 +36,16 @@ public class UserlibJarBuilder {
     }
 
     /**
-     * Creates the in-memory representation of a JAR with the given main class and other classes.
-     * 
+     * Creates the in-memory representation of a JAR with the given main class, a map of class names to bytecode, other classes,
+     * and all classes in the Userlib.
+     *
      * @param mainClass The main class to include and list in manifest (can be null).
+     * @param classMap A map of additional class names to bytecode.
      * @param otherClasses The other classes to include (main is already included).
      * @return The bytes representing this JAR.
      */
-    public static byte[] buildJarForMainAndClasses(Class<?> mainClass, Class<?> ...otherClasses) {
-        return JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(mainClass, Collections.emptyMap(), otherClasses);
-    }
-
-    /**
-     * Creates the in-memory representation of a JAR with the given classes and explicit main class name.
-     * NOTE:  This method is really just used to build invalid JARs (main class might not be included).
-     * 
-     * @param mainClassName The name of the main class to reference in the manifest (cannot be null).
-     * @param otherClasses The other classes to include (main is already included).
-     * @return The bytes representing this JAR.
-     */
-    public static byte[] buildJarForExplicitMainAndClasses(String mainClassName, Class<?> ...otherClasses) {
-        return JarBuilder.buildJarForExplicitMainAndClasses(mainClassName, otherClasses);
-    }
-
-    /**
-     * Creates the in-memory representation of a JAR with the given class name and direct bytes.
-     * NOTE:  This method is really just used to build invalid JARs (given classes may be corrupt/invalid).
-     * 
-     * @return The bytes representing this JAR.
-     */
-    public static byte[] buildJarForExplicitClassNameAndBytecode(String mainClassName, byte[] mainClassBytes) {
-        return JarBuilder.buildJarForExplicitClassNamesAndBytecode(mainClassName, mainClassBytes, Collections.emptyMap());
-    }
-
-    /**
-     * Creates the in-memory representation of a JAR with the given class names and direct bytes.
-     * @return The bytes representing this JAR.
-     */
-    public static byte[] buildJarForExplicitClassNamesAndBytecode(String mainClassName, byte[] mainClassBytes, Map<String, byte[]> classMap, Class<?> ...otherClasses) {
-        return JarBuilder.buildJarForExplicitClassNamesAndBytecode(mainClassName, mainClassBytes, classMap, otherClasses);
-    }
-
     public static byte[] buildJarForExplicitClassNamesAndBytecodeAndUserlib(Class<?> mainClass, Map<String, byte[]> classMap, Class<?> ...otherClasses) {
         Class<?>[] combinedOtherClasses = Stream.of(otherClasses, userlibClasses).flatMap(Stream::of).toArray(Class<?>[]::new);
         return JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(mainClass, classMap, combinedOtherClasses);
-    }
-
-    /**
-     * Creates the in-memory representation of a JAR with the given class names and direct bytes, but a fixed main class.
-     * @return The bytes representing this JAR.
-     */
-    public static byte[] buildJarForMainClassAndExplicitClassNamesAndBytecode(Class<?> mainClass, Map<String, byte[]> classMap) {
-        return JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(mainClass, classMap);
     }
 }

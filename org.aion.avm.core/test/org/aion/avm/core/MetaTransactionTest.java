@@ -1,6 +1,7 @@
 package org.aion.avm.core;
 
 import java.math.BigInteger;
+import java.util.Collections;
 
 import org.aion.types.AionAddress;
 import org.aion.types.InternalTransaction;
@@ -13,7 +14,7 @@ import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.userlib.abi.ABIException;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
-
+import org.aion.avm.utilities.JarBuilder;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingState;
 import org.aion.types.TransactionResult;
@@ -338,7 +339,7 @@ public class MetaTransactionTest {
     public void testInternalTransactionEnergyCost_Create() {
         // Deploy initial contract.
         // (we assemble this manually to keep it small since we don't have the optimizer in this project).
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(InternalTransactionEnergyTarget.class, ABIEncoder.class, ABIDecoder.class, ABIException.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(InternalTransactionEnergyTarget.class, Collections.emptyMap(), ABIEncoder.class, ABIDecoder.class, ABIException.class);
         byte[] codeAndArgs = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         AionAddress contractAddress = createDApp(codeAndArgs);
         
@@ -560,7 +561,7 @@ public class MetaTransactionTest {
     }
 
     private static byte[] codeAndArgsForTargetDeployment(boolean expectHighEnergyLimit, byte[] invokable, boolean interpretAsApiCreate) {
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(MetaTransactionTarget.class, ABIEncoder.class, ABIDecoder.class, ABIException.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(MetaTransactionTarget.class, Collections.emptyMap(), ABIEncoder.class, ABIDecoder.class, ABIException.class);
         byte[] args = new ABIStreamingEncoder()
                 .encodeOneBoolean(expectHighEnergyLimit)
                 .encodeOneByteArray(invokable)

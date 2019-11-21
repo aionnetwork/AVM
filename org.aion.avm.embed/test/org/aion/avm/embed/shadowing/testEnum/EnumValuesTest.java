@@ -2,9 +2,9 @@ package org.aion.avm.embed.shadowing.testEnum;
 
 import org.aion.avm.tooling.abi.ABICompiler;
 import org.aion.avm.userlib.CodeAndArguments;
+import org.aion.avm.utilities.JarBuilder;
 
 import avm.Address;
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.embed.AvmRule;
 import org.aion.avm.tooling.ABIUtil;
 import org.junit.Assert;
@@ -38,7 +38,7 @@ public class EnumValuesTest {
     private void runCommonTestOnBytecode(byte[] clazz) {
         Map<String, byte[]> classMap = new HashMap<>();
         classMap.put(TestEnumForValues.class.getName(), clazz);
-        byte[] jar = UserlibJarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(TestResourceForValues.class, classMap);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(TestResourceForValues.class, classMap);
         ABICompiler compiler = ABICompiler.compileJarBytes(jar);
         byte[] txData = new CodeAndArguments(compiler.getJarFileBytes(), new byte[0]).encodeToBytes();
 

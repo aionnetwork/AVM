@@ -3,12 +3,12 @@ package org.aion.avm.core;
 import avm.Address;
 
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIException;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
+import org.aion.avm.utilities.JarBuilder;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingState;
 import org.aion.types.AionAddress;
@@ -21,6 +21,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.math.BigInteger;
+import java.util.Collections;
 
 
 /**
@@ -42,7 +43,7 @@ public class ResultTest {
         AVM = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), config);
         
         // We manually construct the JAR so it can fit in a deployment argument.
-        JAR = UserlibJarBuilder.buildJarForMainAndClasses(ResultTestTarget.class
+        JAR = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(ResultTestTarget.class, Collections.emptyMap()
                 , ABIDecoder.class
                 , ABIException.class
                 );

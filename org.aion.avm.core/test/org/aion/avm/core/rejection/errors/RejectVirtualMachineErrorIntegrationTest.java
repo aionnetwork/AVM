@@ -5,9 +5,9 @@ import org.aion.kernel.AvmWrappedTransactionResult.AvmInternalError;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
+import org.aion.avm.utilities.JarBuilder;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingState;
 import org.aion.types.TransactionResult;
@@ -17,6 +17,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.math.BigInteger;
+import java.util.Collections;
 
 
 /**
@@ -49,7 +50,7 @@ public class RejectVirtualMachineErrorIntegrationTest {
 
     @Test
     public void rejectCatchError() throws Exception {
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(RejectCatchError.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(RejectCatchError.class, Collections.emptyMap());
 
         // Deploy.
         TransactionResult createResult = deployJar(jar);
@@ -58,7 +59,7 @@ public class RejectVirtualMachineErrorIntegrationTest {
 
     @Test
     public void rejectInstantiateError() throws Exception {
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(RejectInstantiateError.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(RejectInstantiateError.class, Collections.emptyMap());
 
         // Deploy.
         TransactionResult createResult = deployJar(jar);
@@ -67,7 +68,7 @@ public class RejectVirtualMachineErrorIntegrationTest {
 
     @Test
     public void rejectSubclassError() throws Exception {
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(RejectSubclassError.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(RejectSubclassError.class, Collections.emptyMap());
 
         // Deploy.
         TransactionResult createResult = deployJar(jar);

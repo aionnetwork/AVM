@@ -3,10 +3,11 @@ package org.aion.avm.core;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
+import java.util.Collections;
+
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.AionMap;
@@ -16,6 +17,7 @@ import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.userlib.abi.ABIException;
 import org.aion.avm.userlib.abi.ABIToken;
+import org.aion.avm.utilities.JarBuilder;
 import org.aion.kernel.TestingBlock;
 import org.aion.kernel.TestingState;
 
@@ -71,7 +73,7 @@ public class PersistanceNameMappingTest {
     }
 
     private AionAddress deployContract(AvmImpl avm, IExternalState externalState) {
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(PersistanceNameMappingTestTarget.class, ABIDecoder.class, ABIException.class, ABIToken.class, AionBuffer.class, AionSet.class, AionMap.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(PersistanceNameMappingTestTarget.class, Collections.emptyMap(), ABIDecoder.class, ABIException.class, ABIToken.class, AionBuffer.class, AionSet.class, AionMap.class);
         byte[] data = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
 
         Transaction createTransaction = AvmTransactionUtil.create(deployer, externalState.getNonce(deployer), BigInteger.ZERO, data, 5_000_000L, 1L);

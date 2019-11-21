@@ -1,7 +1,6 @@
 package org.aion.avm.embed;
 
 import avm.Address;
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.embed.poc.AionBufferPerfContract;
 import org.aion.avm.embed.poc.TRS;
 import org.aion.avm.embed.testExchange.*;
@@ -11,12 +10,14 @@ import org.aion.avm.userlib.AionList;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.AionSet;
 import org.aion.avm.userlib.CodeAndArguments;
+import org.aion.avm.utilities.JarBuilder;
 import org.aion.types.TransactionResult;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.math.BigInteger;
+import java.util.Collections;
 
 
 /**
@@ -156,11 +157,11 @@ public class DeploymentCostTest {
     }
 
     private byte[] classesToJarBytes(Class<?> main, Class<?>... others) {
-        return new CodeAndArguments(UserlibJarBuilder.buildJarForMainAndClasses(main, others), null).encodeToBytes();
+        return new CodeAndArguments(JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(main, Collections.emptyMap(), others), null).encodeToBytes();
     }
 
     private byte[] classesToJarBytesWithClinitArgs(byte[] clinitArgs, Class<?> main, Class<?>... others) {
-        return new CodeAndArguments(UserlibJarBuilder.buildJarForMainAndClasses(main, others), clinitArgs).encodeToBytes();
+        return new CodeAndArguments(JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(main, Collections.emptyMap(), others), clinitArgs).encodeToBytes();
     }
 
 }

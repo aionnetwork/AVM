@@ -1,14 +1,15 @@
 package org.aion.avm.core.instrument;
 
 import org.aion.avm.core.NodeEnvironment;
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.types.RawDappModule;
 import org.aion.avm.userlib.AionMap;
 import org.aion.avm.userlib.abi.ABIDecoder;
+import org.aion.avm.utilities.JarBuilder;
 import org.aion.avm.utilities.Utilities;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.Map;
 
 public class HeapMemoryCostCalculatorTest {
@@ -46,7 +47,7 @@ public class HeapMemoryCostCalculatorTest {
 
     private Map<String, Integer> getObjectSizes(Class mainClass, Class<?>... classes) {
         Assert.assertNotNull(NodeEnvironment.singleton);
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(mainClass, classes);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(mainClass, Collections.emptyMap(), classes);
         RawDappModule rawDapp = RawDappModule.readFromJar(jar, false, false);
         HeapMemoryCostCalculator objectSizeCalculator = new HeapMemoryCostCalculator();
         objectSizeCalculator.calcClassesInstanceSize(rawDapp.classHierarchyForest);

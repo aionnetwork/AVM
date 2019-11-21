@@ -3,16 +3,17 @@ package org.aion.avm.embed.blockchainruntime;
 import java.math.BigInteger;
 import avm.Address;
 import org.aion.types.AionAddress;
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.embed.AvmRule;
 import org.aion.avm.embed.hash.HashUtils;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.CodeAndArguments;
+import org.aion.avm.utilities.JarBuilder;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Collections;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -46,7 +47,7 @@ public class BlockchainTest {
 
     @Test
     public void testIncorrectParameters() {
-        byte[] jar = UserlibJarBuilder.buildJarForMainAndClasses(BlockchainRuntimeTestFailingResource.class);
+        byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(BlockchainRuntimeTestFailingResource.class, Collections.emptyMap());
         byte[] codeAndArgs =  new CodeAndArguments(jar, new byte[0]).encodeToBytes();
         Address dappAddress = installJarAsDApp(codeAndArgs);
         byte[] txData = "expectFailure".getBytes();
