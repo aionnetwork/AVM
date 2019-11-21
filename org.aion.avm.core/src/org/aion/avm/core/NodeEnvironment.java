@@ -341,7 +341,7 @@ public class NodeEnvironment {
                 throw RuntimeAssertionError.unreachable("Nobody should be calling this");
             }
             @Override
-            public boolean isLoadedByCurrentClassLoader(java.lang.Class userClass) {
+            public boolean isLoadedByCurrentClassLoader(java.lang.Class<?> userClass) {
                 throw RuntimeAssertionError.unreachable("Not expected here.");
             }
         };

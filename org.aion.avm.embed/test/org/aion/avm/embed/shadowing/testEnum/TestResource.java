@@ -105,7 +105,7 @@ public class TestResource {
 
     @Callable
     public static boolean EnumValueOf() {
-        Enum earthValue = TestEnum.valueOf("EARTH");
+        Enum<?> earthValue = TestEnum.valueOf("EARTH");
         Blockchain.require(earthValue == earth);
 
         boolean thrown = false;

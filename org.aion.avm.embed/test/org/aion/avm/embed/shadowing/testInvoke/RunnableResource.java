@@ -10,16 +10,20 @@ public class RunnableResource {
 
     private static int val;
     private static String str;
-    private static AionList<String> list = new AionList();
+    private static AionList<String> list = new AionList<>();
     private static Function<int[], Integer> func = i -> StrictMath.multiplyExact(i[0], i[1]);
+    private static int runResult;
+    private static String superClassResult;
 
     @Callable
     public static void onPrimitive() {
         Runnable r = () -> {
             int a = 100;
             a *= 100;
+            runResult = a;
         };
         r.run();
+        Blockchain.require(10_000 == runResult);
     }
 
     @Callable
@@ -77,17 +81,18 @@ public class RunnableResource {
             newObject.apply("Tom");
         };
         r.run();
+        Blockchain.require("Tom".equals(superClassResult));
     }
 
     @Callable
     public static void onNewObject() {
         Runnable r = () -> new SuperClass("");
         r.run();
+        Blockchain.require("".equals(superClassResult));
     }
 
     static class SuperClass {
-        private final String name;
-        public SuperClass(String name) { this.name = name; }
+        public SuperClass(String name) { superClassResult = name; }
     }
 }
 

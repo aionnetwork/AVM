@@ -78,6 +78,8 @@ public class RenameTarget {
         b.compareTo("Three");
     }
 
+    // We want to suppress these warnings since it is part of what the test is testing.
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public static void testUserlib() {
         map1.put(1, "One");
         map1.remove(1);
@@ -123,7 +125,7 @@ public class RenameTarget {
     }
 
     public static class ConcreteChildOne implements ChildInterfaceOne, ParentInterfaceTwo {
-        boolean b2 = this.b;
+        boolean b2 = ParentInterfaceOne.b;
 
         @Override
         public int getIntVal() {

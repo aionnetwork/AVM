@@ -8,10 +8,10 @@ import org.aion.avm.userlib.abi.ABIEncoder;
 
 public class ReentrantClassWrapperTestResource {
 
-    private static Class stringClass;
+    private static Class<?> stringClass;
 
     public static void recursiveStringClassCheck() {
-        Class secondStringClass = String.class;
+        Class<?> secondStringClass = String.class;
         if(stringClass != secondStringClass) {
             Blockchain.revert();
         }

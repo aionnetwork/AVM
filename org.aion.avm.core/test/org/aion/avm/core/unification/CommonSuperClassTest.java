@@ -122,6 +122,7 @@ public class CommonSuperClassTest {
         Transaction call = AvmTransactionUtil.call(DEPLOYER, new AionAddress(deploymentResult.copyOfTransactionOutput().orElseThrow()), KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, new byte[10], ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult callResult = avm.run(KERNEL, new Transaction[] {call}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber()-1)[0].getResult();
         assertTrue(deploymentResult.transactionStatus.isSuccess());
+        assertTrue(callResult.transactionStatus.isSuccess());
     }
 
     @Test
@@ -138,6 +139,7 @@ public class CommonSuperClassTest {
         Transaction call = AvmTransactionUtil.call(DEPLOYER, new AionAddress(deploymentResult.copyOfTransactionOutput().orElseThrow()), KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, new byte[10], ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult callResult = avm.run(KERNEL, new Transaction[] {call}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber()-1)[0].getResult();
         assertTrue(deploymentResult.transactionStatus.isSuccess());
+        assertTrue(callResult.transactionStatus.isSuccess());
     }
 
     @Test
@@ -165,6 +167,7 @@ public class CommonSuperClassTest {
         Transaction call = AvmTransactionUtil.call(DEPLOYER, new AionAddress(deploymentResult.copyOfTransactionOutput().orElseThrow()), KERNEL.getNonce(DEPLOYER), BigInteger.ZERO, new byte[10], ENERGY_LIMIT, ENERGY_PRICE);
         TransactionResult callResult = avm.run(KERNEL, new Transaction[] {call}, ExecutionType.ASSUME_MAINCHAIN, KERNEL.getBlockNumber()-1)[0].getResult();
         assertTrue(deploymentResult.transactionStatus.isSuccess());
+        assertTrue(callResult.transactionStatus.isSuccess());
     }
 
     @Test

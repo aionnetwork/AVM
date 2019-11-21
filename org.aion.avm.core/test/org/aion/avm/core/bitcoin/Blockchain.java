@@ -11,14 +11,11 @@ public class Blockchain {
 
     private static AionMap<ByteArrayWrapper, BlockInfo> importedBlocks = new AionMap<>();
 
-    private Genesis genesisBlock;
-
     private static BlockInfo latestBlock;
 
     public Blockchain(Genesis genesisBlock) {
-        this.genesisBlock = genesisBlock;
-        this.latestBlock = new BlockInfo(genesisBlock, BigInteger.ZERO);
-        this.importedBlocks.put(new ByteArrayWrapper(genesisBlock.getHash()), latestBlock);
+        latestBlock = new BlockInfo(genesisBlock, BigInteger.ZERO);
+        importedBlocks.put(new ByteArrayWrapper(genesisBlock.getHash()), latestBlock);
     }
 
     public static boolean addBlock(byte[] blockToImport) {

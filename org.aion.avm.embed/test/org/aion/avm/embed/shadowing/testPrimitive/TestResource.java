@@ -2,6 +2,8 @@ package org.aion.avm.embed.shadowing.testPrimitive;
 
 import org.aion.avm.tooling.abi.Callable;
 
+import avm.Blockchain;
+
 public class TestResource {
 
     //========================================================
@@ -528,7 +530,6 @@ public class TestResource {
                 // Test almost valid strings
                 for(i = 0; i < invalidStrings.length; i++) {
                     try {
-                        double result;
                         d = Double.parseDouble(invalidStrings[i]);
                         throw new RuntimeException("Invalid string ``" +
                                 invalidStrings[i]
@@ -750,7 +751,6 @@ public class TestResource {
                 // Test almost valid strings
                 for(i = 0; i < invalidStrings.length; i++) {
                     try {
-                        float result;
                         d = Float.parseFloat(invalidStrings[i]);
                         throw new RuntimeException("Invalid string ``" +
                                 invalidStrings[i]
@@ -1422,7 +1422,7 @@ public class TestResource {
         Double      d = 0.1d;
         Float       e = 0.1f;
         Integer     f = 1;
-        Long        g = 100000000L;
+        Long        g = 100_000_000L;
         Short       h = 1;
 
         boolean     aa = a;
@@ -1432,6 +1432,14 @@ public class TestResource {
         int         ff = f;
         long        gg = g;
         short       hh = h;
+        
+        Blockchain.require(aa);
+        Blockchain.require('a' == cc);
+        Blockchain.require(0.1d == dd);
+        Blockchain.require(0.1f == ee);
+        Blockchain.require(1 == ff);
+        Blockchain.require(100_000_000L == gg);
+        Blockchain.require(1 == hh);
 
         return ret;
     }

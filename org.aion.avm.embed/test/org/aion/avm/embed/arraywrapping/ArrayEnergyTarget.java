@@ -1,6 +1,8 @@
 package org.aion.avm.embed.arraywrapping;
 
 import avm.Address;
+import avm.Blockchain;
+
 import org.aion.avm.tooling.abi.Callable;
 
 public class ArrayEnergyTarget {
@@ -17,6 +19,17 @@ public class ArrayEnergyTarget {
         Object[]    i = new Object[100];
         Address[]   j = new Address[100];
         String[]    k = new String[100];
+        Blockchain.require(null != a);
+        Blockchain.require(null != b);
+        Blockchain.require(null != c);
+        Blockchain.require(null != d);
+        Blockchain.require(null != e);
+        Blockchain.require(null != f);
+        Blockchain.require(null != g);
+        Blockchain.require(null != h);
+        Blockchain.require(null != i);
+        Blockchain.require(null != j);
+        Blockchain.require(null != k);
     }
 
     @Callable
@@ -35,6 +48,20 @@ public class ArrayEnergyTarget {
         String[][][]  l = new String[100][1][];
         char[][][]    m = new char[100][1][1];
         int[][][]     n = new int[100][][];
+        Blockchain.require(null != a);
+        Blockchain.require(null != b);
+        Blockchain.require(null != c);
+        Blockchain.require(null != d);
+        Blockchain.require(null != e);
+        Blockchain.require(null != f);
+        Blockchain.require(null != g);
+        Blockchain.require(null != h);
+        Blockchain.require(null != i);
+        Blockchain.require(null != j);
+        Blockchain.require(null != k);
+        Blockchain.require(null != l);
+        Blockchain.require(null != m);
+        Blockchain.require(null != n);
     }
 
     @Callable

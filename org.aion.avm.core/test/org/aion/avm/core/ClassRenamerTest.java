@@ -249,7 +249,7 @@ public class ClassRenamerTest {
 
     @Test(expected = RejectedClassException.class)
     public void testPostRenameClassRejection() {
-        String nonWhitelisted = java.lang.instrument.ClassDefinition.class.getName();
+        String nonWhitelisted = java.lang.reflect.Method.class.getName();
 
         preRenameLoadedDotRenamer.toPostRenameOrRejectClass(nonWhitelisted, ArrayType.NOT_ARRAY);
     }

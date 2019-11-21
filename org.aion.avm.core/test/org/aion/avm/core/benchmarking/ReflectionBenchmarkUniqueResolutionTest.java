@@ -110,8 +110,9 @@ public class ReflectionBenchmarkUniqueResolutionTest {
         Class<?>[] classes = new Class[spins];
 
         for (int i = 0; i < spins; i++) {
-            ClassLoader loader = new URLClassLoader(new URL[]{ classpathDirectory.toURI().toURL() });
+            URLClassLoader loader = new URLClassLoader(new URL[]{ classpathDirectory.toURI().toURL() });
             classes[i] = loader.loadClass(targetClassName);
+            loader.close();
         }
 
         long start = System.nanoTime();
@@ -126,8 +127,9 @@ public class ReflectionBenchmarkUniqueResolutionTest {
         Class<?>[] classes = new Class[spins];
 
         for (int i = 0; i < spins; i++) {
-            ClassLoader loader = new URLClassLoader(new URL[]{ classpathDirectory.toURI().toURL() });
+            URLClassLoader loader = new URLClassLoader(new URL[]{ classpathDirectory.toURI().toURL() });
             classes[i] = loader.loadClass(targetClassName);
+            loader.close();
         }
 
         long start = System.nanoTime();
@@ -142,8 +144,9 @@ public class ReflectionBenchmarkUniqueResolutionTest {
         Class<?>[] classes = new Class[spins];
 
         for (int i = 0; i < spins; i++) {
-            ClassLoader loader = new URLClassLoader(new URL[]{ classpathDirectory.toURI().toURL() });
+            URLClassLoader loader = new URLClassLoader(new URL[]{ classpathDirectory.toURI().toURL() });
             classes[i] = loader.loadClass(targetClassName);
+            loader.close();
         }
 
         long start = System.nanoTime();
@@ -158,8 +161,9 @@ public class ReflectionBenchmarkUniqueResolutionTest {
         Class<?>[] classes = new Class[spins];
 
         for (int i = 0; i < spins; i++) {
-            ClassLoader loader = new URLClassLoader(new URL[]{ classpathDirectory.toURI().toURL() });
+            URLClassLoader loader = new URLClassLoader(new URL[]{ classpathDirectory.toURI().toURL() });
             classes[i] = loader.loadClass(targetClassName);
+            loader.close();
         }
 
         long start = System.nanoTime();
@@ -174,8 +178,9 @@ public class ReflectionBenchmarkUniqueResolutionTest {
         Class<?>[] classes = new Class[spins];
 
         for (int i = 0; i < spins; i++) {
-            ClassLoader loader = new URLClassLoader(new URL[]{ classpathDirectory.toURI().toURL() });
+            URLClassLoader loader = new URLClassLoader(new URL[]{ classpathDirectory.toURI().toURL() });
             classes[i] = loader.loadClass(targetClassName);
+            loader.close();
         }
 
         long start = System.nanoTime();
@@ -190,8 +195,9 @@ public class ReflectionBenchmarkUniqueResolutionTest {
         Class<?>[] classes = new Class[spins];
 
         for (int i = 0; i < spins; i++) {
-            ClassLoader loader = new URLClassLoader(new URL[]{ classpathDirectory.toURI().toURL() });
+            URLClassLoader loader = new URLClassLoader(new URL[]{ classpathDirectory.toURI().toURL() });
             classes[i] = loader.loadClass(targetClassName);
+            loader.close();
         }
 
         long start = System.nanoTime();
@@ -206,8 +212,9 @@ public class ReflectionBenchmarkUniqueResolutionTest {
         Class<?>[] classes = new Class[spins];
 
         for (int i = 0; i < spins; i++) {
-            ClassLoader loader = new URLClassLoader(new URL[]{ classpathDirectory.toURI().toURL() });
+            URLClassLoader loader = new URLClassLoader(new URL[]{ classpathDirectory.toURI().toURL() });
             classes[i] = loader.loadClass(targetClassName);
+            loader.close();
         }
 
         long start = System.nanoTime();
@@ -222,8 +229,9 @@ public class ReflectionBenchmarkUniqueResolutionTest {
         Class<?>[] classes = new Class[spins];
 
         for (int i = 0; i < spins; i++) {
-            ClassLoader loader = new URLClassLoader(new URL[]{ classpathDirectory.toURI().toURL() });
+            URLClassLoader loader = new URLClassLoader(new URL[]{ classpathDirectory.toURI().toURL() });
             classes[i] = loader.loadClass(targetClassName);
+            loader.close();
         }
 
         long start = System.nanoTime();
@@ -241,8 +249,9 @@ public class ReflectionBenchmarkUniqueResolutionTest {
         Class<?>[] classes = new Class[spins];
 
         for (int i = 0; i < spins; i++) {
-            ClassLoader loader = new URLClassLoader(new URL[]{ classpathDirectory.toURI().toURL() });
+            URLClassLoader loader = new URLClassLoader(new URL[]{ classpathDirectory.toURI().toURL() });
             classes[i] = loader.loadClass(targetClassName);
+            loader.close();
         }
 
         long start = System.nanoTime();
@@ -260,8 +269,9 @@ public class ReflectionBenchmarkUniqueResolutionTest {
         Class<?>[] classes = new Class[spins];
 
         for (int i = 0; i < spins; i++) {
-            ClassLoader loader = new URLClassLoader(new URL[]{ classpathDirectory.toURI().toURL() });
+            URLClassLoader loader = new URLClassLoader(new URL[]{ classpathDirectory.toURI().toURL() });
             classes[i] = loader.loadClass(targetClassName);
+            loader.close();
         }
 
         long start = System.nanoTime();

@@ -7,7 +7,7 @@ public class ReflectionTarget {
     public static Long staticField1;
     public static char staticField2;
     public static Boolean staticField3;
-    public static List staticField4;
+    public static List<?> staticField4;
 
     public int instanceField1;
     public Object instanceField2;

@@ -2,6 +2,8 @@ package org.aion.avm.embed;
 
 import org.aion.avm.tooling.abi.Callable;
 
+import avm.Blockchain;
+
 /**
  * Simple contract that explores different method signatures etc. for testing to ensure that our
  * transformed classes are consistent with Java behaviour.
@@ -133,12 +135,14 @@ public class TransformedMethodContract {
     public static int trigger2Darrays() {
         F[][] receive = arrays2D(new C[][]{});
 //        fails --> overloaded(arrays2D(new C[][]{new C[]{}})[0]);
+        Blockchain.require(null != receive);
         return 0;
     }
 
     @Callable
     public static int trigger3Darrays() {
         F[][][] receive = arrays3D(new C[][][]{});
+        Blockchain.require(null != receive);
         return 0;
     }
 

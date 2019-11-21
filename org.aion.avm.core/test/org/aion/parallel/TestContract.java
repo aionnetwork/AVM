@@ -6,7 +6,7 @@ import avm.Address;
 import avm.Blockchain;
 import org.aion.avm.userlib.abi.ABIDecoder;
 import org.aion.avm.userlib.abi.ABIEncoder;
-import org.aion.avm.userlib.abi.ABIStreamingEncoder;
+
 
 public class TestContract {
 

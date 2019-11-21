@@ -6,6 +6,8 @@ package org.aion.avm.core.arraywrapping;
  *
  * We test on directly assigning references and getting references from method calls and on forcing
  * checkcasts to cover each of these cases.
+ * 
+ * NOTE:  Since this test is run directly through reflection, there is no "Blockchain" we can call.
  */
 public class ArrayTypeContract {
 
@@ -215,15 +217,21 @@ public class ArrayTypeContract {
     // Test 1D object behaviour
     
     public void testSubClassIsSuperestInterface() {
-    	SuperestInterface[] superestInterface = new SubClass[] {};
+        SuperestInterface[] superestInterface = new SubClass[] {};
+        // Make sure this exists.
+        superestInterface.hashCode();
     }
     
     public void testSubClassIsSuperInterface() {
-    	SuperInterface[] superInterface = new SubClass[] {};
+        SuperInterface[] superInterface = new SubClass[] {};
+        // Make sure this exists.
+        superInterface.hashCode();
     }
     
     public void testSubClassIsSuperAbstract() {
-    	SuperAbstract[] superAbstract = new SubClass[] {};
+        SuperAbstract[] superAbstract = new SubClass[] {};
+        // Make sure this exists.
+        superAbstract.hashCode();
     }
     
     public int test1DobjectArrayUnificationToSupersWithCasts() {

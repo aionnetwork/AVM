@@ -105,7 +105,7 @@ public class MockFailureInstrumentationFactory implements IInstrumentationFactor
                 underlying.bootstrapOnly();
             }
             @Override
-            public boolean isLoadedByCurrentClassLoader(java.lang.Class userClass) { return underlying.isLoadedByCurrentClassLoader(userClass); }
+            public boolean isLoadedByCurrentClassLoader(java.lang.Class<?> userClass) { return underlying.isLoadedByCurrentClassLoader(userClass); }
         };
     }
     @Override

@@ -45,7 +45,7 @@ public class HeapMemoryCostCalculatorTest {
         assertSize(objectSizes, HeapSizeExceptionTarget.UserDefinedException.class.getName(), 40);
     }
 
-    private Map<String, Integer> getObjectSizes(Class mainClass, Class<?>... classes) {
+    private Map<String, Integer> getObjectSizes(Class<?> mainClass, Class<?>... classes) {
         Assert.assertNotNull(NodeEnvironment.singleton);
         byte[] jar = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(mainClass, Collections.emptyMap(), classes);
         RawDappModule rawDapp = RawDappModule.readFromJar(jar, false, false);

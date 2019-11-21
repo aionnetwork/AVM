@@ -244,8 +244,6 @@ public class HandoffMonitorTest {
 
     private static TransactionTask[] wrapTransactionInTasks(Transaction[] transactions) {
         TransactionTask[] tasks = new TransactionTask[transactions.length];
-        // (we don't consult the capabilities since there is no creation)
-        IExternalCapabilities capabilities = null;
         for (int i = 0; i < transactions.length; ++i) {
             tasks[i] = new TransactionTask(null, transactions[i], i, Helpers.ZERO_ADDRESS, ExecutionType.ASSUME_MAINCHAIN, 0);
         }

@@ -4,7 +4,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,7 +13,6 @@ import org.aion.avm.NameStyle;
 import org.aion.avm.core.types.ClassInformation;
 import org.aion.avm.core.types.ClassInformationRenamer;
 import org.aion.avm.core.types.CommonType;
-import i.PackageConstants;
 import i.RuntimeAssertionError;
 import org.junit.Test;
 

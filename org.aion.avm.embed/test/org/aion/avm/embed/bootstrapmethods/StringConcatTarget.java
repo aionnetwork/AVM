@@ -1,6 +1,8 @@
 package org.aion.avm.embed.bootstrapmethods;
 
 import avm.Address;
+import avm.Blockchain;
+
 import org.aion.avm.tooling.abi.Callable;
 
 public class StringConcatTarget {
@@ -11,6 +13,7 @@ public class StringConcatTarget {
         for(int i = 0; i< 400; i++){
             s += "a";
         }
+        Blockchain.require(null != s);
         return true;
     }
 
@@ -18,6 +21,7 @@ public class StringConcatTarget {
     public static boolean concatWithPrimitiveArray() {
         int[] arr = new int[10];
         String s = "" + arr;
+        Blockchain.require(null != s);
         return true;
     }
 
@@ -29,6 +33,7 @@ public class StringConcatTarget {
         byte[] arr4 = new byte[10];
 
         String s = "" + arr + arr2 + arr3 + arr4;
+        Blockchain.require(null != s);
         return true;
     }
 
@@ -36,6 +41,7 @@ public class StringConcatTarget {
     public static boolean concatWithObjectArray() {
         Object[] arr = new Object[10];
         String s = "" + arr;
+        Blockchain.require(null != s);
         return true;
     }
 
@@ -43,6 +49,7 @@ public class StringConcatTarget {
     public static boolean concatWithInterfaceArray() {
         MyInterface[] arr = new MyInterface[10];
         String s = "" + arr;
+        Blockchain.require(null != s);
         return true;
     }
 
@@ -50,6 +57,7 @@ public class StringConcatTarget {
     public static boolean concatWithUserDefinedArray() {
         MyClass[] arr = new MyClass[10];
         String s = "" + arr;
+        Blockchain.require(null != s);
         return true;
     }
 
@@ -57,18 +65,21 @@ public class StringConcatTarget {
     public static boolean concatWithMultiDimArray() {
         boolean[][] arr = new boolean[10][];
         String s = "" + arr;
+        Blockchain.require(null != s);
         return true;
     }
 
     @Callable
     public static boolean concatWithDynamicBoolean(){
         String s = " " + concatWithMultiDimArray();
+        Blockchain.require(null != s);
         return true;
     }
 
     @Callable
     public static boolean concatWithAddress(Address addr){
         String s = " " + addr;
+        Blockchain.require(null != s);
         return true;
     }
 

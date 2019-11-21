@@ -2,6 +2,8 @@ package org.aion.avm.embed.arraywrapping;
 
 import org.aion.avm.tooling.abi.Callable;
 
+import avm.Blockchain;
+
 public class TestResource {
 
     public interface X {}
@@ -12,7 +14,7 @@ public class TestResource {
     public static class B extends A {}
     public static class C extends B {}
 
-    private Object[] oa;
+    private static Object[] oa;
     private static int[] oi;
     public static int[] ois;
     public static String[][][] fieldMDString;
@@ -22,6 +24,7 @@ public class TestResource {
         boolean res = true;
         int[] arr = new int[20];
         int b = arr[2];
+        Blockchain.require(0 == b);
         arr[2] = 4;
         return res;
     }
@@ -107,11 +110,23 @@ public class TestResource {
 
         //BASTORE
         for (i = 0; i < 1024; i++){
+            if (i < b.length) {
+                if (i < a.length) {
+                    a[i] = ((i % 2) == 0);
+                }
+                b[i] = ((i % 2) == 0);
+            }
             c[i] = ((i % 2) == 0);
         }
 
         //BALOAD
         for (i = 0; i < 1024; i++){
+            if (i < b.length) {
+                if (i < a.length) {
+                    res = res && (a[i] == ((i % 2) == 0));
+                }
+                res = res && (b[i] == ((i % 2) == 0));
+            }
             res = res && (c[i] == ((i % 2) == 0));
         }
         return res;
@@ -129,11 +144,23 @@ public class TestResource {
 
         //BASTORE
         for (i = 0; i < 1024; i++){
+            if (i < b.length) {
+                if (i < a.length) {
+                    a[i] = (byte)(i & 0xff);
+                }
+                b[i] = (byte)(i & 0xff);
+            }
             c[i] = (byte)(i & 0xff);
         }
 
         //BALOAD
         for (i = 0; i < 1024; i++){
+            if (i < b.length) {
+                if (i < a.length) {
+                    res = res && (a[i] == (byte)(i & 0xff));
+                }
+                res = res && (b[i] == (byte)(i & 0xff));
+            }
             res = res && (c[i] == (byte)(i & 0xff));
         }
         return res;
@@ -151,11 +178,23 @@ public class TestResource {
 
         //CASTORE
         for (i = 0; i < 1024; i++){
-            c[i] = (char)(i & 0xffff);;
+            if (i < b.length) {
+                if (i < a.length) {
+                    a[i] = (char)(i & 0xffff);
+                }
+                b[i] = (char)(i & 0xffff);
+            }
+            c[i] = (char)(i & 0xffff);
         }
 
         //CALOAD
         for (i = 0; i < 1024; i++){
+            if (i < b.length) {
+                if (i < a.length) {
+                    res = res && (a[i] == (char)(i & 0xffff));
+                }
+                res = res && (b[i] == (char)(i & 0xffff));
+            }
             res = res && (c[i] == (char)(i & 0xffff));
         }
         return res;
@@ -173,11 +212,23 @@ public class TestResource {
 
         //DASTORE
         for (i = 0; i < 1024; i++){
+            if (i < b.length) {
+                if (i < a.length) {
+                    a[i] = ((double) i) / 3;
+                }
+                b[i] = ((double) i) / 3;
+            }
             c[i] = ((double) i) / 3;
         }
 
         //DALOAD
         for (i = 0; i < 1024; i++){
+            if (i < b.length) {
+                if (i < a.length) {
+                    res = res && (a[i] == (((double) i) / 3));
+                }
+                res = res && (b[i] == (((double) i) / 3));
+            }
             res = res && (c[i] == (((double) i) / 3));
         }
         return res;
@@ -195,11 +246,23 @@ public class TestResource {
 
         //FASTORE
         for (i = 0; i < 1024; i++){
+            if (i < b.length) {
+                if (i < a.length) {
+                    a[i] = ((float) i) / 3;
+                }
+                b[i] = ((float) i) / 3;
+            }
             c[i] = ((float) i) / 3;
         }
 
         //FALOAD
         for (i = 0; i < 1024; i++){
+            if (i < b.length) {
+                if (i < a.length) {
+                    res = res && (a[i] == (((float) i) / 3));
+                }
+                res = res && (b[i] == (((float) i) / 3));
+            }
             res = res && (c[i] == (((float) i) / 3));
         }
         return res;
@@ -217,11 +280,23 @@ public class TestResource {
 
         //IASTORE
         for (i = 0; i < 1024; i++){
+            if (i < b.length) {
+                if (i < a.length) {
+                    a[i] = i;
+                }
+                b[i] = i;
+            }
             c[i] = i;
         }
 
         //IALOAD
         for (i = 0; i < 1024; i++){
+            if (i < b.length) {
+                if (i < a.length) {
+                    res = res && (a[i] == i);
+                }
+                res = res && (b[i] == i);
+            }
             res = res && (c[i] == i);
         }
         return res;
@@ -239,11 +314,23 @@ public class TestResource {
 
         //LASTORE
         for (i = 0; i < 1024; i++){
+            if (i < b.length) {
+                if (i < a.length) {
+                    a[i] = (long) i;
+                }
+                b[i] = (long) i;
+            }
             c[i] = (long) i;
         }
 
         //LALOAD
         for (i = 0; i < 1024; i++){
+            if (i < b.length) {
+                if (i < a.length) {
+                    res = res && (a[i] == (long) i);
+                }
+                res = res && (b[i] == (long) i);
+            }
             res = res && (c[i] == (long) i);
         }
         return res;
@@ -261,11 +348,23 @@ public class TestResource {
 
         //LASTORE
         for (i = 0; i < 1024; i++){
+            if (i < b.length) {
+                if (i < a.length) {
+                    a[i] = (short) i;
+                }
+                b[i] = (short) i;
+            }
             c[i] = (short) i;
         }
 
         //LALOAD
         for (i = 0; i < 1024; i++){
+            if (i < b.length) {
+                if (i < a.length) {
+                    res = res && (a[i] == (short) i);
+                }
+                res = res && (b[i] == (short) i);
+            }
             res = res && (c[i] == (short) i);
         }
         return res;
@@ -284,11 +383,23 @@ public class TestResource {
 
         //LASTORE
         for (i = 0; i < 1024; i++){
+            if (i < b.length) {
+                if (i < a.length) {
+                    a[i] = new Object();
+                }
+                b[i] = new Object();
+            }
             c[i] = new Object();
         }
 
         //LALOAD
         for (i = 0; i < 1024; i++){
+            if (i < b.length) {
+                if (i < a.length) {
+                    count = count + a[i].hashCode();
+                }
+                count = count + b[i].hashCode();
+            }
             count = count + c[i].hashCode();
         }
 
@@ -310,12 +421,23 @@ public class TestResource {
 
          //LASTORE
          for (i = 0; i < 1024; i++){
+             if (i < b.length) {
+                 if (i < a.length) {
+                     a[i] = new String(Integer.toString(i));
+                 }
+                 b[i] = new String(Integer.toString(i));
+             }
              c[i] = new String(Integer.toString(i));
          }
 
          //LALOAD
          for (i = 0; i < 1024; i++){
-             //count = count + c[i].indexOf('1');
+             if (i < b.length) {
+                 if (i < a.length) {
+                     count = count + a[i].hashCode();
+                 }
+                 count = count + b[i].hashCode();
+             }
              count = count + c[i].hashCode();
          }
 
@@ -355,23 +477,27 @@ public class TestResource {
 
     @Callable
     public static boolean testClassField(){
+        oa = new Object[50];
+        oa[20] = new Object();
+        Object a = oa[20];
+        
         oi = new int[50];
         oi[20] = 1;
-        int a = oi[20];
+        int b = oi[20];
 
         ois = new int[50];
         ois[20] = 1;
-        int b = ois[20];
+        int c = ois[20];
 
         fieldMDInt = new int[10][10][10];
         fieldMDInt[5][5][5] = 10;
-        int c = fieldMDInt[5][5][5];
+        int d = fieldMDInt[5][5][5];
 
         fieldMDString = new String[10][10][10];
         fieldMDString[5][5][5] = "Bomb";
-        String d = fieldMDString[5][5][5];
+        String e = fieldMDString[5][5][5];
 
-        return (a == 1) && (oi instanceof int[]) && (b == 1) && (ois instanceof int[]) && (c == 10) && (d.equals("Bomb"));
+        return (null != a) && (oa instanceof Object[]) && (b == 1) && (oi instanceof int[]) && (c == 1) && (ois instanceof int[]) && (d == 10) && (e.equals("Bomb"));
     }
 
     @Callable
@@ -567,6 +693,7 @@ public class TestResource {
     @Callable
     public static boolean testArrayEnergy(){
         int[][][] s = new int[10][10][10];
+        Blockchain.require(10 == s.length);
         return true;
     }
 
@@ -574,11 +701,15 @@ public class TestResource {
     public static boolean testIncompleteArrayIni(){
         int[][][] s;
         s = new int[10][10][];
+        Blockchain.require(10 == s.length);
         s = new int[10][][];
+        Blockchain.require(10 == s.length);
 
         String[][][] ss;
         ss = new String[10][10][];
+        Blockchain.require(10 == ss.length);
         ss = new String[10][][];
+        Blockchain.require(10 == ss.length);
 
         return true;
     }
@@ -615,38 +746,51 @@ public class TestResource {
     public static boolean testArrayClone(){
         byte[] ba = new byte[10];
         byte[] bcp = ba.clone();
+        Blockchain.require(ba.length == bcp.length);
 
-        char[] ca = new char[10];
+        char[] ca = new char[11];
         char[] ccp = ca.clone();
+        Blockchain.require(ca.length == ccp.length);
 
-        double[] da = new double[10];
+        double[] da = new double[12];
         double[] dcp = da.clone();
+        Blockchain.require(da.length == dcp.length);
 
-        float[] fa = new float[10];
+        float[] fa = new float[13];
         float[] fcp = fa.clone();
+        Blockchain.require(fa.length == fcp.length);
 
-        int[] ia = new int[10];
+        int[] ia = new int[14];
         int[] icp = ia.clone();
+        Blockchain.require(ia.length == icp.length);
 
-        long[] ja = new long[10];
+        long[] ja = new long[15];
         long[] jcp = ja.clone();
+        Blockchain.require(ja.length == jcp.length);
 
-        String[] osa = new String[10];
+        String[] osa = new String[16];
         String[] oscp = osa.clone();
+        Blockchain.require(osa.length == oscp.length);
 
-        String[][] osa2 = new String[10][10];
+        String[][] osa2 = new String[17][18];
         String[][] osa2cp = osa2.clone();
+        Blockchain.require(osa2.length == osa2cp.length);
 
-        short[] sa = new short[10];
+        short[] sa = new short[19];
         short[] scp = sa.clone();
+        Blockchain.require(sa.length == scp.length);
 
-        byte[][][] bamd = new byte[10][10][10];
+        byte[][][] bamd = new byte[20][21][22];
         byte[][][] bmdcp = bamd.clone();
+        Blockchain.require(bamd.length == bmdcp.length);
         byte[][] bamdcp2 = bamd[1].clone();
+        Blockchain.require(bamd[1].length == bamdcp2.length);
 
-        String[][][] osamd = new String[10][10][10];
+        String[][][] osamd = new String[23][24][25];
         String[][][] osmdcp = osamd.clone();
+        Blockchain.require(osamd.length == osmdcp.length);
         String[][] osmdcp2 = osamd[1].clone();
+        Blockchain.require(osamd[1].length == osmdcp2.length);
 
         return true;
     }

@@ -36,7 +36,7 @@ public class ArrayEnergyTest {
         AvmRule.ResultWrapper result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice);
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
         int length = 100;
-        long energy = 26294
+        long energy = 28_241L
                 // init array cost
                 + length * (ArrayElement.BYTE.getEnergy()
                 + ArrayElement.CHAR.getEnergy()
@@ -58,7 +58,7 @@ public class ArrayEnergyTest {
         byte[] txData = ABIUtil.encodeMethodArguments("initArrayMultiDim");
         AvmRule.ResultWrapper result = avmRule.call(from, dappAddr, BigInteger.ZERO, txData, energyLimit, energyPrice);
         Assert.assertTrue(result.getReceiptStatus().isSuccess());
-        Assert.assertEquals(152911, result.getTransactionResult().energyUsed);
+        Assert.assertEquals(155_389L, result.getTransactionResult().energyUsed);
     }
 
     @Test

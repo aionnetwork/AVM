@@ -33,9 +33,9 @@ public class AvmDetails {
         Map<Class<?>, List<MethodDescriptor>> classDeclaredMethodMap = new HashMap<>();
         List<Class<?>> shadowClasses = getCallableShadowClasses();
 
-        for (Class c : shadowClasses) {
+        for (Class<?> c : shadowClasses) {
             String associatedJclName = mapClassName(c.getName());
-            Class jclClass = Class.forName(associatedJclName);
+            Class<?> jclClass = Class.forName(associatedJclName);
 
             List<MethodDescriptor> declaredMethodList = Stream.of(c.getDeclaredMethods(), c.getDeclaredConstructors())
                     .flatMap(Stream::of)

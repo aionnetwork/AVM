@@ -115,7 +115,7 @@ public class DeploymentCostTest {
                     AionSet.class,
                     AionMap.class);
                 // Verify that this size doesn't unexpectedly change.
-                Assert.assertEquals(32_573L, jarBytes.length);
+                Assert.assertEquals(32_571L, jarBytes.length);
                 break;
             case ERC20:
                 byte[] clinitArgs = ABIUtil.encodeMethodArguments("", "Pepe".toCharArray(), "PEPE".toCharArray(), 8);
@@ -143,7 +143,7 @@ public class DeploymentCostTest {
                     TRS.class,
                     AionMap.class);
                 // Verify that this size doesn't unexpectedly change.
-                Assert.assertEquals(16_090L, jarBytes.length);
+                Assert.assertEquals(16_091L, jarBytes.length);
                 break;
             default: throw new AssertionError("This should never be reached.");
         }

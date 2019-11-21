@@ -2,9 +2,7 @@ package org.aion.avm.core;
 
 import static org.junit.Assert.assertEquals;
 
-import org.aion.avm.NameStyle;
 import org.aion.avm.core.arraywrapping.ArrayNameMapper;
-import i.PackageConstants;
 import org.junit.Test;
 
 public class NameMapperTest {

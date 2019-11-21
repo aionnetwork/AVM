@@ -391,7 +391,7 @@ public class InterfaceFieldClassGeneratorTest {
         classWriter.visitInnerClass("NestedInterfaces$FIELDS$FIELDS", "NestedInterfaces$FIELDS", "FIELDS", ACC_PUBLIC | ACC_STATIC | ACC_ABSTRACT | ACC_INTERFACE);
 
         {
-            fieldVisitor = classWriter.visitField(ACC_PUBLIC | ACC_FINAL | ACC_STATIC, "a", "I", null, new Integer(101));
+            fieldVisitor = classWriter.visitField(ACC_PUBLIC | ACC_FINAL | ACC_STATIC, "a", "I", null, Integer.valueOf(101));
             fieldVisitor.visitEnd();
         }
         classWriter.visitEnd();

@@ -394,12 +394,6 @@ public interface Blake2b {
 			}
 		}
 
-		public static void main(String... args) {
-			Blake2b mac = Blake2b.Mac.newInstance("LOVE".getBytes());
-			final byte[] hash = mac.digest("Salaam!".getBytes());
-//			Debug.dumpBuffer(System.out, "-- mac hash --", hash);
-		}
-
 		// ---------------------------------------------------------------------
 		// interface: Blake2b API
 		// ---------------------------------------------------------------------

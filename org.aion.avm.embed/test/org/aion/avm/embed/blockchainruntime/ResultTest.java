@@ -2,7 +2,6 @@ package org.aion.avm.embed.blockchainruntime;
 
 import avm.Address;
 import org.aion.avm.embed.AvmRule;
-import org.aion.avm.embed.RedirectContract;
 import org.aion.avm.tooling.ABIUtil;
 import org.aion.types.TransactionResult;
 import org.junit.BeforeClass;

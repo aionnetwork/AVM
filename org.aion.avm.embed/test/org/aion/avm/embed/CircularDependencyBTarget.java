@@ -2,6 +2,8 @@ package org.aion.avm.embed;
 
 import org.aion.avm.tooling.abi.Callable;
 
+import avm.Blockchain;
+
 public class CircularDependencyBTarget {
     int value;
     CircularDependencyATarget aTarget;
@@ -13,7 +15,8 @@ public class CircularDependencyBTarget {
     @Callable
     public static int createAAndReturn(int val) {
         CircularDependencyATarget b = new CircularDependencyATarget(val);
-        return b.getValue();
+        Blockchain.require(null != b);
+        return CircularDependencyATarget.getValue();
     }
 
     int getValue() {

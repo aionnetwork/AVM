@@ -24,12 +24,12 @@ public class PersistanceNameMappingTestTarget {
     private static Number abstractType;
     private static Serializable interfaceType;
     private static Object object;
-    private static Enum someEnum;
+    private static Enum<TimeUnit> someEnum;
 
     // The userlib classes.
     private static org.aion.avm.userlib.abi.ABIToken token;
     private static org.aion.avm.userlib.AionBuffer buffer;
-    private static org.aion.avm.userlib.AionSet set;
+    private static org.aion.avm.userlib.AionSet<Object> set;
 
     // The api classes.
     private static Address address;
@@ -38,7 +38,7 @@ public class PersistanceNameMappingTestTarget {
     private static int[] primitiveArray1D;
     private static boolean[][][] primitiveArrayMD;
     private static String[] objectArray1D;
-    private static Comparable[][] objectArrayMD;
+    private static Comparable<?>[][] objectArrayMD;
     private static PersistanceNameMappingTestTarget[] userArray;
     private static Object[] objectArray;
 
@@ -115,7 +115,7 @@ public class PersistanceNameMappingTestTarget {
     private static void setUserlibFields() {
         token = new org.aion.avm.userlib.abi.ABIToken();
         buffer = org.aion.avm.userlib.AionBuffer.wrap(new byte[]{ 0x1, 0x2, 0x3 });
-        set = new org.aion.avm.userlib.AionSet();
+        set = new org.aion.avm.userlib.AionSet<Object>();
         set.add(new Object());
     }
 

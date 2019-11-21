@@ -1,9 +1,6 @@
 package org.aion.avm.core;
 
 import i.RuntimeAssertionError;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
 import org.aion.avm.core.util.TransactionResultUtil;
 import org.aion.kernel.AvmWrappedTransactionResult;
 import org.aion.kernel.SideEffects;
@@ -12,8 +9,6 @@ import org.aion.parallel.TransactionTask;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
-import org.aion.types.AionAddress;
-import org.aion.types.InternalTransaction.RejectedStatus;
 
 
 /**

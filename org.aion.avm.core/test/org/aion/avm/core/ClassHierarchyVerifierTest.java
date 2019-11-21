@@ -25,7 +25,7 @@ public class ClassHierarchyVerifierTest {
 
     @Test(expected = NullPointerException.class)
     public void testWhenHierarchyIsNull() {
-        HierarchyVerificationResult result = verifier.verifyHierarchy(null);
+        verifier.verifyHierarchy(null);
     }
 
     @Test

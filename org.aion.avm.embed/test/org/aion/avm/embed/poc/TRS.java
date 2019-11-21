@@ -145,7 +145,7 @@ public class TRS {
         }
     }
 
-    private static void finalizeInit() {
+    public static void finalizeInit() {
         if (!inited && callerIsOwner()) {
             inited = true;
         }
@@ -174,13 +174,13 @@ public class TRS {
         return !locked && (startBlockTimestamp == 0);
     }
 
-    private static void changeOwner(Address nextOwner) {
+    public static void changeOwner(Address nextOwner) {
         if (callerIsOwner()) {
             newOwner = nextOwner;
         }
     }
 
-    private static void acceptOwnership() {
+    public static void acceptOwnership() {
         if (Blockchain.getCaller().equals(newOwner)) {
             owner = newOwner;
             newOwner = null;

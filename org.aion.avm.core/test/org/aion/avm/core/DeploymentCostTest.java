@@ -78,7 +78,7 @@ public class DeploymentCostTest {
     @Test
     public void testCostToDeployDapps() {
         TransactionResult blake2bResult = deployContract(Contract.BLAKE2B);
-        Assert.assertEquals(4_621_113L, blake2bResult.energyUsed);
+        Assert.assertEquals(4_607_980L, blake2bResult.energyUsed);
         
         TransactionResult walletResult = deployContract(Contract.POC_WALLET);
         Assert.assertEquals(3_985_228L, walletResult.energyUsed);
@@ -100,7 +100,7 @@ public class DeploymentCostTest {
                     Main.class,
                     Blake2b.class);
                 // Verify that this size doesn't unexpectedly change.
-                Assert.assertEquals(68_420L, jarBytes.length);
+                Assert.assertEquals(68_224L, jarBytes.length);
                 break;
             case POC_WALLET:
                 jarBytes = classesToJarBytes(

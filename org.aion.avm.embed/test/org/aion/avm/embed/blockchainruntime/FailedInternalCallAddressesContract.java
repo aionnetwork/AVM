@@ -6,7 +6,6 @@ import avm.Blockchain;
 import avm.Result;
 import org.aion.avm.tooling.abi.Callable;
 import org.aion.avm.userlib.abi.ABIDecoder;
-import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 
 public class FailedInternalCallAddressesContract {

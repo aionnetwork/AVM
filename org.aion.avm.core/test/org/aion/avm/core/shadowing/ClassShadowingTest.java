@@ -317,6 +317,6 @@ public class ClassShadowingTest {
             this.realImplementation.bootstrapOnly();
         }
         @Override
-        public boolean isLoadedByCurrentClassLoader(java.lang.Class userClass) { return this.realImplementation.isLoadedByCurrentClassLoader(userClass); }
+        public boolean isLoadedByCurrentClassLoader(java.lang.Class<?> userClass) { return this.realImplementation.isLoadedByCurrentClassLoader(userClass); }
     }
 }

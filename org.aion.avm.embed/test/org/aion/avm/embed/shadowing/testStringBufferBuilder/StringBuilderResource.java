@@ -85,7 +85,7 @@ public class StringBuilderResource {
         boolean exceptionThrown = false;
         try {
             energyRemaining = Blockchain.getRemainingEnergy();
-            StringBuilder sb = new StringBuilder(-10000000);
+            new StringBuilder(-10000000);
         } catch (NegativeArraySizeException e) {
             exceptionThrown = true;
             Blockchain.require(energyRemaining > Blockchain.getRemainingEnergy());

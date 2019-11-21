@@ -7,7 +7,6 @@ import avm.Blockchain;
 import avm.Result;
 import org.aion.avm.userlib.AionBuffer;
 import org.aion.avm.userlib.abi.ABIDecoder;
-import org.aion.avm.userlib.abi.ABIEncoder;
 import org.aion.avm.userlib.abi.ABIStreamingEncoder;
 
 

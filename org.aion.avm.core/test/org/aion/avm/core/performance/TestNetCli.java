@@ -143,32 +143,6 @@ public class TestNetCli {
         return post(data);
     }
 
-    private void unlockAllAccounts(ArrayList<String> accounts, String password, ExecutorService pool) {
-        final CountDownLatch countDownLatch = new CountDownLatch(accounts.size());
-        for (int i = 0; i < accounts.size(); ++i) {
-            final String account = accounts.get(i);
-            final int n = i;
-            Runnable unlockAccountTask = () -> {
-                String threadName = Thread.currentThread().getName();
-                System.out.printf("%s: %d-unlocking account %s ...\n", threadName, n, account);
-                String response = unlockAccount(account, password);
-                assert (response != null);
-                System.out.printf("%s: %d-response:%s\n", threadName, n, response);
-                boolean isSucceed = extractUnlockResult(response);
-                assert (isSucceed);
-                System.out.printf("%s: %d-unlocking account %s successfully!\n", threadName, n, account);
-                countDownLatch.countDown();
-            };
-            pool.submit(unlockAccountTask);
-        }
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-    }
-
     private boolean extractUnlockResult(String response) {
         return response.contains("\"result\":true");
     }

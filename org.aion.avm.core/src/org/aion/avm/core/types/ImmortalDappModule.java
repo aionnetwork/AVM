@@ -11,7 +11,6 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
 import java.util.zip.ZipEntry;
-import org.aion.types.AionAddress;
 import org.aion.avm.core.dappreading.LoadedJar;
 
 

@@ -3,7 +3,6 @@ package org.aion.avm.embed.blockchainruntime;
 import java.math.BigInteger;
 import org.aion.avm.tooling.abi.Callable;
 import org.aion.avm.userlib.abi.ABIDecoder;
-import org.aion.avm.userlib.abi.ABIEncoder;
 import avm.Address;
 import avm.Blockchain;
 import avm.Result;
