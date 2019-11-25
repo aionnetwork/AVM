@@ -5,6 +5,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.concurrent.TimeUnit;
 
+import avm.Address;
 import avm.Blockchain;
 import org.aion.avm.tooling.abi.Callable;
 
@@ -174,4 +175,17 @@ public class ShadowClassConstantsTarget {
 
     }
 
+    @Callable
+    public static void checkInstanceClassesAgainstConstants() {
+        Blockchain.require(Byte.class == Byte.valueOf((byte)0).getClass());
+        Blockchain.require(Boolean.class == Boolean.valueOf(true).getClass());
+        Blockchain.require(Short.class == Short.valueOf((short)0).getClass());
+        Blockchain.require(Character.class == Character.valueOf('a').getClass());
+        Blockchain.require(Integer.class == Integer.valueOf(0).getClass());
+        Blockchain.require(Float.class == Float.valueOf(0.0f).getClass());
+        Blockchain.require(Long.class == Long.valueOf(0L).getClass());
+        Blockchain.require(Double.class == Double.valueOf(0.0d).getClass());
+        Blockchain.require(ShadowClassConstantsTarget.class == new ShadowClassConstantsTarget().getClass());
+        Blockchain.require(Address.class == new Address(new byte[Address.LENGTH]).getClass());
+    }
 }

@@ -70,4 +70,10 @@ public class ShadowClassConstantsTest {
         assertTrue(result.transactionStatus.isSuccess());
     }
 
+    @Test
+    public void checkInstanceClassesAgainstConstants() {
+        byte[] data = ABIUtil.encodeMethodArguments("checkInstanceClassesAgainstConstants");
+        TransactionResult result = avmRule.call(sender, contract, value, data, 2_000_000, 1).getTransactionResult();
+        assertTrue(result.transactionStatus.isSuccess());
+    }
 }

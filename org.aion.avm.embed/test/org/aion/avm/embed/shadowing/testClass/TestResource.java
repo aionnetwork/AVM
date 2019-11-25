@@ -121,6 +121,21 @@ public class TestResource {
         return a.getClass().getName();
     }
 
+    @Callable
+    public static String getBytePrimtitiveTypeName(){
+        return Byte.TYPE.getName();
+    }
+
+    @Callable
+    public static String getAddressApiClassName(){
+        return new Address(new byte[Address.LENGTH]).getClass().getName();
+    }
+
+    @Callable
+    public static String getMyChildInstanceClassName(){
+        return new MyChild().getClass().getName();
+    }
+
     public static class Child {
         @Override
         public int hashCode() {

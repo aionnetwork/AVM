@@ -21,7 +21,8 @@ import static org.junit.Assert.assertTrue;
 
 public class ClassNameTest {
     @ClassRule
-    public static AvmRule avmRule = new AvmRule(true);
+    // Be careful enabling debug mode for this test since that disables the renaming we are partially testing.
+    public static AvmRule avmRule = new AvmRule(false);
 
     private static final Address sender = avmRule.getPreminedAccount();
     private static final BigInteger value = BigInteger.ZERO;
@@ -143,6 +144,21 @@ public class ClassNameTest {
     public void getObjectImplementInterfaceName(){
         TestResource.MyChild[] o = new TestResource.MyChild[10];
         assertEquals(o.getClass().getName(), callStatic("getObjectImplementInterfaceName"));
+    }
+
+    @Test
+    public void getBytePrimtitiveTypeName(){
+        assertEquals(Byte.TYPE.getName(), callStatic("getBytePrimtitiveTypeName"));
+    }
+
+    @Test
+    public void getAddressApiClassName(){
+        assertEquals(Address.class.getName(), callStatic("getAddressApiClassName"));
+    }
+
+    @Test
+    public void getMyChildInstanceClassName(){
+        assertEquals(TestResource.MyChild.class.getName(), callStatic("getMyChildInstanceClassName"));
     }
 
     private String callStatic(String methodName, Object... args) {
