@@ -2,6 +2,7 @@ package org.aion.parallel;
 
 import org.aion.avm.core.ExecutionType;
 import org.aion.avm.core.util.Helpers;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class AddressResourceMonitorTest {
@@ -13,12 +14,26 @@ public class AddressResourceMonitorTest {
     byte[] addr3 = Helpers.hexStringToBytes("3333333333333333333333333333333333333333333333333333333333333333");
     byte[] addr4 = Helpers.hexStringToBytes("4444444444444444444444444444444444444444444444444444444444444444");
 
-    class TestThread extends Thread{
+    private abstract class TestThread extends Thread{
         AddressResourceMonitor monitor;
+        private Throwable error;
 
         public TestThread(AddressResourceMonitor monitor){
             this.monitor = monitor;
         }
+
+        public void run() {
+            try {
+                safeRun();
+            } catch (Throwable t) {
+                this.error = t;
+            }
+        }
+        public void joinNoError() throws InterruptedException {
+            this.join();
+            Assert.assertNull(this.error);
+        }
+        protected abstract void safeRun();
     }
 
     class TestThread1 extends TestThread{
@@ -27,7 +42,7 @@ public class AddressResourceMonitorTest {
             super(monitor);
         }
 
-        public void run(){
+        protected void safeRun(){
             TransactionTask task = new TransactionTask(null, null, 0, Helpers.ZERO_ADDRESS, ExecutionType.ASSUME_MAINCHAIN, 0);
 
             monitor.acquire(addr1, task);
@@ -40,7 +55,7 @@ public class AddressResourceMonitorTest {
             super(monitor);
         }
         
-        public void run(){
+        protected void safeRun(){
             TransactionTask task = new TransactionTask(null, null, 1, Helpers.ZERO_ADDRESS, ExecutionType.ASSUME_MAINCHAIN, 0);
             monitor.acquire(addr1, task);
 
@@ -59,7 +74,7 @@ public class AddressResourceMonitorTest {
             super(monitor);
         }
         
-        public void run(){
+        protected void safeRun(){
             TransactionTask task = new TransactionTask(null, null, 2, Helpers.ZERO_ADDRESS, ExecutionType.ASSUME_MAINCHAIN, 0);
             monitor.acquire(addr1, task);
 
@@ -89,9 +104,9 @@ public class AddressResourceMonitorTest {
         Thread.sleep(100);
         t1.start();
 
-        t1.join();
-        t2.join();
-        t3.join();
+        t1.joinNoError();
+        t2.joinNoError();
+        t3.joinNoError();
     }
 
     class TestThread4 extends TestThread{
@@ -99,7 +114,7 @@ public class AddressResourceMonitorTest {
             super(monitor);
         }
         
-        public void run(){
+        protected void safeRun(){
             TransactionTask task = new TransactionTask(null, null, 0, Helpers.ZERO_ADDRESS, ExecutionType.ASSUME_MAINCHAIN, 0);
 
             monitor.acquire(addr1, task);
@@ -115,7 +130,7 @@ public class AddressResourceMonitorTest {
             super(monitor);
         }
         
-        public void run(){
+        protected void safeRun(){
             TransactionTask task = new TransactionTask(null, null, 1, Helpers.ZERO_ADDRESS, ExecutionType.ASSUME_MAINCHAIN, 0);
             monitor.acquire(addr3, task);
 
@@ -134,7 +149,7 @@ public class AddressResourceMonitorTest {
             super(monitor);
         }
         
-        public void run(){
+        protected void safeRun(){
             TransactionTask task = new TransactionTask(null, null, 2, Helpers.ZERO_ADDRESS, ExecutionType.ASSUME_MAINCHAIN, 0);
             monitor.acquire(addr4, task);
 
@@ -163,9 +178,9 @@ public class AddressResourceMonitorTest {
         Thread.sleep(100);
         t1.start();
 
-        t1.join();
-        t2.join();
-        t3.join();
+        t1.joinNoError();
+        t2.joinNoError();
+        t3.joinNoError();
     }
 
     class TestThread7 extends TestThread{
@@ -173,7 +188,7 @@ public class AddressResourceMonitorTest {
             super(monitor);
         }
         
-        public void run(){
+        protected void safeRun(){
             TransactionTask task = new TransactionTask(null, null, 0, Helpers.ZERO_ADDRESS, ExecutionType.ASSUME_MAINCHAIN, 0);
 
             monitor.acquire(addr1, task);
@@ -189,7 +204,7 @@ public class AddressResourceMonitorTest {
             super(monitor);
         }
 
-        public void run(){
+        protected void safeRun(){
             TransactionTask task = new TransactionTask(null, null, 1, Helpers.ZERO_ADDRESS, ExecutionType.ASSUME_MAINCHAIN, 0);
             monitor.acquire(addr4, task);
             monitor.acquire(addr3, task);
@@ -217,8 +232,8 @@ public class AddressResourceMonitorTest {
         Thread.sleep(100);
         t1.start();
 
-        t1.join();
-        t2.join();
+        t1.joinNoError();
+        t2.joinNoError();
     }
 
 }
