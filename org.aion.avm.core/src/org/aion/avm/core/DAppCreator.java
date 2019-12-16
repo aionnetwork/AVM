@@ -218,7 +218,7 @@ public class DAppCreator {
             // transform
             long transformStartTime = System.nanoTime();
             Map<String, byte[]> transformedClasses = transformClasses(rawDapp.classes, dappClassesForest, rawDapp.classHierarchy, rawDapp.classRenamer, preserveDebuggability);
-            AvmImpl.getCurrentThreadStats().addTransformationTimeToStats(System.nanoTime() - transformStartTime);
+            AvmExecutorThread.currentThread().stats.addTransformationTimeToStats(System.nanoTime() - transformStartTime);
             TransformedDappModule transformedDapp = TransformedDappModule.fromTransformedClasses(transformedClasses, rawDapp.mainClass);
 
             LoadedDApp dapp = DAppLoader.fromTransformed(transformedDapp, preserveDebuggability);

@@ -19,9 +19,7 @@ import org.aion.avm.core.persistence.LoadedDApp;
 import org.aion.avm.core.util.ByteArrayWrapper;
 import org.aion.avm.core.util.ContractCaptureTool;
 import org.aion.avm.core.util.SoftCache;
-import i.IInstrumentation;
 import i.IInstrumentationFactory;
-import i.InstrumentationHelpers;
 import i.JvmError;
 import i.RuntimeAssertionError;
 import org.aion.parallel.AddressResourceMonitor;
@@ -56,6 +54,10 @@ public class AvmImpl implements AvmInternal {
     private final boolean enableBlockchainPrintln;
     private final HistogramDataCollector histogramDataCollector;
     private final ContractCaptureTool contractCaptureTool;
+    
+    // We will put an implementation of AvmExecutorThread.IExecutorThreadHandler inside, instead of implementing it, ourselves, to be clear
+    // that this implementation is for the threads created internally, only, and not part of our generaly public interface.
+    private final AvmExecutorThread.IExecutorThreadHandler executorThreadHandler;
 
     public AvmImpl(IInstrumentationFactory instrumentationFactory, IExternalCapabilities capabilities, AvmConfiguration configuration) {
         this.instrumentationFactory = instrumentationFactory;
@@ -76,87 +78,27 @@ public class AvmImpl implements AvmInternal {
         this.contractCaptureTool = (null != configuration.contractCaptureDirectory)
                 ? new ContractCaptureTool(configuration.contractCaptureDirectory)
                 : null;
-    }
-
-    private class AvmExecutorThread extends Thread{
-        public final AvmThreadStats stats = new AvmThreadStats();
-
-        AvmExecutorThread(String name){
-            super(name);
-        }
-
-        @Override
-        public void run() {
-            IInstrumentation instrumentation = AvmImpl.this.instrumentationFactory.createInstrumentation();
-            InstrumentationHelpers.attachThread(instrumentation);
-            try {
-                // Run as long as we have something to do (null means shutdown).
-                AvmWrappedTransactionResult outgoingResult = null;
-                long nanosRunningStop = System.nanoTime();
-                long nanosSleepingStart = nanosRunningStop;
-                TransactionTask incomingTask = AvmImpl.this.handoff.blockingPollForTransaction(null, null);
-                long nanosRunningStart = System.nanoTime();
-                long nanosSleepingStop = nanosRunningStart;
-                this.stats.nanosSleeping += (nanosSleepingStop - nanosSleepingStart);
-
-                while (null != incomingTask) {
-                    int abortCounter = 0;
-
-                    do {
-                        if (AvmImpl.this.enableVerboseConcurrentExecutor) {
-                            System.out.println(this.getName() + " start  " + incomingTask.getIndex());
-                        }
-
-                        // Attach the IInstrumentation helper to the task to support asynchronous abort
-                        // Instrumentation helper will abort the execution of the transaction by throwing an exception during chargeEnergy call
-                        // Aborted transaction will be retried later
-                        incomingTask.startNewTransaction();
-                        incomingTask.attachInstrumentationForThread();
-                        outgoingResult = AvmImpl.this.backgroundProcessTransaction(incomingTask);
-                        incomingTask.detachInstrumentationForThread();
-
-                        if (outgoingResult.isAborted()) {
-                            // If this was an abort, we want to clear the abort state on the instrumentation for this thread, since
-                            // this is the point where that is "handled".
-                            // Note that this is safe to do here since the instrumentation isn't exposed to any other threads.
-                            instrumentation.clearAbortState();
-                            
-                            if (AvmImpl.this.enableVerboseConcurrentExecutor) {
-                                System.out.println(this.getName() + " abort  " + incomingTask.getIndex() + " counter " + (++abortCounter));
-                            }
-                        }
-                    }while (outgoingResult.isAborted());
-
-                    if (AvmImpl.this.enableVerboseConcurrentExecutor) {
-                        System.out.println(this.getName() + " finish " + incomingTask.getIndex() + " " + outgoingResult);
-                    }
-
-                    this.stats.transactionsProcessed += 1;
-                    nanosRunningStop = System.nanoTime();
-                    nanosSleepingStart = nanosRunningStop;
-                    this.stats.nanosRunning += (nanosRunningStop - nanosRunningStart);
-                    incomingTask = AvmImpl.this.handoff.blockingPollForTransaction(outgoingResult, incomingTask);
-                    nanosRunningStart = System.nanoTime();
-                    nanosSleepingStop = nanosRunningStart;
-                    this.stats.nanosSleeping += (nanosSleepingStop - nanosSleepingStart);
-                }
-            } catch (JvmError e) {
-                // This is a fatal error the AVM cannot generally happen so request an asynchronous shutdown.
-                // We set the backgroundException without lock since any concurrently-written exception instance is equally valid.
-                AvmFailedException backgroundFatalError = new AvmFailedException(e.getCause());
-                AvmImpl.this.backgroundFatalError = backgroundFatalError;
-                AvmImpl.this.handoff.setBackgroundThrowable(backgroundFatalError);
-            } catch (Throwable t) {
-                // Note that this case is primarily only relevant for unit tests or other new development which could cause internal exceptions.
-                // Without this hand-off to the foreground thread, these exceptions would cause silent failures.
-                // Uncaught exception - this is fatal but we need to communicate it to the outside.
-                AvmImpl.this.handoff.setBackgroundThrowable(t);
-            } finally {
-                InstrumentationHelpers.detachThread(instrumentation);
-                AvmImpl.this.instrumentationFactory.destroyInstrumentation(instrumentation);
+        
+        this.executorThreadHandler = new AvmExecutorThread.IExecutorThreadHandler() {
+            @Override
+            public TransactionTask blockingPollForTransaction(AvmWrappedTransactionResult previousResult, TransactionTask previousTask) {
+                return AvmImpl.this.handoff.blockingPollForTransaction(previousResult, previousTask);
             }
-        }
-
+            @Override
+            public AvmWrappedTransactionResult backgroundProcessTransaction(TransactionTask incomingTask) {
+                return AvmImpl.this.backgroundProcessTransaction(incomingTask);
+            }
+            @Override
+            public void setBackgroundFatalThrowable(Throwable backgroundFatalThrowable) {
+                AvmImpl.this.handoff.setBackgroundThrowable(backgroundFatalThrowable);
+            }
+            @Override
+            public void setBackgroundFatalError(JvmError backgroundFatalError) {
+                AvmFailedException fatalError = new AvmFailedException(backgroundFatalError.getCause());
+                AvmImpl.this.backgroundFatalError = fatalError;
+                AvmImpl.this.handoff.setBackgroundThrowable(fatalError);
+            }
+        };
     }
 
     public void start() {
@@ -183,7 +125,11 @@ public class AvmImpl implements AvmInternal {
         AvmThreadStats[] threadStats = new AvmThreadStats[this.threadCount];
         Set<Thread> executorThreads = new HashSet<>();
         for (int i = 0; i < this.threadCount; i++){
-            AvmExecutorThread thread = new AvmExecutorThread("AVM Executor Thread " + i);
+            AvmExecutorThread thread = new AvmExecutorThread("AVM Executor Thread " + i
+                    , this.executorThreadHandler
+                    , this.instrumentationFactory
+                    , this.enableVerboseConcurrentExecutor
+            );
             executorThreads.add(thread);
             threadStats[i] = thread.stats;
         }
@@ -656,10 +602,6 @@ public class AvmImpl implements AvmInternal {
             throw this.backgroundFatalError;
         }
         return resourceMonitor;
-    }
-
-    public static AvmThreadStats getCurrentThreadStats() {
-        return ((AvmExecutorThread) Thread.currentThread()).stats;
     }
 
     private void validateCodeCache(long blockNum){

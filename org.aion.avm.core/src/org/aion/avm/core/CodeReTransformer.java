@@ -25,7 +25,7 @@ public class CodeReTransformer {
             if (canRetransform(rawDapp)) {
                 long transformStartTime = System.nanoTime();
                 Map<String, byte[]> transformedClasses = DAppCreator.transformClasses(rawDapp.classes, rawDapp.classHierarchyForest, rawDapp.classHierarchy, rawDapp.classRenamer, preserveDebuggability);
-                AvmImpl.getCurrentThreadStats().addRetransformationTimeToStats(System.nanoTime() - transformStartTime);
+                AvmExecutorThread.currentThread().stats.addRetransformationTimeToStats(System.nanoTime() - transformStartTime);
                 Map<String, byte[]> immortalClasses = DAppCreator.stripClinitFromClasses(transformedClasses);
                 ImmortalDappModule immortalDapp = ImmortalDappModule.fromImmortalClasses(immortalClasses, rawDapp.mainClass);
                 transformedCode = immortalDapp.createJar(blockTimeStamp);
