@@ -6,6 +6,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.aion.avm.core.AvmExecutorThread;
+import org.aion.avm.core.AvmThreadStats;
+
+
 /**
  * Used by executor threads to communicate with each other.
  * Executor threads can only acquire/release {@link AddressResource}, commit result through this monitor.
@@ -63,6 +67,8 @@ public class AddressResourceMonitor {
      * @return true if the address was acquired by the task, false otherwise
      */
     public boolean acquire(byte[] address, TransactionTask task){
+        // We will need the stats to report information about concurrent resource blocking.
+        AvmThreadStats stats = AvmExecutorThread.currentThread().stats;
         synchronized (sync) {
             AddressWrapper addressWrapper = new AddressWrapper(address);
             AddressResource resource = getResource(addressWrapper);
@@ -85,9 +91,15 @@ public class AddressResourceMonitor {
 
             // Resource res is granted to task iff
             // res is not hold by other task && task is the next owner
+            // (only report the wait once per attempt).
+            boolean didReport = false;
             while ((resource.isOwned() || !resource.isNextOwner(task)) && task != resource.getOwnedBy()
                     && !task.inAbortState()){
                 try {
+                    if (!didReport) {
+                        stats.concurrentResource_waited += 1;
+                        didReport = true;
+                    }
                     sync.wait();
                 }catch (InterruptedException e){
                     RuntimeAssertionError.unreachable("Waiting executor thread received interruption: ACQUIRE");
@@ -101,9 +113,11 @@ public class AddressResourceMonitor {
                     System.out.println("Acquire " + task.getIndex() + " " + resource.toString()
                             + " waitingTime " + (endTime - startTime)/1000 + " \u00B5s");
                 }
+                stats.concurrentResource_acquired += 1;
                 resource.setOwner(task);
                 recordOwnership(resource, task);
             }else{
+                stats.concurrentResource_aborted += 1;
                 if (DEBUG) {
                     endTime = System.nanoTime();
                     System.out.println("Abort   " + task.getIndex() + " " + resource.toString()

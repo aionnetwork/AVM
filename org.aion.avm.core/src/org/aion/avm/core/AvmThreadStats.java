@@ -21,6 +21,11 @@ public class AvmThreadStats {
     public long retransformationMaxTimeNanos;
     public int retransformationCount;
 
+    // The number of concurrent resource access requests which resulted in acquire/wait/abort.  Note that a wait request will result in either an acquire or abort.
+    public int concurrentResource_acquired;
+    public int concurrentResource_waited;
+    public int concurrentResource_aborted;
+
     /**
      * updates the transformation count, max and average transformation times
      *
@@ -53,5 +58,8 @@ public class AvmThreadStats {
         this.retransformationAvgTimeNanos = 0;
         this.retransformationCount = 0;
         this.retransformationMaxTimeNanos = 0;
+        this.concurrentResource_acquired = 0;
+        this.concurrentResource_waited = 0;
+        this.concurrentResource_aborted = 0;
     }
 }

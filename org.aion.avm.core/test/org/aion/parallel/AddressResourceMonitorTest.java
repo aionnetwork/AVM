@@ -1,5 +1,6 @@
 package org.aion.parallel;
 
+import org.aion.avm.core.AvmExecutorThread;
 import org.aion.avm.core.ExecutionType;
 import org.aion.avm.core.util.Helpers;
 import org.junit.Assert;
@@ -14,11 +15,16 @@ public class AddressResourceMonitorTest {
     byte[] addr3 = Helpers.hexStringToBytes("3333333333333333333333333333333333333333333333333333333333333333");
     byte[] addr4 = Helpers.hexStringToBytes("4444444444444444444444444444444444444444444444444444444444444444");
 
-    private abstract class TestThread extends Thread{
+    private abstract class TestThread extends AvmExecutorThread {
         AddressResourceMonitor monitor;
         private Throwable error;
 
         public TestThread(AddressResourceMonitor monitor){
+            super("name"
+                    , null
+                    , null
+                    , false
+            );
             this.monitor = monitor;
         }
 

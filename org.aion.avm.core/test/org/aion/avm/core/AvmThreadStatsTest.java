@@ -78,6 +78,7 @@ public class AvmThreadStatsTest {
         AvmThreadStats[] threadStats = stats.threadStats;
         int transformationTotalCount = 0;
         int retransformationTotalCount = 0;
+        int totalAcquireCount = 0;
 
         for (AvmThreadStats avmThreadStats : threadStats) {
             transformationTotalCount += avmThreadStats.transformationCount;
@@ -89,16 +90,22 @@ public class AvmThreadStatsTest {
             Assert.assertEquals(0, avmThreadStats.retransformationCount);
             Assert.assertEquals(0, avmThreadStats.retransformationAvgTimeNanos);
             Assert.assertEquals(0, avmThreadStats.retransformationMaxTimeNanos);
+            // Note that some of these calls have conflicting dependencies so some waits or aborts could happen (result cannot be verified as it is non-deterministic).
+            totalAcquireCount += avmThreadStats.concurrentResource_acquired;
         }
 
         // should equal number of contracts deployed
         Assert.assertEquals(length, transformationTotalCount);
+        // Should be a minimum of 2*contracts (deployer+contract) + 4*(contractAddresses.length - 1) (caller+contract+contract+other).
+        // (in reality, it will typically be higher since aborts will cause a re-request - single-threaded, this always produces 56).
+        Assert.assertTrue(totalAcquireCount >= ((2 * length) + (4 * (contractAddresses.length - 1))));
 
         for (AionAddress address : contractAddresses) {
             kernel.setTransformedCode(address, null);
         }
 
         stats.clear();
+        totalAcquireCount = 0;
 
         // each call will re-transform the code
         for (int i = 0; i < length - 1; i++) {
@@ -119,9 +126,16 @@ public class AvmThreadStatsTest {
 
             Assert.assertTrue(avmThreadStats.retransformationAvgTimeNanos > 0);
             Assert.assertTrue(avmThreadStats.retransformationMaxTimeNanos > avmThreadStats.retransformationAvgTimeNanos);
+            
+            // Note that none of these calls have conflicting dependencies so there will be 0 waits or aborts.
+            totalAcquireCount += avmThreadStats.concurrentResource_acquired;
+            Assert.assertEquals(0, avmThreadStats.concurrentResource_waited);
+            Assert.assertEquals(0, avmThreadStats.concurrentResource_aborted);
         }
 
         Assert.assertEquals(length - 1, retransformationTotalCount);
+        // Total acquires is a sender and contract for each length-1.
+        Assert.assertEquals(2 * (length - 1), totalAcquireCount);
         avm.shutdown();
     }
 
@@ -164,6 +178,7 @@ public class AvmThreadStatsTest {
         AvmCoreStats stats = avm.getStats();
         AvmThreadStats[] threadStats = stats.threadStats;
         int transformationTotalCount = 0;
+        int totalAcquireCount = 0;
 
         for (AvmThreadStats avmThreadStats : threadStats) {
             transformationTotalCount += avmThreadStats.transformationCount;
@@ -175,11 +190,19 @@ public class AvmThreadStatsTest {
             Assert.assertEquals(0, avmThreadStats.retransformationCount);
             Assert.assertEquals(0, avmThreadStats.retransformationAvgTimeNanos);
             Assert.assertEquals(0, avmThreadStats.retransformationMaxTimeNanos);
+            // Note that none of these calls have conflicting dependencies so there will be 0 waits or aborts.
+            totalAcquireCount += avmThreadStats.concurrentResource_acquired;
+            Assert.assertEquals(0, avmThreadStats.concurrentResource_waited);
+            Assert.assertEquals(0, avmThreadStats.concurrentResource_aborted);
         }
 
         // should equal number of contracts deployed * 2, since each contract deploys its own contract
         Assert.assertEquals(length * 2, transformationTotalCount);
 
+        // We expect that the acquire count will be length * 5:  (deployer+contract) + (caller+contract+newContract).
+        // (these have no conflicts, so they tend to be perfectly split by thread, but nothing requires this so we can't verify it).
+        Assert.assertEquals(length * 5, totalAcquireCount);
+        
         avm.shutdown();
     }
 }
