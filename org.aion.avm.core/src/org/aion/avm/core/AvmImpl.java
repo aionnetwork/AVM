@@ -510,6 +510,9 @@ public class AvmImpl implements AvmInternal {
 
                 boolean updateDataCache;
 
+                // We don't write back the data to the cache for internal transactions, since the external transaction might fail
+                boolean isExternalTransaction = task.getTransactionStackDepth() == 0;
+
                 // writes the transformed code into the cache, only when the recipient dApp does not have an associated transformed code in the database and the transaction fails.
                 boolean writeToTransformedCodeCache = false;
                 byte[] cachedTransformedCode = null;
@@ -615,11 +618,15 @@ public class AvmImpl implements AvmInternal {
                     result = DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, senderAddress, recipient, effectiveTransactionOrigin, transactionData, transactionHash, energyLimit, energyPrice, transactionValue, result, this.enableVerboseContractErrors, readFromDataCacheEnabled, this.enableBlockchainPrintln);
 
                     if (writeToCacheEnabled) {
-                        if (result.isSuccess() && updateDataCache) {
+                        // Update the data cache only if
+                        // the result was successful,
+                        // the execution type was ASSUME_MAINCHAIN or SWITCHING_MAINCHAIN,
+                        // and it was not an internal transaction
+                        if (result.isSuccess() && updateDataCache && isExternalTransaction) {
                             dapp.updateLoadedBlockForSuccessfulTransaction(currentBlockNumber);
                             this.hotCache.checkin(addressWrapper, dapp);
                         } else {
-                            // For ASSUME_SIDECHAIN, ETH_CALL, MINING cases.
+                            // Update the code cache for ASSUME_SIDECHAIN, ETH_CALL, MINING cases, and internal transactions
                             dapp.clearDataState();
                             this.hotCache.checkin(addressWrapper, dapp);
                         }

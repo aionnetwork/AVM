@@ -50,6 +50,12 @@ public class HotObjectContract {
                 case "selfDestruct":
                     selfDestruct();
                     break;
+                case "makeCallAndRevert":
+                    makeCallAndRevert(decoder.decodeOneAddress(), decoder.decodeOneByteArray());
+                    break;
+                case "makeCallAndFail":
+                    makeCallAndFail(decoder.decodeOneAddress(), decoder.decodeOneByteArray());
+                    break;
             }
             return null;
         }
@@ -103,6 +109,18 @@ public class HotObjectContract {
         objArr = new Object[objectArraySize];
         for (int i = 0; i < objArr.length; i++) {
             objArr[i] = new int[intArraySize];
+        }
+    }
+
+    public static void makeCallAndRevert(Address callee, byte[] data) {
+        Blockchain.call(callee, BigInteger.ZERO, data, 1000000);
+        Blockchain.revert();
+    }
+
+    public static void makeCallAndFail(Address callee, byte[] data) {
+        Blockchain.call(callee, BigInteger.ZERO, data, 1000000);
+        for(int i =0; i < 10000; i++){
+            BigInteger.valueOf(100).sqrt();
         }
     }
 

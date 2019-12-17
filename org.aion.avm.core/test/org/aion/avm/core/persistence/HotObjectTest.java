@@ -358,9 +358,9 @@ public class HotObjectTest {
             kernel.setTransformedCode(dappAddresses[i], new byte[0]);
         }
 
-        //read the cache
+        //internal transaction result is not stored in the cache
         result = callDapp(kernel, deployer, dappAddresses[1], "getValue");
-        Assert.assertEquals(10, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
+        Assert.assertEquals(5, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
 
         kernel.generateBlock();
 
@@ -408,9 +408,9 @@ public class HotObjectTest {
             kernel.setTransformedCode(dappAddresses[i], new byte[0]);
         }
 
-        //read the cache
+        //internal transaction result is not stored in the cache
         result = callDapp(kernel, deployer, dappAddresses[1], "getCallCount");
-        Assert.assertEquals(1, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
+        Assert.assertEquals(0, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
 
         kernel.generateBlock();
 
@@ -613,6 +613,82 @@ public class HotObjectTest {
         }
 
         //read the cache
+        result = callDapp(kernel, deployer, dappAddresses[1], "getValue");
+        Assert.assertEquals(5, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
+
+        kernel.generateBlock();
+
+        result = callDapp(kernel, deployer, dappAddresses[0], "getValue");
+        Assert.assertEquals(5, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
+    }
+
+    @Test
+    public void testRevertExternalCall() {
+        int length = 2;
+        AionAddress[] dappAddresses = new AionAddress[length];
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] deployData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        TestingState kernel = new TestingState(block);
+
+        for (int i = 0; i < length; i++) {
+            AionAddress deployer = Helpers.randomAddress();
+            kernel.adjustBalance(deployer, BigInteger.TEN.pow(20));
+            dappAddresses[i] = deploy(deployer, kernel, deployData);
+        }
+
+        // update the cache
+        byte[] data = new ABIStreamingEncoder().encodeOneString("doubleStaticValue").toBytes();
+        byte[] txData = new ABIStreamingEncoder().encodeOneString("makeCallAndRevert").encodeOneAddress(new Address(dappAddresses[1].toByteArray())).encodeOneByteArray(data).toBytes();
+        Transaction tx = AvmTransactionUtil.call(deployer, dappAddresses[0], kernel.getNonce(deployer), BigInteger.ZERO, txData, energyLimit, energyPrice);
+        TransactionResult result = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
+        Assert.assertTrue(result.transactionStatus.isFailed());
+
+        kernel.generateBlock();
+
+        //reset the code to make sure it's read from the cache
+        for (int i = 0; i < length; i++) {
+            kernel.putCode(dappAddresses[i], new byte[0]);
+        }
+
+        //read from the storage
+        result = callDapp(kernel, deployer, dappAddresses[1], "getValue");
+        Assert.assertEquals(5, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
+
+        kernel.generateBlock();
+
+        result = callDapp(kernel, deployer, dappAddresses[0], "getValue");
+        Assert.assertEquals(5, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
+    }
+
+    @Test
+    public void testFailedExternalCall() {
+        int length = 2;
+        AionAddress[] dappAddresses = new AionAddress[length];
+        byte[] jar = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(HotObjectContract.class);
+        byte[] deployData = new CodeAndArguments(jar, new byte[0]).encodeToBytes();
+        TestingState kernel = new TestingState(block);
+
+        for (int i = 0; i < length; i++) {
+            AionAddress deployer = Helpers.randomAddress();
+            kernel.adjustBalance(deployer, BigInteger.TEN.pow(20));
+            dappAddresses[i] = deploy(deployer, kernel, deployData);
+        }
+
+        // update the cache
+        byte[] data = new ABIStreamingEncoder().encodeOneString("doubleStaticValue").toBytes();
+        byte[] txData = new ABIStreamingEncoder().encodeOneString("makeCallAndFail").encodeOneAddress(new Address(dappAddresses[1].toByteArray())).encodeOneByteArray(data).toBytes();
+        Transaction tx = AvmTransactionUtil.call(deployer, dappAddresses[0], kernel.getNonce(deployer), BigInteger.ZERO, txData, 1933022, energyPrice);
+        TransactionResult result = avm.run(kernel, new Transaction[]{tx}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0].getResult();
+        Assert.assertTrue(result.transactionStatus.isFailed());
+
+        kernel.generateBlock();
+
+        //reset the code to make sure it's read from the cache
+        for (int i = 0; i < length; i++) {
+            kernel.putCode(dappAddresses[i], new byte[0]);
+        }
+
+        //read from the storage
         result = callDapp(kernel, deployer, dappAddresses[1], "getValue");
         Assert.assertEquals(5, new ABIDecoder(result.copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
 
