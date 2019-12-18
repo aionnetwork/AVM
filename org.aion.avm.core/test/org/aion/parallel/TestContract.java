@@ -13,6 +13,9 @@ public class TestContract {
     static Address deployer;
     static int callCount;
     static int value;
+    private static TestContract root;
+
+    public TestContract nextLink;
 
     static {
         deployer = new Address(Blockchain.getCaller().toByteArray());
@@ -42,6 +45,9 @@ public class TestContract {
                 return new byte[0];
             } else if(methodName.equals("deploy")){
                 deploy(decoder.decodeOneByteArray());
+                return new byte[0];
+            } else if(methodName.equals("addLink")){
+                addLink();
                 return new byte[0];
             } else {
                 return new byte[0];
@@ -80,4 +86,9 @@ public class TestContract {
                 Blockchain.create(BigInteger.ZERO, data, Blockchain.getRemainingEnergy()).isSuccess());
     }
 
+    public static void addLink() {
+        TestContract instance = new TestContract();
+        instance.nextLink = TestContract.root;
+        TestContract.root = instance;
+    }
 }

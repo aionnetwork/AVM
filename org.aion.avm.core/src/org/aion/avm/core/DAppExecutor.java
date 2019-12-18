@@ -127,13 +127,17 @@ public class DAppExecutor {
             } else {
                 // We are at the "top" so write this back to disk.
                 int newHashCode = threadInstrumentation.peekNextHashCode();
+                long startNanos = System.nanoTime();
                 byte[] postCallGraphData = dapp.saveEntireGraph(newHashCode, StorageFees.MAX_GRAPH_SIZE);
+                long endNanos = System.nanoTime();
                 // Bill for writing this size.
                 threadInstrumentation.chargeEnergy(StorageFees.WRITE_PRICE_PER_BYTE * postCallGraphData.length);
                 externalState.putObjectGraph(dappAddress, postCallGraphData);
                 // Update LoadedDApp state at the end of execution
                 dapp.setHashCode(newHashCode);
                 dapp.setSerializedLength(postCallGraphData.length);
+                // Add this graph to our stats.
+                AvmExecutorThread.currentThread().stats.addSerializedGraphSizeToStats(postCallGraphData.length, endNanos - startNanos);
             }
 
             result = TransactionResultUtil.setSuccessfulOutput(result, ret);

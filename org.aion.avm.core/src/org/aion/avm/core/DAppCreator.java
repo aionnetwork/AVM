@@ -434,10 +434,14 @@ public class DAppCreator {
             dapp.forceInitializeAllClasses();
 
             // Save back the state before we return.
+            long startNanos = System.nanoTime();
             byte[] rawGraphData = dapp.saveEntireGraph(threadInstrumentation.peekNextHashCode(), StorageFees.MAX_GRAPH_SIZE);
+            long endNanos = System.nanoTime();
             // Bill for writing this size.
             threadInstrumentation.chargeEnergy(StorageFees.WRITE_PRICE_PER_BYTE * rawGraphData.length);
             externalState.putObjectGraph(dappAddress, rawGraphData);
+            // Add this graph to our stats.
+            AvmExecutorThread.currentThread().stats.addSerializedGraphSizeToStats(rawGraphData.length, endNanos - startNanos);
 
             long refund = 0;
             long energyUsed = energyLimit - threadInstrumentation.energyLeft();

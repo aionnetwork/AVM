@@ -2,7 +2,6 @@ package org.aion.avm.core;
 
 import avm.Address;
 import org.aion.avm.core.blockchainruntime.EmptyCapabilities;
-import org.aion.avm.core.dappreading.UserlibJarBuilder;
 import org.aion.avm.core.util.Helpers;
 import org.aion.avm.userlib.CodeAndArguments;
 import org.aion.avm.userlib.abi.ABIDecoder;
@@ -15,6 +14,7 @@ import org.aion.kernel.TestingState;
 import org.aion.parallel.TestContract;
 import org.aion.types.AionAddress;
 import org.aion.types.Transaction;
+import org.aion.types.TransactionResult;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -36,7 +36,7 @@ public class AvmThreadStatsTest {
         TestingState kernel = new TestingState(block);
         AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
 
-        byte[] code = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(TestContract.class);
+        byte[] code = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(TestContract.class, Collections.emptyMap(), ABIDecoder.class, ABIException.class, ABIEncoder.class);
 
         int length = 10;
         AionAddress[] user = new AionAddress[length];
@@ -231,5 +231,114 @@ public class AvmThreadStatsTest {
         Assert.assertTrue((totalAbortCount + 1) * length * 7 >= totalAcquireCount);
         
         avm.shutdown();
+    }
+
+    @Test
+    public void testDifferingGraphSizes() {
+        TestingState kernel = new TestingState(block);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
+
+        byte[] code = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(TestContract.class, Collections.emptyMap(), ABIDecoder.class, ABIException.class, ABIEncoder.class);
+
+        int length = 4;
+        AionAddress[] user = new AionAddress[length];
+        Transaction[] ctx = new Transaction[length];
+        for (int i = 0; i < user.length; i++) {
+            user[i] = Helpers.randomAddress();
+            kernel.adjustBalance(user[i], BigInteger.TEN.pow(20));
+            ctx[i] = AvmTransactionUtil.create(user[i], BigInteger.ZERO, BigInteger.ZERO, new CodeAndArguments(code, null).encodeToBytes(), 5_000_000L, 1);
+        }
+
+        FutureResult[] results = avm.run(kernel, ctx, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1);
+        AionAddress[] contractAddresses = new AionAddress[results.length];
+        for (int i = 0; i < results.length; i++) {
+            contractAddresses[i] = new AionAddress(results[i].getResult().copyOfTransactionOutput().orElseThrow());
+        }
+
+        // Clear the stats here since we aren't measuring the deployment.
+        AvmCoreStats stats = avm.getStats();
+        stats.clear();
+        
+        // We will increase the number of links in each instance a different number of times, thus allowing the stats on this to diverge.
+        byte[] addLinkData = new ABIStreamingEncoder()
+                .encodeOneString("addLink")
+                .toBytes();
+        int total = summation(length);
+        Transaction[] tx = new Transaction[total];
+        int index = 0;
+        BigInteger[] nonce = new BigInteger[length];
+        for (int i = 0; i < nonce.length; ++i) {
+            nonce[i] = kernel.getNonce(user[i]);
+        }
+        for (int i = 0; i < contractAddresses.length; i++) {
+            for (int j = 0; j <= i; ++j) {
+                tx[index] = AvmTransactionUtil.call(user[j], contractAddresses[j], nonce[j], BigInteger.ZERO, addLinkData, 2_000_000, 1);
+                index += 1;
+                nonce[j] = nonce[j].add(BigInteger.ONE);
+            }
+        }
+
+        results = avm.run(kernel, tx, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1);
+        for (FutureResult f : results) {
+            TransactionResult result = f.getResult();
+            Assert.assertTrue(result.transactionStatus.isSuccess());
+        }
+
+        AvmThreadStats[] threadStats = stats.threadStats;
+        int totalAcquireCount = 0;
+        int totalAbortCount = 0;
+
+        // We don't know which thread will have the min/max, but we know that they will dirverge across the system.
+        int graphMin = Integer.MAX_VALUE;
+        int graphMax = 0;
+        long graphSum = 0;
+        int graphCount = 0;
+        for (AvmThreadStats avmThreadStats : threadStats) {
+            // No contracts are re-transformed at this step.
+            Assert.assertEquals(0, avmThreadStats.retransformationCount);
+            Assert.assertEquals(0, avmThreadStats.retransformationAvgTimeNanos);
+            Assert.assertEquals(0, avmThreadStats.retransformationMaxTimeNanos);
+            // There are various inter-dependencies here but no internal transactions so we can total the acquired, but that is all.
+            totalAcquireCount += avmThreadStats.concurrentResource_acquired;
+            totalAbortCount += avmThreadStats.concurrentResource_aborted;
+            // It is possible that not every thread did work.
+            if (avmThreadStats.serializedGraph_count > 0) {
+                if (avmThreadStats.serializedGraph_min < graphMin) {
+                    graphMin = avmThreadStats.serializedGraph_min;
+                }
+                if (avmThreadStats.serializedGraph_max > graphMax) {
+                    graphMax = avmThreadStats.serializedGraph_max;
+                }
+                graphSum += avmThreadStats.serializedGraph_sum;
+                graphCount += avmThreadStats.serializedGraph_count;
+                Assert.assertTrue(avmThreadStats.serializedGraph_avgNanos > 0L);
+            }
+        }
+
+        // We expect that the acquire count will be at least total * 3:  (sender, receiver, and coinbase).
+        Assert.assertTrue(total * 3 <= totalAcquireCount);
+        // Each abort can cause totalAcquireCount to increase by at most the lower bound.
+        Assert.assertTrue((totalAbortCount + 1) * length * 3 >= totalAcquireCount);
+        
+        // We know that we will see a graph serialization for each transaction, at a minimum.
+        Assert.assertTrue(total <= graphCount);
+        // Each abort can cause totalAcquireCount to increase by at most the lower bound.
+        Assert.assertTrue((totalAbortCount + 1) * total >= graphCount);
+        
+        // Also, enforce the relationships of the sizing (which we know must diverge since they _are_ different sizes).
+        int graphAvg = (int)(graphSum / (long)graphCount);
+        Assert.assertTrue(graphMin < graphAvg);
+        Assert.assertTrue(graphAvg < graphMax);
+        
+        avm.shutdown();
+    }
+
+
+    private static int summation(int number) {
+        int total = 0;
+        for (int i = 1; i <= number; ++i) {
+            total += i;
+        }
+        return total;
     }
 }
