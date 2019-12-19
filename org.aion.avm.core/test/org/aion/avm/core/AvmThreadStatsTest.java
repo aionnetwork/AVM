@@ -79,6 +79,7 @@ public class AvmThreadStatsTest {
         int transformationTotalCount = 0;
         int retransformationTotalCount = 0;
         int totalAcquireCount = 0;
+        int totalAbortCount = 0;
 
         for (AvmThreadStats avmThreadStats : threadStats) {
             transformationTotalCount += avmThreadStats.transformationCount;
@@ -92,10 +93,14 @@ public class AvmThreadStatsTest {
             Assert.assertEquals(0, avmThreadStats.retransformationMaxTimeNanos);
             // Note that some of these calls have conflicting dependencies so some waits or aborts could happen (result cannot be verified as it is non-deterministic).
             totalAcquireCount += avmThreadStats.concurrentResource_acquired;
+            totalAbortCount += avmThreadStats.concurrentResource_aborted;
         }
 
-        // should equal number of contracts deployed
-        Assert.assertEquals(length, transformationTotalCount);
+        // There are at least "length" contracts deployed, causing "length" transformations
+        Assert.assertTrue(length <= transformationTotalCount);
+        // Each abort can cause at MOST, an additional "length" transformations
+        Assert.assertTrue((totalAbortCount + 1) * length >= transformationTotalCount);
+        
         // Should be a minimum of 2*contracts (deployer+contract) + 4*(contractAddresses.length - 1) (caller+contract+contract+other).
         // (in reality, it will typically be higher since aborts will cause a re-request - single-threaded, this always produces 56).
         Assert.assertTrue(totalAcquireCount >= ((2 * length) + (4 * (contractAddresses.length - 1))));
@@ -117,6 +122,8 @@ public class AvmThreadStatsTest {
         for (FutureResult f : results) {
             Assert.assertEquals(2, new ABIDecoder(f.getResult().copyOfTransactionOutput().orElseThrow()).decodeOneInteger());
         }
+        
+        totalAbortCount = 0;
 
         for (AvmThreadStats avmThreadStats : threadStats) {
             retransformationTotalCount += avmThreadStats.retransformationCount;
@@ -126,16 +133,26 @@ public class AvmThreadStatsTest {
 
             Assert.assertTrue(avmThreadStats.retransformationAvgTimeNanos > 0);
             Assert.assertTrue(avmThreadStats.retransformationMaxTimeNanos > avmThreadStats.retransformationAvgTimeNanos);
-            
-            // Note that none of these calls have conflicting dependencies so there will be 0 waits or aborts.
+
             totalAcquireCount += avmThreadStats.concurrentResource_acquired;
-            Assert.assertEquals(0, avmThreadStats.concurrentResource_waited);
-            Assert.assertEquals(0, avmThreadStats.concurrentResource_aborted);
+            totalAbortCount += avmThreadStats.concurrentResource_aborted;
+            
+            // These assertions were made redundant by the fix in AKI-638, which makes all threads acquire the coinbase lock.
+            // AKI-639 is an item that should remove the necessity of acquiring the coinbase lock. 
+            // When AKI-639 is done, these assertions can be meaningful again.
+            Assert.assertTrue(0 <= avmThreadStats.concurrentResource_waited);
+            Assert.assertTrue(0 <= avmThreadStats.concurrentResource_aborted);
         }
 
-        Assert.assertEquals(length - 1, retransformationTotalCount);
-        // Total acquires is a sender and contract for each length-1.
-        Assert.assertEquals(2 * (length - 1), totalAcquireCount);
+        // There are at least "length -1" retransformations
+        Assert.assertTrue(length - 1 <= retransformationTotalCount);
+        // Each abort can cause at MOST, an additional "length -1" retransformations
+        Assert.assertTrue((totalAbortCount + 1) * (length - 1) >= retransformationTotalCount);
+        
+        // Total acquires is a sender, a contract, and the coinbase for each length-1.
+        Assert.assertTrue(3 * (length - 1) <= totalAcquireCount);
+        // Each abort can cause at MOST, an additional "3 * (length -1)" retransformations
+        Assert.assertTrue((totalAbortCount + 1) * 3 * (length - 1) >= totalAcquireCount);
         avm.shutdown();
     }
 
@@ -179,29 +196,39 @@ public class AvmThreadStatsTest {
         AvmThreadStats[] threadStats = stats.threadStats;
         int transformationTotalCount = 0;
         int totalAcquireCount = 0;
-
+        int totalAbortCount = 0;
+        
         for (AvmThreadStats avmThreadStats : threadStats) {
             transformationTotalCount += avmThreadStats.transformationCount;
             Assert.assertTrue(avmThreadStats.transformationAvgTimeNanos > 0);
             Assert.assertTrue(avmThreadStats.transformationMaxTimeNanos > 0);
             Assert.assertTrue(avmThreadStats.transformationMaxTimeNanos > avmThreadStats.transformationAvgTimeNanos);
-            Assert.assertEquals(2, avmThreadStats.transformationCount);
+            Assert.assertTrue(2 <= avmThreadStats.transformationCount);
+            // Each abort can cause transformationCount to increase by at most the lower bound.
+            Assert.assertTrue(2 * (avmThreadStats.concurrentResource_aborted + 1) >= avmThreadStats.transformationCount);
             // no contracts are retransformed at this step
             Assert.assertEquals(0, avmThreadStats.retransformationCount);
             Assert.assertEquals(0, avmThreadStats.retransformationAvgTimeNanos);
             Assert.assertEquals(0, avmThreadStats.retransformationMaxTimeNanos);
-            // Note that none of these calls have conflicting dependencies so there will be 0 waits or aborts.
+            
+            // These assertions were made redundant by the fix in AKI-638, which makes all threads acquire the coinbase lock.
+            // AKI-639 is an item that should remove the necessity of acquiring the coinbase lock. 
+            // When AKI-639 is done, these assertions can be meaningful again.
             totalAcquireCount += avmThreadStats.concurrentResource_acquired;
-            Assert.assertEquals(0, avmThreadStats.concurrentResource_waited);
-            Assert.assertEquals(0, avmThreadStats.concurrentResource_aborted);
+            totalAbortCount += avmThreadStats.concurrentResource_aborted;
+            Assert.assertTrue(0 <= avmThreadStats.concurrentResource_waited);
+            Assert.assertTrue(0 <= avmThreadStats.concurrentResource_aborted);
         }
 
         // should equal number of contracts deployed * 2, since each contract deploys its own contract
-        Assert.assertEquals(length * 2, transformationTotalCount);
+        Assert.assertTrue(length * 2 <= transformationTotalCount);
+        // Each abort can cause totalAcquireCount to increase by at most the lower bound.
+        Assert.assertTrue((totalAbortCount + 1) * length * 2  >= transformationTotalCount);
 
-        // We expect that the acquire count will be length * 5:  (deployer+contract) + (caller+contract+newContract).
-        // (these have no conflicts, so they tend to be perfectly split by thread, but nothing requires this so we can't verify it).
-        Assert.assertEquals(length * 5, totalAcquireCount);
+        // We expect that the acquire count will be at least length * 7:  (deployer+contract+coinbase) + (caller+contract+newContract+coinbase).
+        Assert.assertTrue(length * 7 <= totalAcquireCount);
+        // Each abort can cause totalAcquireCount to increase by at most the lower bound.
+        Assert.assertTrue((totalAbortCount + 1) * length * 7 >= totalAcquireCount);
         
         avm.shutdown();
     }
