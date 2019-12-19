@@ -443,6 +443,8 @@ public class AvmImpl implements AvmInternal {
             // (note that we also want to check the kernel we were given to make sure that this DApp hasn't been deleted since we put it in the cache.
             if ((null != stateToResume) && (null != transformedCode)) {
                 dapp = stateToResume.dApp;
+                // Account for this reentrant code use in stats.
+                AvmExecutorThread.currentThread().stats.cache_code_reentrant += 1;
                 // Call directly and don't interact with DApp cache (we are reentering the state, not the origin of it).
                 result = DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, senderAddress, recipient, effectiveTransactionOrigin, transactionData, transactionHash, energyLimit, energyPrice, transactionValue, result, this.enableVerboseContractErrors, true, this.enableBlockchainPrintln);
             } else {
@@ -566,6 +568,14 @@ public class AvmImpl implements AvmInternal {
                 }
 
                 if (null != dapp) {
+                    // Do the stats accounting on whether we are using the cache (reentrant path handled above).
+                    AvmThreadStats stats = AvmExecutorThread.currentThread().stats;
+                    if (null != dappInHotCache) {
+                        stats.cache_code_hit += 1;
+                    } else {
+                        stats.cache_code_miss += 1;
+                    }
+                    // Run the transaction.
                     result = DAppExecutor.call(this.capabilities, thisTransactionKernel, this, dapp, stateToResume, task, senderAddress, recipient, effectiveTransactionOrigin, transactionData, transactionHash, energyLimit, energyPrice, transactionValue, result, this.enableVerboseContractErrors, readFromDataCacheEnabled, this.enableBlockchainPrintln);
 
                     if (writeToCacheEnabled) {

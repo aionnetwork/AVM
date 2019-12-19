@@ -34,6 +34,16 @@ public class AvmThreadStats {
     public long serializedGraph_sum;
     public long serializedGraph_avgNanos;
 
+    // Record our AVM-internal cache usage (note that these are counted for all transactions, not specifically sync or other explicit uses).
+    public int cache_code_hit;
+    public int cache_code_miss;
+    // (a special-case where we didn't even consult the code cache since the code was found in the reentrant stack).
+    public int cache_code_reentrant;
+    public int cache_data_hit;
+    public int cache_data_miss;
+    // (a special-case where we wanted to use the data cache but couldn't due to it being a reentrant call).
+    public int cache_data_reentrant;
+
     /**
      * updates the transformation count, max and average transformation times
      *
@@ -94,5 +104,11 @@ public class AvmThreadStats {
         this.serializedGraph_max = 0;
         this.serializedGraph_sum = 0L;
         this.serializedGraph_avgNanos = 0L;
+        this.cache_code_hit = 0;
+        this.cache_code_miss = 0;
+        this.cache_code_reentrant = 0;
+        this.cache_data_hit = 0;
+        this.cache_data_miss = 0;
+        this.cache_data_reentrant = 0;
     }
 }

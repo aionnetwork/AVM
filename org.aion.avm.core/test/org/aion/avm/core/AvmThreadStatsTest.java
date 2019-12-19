@@ -333,6 +333,78 @@ public class AvmThreadStatsTest {
         avm.shutdown();
     }
 
+    @Test
+    public void testCacheUsage() {
+        TestingState kernel = new TestingState(block);
+        AvmConfiguration config = new AvmConfiguration();
+        config.threadCount = 4;
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), config);
+
+        byte[] code = JarBuilder.buildJarForMainClassAndExplicitClassNamesAndBytecode(TestContract.class, Collections.emptyMap(), ABIDecoder.class, ABIException.class, ABIEncoder.class);
+
+        AionAddress user = Helpers.randomAddress();
+        BigInteger nonce = BigInteger.ZERO;
+        kernel.adjustBalance(user, BigInteger.TEN.pow(20));
+        Transaction create = AvmTransactionUtil.create(user, nonce, BigInteger.ZERO, new CodeAndArguments(code, null).encodeToBytes(), 5_000_000L, 1);
+        nonce = nonce.add(BigInteger.ONE);
+
+        kernel.generateBlock();
+        FutureResult result = avm.run(kernel, new Transaction[] {create}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0];
+        AionAddress contractAddress = new AionAddress(result.getResult().copyOfTransactionOutput().orElseThrow());
+
+        // Clear the stats here since we aren't measuring the deployment.
+        AvmCoreStats stats = avm.getStats();
+        AvmThreadStats[] threadStats = stats.threadStats;
+        verifyCacheStats(threadStats, 0, 0, 0, 0, 0, 0);
+        stats.clear();
+        
+        // We will increase the number of links in each instance a different number of times, thus allowing the stats on this to diverge.
+        byte[] addValueData = new ABIStreamingEncoder()
+                .encodeOneString("addValue")
+                .toBytes();
+        for (int i = 0; i < 1; ++i) {
+            Transaction call = AvmTransactionUtil.call(user, contractAddress, nonce, BigInteger.ZERO, addValueData, 2_000_000, 1);
+            nonce = nonce.add(BigInteger.ONE);
+            kernel.generateBlock();
+            result = avm.run(kernel, new Transaction[] {call}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0];
+            Assert.assertTrue(result.getResult().transactionStatus.isSuccess());
+            
+            // Note that we don't currently populate the code cache or the data cache on deployment, only the first call after that.
+            boolean isFirstCall = (0 == i);
+            verifyCacheStats(threadStats
+                    , isFirstCall ? 0 : 1
+                    , isFirstCall ? 1 : 0
+                    , 0
+                    , isFirstCall ? 0 : 1
+                    , isFirstCall ? 1 : 0
+                    , 0
+            );
+            stats.clear();
+        }
+        
+        // Finally, do a reentrant call.
+        byte[] doCallThisData = new ABIStreamingEncoder()
+                .encodeOneString("doCallThis")
+                .encodeOneByteArray(addValueData)
+                .toBytes();
+        Transaction call = AvmTransactionUtil.call(user, contractAddress, nonce, BigInteger.ZERO, doCallThisData, 2_000_000, 1);
+        nonce = nonce.add(BigInteger.ONE);
+        kernel.generateBlock();
+        result = avm.run(kernel, new Transaction[] {call}, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1)[0];
+        Assert.assertTrue(result.getResult().transactionStatus.isSuccess());
+        verifyCacheStats(threadStats
+                , 1
+                , 0
+                , 1
+                , 1
+                , 0
+                , 1
+        );
+        stats.clear();
+        
+        avm.shutdown();
+    }
+
 
     private static int summation(int number) {
         int total = 0;
@@ -340,5 +412,36 @@ public class AvmThreadStatsTest {
             total += i;
         }
         return total;
+    }
+
+    private void verifyCacheStats(AvmThreadStats[] threadStats
+            , int expectedCodeHit
+            , int expectedCodeMiss
+            , int expectedCodeReentrant
+            , int expectedDataHit
+            , int expectedDataMiss
+            , int expectedDataReentrant
+    ) {
+        int codeCacheHit = 0;
+        int codeCacheMiss = 0;
+        int codeCacheReentrant = 0;
+        int dataCacheHit = 0;
+        int dataCacheMiss = 0;
+        int dataCacheReentrant = 0;
+        
+        for (AvmThreadStats avmThreadStats : threadStats) {
+            codeCacheHit += avmThreadStats.cache_code_hit;
+            codeCacheMiss += avmThreadStats.cache_code_miss;
+            codeCacheReentrant += avmThreadStats.cache_code_reentrant;
+            dataCacheHit += avmThreadStats.cache_data_hit;
+            dataCacheMiss += avmThreadStats.cache_data_miss;
+            dataCacheReentrant += avmThreadStats.cache_data_reentrant;
+        }
+        Assert.assertEquals(expectedCodeHit, codeCacheHit);
+        Assert.assertEquals(expectedCodeMiss, codeCacheMiss);
+        Assert.assertEquals(expectedCodeReentrant, codeCacheReentrant);
+        Assert.assertEquals(expectedDataHit, dataCacheHit);
+        Assert.assertEquals(expectedDataMiss, dataCacheMiss);
+        Assert.assertEquals(expectedDataReentrant, dataCacheReentrant);
     }
 }

@@ -50,6 +50,8 @@ public class DAppExecutor {
         
         // Note that the instrumentation is just a per-thread access to the state stack - we can grab it at any time as it never changes for this thread.
         IInstrumentation threadInstrumentation = IInstrumentation.attachedThreadInstrumentation.get();
+        // Various activities need to update our stats here.
+        AvmThreadStats stats = AvmExecutorThread.currentThread().stats;
         
         // We need to get the interned classes before load the graph since it might need to instantiate class references.
         InternedClasses initialClassWrappers = dapp.internedClasses;
@@ -65,11 +67,12 @@ public class DAppExecutor {
                 byte[] rawGraphData = callerState.rawState;
                 dapp.loadEntireGraph(initialClassWrappers, rawGraphData);
                 rawGraphDataLength = rawGraphData.length;
-
+                stats.cache_data_reentrant += 1;
             } else {
                 // If we have the DApp in cache, we can get the next hashcode and graph length from it. Otherwise, we have to load the entire graph
                 nextHashCode = dapp.getHashCode();
                 rawGraphDataLength = dapp.getSerializedLength();
+                stats.cache_data_hit += 1;
             }
         } else {
             byte[] rawGraphData = (null != callerState)
@@ -77,6 +80,7 @@ public class DAppExecutor {
                     : externalState.getObjectGraph(dappAddress);
             nextHashCode = dapp.loadEntireGraph(initialClassWrappers, rawGraphData);
             rawGraphDataLength = rawGraphData.length;
+            stats.cache_data_miss += 1;
         }
 
 
