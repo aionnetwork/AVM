@@ -66,6 +66,8 @@ public class TransactionTask implements Comparable<TransactionTask>{
         this.abortState = false;
         this.threadOwningTask = null;
         this.reentrantDAppStack = new ReentrantDAppStack();
+        this.sideEffectsStack = new Stack<>();
+        this.sideEffectsStack.push(new SideEffects());
         this.outBuffer = new StringBuffer();
         
         // All IO will be performed on an per task transactional kernel so we can abort the whole task in one go
