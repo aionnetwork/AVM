@@ -191,6 +191,9 @@ public class AddressResourceMonitor {
                 }
                 this.commitCounter++;
                 ret = true;
+            } else {
+                AvmThreadStats stats = AvmExecutorThread.currentThread().stats;
+                stats.concurrentResource_aborted += 1;
             }
 
             releaseResourcesForTask(task);
