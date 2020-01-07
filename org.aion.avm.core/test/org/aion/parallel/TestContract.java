@@ -1,6 +1,7 @@
 package org.aion.parallel;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 
 import avm.Address;
 import avm.Blockchain;
@@ -49,6 +50,8 @@ public class TestContract {
             } else if(methodName.equals("addLink")){
                 addLink();
                 return new byte[0];
+            } else if(methodName.equals("getBalance")) {
+                return ABIEncoder.encodeOneBigInteger(getBalance(decoder.decodeOneAddress(), decoder.decodeOneInteger()));
             } else {
                 return new byte[0];
             }
@@ -90,5 +93,17 @@ public class TestContract {
         TestContract instance = new TestContract();
         instance.nextLink = TestContract.root;
         TestContract.root = instance;
+    }
+
+    public static BigInteger getBalance(Address address, int iteration) {
+        int i = 0;
+        while (i < iteration) {
+            byte[] n = new byte[32];
+            Arrays.fill(n, 0, 32, Byte.MAX_VALUE);
+            StrictMath.sqrt(Double.MAX_VALUE);
+            new BigInteger(n).sqrt();
+            i++;
+        }
+        return Blockchain.getBalance(address);
     }
 }

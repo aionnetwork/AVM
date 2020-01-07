@@ -369,10 +369,14 @@ public class AvmImpl implements AvmInternal {
         parentKernel.refundAccount(senderAddress, refund);
 
         // Transfer fees to miner
-        if (this.resourceMonitor.acquire(parentKernel.getMinerAddress().toByteArray(), task)) {
-            parentKernel.adjustBalance(parentKernel.getMinerAddress(), BigInteger.valueOf(result.energyUsed()).multiply(BigInteger.valueOf(energyPrice)));
+        if (task.executionType == ExecutionType.MINING) {
+            if (this.resourceMonitor.acquire(parentKernel.getMinerAddress().toByteArray(), task)) {
+                parentKernel.adjustBalance(parentKernel.getMinerAddress(), BigInteger.valueOf(result.energyUsed()).multiply(BigInteger.valueOf(energyPrice)));
+            } else {
+                result = TransactionResultUtil.newAbortedResultWithZeroEnergyUsed();
+            }
         } else {
-            result = TransactionResultUtil.newAbortedResultWithZeroEnergyUsed();
+            parentKernel.adjustBalance(parentKernel.getMinerAddress(), BigInteger.valueOf(result.energyUsed()).multiply(BigInteger.valueOf(energyPrice)));
         }
 
 

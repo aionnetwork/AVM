@@ -137,11 +137,8 @@ public class AvmThreadStatsTest {
             totalAcquireCount += avmThreadStats.concurrentResource_acquired;
             totalAbortCount += avmThreadStats.concurrentResource_aborted;
             
-            // These assertions were made redundant by the fix in AKI-638, which makes all threads acquire the coinbase lock.
-            // AKI-639 is an item that should remove the necessity of acquiring the coinbase lock. 
-            // When AKI-639 is done, these assertions can be meaningful again.
-            Assert.assertTrue(0 <= avmThreadStats.concurrentResource_waited);
-            Assert.assertTrue(0 <= avmThreadStats.concurrentResource_aborted);
+            Assert.assertEquals(0, avmThreadStats.concurrentResource_waited);
+            Assert.assertEquals(0, avmThreadStats.concurrentResource_aborted);
         }
 
         // There are at least "length -1" retransformations
@@ -149,10 +146,10 @@ public class AvmThreadStatsTest {
         // Each abort can cause at MOST, an additional "length -1" retransformations
         Assert.assertTrue((totalAbortCount + 1) * (length - 1) >= retransformationTotalCount);
         
-        // Total acquires is a sender, a contract, and the coinbase for each length-1.
-        Assert.assertTrue(3 * (length - 1) <= totalAcquireCount);
-        // Each abort can cause at MOST, an additional "3 * (length -1)" retransformations
-        Assert.assertTrue((totalAbortCount + 1) * 3 * (length - 1) >= totalAcquireCount);
+        // Total acquires is a sender, a contract for each length-1.
+        Assert.assertTrue(2 * (length - 1) <= totalAcquireCount);
+        // Each abort can cause at MOST, an additional "3 * (length -1)" acquires
+        Assert.assertTrue((totalAbortCount + 1) * 2 * (length - 1) >= totalAcquireCount);
         avm.shutdown();
     }
 
@@ -172,7 +169,7 @@ public class AvmThreadStatsTest {
             ctx[i] = AvmTransactionUtil.create(user[i], BigInteger.ZERO, BigInteger.ZERO, new CodeAndArguments(code, null).encodeToBytes(), 5_000_000L, 1);
         }
 
-        FutureResult[] results = avm.run(kernel, ctx, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1);
+        FutureResult[] results = avm.run(kernel, ctx, ExecutionType.MINING, kernel.getBlockNumber() - 1);
         AionAddress[] contractAddresses = new AionAddress[results.length];
         for (int i = 0; i < results.length; i++) {
             contractAddresses[i] = new AionAddress(results[i].getResult().copyOfTransactionOutput().orElseThrow());
@@ -187,7 +184,7 @@ public class AvmThreadStatsTest {
             tx[i] = AvmTransactionUtil.call(user[i], contractAddresses[i], kernel.getNonce(user[i]), BigInteger.ZERO, data, 5_000_000, 1);
         }
 
-        results = avm.run(kernel, tx, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1);
+        results = avm.run(kernel, tx, ExecutionType.MINING, kernel.getBlockNumber() - 1);
         for (FutureResult f : results) {
             f.getResult();
         }
@@ -249,7 +246,7 @@ public class AvmThreadStatsTest {
             ctx[i] = AvmTransactionUtil.create(user[i], BigInteger.ZERO, BigInteger.ZERO, new CodeAndArguments(code, null).encodeToBytes(), 5_000_000L, 1);
         }
 
-        FutureResult[] results = avm.run(kernel, ctx, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1);
+        FutureResult[] results = avm.run(kernel, ctx, ExecutionType.MINING, kernel.getBlockNumber() - 1);
         AionAddress[] contractAddresses = new AionAddress[results.length];
         for (int i = 0; i < results.length; i++) {
             contractAddresses[i] = new AionAddress(results[i].getResult().copyOfTransactionOutput().orElseThrow());
@@ -278,7 +275,7 @@ public class AvmThreadStatsTest {
             }
         }
 
-        results = avm.run(kernel, tx, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1);
+        results = avm.run(kernel, tx, ExecutionType.MINING, kernel.getBlockNumber() - 1);
         for (FutureResult f : results) {
             TransactionResult result = f.getResult();
             Assert.assertTrue(result.transactionStatus.isSuccess());

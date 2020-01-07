@@ -391,6 +391,64 @@ public class AvmParallelTest {
         avm.shutdown();
     }
 
+    @Test
+    public void testCoinbaseLock() {
+        byte[] code = UserlibJarBuilder.buildJarForMainAndClassesAndUserlib(TestContract.class);
+
+        TestingState kernel = new TestingState(block);
+        AvmImpl avm = CommonAvmFactory.buildAvmInstanceForConfiguration(new EmptyCapabilities(), new AvmConfiguration());
+
+        int length = 3;
+        AionAddress[] user = new AionAddress[length];
+        Transaction[] ctx = new Transaction[length];
+        for (int i = 0; i < length; i++) {
+            user[i] = Helpers.randomAddress();
+            kernel.adjustBalance(user[i], BigInteger.TEN.pow(20));
+            ctx[i] = AvmTransactionUtil.create(user[i], BigInteger.ZERO, BigInteger.ZERO, new CodeAndArguments(code, null).encodeToBytes(), 5_000_000L, 1);
+        }
+
+        FutureResult[] results = avm.run(kernel, ctx, ExecutionType.ASSUME_MAINCHAIN, kernel.getBlockNumber() - 1);
+        AionAddress[] contractAddresses = new AionAddress[results.length];
+        for (int i = 0; i < results.length; i++) {
+            contractAddresses[i] = new AionAddress(results[i].getResult().copyOfTransactionOutput().orElseThrow());
+        }
+
+        kernel.generateBlock();
+
+        byte[][] callData = new byte[length][];
+
+        Address minerAddress = new Address(kernel.getMinerAddress().toByteArray());
+        callData[0] = new ABIStreamingEncoder()
+                .encodeOneString("getBalance")
+                .encodeOneAddress(new Address(Helpers.randomBytes(32)))
+                .encodeOneInteger(1000)
+                .toBytes();
+
+        callData[1] = new ABIStreamingEncoder().encodeOneString("addValue").toBytes();
+
+        callData[2] = new ABIStreamingEncoder()
+                .encodeOneString("getBalance")
+                .encodeOneAddress(minerAddress)
+                .encodeOneInteger(1000)
+                .toBytes();
+
+        Transaction[] tx = new Transaction[length];
+        for (int i = 0; i < length; i++) {
+            tx[i] = AvmTransactionUtil.call(user[i], contractAddresses[i], kernel.getNonce(user[i]), BigInteger.ZERO, callData[i], 10_000_000, 1);
+        }
+
+        BigInteger initialBalance = kernel.getBalance(kernel.getMinerAddress());
+
+        // Specifically tests the issue mentioned in AKI-644
+        results = avm.run(kernel, tx, ExecutionType.MINING, kernel.getBlockNumber() - 1);
+
+        Assert.assertEquals(BigInteger.ZERO, new ABIDecoder(results[0].getResult().copyOfTransactionOutput().orElseThrow()).decodeOneBigInteger());
+        Assert.assertEquals(initialBalance.add(BigInteger.valueOf(results[0].getResult().energyUsed)).add(BigInteger.valueOf(results[1].getResult().energyUsed)),
+                new ABIDecoder(results[2].getResult().copyOfTransactionOutput().orElseThrow()).decodeOneBigInteger());
+
+        avm.shutdown();
+    }
+
     private static byte[] encodeNoArgsMethodCall(String methodName) {
         return new ABIStreamingEncoder()
                 .encodeOneString(methodName)
