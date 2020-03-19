@@ -102,9 +102,9 @@ public class TransactionResultUtilTest {
     @Test
     public void testNewRejectedResultWithEnergyUsed() {
         AvmInternalError error = AvmInternalError.REJECTED_INVALID_ENERGY_PRICE;
-        long energyUsed = 21376;
+        long energyUsed = 0;
 
-        AvmWrappedTransactionResult result = TransactionResultUtil.newRejectedResultWithEnergyUsed(error, energyUsed);
+        AvmWrappedTransactionResult result = TransactionResultUtil.newRejectedResultWithZeroEnergyUsed(error);
 
         // Verify the status.
         assertEquals(error, result.avmInternalError);

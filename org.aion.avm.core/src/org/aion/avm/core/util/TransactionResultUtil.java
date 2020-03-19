@@ -67,16 +67,15 @@ public final class TransactionResultUtil {
     /**
      * Returns a new transaction result whose status is rejected and the type of rejection is given
      * by {@code rejectedError}. This result has no logs or internal transactions, a null output,
-     * and the specified energy used.
+     * and zero energy used.
      *
      * No exception or {@link IExternalState} are contained in the returned result either.
      *
      * @param rejectedError The rejection type.
-     * @param energyUsed The energy used.
      * @return the new result.
      */
-    public static AvmWrappedTransactionResult newRejectedResultWithEnergyUsed(AvmInternalError rejectedError, long energyUsed) {
-        TransactionResult result = new TransactionResult(TransactionStatus.rejection(rejectedError.error), Collections.emptyList(), Collections.emptyList(), energyUsed, null);
+    public static AvmWrappedTransactionResult newRejectedResultWithZeroEnergyUsed(AvmInternalError rejectedError) {
+        TransactionResult result = new TransactionResult(TransactionStatus.rejection(rejectedError.error), Collections.emptyList(), Collections.emptyList(), 0, null);
         return new AvmWrappedTransactionResult(result, null, null, rejectedError);
     }
 

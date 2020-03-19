@@ -236,7 +236,7 @@ public class AvmImpl implements AvmInternal {
                 // The CREATE/CALL case is handled via the common external invoke path.
                 result = runExternalInvoke(task.getThisTransactionalKernel(), task, tx.senderAddress, tx.isCreate, (tx.isCreate ? null : tx.destinationAddress), tx.copyOfTransactionData(), tx.copyOfTransactionHash(), tx.energyLimit, tx.energyPrice, tx.value, tx.nonce);
             } else {
-                result = TransactionResultUtil.newRejectedResultWithEnergyUsed(error, tx.energyLimit);
+                result = TransactionResultUtil.newRejectedResultWithZeroEnergyUsed(error);
             }
         } else {
             result = TransactionResultUtil.newAbortedResultWithZeroEnergyUsed();
@@ -350,7 +350,7 @@ public class AvmImpl implements AvmInternal {
 
         // exit if validation check fails
         if (error != AvmInternalError.NONE) {
-            return TransactionResultUtil.newRejectedResultWithEnergyUsed(error, energyLimit);
+            return TransactionResultUtil.newRejectedResultWithZeroEnergyUsed(error);
         }
 
         /*

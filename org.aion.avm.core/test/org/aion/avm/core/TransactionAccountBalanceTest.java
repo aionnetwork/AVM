@@ -135,7 +135,7 @@ public class TransactionAccountBalanceTest {
         assertEquals(AvmInternalError.REJECTED_INSUFFICIENT_BALANCE.error, result.transactionStatus.causeOfError);
 
         long energyUsed = result.energyUsed;
-        assertEquals(energyLimitForValueTransfer, energyUsed);
+        assertEquals(0, energyUsed);
 
         assertEquals(senderBalanceBefore, kernel.getBalance(from));
         assertEquals(BigInteger.ZERO, kernel.getBalance(recipient));
@@ -226,7 +226,7 @@ public class TransactionAccountBalanceTest {
         assertEquals(AvmInternalError.REJECTED_INVALID_ENERGY_LIMIT.error, result.transactionStatus.causeOfError);
 
         long energyUsed = result.energyUsed;
-        assertEquals(energyLimitForValueTransfer, energyUsed);
+        assertEquals(0, energyUsed);
 
         assertEquals(senderBalanceBefore, kernel.getBalance(from));
         assertEquals(BigInteger.ZERO, kernel.getBalance(recipient));
@@ -243,7 +243,7 @@ public class TransactionAccountBalanceTest {
         assertEquals(AvmInternalError.REJECTED_INVALID_ENERGY_LIMIT.error, result.transactionStatus.causeOfError);
 
         long energyUsed = result.energyUsed;
-        assertEquals(energyLimitForValueTransfer, energyUsed);
+        assertEquals(0, energyUsed);
 
         assertEquals(senderBalanceBefore, kernel.getBalance(from));
         assertEquals(BigInteger.ZERO, kernel.getBalance(recipient));
@@ -260,7 +260,7 @@ public class TransactionAccountBalanceTest {
         assertEquals(AvmInternalError.REJECTED_INVALID_ENERGY_LIMIT.error, result.transactionStatus.causeOfError);
 
         long energyUsed = result.energyUsed;
-        assertEquals(energyLimitForValueTransfer, energyUsed);
+        assertEquals(0, energyUsed);
 
         assertEquals(senderBalanceBefore, kernel.getBalance(from));
         assertEquals(BigInteger.ZERO, kernel.getBalance(recipient));
