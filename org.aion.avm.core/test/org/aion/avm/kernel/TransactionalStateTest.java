@@ -154,4 +154,62 @@ public class TransactionalStateTest {
         Assert.assertEquals(BigInteger.TWO, base.getNonce(nonceOne));
         Assert.assertEquals(BigInteger.ONE, base.getNonce(nonceZero));
     }
+
+    @Test
+    public void testHasStorageAfterPut() {
+        IExternalState base = new TestingState();
+        AionAddress address = Helpers.randomAddress();
+        base.createAccount(address);
+
+        TransactionalState transactionalState = new TransactionalState(base);
+        Assert.assertFalse(transactionalState.hasStorage(address));
+
+        byte[] key = new byte[32];
+        key[0] = 0x1;
+
+        transactionalState.putStorage(address, key, new byte[1]);
+        Assert.assertTrue(transactionalState.hasStorage(address));
+        transactionalState.commit();
+        Assert.assertTrue(base.hasStorage(address));
+    }
+
+    @Test
+    public void testHasStorageAfterRemove() {
+        IExternalState base = new TestingState();
+        AionAddress address = Helpers.randomAddress();
+        base.createAccount(address);
+
+        TransactionalState transactionalState = new TransactionalState(base);
+        Assert.assertFalse(transactionalState.hasStorage(address));
+
+        byte[] key = Helpers.randomBytes(32);
+
+        transactionalState.putStorage(address, key, new byte[1]);
+        Assert.assertTrue(transactionalState.hasStorage(address));
+
+        transactionalState.removeStorage(address, key);
+        Assert.assertFalse(transactionalState.hasStorage(address));
+        transactionalState.commit();
+        Assert.assertFalse(base.hasStorage(address));
+    }
+
+    @Test
+    public void testHasStorageAfterSelfDestruct() {
+        IExternalState base = new TestingState();
+        AionAddress address = Helpers.randomAddress();
+        base.createAccount(address);
+
+        TransactionalState transactionalState = new TransactionalState(base);
+        Assert.assertFalse(transactionalState.hasStorage(address));
+
+        byte[] key = Helpers.randomBytes(32);
+
+        transactionalState.putStorage(address, key, new byte[1]);
+        Assert.assertTrue(transactionalState.hasStorage(address));
+
+        transactionalState.deleteAccount(address);
+        Assert.assertFalse(transactionalState.hasStorage(address));
+        transactionalState.commit();
+        Assert.assertFalse(base.hasStorage(address));
+    }
 }

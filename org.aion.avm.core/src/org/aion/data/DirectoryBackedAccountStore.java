@@ -126,6 +126,23 @@ public class DirectoryBackedAccountStore implements IAccountStore {
         return readFile(FILE_GRAPH);
     }
 
+    @Override
+    public boolean hasStorage() {
+        boolean result = false;
+        if (this.accountDirectory.listFiles() != null) {
+            // Find any names with FILE_PREFIX_KEY as a prefix.
+            for (File file : this.accountDirectory.listFiles()) {
+                String name = file.getName();
+                if (name.startsWith(FILE_PREFIX_KEY)) {
+                    result = true;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+
 
     private byte[] readFile(String fileName) {
         Path oneFile = new File(this.accountDirectory, fileName).toPath();

@@ -291,4 +291,14 @@ public interface IExternalState {
      * @return the address of the miner.
      */
     public AionAddress getMinerAddress();
+
+
+    /**
+     * Returns {@code true} only if the specified account has non-empty storage associated with it.
+     * Otherwise {@code false}.
+     *
+     * @param address The account address.
+     * @return whether the account has non-empty storage or not.
+     */
+    public boolean hasStorage(AionAddress address);
 }

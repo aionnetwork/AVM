@@ -214,6 +214,12 @@ public class CachingState implements IExternalState {
         internalAdjustBalance(address, amount);
     }
 
+    @Override
+    public boolean hasStorage(AionAddress address) {
+        IAccountStore account = this.dataStore.openAccount(address.toByteArray());
+        return (null != account) && account.hasStorage();
+    }
+
     private IAccountStore lazyCreateAccount(byte[] address) {
         IAccountStore account = this.dataStore.openAccount(address);
         if (null == account) {

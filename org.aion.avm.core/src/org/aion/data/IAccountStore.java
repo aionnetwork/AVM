@@ -93,4 +93,12 @@ public interface IAccountStore {
      * @return The raw serialized graph read.
      */
     public byte[] getObjectGraph();
+
+    /**
+     * Returns {@code true} if account has non-empty storage associated with it.
+     * Otherwise {@code false}.
+     *
+     * @return whether the account has non-empty storage or not.
+     */
+    boolean hasStorage();
 }

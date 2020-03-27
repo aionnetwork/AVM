@@ -269,6 +269,12 @@ public class TestingState implements IExternalState {
         internalAdjustBalance(address, amount);
     }
 
+    @Override
+    public boolean hasStorage(AionAddress address) {
+        IAccountStore account = this.dataStore.openAccount(address.toByteArray());
+        return (null != account) && account.hasStorage();
+    }
+
     public void generateBlock() {
         this.blockNumber ++;
         this.blockTimestamp += blockTimeMillis;

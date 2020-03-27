@@ -347,4 +347,14 @@ public class TransactionalState implements IExternalState {
     public AionAddress getMinerAddress() {
         return blockCoinbase;
     }
+
+    @Override
+    public boolean hasStorage(AionAddress address) {
+        boolean result = this.writeCache.hasStorage(address);
+        if (!result) {
+            // Delegate the check to our parent.
+            result = this.parent.hasStorage(address);
+        }
+        return result;
+    }
 }

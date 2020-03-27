@@ -68,4 +68,25 @@ public class DirectoryBackedDataStoreTest {
         store.deleteAccount(address1);
         Assert.assertEquals(0, storage.listFiles().length);
     }
+
+    @Test
+    public void testHasStorage() throws Exception {
+        File storage = folder.newFolder();
+        DirectoryBackedDataStore store = new DirectoryBackedDataStore(storage);
+
+        byte[] address = Helpers.randomBytes(32);
+        byte[] key = Helpers.randomBytes(32);
+        byte[] value = Helpers.randomBytes(100);
+        IAccountStore account = store.createAccount(address);
+        account.setData(key, value);
+
+        account = store.openAccount(address);
+        Assert.assertTrue(account.hasStorage());
+
+        account.removeData(key);
+        Assert.assertFalse(account.hasStorage());
+
+        account.setData(key, value);
+        Assert.assertTrue(account.hasStorage());
+    }
 }

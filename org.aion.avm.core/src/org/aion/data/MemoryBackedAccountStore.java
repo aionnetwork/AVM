@@ -84,4 +84,9 @@ public class MemoryBackedAccountStore implements IAccountStore {
     public byte[] getObjectGraph() {
         return this.graph;
     }
+
+    @Override
+    public boolean hasStorage() {
+        return !this.storage.isEmpty();
+    }
 }
