@@ -1,7 +1,10 @@
 package org.aion.avm.core;
 
 import avm.Blockchain;
+import avm.Result;
 import org.aion.avm.userlib.abi.ABIDecoder;
+
+import java.math.BigInteger;
 
 public class NonDefaultConditionTarget {
 
@@ -15,6 +18,11 @@ public class NonDefaultConditionTarget {
 
     public static void selfDestruct() {
         Blockchain.selfDestruct(Blockchain.getCaller());
+    }
+
+    public static void call(byte[] dappBytes, boolean expectedResult) {
+        Result createResult = Blockchain.create(BigInteger.ZERO, dappBytes, Blockchain.getRemainingEnergy());
+        Blockchain.require(expectedResult == createResult.isSuccess());
     }
 
     public static byte[] main() {
@@ -37,6 +45,9 @@ public class NonDefaultConditionTarget {
                 }
                 case "selfDestruct":
                     selfDestruct();
+                    break;
+                case "call":
+                    call(decoder.decodeOneByteArray(), decoder.decodeOneBoolean());
                     break;
             }
             return new byte[0];

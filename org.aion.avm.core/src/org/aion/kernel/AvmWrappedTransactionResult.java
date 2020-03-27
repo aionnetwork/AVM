@@ -34,6 +34,7 @@ public final class AvmWrappedTransactionResult {
         FAILED_REVERTED                 ("Failed: reverted", true, false),
         FAILED                          ("Failed", true, false),
         FAILED_RETRANSFORMATION         ("Failed: re-transformation failure", true, false),
+        FAILED_NON_DEFAULT_ACCOUNT      ("Failed: destination address has a non-default state", true, false),
         REJECTED_INVALID_VALUE          ("Rejected: invalid value", false, true),
         REJECTED_INVALID_ENERGY_PRICE   ("Rejected: invalid energy price", false, true),
         REJECTED_INVALID_ENERGY_LIMIT   ("Rejected: invalid energy limit", false, true),

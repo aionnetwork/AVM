@@ -424,19 +424,23 @@ public class AvmImpl implements AvmInternal {
 
         // do nothing for balance transfers of which the recipient is not a DApp address.
         if (isCreate) {
-            if ((null != this.histogramDataCollector) || (null != this.contractCaptureTool)) {
-                CodeAndArguments codeAndArguments = CodeAndArguments.decodeFromBytes(transactionData);
-                // If this data is invalid, we will get null.  We don't bother tracking this.
-                if (null != codeAndArguments) {
-                    if (null != this.histogramDataCollector) {
-                        this.histogramDataCollector.collectDataFromJarBytes(codeAndArguments.code);
-                    }
-                    if (null != this.contractCaptureTool) {
-                        this.contractCaptureTool.captureDeployment(parentKernel.getBlockNumber(), senderAddress, recipient, nonce, codeAndArguments.code, codeAndArguments.arguments);
+            if (DestinationAddressIsValidForCreate(recipient, thisTransactionKernel)) {
+                if ((null != this.histogramDataCollector) || (null != this.contractCaptureTool)) {
+                    CodeAndArguments codeAndArguments = CodeAndArguments.decodeFromBytes(transactionData);
+                    // If this data is invalid, we will get null.  We don't bother tracking this.
+                    if (null != codeAndArguments) {
+                        if (null != this.histogramDataCollector) {
+                            this.histogramDataCollector.collectDataFromJarBytes(codeAndArguments.code);
+                        }
+                        if (null != this.contractCaptureTool) {
+                            this.contractCaptureTool.captureDeployment(parentKernel.getBlockNumber(), senderAddress, recipient, nonce, codeAndArguments.code, codeAndArguments.arguments);
+                        }
                     }
                 }
+                result = DAppCreator.create(this.capabilities, thisTransactionKernel, this, task, senderAddress, recipient, effectiveTransactionOrigin, transactionData, transactionHash, energyLimit, energyPrice, transactionValue, result, this.preserveDebuggability, this.enableVerboseContractErrors, this.enableBlockchainPrintln);
+            } else {
+                result = TransactionResultUtil.setNonRevertedFailureAndEnergyUsed(result, AvmInternalError.FAILED_NON_DEFAULT_ACCOUNT, energyLimit);
             }
-            result = DAppCreator.create(this.capabilities, thisTransactionKernel, this, task, senderAddress, recipient, effectiveTransactionOrigin, transactionData, transactionHash, energyLimit, energyPrice, transactionValue, result, this.preserveDebuggability, this.enableVerboseContractErrors, this.enableBlockchainPrintln);
         } else { // call
             // See if this call is trying to reenter one already on this call-stack.  If so, we will need to partially resume its state.
             ReentrantDAppStack.ReentrantState stateToResume = task.getReentrantDAppStack().tryShareState(recipient);
@@ -649,5 +653,18 @@ public class AvmImpl implements AvmInternal {
             return v.get() == null;
         };
         this.transformedCodeCache.removeValueIf(condition);
+    }
+
+    /**
+     * Checks to see if the destination address is valid for deployment.
+     * An address is valid if it has no code or storage associated with it, and its nonce is zero
+     *
+     * @param destinationAddress destination address for deployment
+     * @return {@code true}  if the address is valid,  {@code false}  otherwise
+     */
+    private boolean DestinationAddressIsValidForCreate(AionAddress destinationAddress, IExternalState externalState) {
+        return externalState.getNonce(destinationAddress).signum() == 0 &&
+                externalState.getCode(destinationAddress) == null &&
+                !externalState.hasStorage(destinationAddress);
     }
 }
